@@ -10,27 +10,27 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://avatars.githubusercontent.com/phamduyaaaa">
 
-<title>Pham Duc Duy · Embodied AI Engineer</title>
+<title>Phạm Đức Duy · Embodied AI Engineer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* =============================================
-   DESIGN TOKENS
+   DESIGN TOKENS (Tối ưu chống Halation)
 ============================================= */
 :root {
-  --bg:          #050B14;
-  --surface:     #0D1F35;
-  --surface-2:   #112740;
-  --border:      rgba(0, 229, 255, 0.12);
-  --border-hover:rgba(0, 229, 255, 0.4);
-  --cyan:        #00E5FF;
-  --cyan-dim:    rgba(0, 229, 255, 0.15);
-  --violet:      #7B4FFF;
-  --violet-dim:  rgba(123, 79, 255, 0.15);
-  --text-primary:#E8F4FD;
-  --text-body:   #A8C4D8;
-  --text-muted:  #5A7A96;
+  --bg:          #0B121F; /* Nền xanh navy nhám dịu mắt */
+  --surface:     #111C2D;
+  --surface-2:   #1A2942;
+  --border:      rgba(6, 182, 212, 0.15);
+  --border-hover:rgba(6, 182, 212, 0.4);
+  --cyan:        #06B6D4; /* Xanh Cyan đằm hơn, chống chói */
+  --cyan-dim:    rgba(6, 182, 212, 0.15);
+  --violet:      #8B5CF6;
+  --violet-dim:  rgba(139, 92, 246, 0.15);
+  --text-primary:#F1F5F9; /* Chữ trắng mềm */
+  --text-body:   #94A3B8; /* Xanh xám dịu mắt cho văn bản dài */
+  --text-muted:  #64748B;
   --font-display:'Space Grotesk', sans-serif;
   --font-body:   'Inter', sans-serif;
   --font-mono:   'JetBrains Mono', monospace;
@@ -50,7 +50,7 @@ body {
   color: var(--text-body);
   font-family: var(--font-body);
   font-size: 16px;
-  line-height: 1.7;
+  line-height: 1.75; /* Tăng khoảng cách dòng một chút cho dễ đọc */
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -61,8 +61,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(6, 182, 212, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.025) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
   z-index: 0;
@@ -71,7 +71,14 @@ body::before {
 a { color: var(--cyan); text-decoration: none; transition: color var(--transition); }
 a:hover { color: #fff; }
 
-/* Bổ sung class cho highlight text */
+/* Tối ưu Accessibility (a11y) */
+a:focus-visible, button:focus-visible {
+  outline: 2px dashed var(--cyan);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Class bôi đậm từ khóa (F-Pattern) */
 strong, .highlight { color: var(--text-primary); font-weight: 600; }
 
 /* =============================================
@@ -95,7 +102,7 @@ nav {
   right: 0;
   z-index: 100;
   padding: 0 24px;
-  background: rgba(5, 11, 20, 0.85);
+  background: rgba(11, 18, 31, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
@@ -195,19 +202,21 @@ h1 {
   color: var(--text-body);
   max-width: 580px;
   margin-bottom: 40px;
-  line-height: 1.75;
 }
 
-/* Terminal block — the signature element */
+/* =============================================
+   TERMINAL (DNA Robotics)
+============================================= */
 .terminal {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 24px;
   margin-bottom: 40px;
-  max-width: 550px;
+  max-width: 580px;
   font-family: var(--font-mono);
   font-size: 13px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .terminal-header {
@@ -234,6 +243,15 @@ h1 {
 .terminal-line .key { color: var(--violet); }
 .terminal-line .val { color: #4ADE80; }
 
+/* Micro-interaction: Animation chớp nháy cho con trỏ */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.terminal-line .val.cursor {
+  animation: blink 1s step-end infinite;
+}
+
 .terminal-line:nth-child(2) { animation-delay: 0.5s; }
 .terminal-line:nth-child(3) { animation-delay: 1.0s; }
 .terminal-line:nth-child(4) { animation-delay: 1.5s; }
@@ -247,6 +265,9 @@ h1 {
   to   { opacity: 1; transform: translateX(0); }
 }
 
+/* =============================================
+   BUTTONS (Với hiệu ứng vật lý :active)
+============================================= */
 .hero-cta {
   display: flex;
   gap: 16px;
@@ -264,27 +285,29 @@ h1 {
   font-size: 14px;
   padding: 12px 24px;
   border-radius: 8px;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform 0.1s ease;
   letter-spacing: 0.02em;
 }
 
 .btn-primary:hover { background: #fff; color: #050B14; transform: translateY(-2px); }
+.btn-primary:active { transform: scale(0.96) translateY(0); } /* Lún xuống khi bấm */
 
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-body);
+  color: var(--text-primary);
   font-family: var(--font-display);
   font-weight: 500;
   font-size: 14px;
   padding: 12px 24px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  transition: border-color var(--transition), color var(--transition), transform var(--transition);
+  transition: border-color var(--transition), background var(--transition), transform 0.1s ease;
 }
 
-.btn-ghost:hover { border-color: var(--border-hover); color: var(--text-primary); transform: translateY(-2px); }
+.btn-ghost:hover { background: var(--surface); border-color: var(--border-hover); transform: translateY(-2px); }
+.btn-ghost:active { transform: scale(0.96) translateY(0); }
 
 /* =============================================
    SECTIONS COMMON
@@ -378,15 +401,14 @@ h2 {
 }
 
 .about-text p {
-  margin-bottom: 18px;
-  color: var(--text-body);
+  margin-bottom: 20px;
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .tag {
@@ -395,12 +417,12 @@ h2 {
   padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  color: var(--text-muted);
+  color: var(--text-primary);
   background: var(--surface);
-  transition: border-color var(--transition), color var(--transition);
+  transition: border-color var(--transition), background var(--transition);
 }
 
-.tag:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.tag:hover { border-color: var(--border-hover); background: var(--surface-2); }
 
 .about-stack h3 {
   font-family: var(--font-display);
@@ -424,7 +446,7 @@ h2 {
 }
 
 /* =============================================
-   EXPERIENCE
+   EXPERIENCE (Với định dạng F-Pattern)
 ============================================= */
 .timeline {
   position: relative;
@@ -457,10 +479,10 @@ h2 {
   border-radius: 50%;
   background: var(--bg);
   border: 2px solid var(--cyan);
-  transition: background var(--transition);
+  transition: background var(--transition), box-shadow var(--transition);
 }
 
-.timeline-item:hover .timeline-dot { background: var(--cyan); }
+.timeline-item:hover .timeline-dot { background: var(--cyan); box-shadow: 0 0 10px var(--cyan-dim); }
 .timeline-item.current .timeline-dot { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
 
 .timeline-meta {
@@ -485,7 +507,7 @@ h2 {
   border-radius: 999px;
   background: var(--cyan-dim);
   color: var(--cyan);
-  border: 1px solid rgba(0, 229, 255, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
 .timeline-company {
@@ -503,28 +525,25 @@ h2 {
   margin-bottom: 12px;
 }
 
-.timeline-desc {
-  color: var(--text-body);
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-/* Tối ưu Bullet points cho phần Experience */
 .timeline-desc ul {
-  list-style-type: disc;
-  padding-left: 20px;
+  list-style-type: none; /* Custom bullet points */
   margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .timeline-desc li {
-  color: var(--text-body);
+  position: relative;
+  padding-left: 20px;
+  font-size: 15px;
 }
 
-.timeline-desc li strong {
-  color: var(--text-primary);
+.timeline-desc li::before {
+  content: "▹";
+  position: absolute;
+  left: 0;
+  color: var(--cyan);
 }
 
 /* =============================================
@@ -543,14 +562,17 @@ h2 {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition), transform 0.15s ease, box-shadow var(--transition);
   cursor: pointer;
 }
 
 .project-card:hover {
   border-color: var(--border-hover);
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+.project-card:active {
+  transform: scale(0.98);
 }
 
 .project-thumb {
@@ -606,7 +628,6 @@ h2 {
 
 .project-desc {
   font-size: 14px;
-  color: var(--text-body);
   line-height: 1.65;
   margin-bottom: 20px;
   flex: 1;
@@ -642,7 +663,7 @@ h2 {
 
 .project-link:hover { gap: 10px; color: #fff; }
 
-/* Featured project — full-width */
+/* Featured project */
 .project-card.featured {
   grid-column: 1 / -1;
   flex-direction: row;
@@ -701,19 +722,19 @@ h2 {
   margin-bottom: 8px;
 }
 
-.pub-badge.q2 { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,229,255,0.3); }
-.pub-badge.conf { background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(123,79,255,0.3); }
+.pub-badge.q2 { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.pub-badge.conf { background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(139,92,246,0.3); }
 
 .pub-title {
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 6px;
-  line-height: 1.4;
+  margin-bottom: 8px;
+  line-height: 1.5;
 }
 
-.pub-desc { font-size: 14px; color: var(--text-body); }
+.pub-desc { font-size: 14px; }
 
 /* =============================================
    CONTACT
@@ -727,7 +748,6 @@ h2 {
 
 .contact-intro {
   font-size: 17px;
-  color: var(--text-body);
   line-height: 1.75;
   margin-bottom: 32px;
 }
@@ -741,22 +761,23 @@ h2 {
 .contact-link {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   padding: 16px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color var(--transition), transform var(--transition);
+  transition: border-color var(--transition), background var(--transition), transform 0.1s ease;
   color: var(--text-body);
 }
 
-.contact-link:hover { border-color: var(--border-hover); transform: translateX(4px); color: var(--text-primary); }
+.contact-link:hover { background: var(--surface-2); border-color: var(--border-hover); transform: translateX(6px); color: var(--text-primary); }
+.contact-link:active { transform: translateX(4px) scale(0.98); }
 
 .contact-link-icon {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: var(--surface-2);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -789,13 +810,7 @@ footer {
   justify-content: space-between;
 }
 
-.footer-copy {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.footer-built {
+.footer-copy, .footer-built {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
@@ -804,15 +819,36 @@ footer {
 .footer-built span { color: var(--cyan); }
 
 /* =============================================
-   RESPONSIVE
+   RESPONSIVE (Mobile UX Cực hạn)
 ============================================= */
 @media (max-width: 768px) {
-  .nav-links { display: none; }
+  /* Biến Nav thành thanh cuộn ngang mượt mà thay vì ẩn đi */
+  .nav-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 12px 0 0 0;
+    gap: 12px;
+  }
+  .nav-links {
+    width: 100vw;
+    overflow-x: auto;
+    padding: 0 24px 12px 24px;
+    gap: 24px;
+    -webkit-overflow-scrolling: touch; /* Mượt mà trên iOS */
+    scrollbar-width: none; /* Ẩn scrollbar trên Firefox */
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none; /* Ẩn scrollbar Chrome/Safari */
+  }
+  
+  /* Đẩy Hero xuống một chút để không bị đè bởi Nav trên mobile */
+  .hero { padding-top: 100px; }
+  
   .about-grid { grid-template-columns: 1fr; gap: 40px; }
   .project-card.featured { flex-direction: column; }
   .project-card.featured .project-thumb { width: 100%; min-height: 200px; }
   .contact-wrap { grid-template-columns: 1fr; gap: 40px; }
-  footer { flex-direction: column; gap: 8px; text-align: center; }
+  footer { flex-direction: column; gap: 12px; text-align: center; }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -834,7 +870,6 @@ footer {
   transform: translateY(0);
 }
 
-/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
   .terminal-line { animation: none; opacity: 1; }
@@ -859,9 +894,9 @@ footer {
 <div class="layout">
   <section class="hero" id="top">
     <div class="hero-content">
-      <div class="hero-eyebrow">Embodied AI Engineer · Hanoi, Vietnam</div>
-      <h1>Pham Duc Duy</h1>
-      <p class="hero-role">Building <span>robots</span>, learning every day, and sharing the journey with the world.</p>
+      <div class="hero-eyebrow">Embodied AI Engineer · Nam Từ Liêm, Hanoi</div>
+      <h1>Phạm Đức Duy</h1>
+      <p class="hero-role">Building <span>robots</span>, learning every day, and sharing the journey.</p>
       
       <p class="hero-bio">
         Robotics Software Engineer with 2 years of experience deploying <strong>ROS 2</strong> mobile robots into real-world production. 
@@ -881,14 +916,16 @@ footer {
         <div class="terminal-line"><span class="key">papers:</span>     <span class="val">[ "MethodsX (Q2 Journal)" ]</span></div>
         <div class="terminal-line"><span class="key">stack:</span>      <span class="val">[ "ROS 2", "C++", "Python", "Rust", "GoLang" ]</span></div>
         <div class="terminal-line"><span class="key">status:</span>     <span class="val">"Open to senior / international roles"</span></div>
-        <div class="terminal-line"><span class="prompt">~$</span> <span class="val">▌</span></div>
+        <div class="terminal-line"><span class="prompt">~$</span> <span class="val cursor">▌</span></div>
       </div>
 
       <div class="hero-cta">
         <a href="mailto:duypham.robotics@gmail.com" class="btn-primary">
           Get in touch ↗
         </a>
-        <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn-ghost" target="_blank" rel="noopener noreferrer">📄 Download CV</a>
+        <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn-ghost" target="_blank" rel="noopener noreferrer">
+          📄 Download CV
+        </a>
         <a href="https://github.com/phamduyaaaa" class="btn-ghost" target="_blank" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -1114,7 +1151,7 @@ footer {
           <div class="project-type">Imitation Learning</div>
           <div class="project-title">HG-Dagger Obstacle Avoidance</div>
           <div class="project-desc">
-            Researched and developed an obstacle avoidance system for mobile robots using imitation learning. The robot successfully avoids both static and dynamic obstacles, <strong>reducing the FLOP cost by 131 times</strong> compared to traditional DWA.
+            Researched and developed an obstacle avoidance system for mobile robots using imitation learning. The robot successfully avoids both static and dynamic obstacles, <strong style="color: var(--cyan);">reducing the FLOP cost by 131 times</strong> compared to traditional DWA.
           </div>
           <div class="project-tech">
             <span class="tech-pill">Micro-ROS</span>
@@ -1222,7 +1259,7 @@ footer {
         </a>
         <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
           <div class="contact-link-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#5A7A96">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-body);">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
             </svg>
           </div>
@@ -1236,13 +1273,13 @@ footer {
   </section>
 
   <footer class="reveal">
-    <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Pham Duc Duy</div>
+    <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + CSS</span> · No frameworks.</div>
   </footer>
 </div>
 
 <script>
-// Scroll reveal
+// Logic tạo hiệu ứng trượt mượt mà (Scroll reveal) khi lướt trang
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
