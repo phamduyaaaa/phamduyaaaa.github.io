@@ -374,6 +374,7 @@
       <div class="week-toolbar">
         <button class="mini-btn primary" onclick="regenerateAll()">REGENERATE FROM STATE</button>
         <button class="mini-btn" onclick="advanceWeekManually()">SIMULATE NEXT WEEK</button>
+        <button class="mini-btn" onclick="resetSimulation()">RESET TIMELINE</button>
         <button class="mini-btn" onclick="markFocusCapstone()">FOCUS: CAPSTONE</button>
         <button class="mini-btn" onclick="markFocusRecruiter()">FOCUS: RECRUITER SIGNAL</button>
         <button class="mini-btn" onclick="saveStateAndToast('✓ SAVED')">SAVE</button>
@@ -472,133 +473,27 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-// Tự động định tuyến sang nhánh v3 để tránh xung đột với v2 cũ
 const stateRef = db.ref('robotics_mission_v3'); 
 
 const MISSION_DURATION_DAYS = 182;
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const TASKS = [
-  {
-    id:'p1_policy_runner', phase:'P1', category:'learning',
-    objective:'Production C++ real-time', deliverable:'Port HG-Dagger inference to C++ PolicyRunner',
-    metric:'1kHz loop, no dynamic allocation, benchmark latency delta', gate:'ASan clean + verbal ownership explanation',
-    artifact:'English README + benchmark.md', priority:'critical', estHours:10,
-    title:'Port HG-Dagger inference → C++ PolicyRunner class',
-    desc:'Constructor/destructor, unique_ptr ownership, fixed-rate loop, measurable latency before/after.'
-  },
-  {
-    id:'p1_executor', phase:'P1', category:'portfolio',
-    objective:'ROS2 execution model', deliverable:'rclcpp MultiThreadedExecutor + callback groups',
-    metric:'jitter measured with ros2 topic hz', gate:'thread-safe shared ownership',
-    artifact:'Design note + diagram', priority:'critical', estHours:8,
-    title:'rclcpp MultiThreadedExecutor + callback groups',
-    desc:'Integrate PolicyRunner through shared_ptr, remove hidden race conditions.'
-  },
-  {
-    id:'p1_sanitizers', phase:'P1', category:'learning',
-    objective:'Robust C++ hygiene', deliverable:'ASan/TSan on skid-steer RS485 code',
-    metric:'0 leak, 0 race, 0 warning left', gate:'every warning resolved',
-    artifact:'Sanitizer log', priority:'high', estHours:6,
-    title:'AddressSanitizer + ThreadSanitizer on RS485 C code',
-    desc:'Use tooling as interview proof, not as decoration.'
-  },
-  {
-    id:'p1_hwif', phase:'P1', category:'portfolio',
-    objective:'ROS2 hardware integration', deliverable:'custom ros2_control hardware_interface',
-    metric:'hardware can be driven through controller_manager', gate:'integration passes on device/sim',
-    artifact:'Repo module + demo clip', priority:'high', estHours:8,
-    title:'ros2_control custom hardware_interface for ESP32 / Micro-ROS',
-    desc:'Production-style actuator interface pattern with your existing Micro-ROS base.'
-  },
-  {
-    id:'p1_readme', phase:'P1', category:'recruiter',
-    objective:'Recruiter signal', deliverable:'English README for the C++ component',
-    metric:'problem → approach → metric → run steps', gate:'clear to external reader',
-    artifact:'Public repo polish', priority:'medium', estHours:3,
-    title:'English README: Problem → Approach → Metric → How to run',
-    desc:'Convert technical work into readable hiring signal.'
-  },
-  {
-    id:'p2_inference', phase:'P2', category:'learning',
-    objective:'VLA entry point', deliverable:'Run OpenVLA / LeRobot inference',
-    metric:'successful inference on sample input', gate:'understand shapes + action chunking',
-    artifact:'Run log + notes', priority:'critical', estHours:8,
-    title:'Run OpenVLA or LeRobot inference',
-    desc:'Use pretrained checkpoint before any fine-tune fantasy.'
-  },
-  {
-    id:'p2_data', phase:'P2', category:'portfolio',
-    objective:'Data engine', deliverable:'50–100 teleop episodes',
-    metric:'dataset adheres to LeRobot format', gate:'collection pipeline stable',
-    artifact:'Dataset README + metadata', priority:'critical', estHours:12,
-    title:'Collect teleop episodes (RealSense D435)',
-    desc:'This is the hidden bottleneck. No data, no model, no demo.'
-  },
-  {
-    id:'p2_lora', phase:'P2', category:'research',
-    objective:'Adaptation', deliverable:'LoRA fine-tune VLA on own data',
-    metric:'pre/post eval improvement', gate:'evaluation reproducible',
-    artifact:'training log + result chart', priority:'critical', estHours:14,
-    title:'LoRA fine-tune VLA on self-collected data',
-    desc:'Use measurable delta; otherwise it is just expensive experimentation.'
-  },
-  {
-    id:'p2_capstone', phase:'P2', category:'portfolio',
-    objective:'End-to-end demo', deliverable:'VLA → ROS2 → C++ controller → robot',
-    metric:'language command to motion succeeds', gate:'video demo stable',
-    artifact:'demo video + public repo', priority:'critical', estHours:12,
-    title:'Capstone integration: VLA → ROS2 → C++ controller → robot',
-    desc:'This is the core hiring artifact. Everything else supports it.'
-  },
-  {
-    id:'p3_foc', phase:'P3', category:'learning',
-    objective:'Mechatronics depth', deliverable:'FOC on BLDC + ESP32',
-    metric:'torque ripple comparison', gate:'current loop stable',
-    artifact:'measured plots', priority:'high', estHours:10,
-    title:'FOC on BLDC + ESP32',
-    desc:'SimpleFOC first, then your own current loop C++.'
-  },
-  {
-    id:'p3_tactile', phase:'P3', category:'research',
-    objective:'Embodied sensing', deliverable:'current sensing as observation modality',
-    metric:'action loop uses sensed feedback', gate:'integration with capstone',
-    artifact:'tech note', priority:'high', estHours:6,
-    title:'Current sensing → observation modality',
-    desc:'A small but differentiated axis for Figure/1X style work.'
-  },
-  {
-    id:'p4_resume', phase:'P4', category:'recruiter',
-    objective:'Application readiness', deliverable:'1-page resume + GitHub rewrite',
-    metric:'all pinned repos have clear English README', gate:'recruiter can scan in 60 seconds',
-    artifact:'resume.pdf + profile', priority:'critical', estHours:8,
-    title:'Resume 1 page + GitHub rewrite around capstone',
-    desc:'Move from “engineer did things” to “engineer owns a coherent story.”'
-  },
-  {
-    id:'p4_stack_notes', phase:'P4', category:'research',
-    objective:'Company targeting', deliverable:'Figure / 1X / PI stack notes',
-    metric:'1 note per company with latest paper/blog + your link', gate:'reference accuracy',
-    artifact:'company notes', priority:'critical', estHours:5,
-    title:'Research company stack and connect to capstone',
-    desc:'Search not for trivia; search for alignment.'
-  },
-  {
-    id:'p4_outreach', phase:'P4', category:'networking',
-    objective:'Warm signal', deliverable:'10 engineers outreach',
-    metric:'reply rate + feedback rate', gate:'no job ask in first message',
-    artifact:'outreach log', priority:'high', estHours:5,
-    title:'Cold outreach to engineers for feedback',
-    desc:'Use the project as the conversation anchor.'
-  },
-  {
-    id:'p4_interview', phase:'P4', category:'interview',
-    objective:'Interview conversion', deliverable:'5-minute capstone explanation',
-    metric:'natural explanation + no filler', gate:'can answer architecture questions',
-    artifact:'recorded video + script', priority:'high', estHours:4,
-    title:'Record 5-min capstone explanation',
-    desc:'Do not wait until the end. Start when artifact exists.'
-  }
+  { id:'p1_policy_runner', phase:'P1', category:'learning', objective:'Production C++ real-time', deliverable:'Port HG-Dagger inference to C++ PolicyRunner', metric:'1kHz loop, no dynamic allocation, benchmark latency delta', gate:'ASan clean + verbal ownership explanation', artifact:'English README + benchmark.md', priority:'critical', estHours:10, title:'Port HG-Dagger inference → C++ PolicyRunner class', desc:'Constructor/destructor, unique_ptr ownership, fixed-rate loop, measurable latency before/after.' },
+  { id:'p1_executor', phase:'P1', category:'portfolio', objective:'ROS2 execution model', deliverable:'rclcpp MultiThreadedExecutor + callback groups', metric:'jitter measured with ros2 topic hz', gate:'thread-safe shared ownership', artifact:'Design note + diagram', priority:'critical', estHours:8, title:'rclcpp MultiThreadedExecutor + callback groups', desc:'Integrate PolicyRunner through shared_ptr, remove hidden race conditions.' },
+  { id:'p1_sanitizers', phase:'P1', category:'learning', objective:'Robust C++ hygiene', deliverable:'ASan/TSan on skid-steer RS485 code', metric:'0 leak, 0 race, 0 warning left', gate:'every warning resolved', artifact:'Sanitizer log', priority:'high', estHours:6, title:'AddressSanitizer + ThreadSanitizer on RS485 C code', desc:'Use tooling as interview proof, not as decoration.' },
+  { id:'p1_hwif', phase:'P1', category:'portfolio', objective:'ROS2 hardware integration', deliverable:'custom ros2_control hardware_interface', metric:'hardware can be driven through controller_manager', gate:'integration passes on device/sim', artifact:'Repo module + demo clip', priority:'high', estHours:8, title:'ros2_control custom hardware_interface for ESP32 / Micro-ROS', desc:'Production-style actuator interface pattern with your existing Micro-ROS base.' },
+  { id:'p1_readme', phase:'P1', category:'recruiter', objective:'Recruiter signal', deliverable:'English README for the C++ component', metric:'problem → approach → metric → run steps', gate:'clear to external reader', artifact:'Public repo polish', priority:'medium', estHours:3, title:'English README: Problem → Approach → Metric → How to run', desc:'Convert technical work into readable hiring signal.' },
+  { id:'p2_inference', phase:'P2', category:'learning', objective:'VLA entry point', deliverable:'Run OpenVLA / LeRobot inference', metric:'successful inference on sample input', gate:'understand shapes + action chunking', artifact:'Run log + notes', priority:'critical', estHours:8, title:'Run OpenVLA or LeRobot inference', desc:'Use pretrained checkpoint before any fine-tune fantasy.' },
+  { id:'p2_data', phase:'P2', category:'portfolio', objective:'Data engine', deliverable:'50–100 teleop episodes', metric:'dataset adheres to LeRobot format', gate:'collection pipeline stable', artifact:'Dataset README + metadata', priority:'critical', estHours:12, title:'Collect teleop episodes (RealSense D435)', desc:'This is the hidden bottleneck. No data, no model, no demo.' },
+  { id:'p2_lora', phase:'P2', category:'research', objective:'Adaptation', deliverable:'LoRA fine-tune VLA on own data', metric:'pre/post eval improvement', gate:'evaluation reproducible', artifact:'training log + result chart', priority:'critical', estHours:14, title:'LoRA fine-tune VLA on self-collected data', desc:'Use measurable delta; otherwise it is just expensive experimentation.' },
+  { id:'p2_capstone', phase:'P2', category:'portfolio', objective:'End-to-end demo', deliverable:'VLA → ROS2 → C++ controller → robot', metric:'language command to motion succeeds', gate:'video demo stable', artifact:'demo video + public repo', priority:'critical', estHours:12, title:'Capstone integration: VLA → ROS2 → C++ controller → robot', desc:'This is the core hiring artifact. Everything else supports it.' },
+  { id:'p3_foc', phase:'P3', category:'learning', objective:'Mechatronics depth', deliverable:'FOC on BLDC + ESP32', metric:'torque ripple comparison', gate:'current loop stable', artifact:'measured plots', priority:'high', estHours:10, title:'FOC on BLDC + ESP32', desc:'SimpleFOC first, then your own current loop C++.' },
+  { id:'p3_tactile', phase:'P3', category:'research', objective:'Embodied sensing', deliverable:'current sensing as observation modality', metric:'action loop uses sensed feedback', gate:'integration with capstone', artifact:'tech note', priority:'high', estHours:6, title:'Current sensing → observation modality', desc:'A small but differentiated axis for Figure/1X style work.' },
+  { id:'p4_resume', phase:'P4', category:'recruiter', objective:'Application readiness', deliverable:'1-page resume + GitHub rewrite', metric:'all pinned repos have clear English README', gate:'recruiter can scan in 60 seconds', artifact:'resume.pdf + profile', priority:'critical', estHours:8, title:'Resume 1 page + GitHub rewrite around capstone', desc:'Move from “engineer did things” to “engineer owns a coherent story.”' },
+  { id:'p4_stack_notes', phase:'P4', category:'research', objective:'Company targeting', deliverable:'Figure / 1X / PI stack notes', metric:'1 note per company with latest paper/blog + your link', gate:'reference accuracy', artifact:'company notes', priority:'critical', estHours:5, title:'Research company stack and connect to capstone', desc:'Search not for trivia; search for alignment.' },
+  { id:'p4_outreach', phase:'P4', category:'networking', objective:'Warm signal', deliverable:'10 engineers outreach', metric:'reply rate + feedback rate', gate:'no job ask in first message', artifact:'outreach log', priority:'high', estHours:5, title:'Cold outreach to engineers for feedback', desc:'Use the project as the conversation anchor.' },
+  { id:'p4_interview', phase:'P4', category:'interview', objective:'Interview conversion', deliverable:'5-minute capstone explanation', metric:'natural explanation + no filler', gate:'can answer architecture questions', artifact:'recorded video + script', priority:'high', estHours:4, title:'Record 5-min capstone explanation', desc:'Do not wait until the end. Start when artifact exists.' }
 ];
 
 function defaultState(){
@@ -617,7 +512,6 @@ function defaultState(){
 
 let state = defaultState();
 
-// Tự động đồng bộ từ Firebase về Web (Nghe sự kiện realtime)
 stateRef.on('value', snapshot => {
   const data = snapshot.val();
   if (data) {
@@ -625,13 +519,11 @@ stateRef.on('value', snapshot => {
   } else {
     state = defaultState();
   }
-  // Render lại toàn bộ giao diện (có bảo vệ ô input đang gõ)
   renderAll(); 
 });
 
 function persist(){
   state.lastSavedAt = new Date().toISOString();
-  // Đẩy thẳng lên Firebase thay vì LocalStorage
   stateRef.set(state).catch(e => console.error('Save error:', e));
 }
 
@@ -662,9 +554,9 @@ function formatDuration(totalSeconds, signPrefix=''){
   return `${signPrefix}${dd}D ${String(hh).padStart(2,'0')}H ${String(mm).padStart(2,'0')}M ${String(ss).padStart(2,'0')}S`;
 }
 
-function phaseIndex(p){ return {P1:1,P2:2,P3:3,P4:4}[p] || 99; }
-
-function weeksSinceStart(){
+// HÀM QUAN TRỌNG: Sửa lỗi lấy nhầm thời gian thực tế
+function getCurrentWeek(){
+  if (state.currentWeekOverride) return state.currentWeekOverride;
   const now = new Date();
   const {start} = computeDeadlineFromStart(state.startDateISO || todayISO());
   const diffDays = Math.floor((now - start) / (1000*60*60*24));
@@ -680,15 +572,11 @@ function currentPhaseByWeek(week){
 
 function taskDone(id){ return !!state.tasks[id]; }
 
-function incompleteTasks(){
-  return TASKS.filter(t => !taskDone(t.id));
-}
+function incompleteTasks(){ return TASKS.filter(t => !taskDone(t.id)); }
 
 function completedCount(){ return TASKS.filter(t => taskDone(t.id)).length; }
 
-function activeTasksForPhase(phase){
-  return TASKS.filter(t => t.phase === phase);
-}
+function activeTasksForPhase(phase){ return TASKS.filter(t => t.phase === phase); }
 
 function phaseCompletion(phase){
   const all = activeTasksForPhase(phase);
@@ -696,13 +584,9 @@ function phaseCompletion(phase){
   return all.length ? Math.round(done / all.length * 100) : 0;
 }
 
-function blockersText(){
-  return (state.blocker || '').trim();
-}
+function blockersText(){ return (state.blocker || '').trim(); }
 
-function energyLevel(){
-  return Math.max(1, Math.min(5, Number(state.energy || 3)));
-}
+function energyLevel(){ return Math.max(1, Math.min(5, Number(state.energy || 3))); }
 
 function findMissingSignalAreas(){
   const gaps = [];
@@ -719,13 +603,14 @@ function readinessScore(){
   const artifact = Math.min(100, Math.round((completedCount()/TASKS.length)*100));
   const narrative = Math.min(100, Math.round(((state.notes||'').length/800)*100));
   const signal = Math.min(100, Math.round((TASKS.filter(t => ['recruiter','networking','interview'].includes(t.category) && taskDone(t.id)).length / 4) * 100));
-  const consistency = Math.min(100, Math.round((weeksSinceStart()/26) * 100));
+  const consistency = Math.min(100, Math.round((getCurrentWeek()/26) * 100));
   const total = Math.round((artifact*0.35) + (narrative*0.2) + (signal*0.25) + (consistency*0.2));
   return {artifact, narrative, signal, consistency, total};
 }
 
+// HÀM QUAN TRỌNG: Sửa lỗi Focus không được cộng điểm
 function rankTasksForNextActions(){
-  const week = weeksSinceStart();
+  const week = getCurrentWeek(); // Lấy theo tuần giả lập
   const phase = currentPhaseByWeek(week);
   const gaps = findMissingSignalAreas();
   const missing = incompleteTasks();
@@ -740,6 +625,11 @@ function rankTasksForNextActions(){
     score += gaps.includes('narrative') && t.category === 'recruiter' ? 20 : 0;
     score += gaps.includes('signal') && ['recruiter','networking','interview'].includes(t.category) ? 25 : 0;
     score += energyLevel() <= 2 && t.estHours <= 6 ? 15 : 0;
+    
+    // Đã tiêm biến state.focus vào để cộng điểm ưu tiên
+    if (state.focus === 'recruiter' && ['recruiter', 'networking', 'interview'].includes(t.category)) score += 50;
+    if (state.focus === 'capstone' && ['portfolio', 'learning'].includes(t.category)) score += 50;
+
     score -= t.estHours * 2;
     return {...t, score};
   });
@@ -750,7 +640,7 @@ function rankTasksForNextActions(){
 
 function generateNextActions(){
   const blockers = blockersText();
-  const week = weeksSinceStart();
+  const week = getCurrentWeek();
   const phase = currentPhaseByWeek(week);
   const energy = energyLevel();
   const ranked = rankTasksForNextActions();
@@ -817,7 +707,7 @@ function generateNextActions(){
 }
 
 function generatedWeekPlan(){
-  const week = state.currentWeekOverride || weeksSinceStart();
+  const week = getCurrentWeek();
   const phase = currentPhaseByWeek(week);
   const energy = energyLevel();
   const missing = findMissingSignalAreas();
@@ -875,8 +765,8 @@ function renderNextActions(){
   `).join('');
 
   document.getElementById('execution-signal').textContent =
-    `Current week ${weeksSinceStart()} · phase ${currentPhaseByWeek(weeksSinceStart())} · energy ${energyLevel()}/5 · ${cards.length} next actions generated from live state.`;
-  document.getElementById('focus-pill').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter signal' : state.focus === 'capstone' ? 'Capstone' : state.focus === 'learning' ? 'Learning' : 'General'}`;
+    `Current week ${getCurrentWeek()} · phase ${currentPhaseByWeek(getCurrentWeek())} · energy ${energyLevel()}/5 · ${cards.length} next actions generated.`;
+  document.getElementById('focus-pill').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter signal' : state.focus === 'capstone' ? 'Capstone' : 'General'}`;
   document.getElementById('blocker-pill').textContent = `Blocker: ${blockersText() ? 'present' : 'none'}`;
 }
 
@@ -1001,33 +891,25 @@ function updateScores(){
 function updateSummary(){
   document.getElementById('stat-completed').textContent = completedCount();
   document.getElementById('stat-total').textContent = TASKS.length;
-  document.getElementById('stat-phase').textContent = currentPhaseByWeek(weeksSinceStart());
+  document.getElementById('stat-phase').textContent = currentPhaseByWeek(getCurrentWeek());
 }
 
-// BẢO VỆ CON TRỎ (Cursor Protection): Không ghi đè nếu người dùng đang gõ
 function applyStateToInputs(){
   document.getElementById('start-date-input').value = state.startDateISO || todayISO();
   
   const notesArea = document.getElementById('notes-area');
-  if (document.activeElement !== notesArea) {
-    notesArea.value = state.notes || '';
-  }
+  if (document.activeElement !== notesArea) notesArea.value = state.notes || '';
 
   const blockerInput = document.getElementById('blocker-input');
-  if (document.activeElement !== blockerInput) {
-    blockerInput.value = state.blocker || '';
-  }
+  if (document.activeElement !== blockerInput) blockerInput.value = state.blocker || '';
 
   const reviewInput = document.getElementById('review-input');
-  if (document.activeElement !== reviewInput) {
-    reviewInput.value = state.weeklyReview || '';
-  }
+  if (document.activeElement !== reviewInput) reviewInput.value = state.weeklyReview || '';
 
   document.getElementById('energy-input').value = energyLevel();
   document.getElementById('energy-label').textContent = `Energy: ${energyLevel()}/5`;
 }
 
-// Đồng bộ từ Giao diện (thẻ Input) ngược lại State trước khi đẩy lên Firebase
 function syncStateFromInputs(){
   state.notes = document.getElementById('notes-area').value;
   state.blocker = document.getElementById('blocker-input').value;
@@ -1045,21 +927,30 @@ function renderAll(){
   updateSummary();
   updateTimer();
   updateNav();
-  // KHÔNG gọi persist() ở đây để tránh lặp vô hạn (Infinite Loop) với Firebase
 }
 
-// Các hàm tác động của người dùng (Có gọi persist để lưu lên Cloud)
 function regenerateAll(){ syncStateFromInputs(); persist(); renderAll(); toast('✓ REGENERATED'); }
 function regenerateWeek(){ syncStateFromInputs(); persist(); renderWeekly(); renderNextActions(); updateSummary(); updateScores(); toast('✓ WEEK REGENERATED'); }
+
 function advanceWeekManually(){
   syncStateFromInputs();
-  state.currentWeekOverride = (state.currentWeekOverride || weeksSinceStart()) + 1;
+  state.currentWeekOverride = getCurrentWeek() + 1;
   persist();
   renderAll();
-  toast('✓ WEEK ADVANCED');
+  toast(`✓ BƯỚC SANG TUẦN ${state.currentWeekOverride}`);
 }
-function markFocusCapstone(){ state.focus='capstone'; persist(); renderNextActions(); toast('✓ FOCUS SET'); }
-function markFocusRecruiter(){ state.focus='recruiter'; persist(); renderNextActions(); toast('✓ FOCUS SET'); }
+
+function resetSimulation(){
+  syncStateFromInputs();
+  state.currentWeekOverride = null;
+  persist();
+  renderAll();
+  toast('✓ ĐÃ RESET VỀ TUẦN HIỆN TẠI');
+}
+
+function markFocusCapstone(){ state.focus='capstone'; persist(); renderNextActions(); renderWeekly(); toast('✓ FOCUS: CAPSTONE'); }
+function markFocusRecruiter(){ state.focus='recruiter'; persist(); renderNextActions(); renderWeekly(); toast('✓ FOCUS: RECRUITER'); }
+
 function onEnergyChange(val){ 
   state.energy = Number(val); 
   document.getElementById('energy-label').textContent = `Energy: ${state.energy}/5`; 
@@ -1068,6 +959,7 @@ function onEnergyChange(val){
   renderNextActions(); 
   updateScores(); 
 }
+
 function onStartDateChange(){
   const val = document.getElementById('start-date-input').value;
   if(!val) return;
@@ -1076,7 +968,9 @@ function onStartDateChange(){
   renderAll();
   toast('✓ START DATE UPDATED');
 }
+
 function togglePhase(id){ document.getElementById(id).classList.toggle('open'); }
+
 function toggleTask(el){
   const id = el.getAttribute('data-id');
   const newDone = !el.classList.contains('done');
@@ -1091,15 +985,18 @@ function toggleTask(el){
   updateScores();
   toast('✓ TASK UPDATED');
 }
+
 function renderSummaryOnly(){
   updateSummary();
   updateTimer();
 }
+
 function saveNotes(){
   syncStateFromInputs();
   persist();
-  toast('✓ NOTES SAVED');
+  toast('✓ SAVED LÊN CLOUD');
 }
+
 function clearNotes(){
   if(!confirm('Xóa toàn bộ notes?')) return;
   state.notes = '';
@@ -1107,6 +1004,7 @@ function clearNotes(){
   persist();
   toast('✓ CLEARED');
 }
+
 function exportNotes(){
   const blob = new Blob([document.getElementById('notes-area').value], {type:'text/plain'});
   const a = document.createElement('a');
@@ -1114,23 +1012,25 @@ function exportNotes(){
   a.download = 'mission-control-weekly-log.txt';
   a.click();
 }
+
 function switchTab(id, btn){
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
 }
+
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 1700);
 }
+
 function escapeHtml(str){
   return String(str ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
 
-// Bắt sự kiện phím tắt (Ctrl + S)
 document.addEventListener('keydown', e => {
   if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's'){
     e.preventDefault(); saveNotes();
@@ -1142,7 +1042,6 @@ setInterval(() => {
   updateTimer();
 }, 1000);
 
-// Chạy 1 lần render đồng bộ lúc mới load để UI không bị trắng
 renderAll();
 </script>
 </body>
