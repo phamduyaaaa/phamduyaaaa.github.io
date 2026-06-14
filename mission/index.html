@@ -494,7 +494,7 @@ let syncTimeout = null;
 
 stateRef.on('value', snapshot => {
   const data = snapshot.val();
-  if (data) state = {...defaultState(), ...data, tasks:{...(data.tasks||{})}};
+  if (data) state = { ...defaultState(), ...data, tasks: { ...(data.tasks || {}) } };
   else state = defaultState();
   renderAll(); 
 });
@@ -723,7 +723,7 @@ function renderWeekly(){
   document.getElementById('stat-week').textContent = `W${data.week}`;
   document.getElementById('weekly-grid').innerHTML = DAYS.map((d, i) => `
     <div class="day-col">
-      <div class="day-label ${i===new Date().getDay()-1 ? 'today' : ''}">${d}</div>
+      <div class="day-label ${i===((new Date().getDay()+6)%7) ? 'today' : ''}">${d}</div>
       ${(data.plan[i] || []).map(item => `<div class="day-block ${item.kind}"><div class="dtitle">${escapeHtml(item.title)}</div><div>${escapeHtml(item.body)}</div></div>`).join('')}
     </div>
   `).join('');
@@ -826,12 +826,16 @@ function updateNav(){
 
 function updateScores(){
   const s = readinessScore();
-  document.getElementById('score-artifact').textContent = s.artifact; document.getElementById('score-narrative').textContent = s.narrative;
-  document.getElementById('score-signal').textContent = s.signal; document.getElementById('score-consistency').textContent = s.consistency;
+  document.getElementById('score-artifact').textContent = s.artifact; document.getElementById('score-narrative').textContent = s.narrative; document.getElementById('score-signal').textContent = s.signal; document.getElementById('score-consistency').textContent = s.consistency;
   document.getElementById('bar-artifact').style.width = s.artifact + '%'; document.getElementById('bar-narrative').style.width = s.narrative + '%';
   document.getElementById('bar-signal').style.width = s.signal + '%'; document.getElementById('bar-consistency').style.width = s.consistency + '%';
   document.getElementById('score-total').textContent = `Score ${s.total}/100`;
-  document.getElementById('health-pill').textContent = s.total >= 75 ? 'Healthy' : s.total >= 50 ? 'At risk' : 'Critical';
+  {
+  const healthPill = document.getElementById('health-pill');
+  const healthText = s.total >= 75 ? 'Healthy' : s.total >= 50 ? 'At risk' : 'Critical';
+  healthPill.textContent = healthText;
+  healthPill.className = 'pill ' + (s.total >= 75 ? 'type-networking' : s.total >= 50 ? 'type-portfolio' : 'type-unblock');
+}
 }
 
 function updateSummary(){
