@@ -1411,7 +1411,7 @@
       <div class="elon-banner">
         <div class="elon-icon">📝</div>
         <div class="elon-text">
-          Ghi chú hàng ngày. Daily log, blockers, insights, questions. <strong>Dữ liệu này được lưu local trong browser của bạn</strong> — không mất khi reload trang.
+          Ghi chú hàng ngày. Daily log, blockers, insights, questions. <strong>Dữ liệu này được đồng bộ qua cloud</strong> — ùng chung cho mọi thiết bị, không mất khi reload trang.
         </div>
       </div>
 
@@ -1441,22 +1441,30 @@ Ngày mai cần làm:
 <!-- TOAST -->
 <div id="toast">✓ SAVED</div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-// ── STATE ──
-const STORAGE_KEY = 'robotics_mission_v1';
+// ── FIREBASE CONFIG — THAY BẰNG CONFIG CỦA BẠN ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDNWayygSWU9IuyrEvyCXKqdO7VOUuaY2Q",
+  authDomain: "robotics-mission.firebaseapp.com",
+  databaseURL: "https://robotics-mission-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "robotics-mission",
+  storageBucket: "robotics-mission.firebasestorage.app",
+  messagingSenderId: "1036228218743",
+  appId: "1:1036228218743:web:291e9864146edcec24db72"
+};
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { tasks: {}, notes: '' };
-  } catch(e) { return { tasks: {}, notes: '' }; }
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const stateRef = db.ref('robotics_mission_v1');
+
+let state = { tasks: {}, notes: '' };
+
+function saveState(newState) {
+  state = newState;
+  stateRef.set(state).catch(e => console.error('Save error:', e));
 }
-
-function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
-}
-
-let state = loadState();
 
 // ── DATE & COUNTDOWN ──
 function initDateTime() {
@@ -1472,7 +1480,6 @@ function initDateTime() {
     year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // Live countdown
   function tick() {
     const now2 = new Date();
     const diff = deadline - now2;
@@ -1502,8 +1509,9 @@ function togglePhase(id) {
 // ── TASKS ──
 function toggleTask(el) {
   const id = el.getAttribute('data-id');
-  el.classList.toggle('done');
-  state.tasks[id] = el.classList.contains('done');
+  const newDone = !el.classList.contains('done');
+  el.classList.toggle('done', newDone);
+  state.tasks[id] = newDone;
   saveState(state);
   updateProgress();
   showToast('✓ TASK UPDATED');
@@ -1521,7 +1529,6 @@ function updateProgress() {
   document.getElementById('op-pct').textContent = pct + '%';
   document.getElementById('op-fill').style.width = pct + '%';
 
-  // Update current phase stat
   const phases = ['phase1','phase2','phase3','phase4','phase5'];
   let currentPhase = 'P5';
   for(let i = 0; i < phases.length; i++) {
@@ -1535,14 +1542,19 @@ function updateProgress() {
   document.getElementById('stat-phase').textContent = currentPhase;
 }
 
-function restoreTasks() {
-  Object.entries(state.tasks).forEach(([id, done]) => {
-    if(done) {
-      const el = document.querySelector(`[data-id="${id}"]`);
-      if(el) el.classList.add('done');
-    }
+function applyTasksFromState() {
+  document.querySelectorAll('.task-check').forEach(el => {
+    const id = el.getAttribute('data-id');
+    el.classList.toggle('done', !!(state.tasks && state.tasks[id]));
   });
   updateProgress();
+}
+
+function applyNotesFromState() {
+  const area = document.getElementById('notes-area');
+  if(document.activeElement !== area) {
+    area.value = state.notes || '';
+  }
 }
 
 // ── NOTES ──
@@ -1585,12 +1597,21 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── INIT ──
+// ── REALTIME SYNC: tự động cập nhật khi data đổi ──
+stateRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  if(data) {
+    state = data;
+    if(!state.tasks) state.tasks = {};
+    if(state.notes === undefined) state.notes = '';
+    applyTasksFromState();
+    applyNotesFromState();
+  } else {
+    saveState({ tasks: {}, notes: '' });
+  }
+});
+
 initDateTime();
-restoreTasks();
-if(state.notes) {
-  document.getElementById('notes-area').value = state.notes;
-}
 </script>
 </body>
 </html>
