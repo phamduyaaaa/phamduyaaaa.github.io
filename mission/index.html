@@ -137,7 +137,7 @@
   .task-desc{font-size:11px; color:var(--text3); line-height:1.55}
   .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px}
   
-  /* --- HỆ THỐNG MÀU SẮC CATEGORY (MỚI) --- */
+  /* --- HỆ THỐNG MÀU SẮC CATEGORY --- */
   .pill{font-family:var(--mono); font-size:9px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text2); background:var(--surface3); font-weight:600; letter-spacing: 0.5px}
   .type-portfolio { border-color: rgba(0,229,255,0.3) !important; color: var(--accent) !important; background: rgba(0,229,255,0.08) !important; }
   .type-learning, .type-research { border-color: rgba(124,58,237,0.3) !important; color: var(--accent2) !important; background: rgba(124,58,237,0.08) !important; }
@@ -146,7 +146,7 @@
   .type-interview, .type-unblock { border-color: rgba(239,68,68,0.3) !important; color: var(--danger) !important; background: rgba(239,68,68,0.08) !important; }
   .type-recovery, .type-habit { border-color: rgba(142,163,184,0.3) !important; color: var(--text2) !important; background: rgba(142,163,184,0.08) !important; }
 
-  /* MÀU ĐƯỜNG KẺ THẺ ACTION */
+  /* MÀU ĐƯỜNG KẺ THẺ ACTION CON */
   .card-portfolio::before { background: var(--accent) !important; }
   .card-learning::before, .card-research::before { background: var(--accent2) !important; }
   .card-recruiter::before { background: var(--accent3) !important; }
@@ -160,27 +160,57 @@
   .tag-low{color:var(--text2);}
 
   .task-check.done + .task-content .task-title{color:var(--text3); text-decoration:line-through}
-  .card-stack{display:grid; gap:10px}
+  .card-stack{display:grid; gap:16px} /* Tăng gap giữa các cụm Task */
+  
+  /* --- OBJECTIVE TREE GRAPH STYLES --- */
+  .objective-group {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .objective-header {
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .objective-title-wrapper {
+    flex: 1;
+  }
+  .objective-title {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+  .objective-meta {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .objective-actions-list {
+    padding: 12px 16px;
+    display: grid;
+    gap: 10px;
+  }
+  
   .action-card{
-    position:relative; overflow:hidden; padding:12px 14px 12px 17px; border-radius:8px;
+    position:relative; overflow:hidden; padding:12px 14px 12px 17px; border-radius:6px;
     background:var(--surface); border:1px solid var(--border); transition: border-color 0.2s;
   }
   .action-card:hover{ border-color: var(--border2); }
   .action-card::before{content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent)}
+  
   .action-top{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px}
   .action-priority{font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--text3)}
-  .action-title{font-family:var(--sans); font-size:14px; font-weight:700; margin-bottom:6px; line-height: 1.3}
-  
-  /* LABEL THỂ HIỆN PLAYBOOK OBJECTIVE */
-  .action-objective {
-    font-family: var(--mono); font-size: 9px; color: var(--text3);
-    margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border2);
-    letter-spacing: 0.5px;
-  }
-  .action-objective span { color: var(--text); font-weight: 700; }
-
+  .action-title{font-family:var(--sans); font-size:13px; font-weight:600; margin-bottom:4px; line-height: 1.4}
   .action-detail{font-size:11px; color:var(--text2); line-height:1.55}
-  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
   .action-time{font-family:var(--mono); font-size:10px; color:var(--text3)}
   
   .week-toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
@@ -406,9 +436,12 @@
         <button class="mini-btn" onclick="markFocusRecruiter()">FOCUS: RECRUITER SIGNAL</button>
         <button class="mini-btn" onclick="saveStateAndToast('✓ SAVED')">SAVE</button>
       </div>
-      <div class="section-title">AUTO-GENERATED NEXT ACTIONS</div>
+      
+      <div class="section-title">OBJECTIVE GRAPH (NEXT ACTIONS)</div>
+      <div class="week-note" id="next-actions-note" style="margin-top:0; margin-bottom:16px;">
+        Hệ thống đã nhóm các hành động nhỏ vào trong Task Playbook (Objective) tương ứng. Giải quyết triệt để từng nhánh một.
+      </div>
       <div class="card-stack" id="next-actions-container"></div>
-      <div class="week-note" id="next-actions-note">Next actions được tạo từ: incomplete critical tasks + blocker text + energy + recruiter gap + current week. Không còn là danh sách chết.</div>
     </div>
 
     <div class="tab-panel" id="tab-weekly">
@@ -427,10 +460,8 @@
         <table>
           <thead>
             <tr>
-              <th>Objective</th>
-              <th>Deliverable</th>
-              <th>Metric</th>
-              <th>Gate</th>
+              <th>Objective (Task)</th>
+              <th>Gate (Quality Check)</th>
               <th>Recruiter Artifact</th>
               <th>Category</th>
             </tr>
@@ -482,7 +513,6 @@ Next week:
 
 <div class="toast" id="toast">✓ SAVED</div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
@@ -500,7 +530,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const stateRef = db.ref('robotics_mission_v3'); 
+const stateRef = db.ref('robotics_mission_v4'); // Cập nhật sang v4
 
 const MISSION_DURATION_DAYS = 182;
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -597,11 +627,8 @@ function currentPhaseByWeek(week){
 }
 
 function taskDone(id){ return !!state.tasks[id]; }
-
 function incompleteTasks(){ return TASKS.filter(t => !taskDone(t.id)); }
-
 function completedCount(){ return TASKS.filter(t => taskDone(t.id)).length; }
-
 function activeTasksForPhase(phase){ return TASKS.filter(t => t.phase === phase); }
 
 function phaseCompletion(phase){
@@ -611,7 +638,6 @@ function phaseCompletion(phase){
 }
 
 function blockersText(){ return (state.blocker || '').trim(); }
-
 function energyLevel(){ return Math.max(1, Math.min(5, Number(state.energy || 3))); }
 
 function findMissingSignalAreas(){
@@ -662,78 +688,83 @@ function rankTasksForNextActions(){
   return scored;
 }
 
-function generateNextActions(){
+// HÀM QUAN TRỌNG: TẠO GRAPH OBJECTIVE -> ACTIONS
+function generateObjectiveGraph(){
   const blockers = blockersText();
-  const week = getCurrentWeek();
-  const phase = currentPhaseByWeek(week);
   const energy = energyLevel();
   const ranked = rankTasksForNextActions();
-  const top = ranked.slice(0, 3);
-
-  const cards = [];
+  const missing = findMissingSignalAreas();
+  
+  // Lấy ra 2 Task gốc (Objective) quan trọng nhất
+  const topObjectives = ranked.slice(0, 2);
+  
+  const graph = [];
+  
   if(blockers){
-    cards.push({
-      priority:'#0 — UNBLOCK',
-      title:'Giải blocker hiện tại trước khi nhận thêm việc',
-      detail:blockers,
-      time:'24h',
-      type:'unblock',
-      objective:'System Unblocking'
+    graph.push({
+      isBlocker: true,
+      objective: "HỆ THỐNG BỊ CHẶN (BLOCKER)",
+      phase: "URGENT",
+      category: "unblock",
+      actions: [{
+        title: 'Tháo gỡ Blocker ngay lập tức',
+        detail: blockers,
+        time: '24h',
+        type: 'unblock'
+      }]
     });
   }
 
-  top.forEach((t, idx) => {
-    cards.push({
-      priority:`#${idx+1} — ${t.phase}`,
-      title:t.title,
-      detail:`${t.desc} | Metric: ${t.metric}. Gate: ${t.gate}.`,
-      time:`${Math.max(1, Math.round(t.estHours/2))}–${t.estHours}h`,
-      type:t.category,
-      objective:t.objective
+  topObjectives.forEach((obj, idx) => {
+    // Chẻ nhỏ Task gốc thành 2-3 Action con
+    let actions = [];
+    if(obj.category === 'learning' || obj.category === 'research') {
+        actions.push({ title: `Đọc tài liệu / Source code cho: ${obj.title}`, detail: 'Chỉ đọc những phần cần thiết. Không học lan man.', time: '1–2h', type: obj.category });
+        actions.push({ title: 'Chạy thử nghiệm (Prototype)', detail: `Thử nghiệm khái niệm: ${obj.objective}`, time: '2–4h', type: obj.category });
+    } else if(obj.category === 'portfolio') {
+        actions.push({ title: `Setup môi trường & Khung code cho: ${obj.title}`, detail: 'Tạo class, định nghĩa interface, config file.', time: '1–2h', type: obj.category });
+        actions.push({ title: `Implement logic cốt lõi & Verify Gate`, detail: `Gate bắt buộc: ${obj.gate}`, time: '3–5h', type: obj.category });
+    } else {
+        actions.push({ title: `Draft nội dung cho: ${obj.title}`, detail: 'Liệt kê các ý chính cần có.', time: '1h', type: obj.category });
+        actions.push({ title: `Review & Đóng gói Artifact`, detail: `Artifact cần có: ${obj.artifact}`, time: '1–2h', type: obj.category });
+    }
+
+    graph.push({
+      isBlocker: false,
+      objective: obj.title,
+      phase: obj.phase,
+      category: obj.category,
+      priorityLabel: `#${idx+1} PRIORITY`,
+      actions: actions
     });
   });
 
-  const missing = findMissingSignalAreas();
+  // System Tasks (Gộp các task duy trì hệ thống)
+  let sysActions = [];
   if(missing.includes('narrative')){
-    cards.push({
-      priority:'#N — RECRUITER',
-      title:'Viết / sửa English narrative cho project',
-      detail:'Một commit hoặc một note không đủ. Cần biến kết quả kỹ thuật thành câu chuyện scan được trong 60 giây.',
-      time:'30–60m',
-      type:'recruiter',
-      objective:'Application readiness / Narrative'
-    });
+      sysActions.push({ title: 'Cập nhật English Narrative', detail: 'Chuyển hóa kết quả kỹ thuật sang ngôn ngữ tuyển dụng.', time: '30–60m', type: 'recruiter' });
   }
   if(missing.includes('signal')){
-    cards.push({
-      priority:'#N+1 — OUTREACH',
-      title:'Gửi 3–5 feedback messages cho engineers/recruiters',
-      detail:'Không xin việc trong tin đầu. Chỉ xin phản hồi, context, và tín hiệu thị trường.',
-      time:'30m',
-      type:'networking',
-      objective:'Warm signal / Outreach'
-    });
+      sysActions.push({ title: 'Warm Outreach', detail: 'Gửi 3 feedback messages trên LinkedIn.', time: '30m', type: 'networking' });
   }
   if(energy <= 2){
-    cards.push({
-      priority:'#RECOVER — LOW ENERGY',
-      title:'Chuyển sang review, note, cleanup, or merge',
-      detail:'Không ép deep work khi năng lượng thấp. Thực hiện task ngắn nhưng đóng tín hiệu.',
-      time:'20–45m',
-      type:'recovery',
-      objective:'Anti-Burnout / Sustain'
-    });
+      sysActions.push({ title: 'Low Energy Cleanup', detail: 'Sắp xếp lại note, dọn dẹp code rác, nghỉ ngơi.', time: '20–45m', type: 'recovery' });
   } else {
-    cards.push({
-      priority:'#HABIT — CONSISTENCY',
-      title:'1 commit có ý nghĩa + 1 dòng weekly log',
-      detail:'Mỗi tuần phải xuất ra một artifact có thể đưa cho recruiter đọc ngay.',
-      time:'15m',
-      type:'habit',
-      objective:'Consistency & Logging'
-    });
+      sysActions.push({ title: 'Consistency Check-in', detail: '1 commit có ý nghĩa + 1 dòng weekly log.', time: '15m', type: 'habit' });
   }
-  return cards;
+
+  if(sysActions.length > 0) {
+      graph.push({
+          isBlocker: false,
+          objective: "DUY TRÌ TÍN HIỆU TUYỂN DỤNG (SYSTEM)",
+          phase: "HABIT",
+          category: "habit",
+          priorityLabel: "MAINTENANCE",
+          actions: sysActions
+      });
+  }
+
+  return graph;
 }
 
 function generatedWeekPlan(){
@@ -779,24 +810,38 @@ function generatedWeekPlan(){
   return {week, phase, plan, extra, energy};
 }
 
+// RENDER RA GIAO DIỆN CÂY THƯ MỤC
 function renderNextActions(){
-  const cards = generateNextActions();
+  const graph = generateObjectiveGraph();
   const root = document.getElementById('next-actions-container');
-  root.innerHTML = cards.map(c => `
-    <div class="action-card card-${c.type}">
-      <div class="action-top">
-        <div class="action-priority">${escapeHtml(c.priority)}</div>
-        <div class="pill type-${c.type}">${escapeHtml(c.type.toUpperCase())}</div>
+  
+  root.innerHTML = graph.map(group => `
+    <div class="objective-group">
+      <div class="objective-header">
+        <div class="objective-title-wrapper">
+          <div class="action-priority" style="margin-bottom:4px">${escapeHtml(group.isBlocker ? '#0 — URGENT' : group.priorityLabel)}</div>
+          <div class="objective-title">${escapeHtml(group.objective)}</div>
+          <div class="objective-meta">Phase: ${escapeHtml(group.phase)}</div>
+        </div>
+        <div class="pill type-${group.category}">${escapeHtml(group.category.toUpperCase())}</div>
       </div>
-      <div class="action-title">${escapeHtml(c.title)}</div>
-      <div class="action-objective">↳ OBJECTIVE: <span>${escapeHtml(c.objective)}</span></div>
-      <div class="action-detail">${escapeHtml(c.detail)}</div>
-      <div class="action-footer"><span class="action-time">⏱ ${escapeHtml(c.time)}</span></div>
+      <div class="objective-actions-list">
+        ${group.actions.map(a => `
+          <div class="action-card card-${a.type}">
+            <div class="action-title">${escapeHtml(a.title)}</div>
+            <div class="action-detail">${escapeHtml(a.detail)}</div>
+            <div class="action-footer">
+              <span class="pill type-${a.type}">${escapeHtml(a.type.toUpperCase())}</span>
+              <span class="action-time">⏱ ${escapeHtml(a.time)}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `).join('');
 
   document.getElementById('execution-signal').textContent =
-    `Current week ${getCurrentWeek()} · phase ${currentPhaseByWeek(getCurrentWeek())} · energy ${energyLevel()}/5 · ${cards.length} next actions generated.`;
+    `Current week ${getCurrentWeek()} · phase ${currentPhaseByWeek(getCurrentWeek())} · energy ${energyLevel()}/5`;
   document.getElementById('focus-pill').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter signal' : state.focus === 'capstone' ? 'Capstone' : 'General'}`;
   document.getElementById('blocker-pill').textContent = `Blocker: ${blockersText() ? 'present' : 'none'}`;
 }
@@ -824,8 +869,6 @@ function renderPlaybook(){
   root.innerHTML = TASKS.map(t => `
     <tr>
       <td><strong style="color:var(--text)">${escapeHtml(t.objective)}</strong><div class="small">${escapeHtml(t.title)}</div></td>
-      <td>${escapeHtml(t.deliverable)}</td>
-      <td>${escapeHtml(t.metric)}</td>
       <td>${escapeHtml(t.gate)}</td>
       <td>${escapeHtml(t.artifact)}</td>
       <td><span class="pill type-${t.category}">${escapeHtml(t.category.toUpperCase())}</span></td>
