@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MISSION CONTROL — Embodied AI Engineer (Figure / 1X / PI)</title>
+<title>MISSION CONTROL — Embodied AI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500&display=swap');
 
   :root {
     --bg: #080c12;
@@ -39,792 +39,243 @@
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,229,255,0.015) 2px,
-      rgba(0,229,255,0.015) 4px
-    );
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px);
     pointer-events: none;
     z-index: 9999;
   }
 
-  /* ── TOP NAV ── */
+  /* ── NAV ── */
   nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 28px;
+    padding: 0 20px;
     border-bottom: 1px solid var(--border);
-    background: rgba(8,12,18,0.95);
+    background: rgba(8,12,18,0.97);
     backdrop-filter: blur(12px);
     position: sticky; top: 0; z-index: 100;
+    height: 42px;
   }
-
-  .nav-logo {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  .nav-status {
-    display: flex; gap: 20px; align-items: center;
-  }
-
+  .nav-logo { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 3px; }
+  .nav-status { display: flex; gap: 14px; align-items: center; }
   .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--success);
-    box-shadow: 0 0 8px var(--success);
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 6px var(--success);
     animation: pulse 2s infinite;
   }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .nav-date { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .nav-date {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text3);
-    letter-spacing: 1px;
-  }
-
-  /* ── HEADER HERO ── */
+  /* ── HERO ── */
   .hero {
-    padding: 48px 28px 36px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
-
   .hero::after {
     content: 'FIGURE\A1X\API';
     white-space: pre;
-    position: absolute;
-    right: -10px; top: 50%;
-    transform: translateY(-50%);
-    font-family: var(--mono);
-    font-size: 70px;
-    font-weight: 700;
-    color: rgba(0,229,255,0.04);
-    letter-spacing: -2px;
-    pointer-events: none;
-    line-height: 1.1;
-    text-align: right;
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    font-family: var(--mono); font-size: 50px; font-weight: 700;
+    color: rgba(0,229,255,0.03); pointer-events: none;
+    line-height: 1.1; text-align: right;
   }
-
-  .hero-eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .hero-title {
-    font-family: var(--sans);
-    font-size: clamp(28px, 5vw, 48px);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -1px;
-    margin-bottom: 12px;
-  }
-
+  .hero-eyebrow { font-family: var(--mono); font-size: 9px; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
+  .hero-title { font-family: var(--sans); font-size: clamp(18px, 3vw, 28px); font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; }
   .hero-title span { color: var(--accent); }
 
-  .hero-sub {
-    font-size: 14px;
-    color: var(--text2);
-    max-width: 560px;
-    line-height: 1.7;
-  }
-
-  /* ── GRID LAYOUT ── */
-  .main {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 0;
-    min-height: calc(100vh - 140px);
-  }
+  /* ── LAYOUT ── */
+  .main { display: grid; grid-template-columns: 264px 1fr; min-height: calc(100vh - 98px); }
 
   /* ── SIDEBAR ── */
-  .sidebar {
-    border-right: 1px solid var(--border);
-    padding: 24px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+  .sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .sidebar-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .s-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
 
-  .sidebar-section {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .section-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  /* ── MISSION CLOCK ── */
-  .mission-clock {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 16px;
-  }
-
-  .clock-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-
+  /* CLOCK */
+  .mission-clock { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 12px; }
+  .clock-lbl { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; margin-bottom: 4px; }
   #countdown-display {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 1px;
-    text-shadow: 0 0 20px rgba(0,229,255,0.4);
-    word-break: break-all;
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
+    color: var(--accent); text-shadow: 0 0 14px rgba(0,229,255,0.4);
+    word-break: break-all; line-height: 1.3;
   }
-
-  .clock-sub {
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 6px;
-    line-height: 1.6;
-  }
-
-  .clock-elapsed {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--success);
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    word-break: break-all;
-  }
-
-  .clock-elapsed span { color: var(--text3); }
-
-  .start-date-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
-
-  .start-date-row label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-
+  .clock-row { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 5px; }
+  .clock-row span { color: var(--text2); }
+  .clock-row.elapsed span { color: var(--success); }
+  .start-date-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .start-date-row label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; }
   .start-date-row input[type="date"] {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 6px;
-    outline: none;
-    color-scheme: dark;
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 3px; color: var(--text); font-family: var(--mono);
+    font-size: 10px; padding: 3px 5px; outline: none; color-scheme: dark;
   }
+  .start-date-row input:focus { border-color: var(--accent); }
 
-  .start-date-row input[type="date"]:focus { border-color: var(--accent); }
+  /* SKILL / GAP MATRIX — merged */
+  .sgm-row { display: flex; align-items: center; gap: 0; margin-bottom: 9px; }
+  .sgm-row:last-child { margin-bottom: 0; }
+  .sgm-icon { font-size: 9px; flex-shrink: 0; width: 16px; line-height: 1; }
+  .sgm-info { flex: 1; min-width: 0; }
+  .sgm-name { font-size: 11px; color: var(--text2); line-height: 1; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sgm-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .sgm-fill { height: 100%; border-radius: 2px; }
+  .fill-green { background: var(--success); }
+  .fill-cyan  { background: var(--accent); box-shadow: 0 0 5px rgba(0,229,255,0.4); }
+  .fill-amber { background: var(--accent3); }
+  .fill-red   { background: var(--danger); }
+  .sgm-pct { font-family: var(--mono); font-size: 10px; color: var(--text3); text-align: right; width: 30px; flex-shrink: 0; padding-left: 5px; }
+  .sgm-phase { font-family: var(--mono); font-size: 9px; color: var(--accent3); width: 20px; text-align: right; flex-shrink: 0; }
 
-  /* ── PROGRESS BARS ── */
-  .skill-item {
-    margin-bottom: 14px;
+  /* STRENGTH */
+  .strength-note {
+    margin-top: 11px; padding: 8px 10px;
+    background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 5px; font-size: 10px; color: var(--text2); line-height: 1.5;
   }
+  .strength-lbl { font-family: var(--mono); font-size: 9px; color: var(--success); letter-spacing: 2px; display: block; margin-bottom: 3px; }
 
-  .skill-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
+  /* ── CONTENT ── */
+  .content { overflow-y: auto; }
 
-  .skill-name {
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .skill-pct {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  .skill-bar {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .skill-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s ease;
-  }
-
-  .fill-cyan { background: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.5); }
-  .fill-purple { background: var(--accent2); box-shadow: 0 0 8px rgba(124,58,237,0.5); }
-  .fill-amber { background: var(--accent3); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
-  .fill-red { background: var(--danger); }
-  .fill-green { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-
-  /* ── GAP ANALYSIS ── */
-  .gap-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 12px;
-    padding: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-  }
-
-  .gap-icon {
-    font-size: 14px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .gap-text {
-    font-size: 12px;
-    color: var(--text2);
-    line-height: 1.5;
-  }
-
-  .gap-text strong {
-    color: var(--text);
-    display: block;
-    margin-bottom: 2px;
-    font-size: 12px;
-  }
-
-  /* ── MAIN CONTENT ── */
-  .content {
-    padding: 0;
-    overflow-y: auto;
-  }
-
-  /* ── TABS ── */
+  /* TABS */
   .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    gap: 0;
-    position: sticky;
-    top: 57px;
-    background: var(--bg);
-    z-index: 50;
-    overflow-x: auto;
+    display: flex; border-bottom: 1px solid var(--border);
+    padding: 0 20px; position: sticky; top: 42px;
+    background: var(--bg); z-index: 50; overflow-x: auto;
+    height: 38px; align-items: flex-end;
   }
-
   .tab-btn {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text3);
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 16px 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3); background: none; border: none;
+    border-bottom: 2px solid transparent; padding: 0 13px 8px;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap; height: 38px;
+    display: flex; align-items: flex-end;
   }
-
   .tab-btn:hover { color: var(--text2); }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* ── TAB PANELS ── */
-  .tab-panel { display: none; padding: 28px 24px; }
-  /* The sticky tabs bar (48px tall, sticky at top: 57px in .content) overlaps
-     ~29px into the panel's default 28px top padding, clipping the first child
-     (e.g. the elon-banner). Bump top padding to clear it. */
-  .tab-panel.active { display: block; padding-top: 60px; }
+  /* PANELS */
+  .tab-panel { display: none; padding: 18px 20px; }
+  .tab-panel.active { display: block; }
 
-  /* ── PHASE CARDS ── */
-  .phase-card {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    transition: border-color 0.2s;
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 11px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; }
+  .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .stat-label { font-size: 10px; color: var(--text3); }
+
+  /* PROGRESS */
+  .overall-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px; margin-bottom: 12px; }
+  .op-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .op-title { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: 1px; }
+  .op-pct { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--accent); }
+  .op-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .op-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 2px; box-shadow: 0 0 8px rgba(0,229,255,0.3); transition: width 1s ease; }
+
+  /* COMPASS */
+  .mission-compass {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+    background: rgba(0,229,255,0.04); border: 1px solid rgba(0,229,255,0.1);
+    border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--text2); line-height: 1.5;
   }
+  .mc-icon { color: var(--accent); flex-shrink: 0; font-style: normal; }
 
+  /* PHASE CARDS */
+  .phase-card { border: 1px solid var(--border); border-radius: 7px; margin-bottom: 7px; overflow: hidden; transition: border-color 0.2s; }
   .phase-card:hover { border-color: var(--border2); }
-
-  .phase-card.active-phase { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,229,255,0.08); }
-
-  .phase-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    background: var(--surface);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .phase-num {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    flex-shrink: 0;
-    width: 32px;
-  }
-
-  .phase-title {
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 600;
-    flex: 1;
-  }
-
-  .phase-timeline {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent3);
-    flex-shrink: 0;
-  }
-
-  .phase-chevron {
-    font-size: 12px;
-    color: var(--text3);
-    transition: transform 0.2s;
-  }
-
+  .phase-card.active-phase { border-color: var(--accent); box-shadow: 0 0 14px rgba(0,229,255,0.06); }
+  .phase-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--surface); cursor: pointer; user-select: none; }
+  .phase-num { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px; flex-shrink: 0; width: 22px; }
+  .phase-title { font-family: var(--sans); font-size: 13px; font-weight: 600; flex: 1; }
+  .phase-timeline { font-family: var(--mono); font-size: 10px; color: var(--accent3); flex-shrink: 0; }
+  .phase-chevron { font-size: 10px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
   .phase-card.open .phase-chevron { transform: rotate(180deg); }
-
-  .phase-body {
-    display: none;
-    padding: 20px;
-    border-top: 1px solid var(--border);
-  }
-
+  .phase-body { display: none; padding: 10px 14px; border-top: 1px solid var(--border); }
   .phase-card.open .phase-body { display: block; }
 
-  .phase-quote {
-    font-size: 12px;
-    color: var(--accent);
-    font-style: italic;
-    border-left: 2px solid var(--accent);
-    padding-left: 12px;
-    margin-bottom: 16px;
-    line-height: 1.6;
-  }
-
+  /* TASKS */
   .task-list { list-style: none; }
-
-  .task-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .task-item { display: flex; align-items: flex-start; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .task-item:last-child { border-bottom: none; }
-
   .task-check {
-    width: 18px; height: 18px;
-    border: 1.5px solid var(--border2);
-    border-radius: 4px;
-    flex-shrink: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 2px;
-    transition: all 0.2s;
-    background: var(--surface);
+    width: 15px; height: 15px; border: 1.5px solid var(--border2);
+    border-radius: 3px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px; transition: all 0.2s; background: var(--surface);
   }
-
   .task-check:hover { border-color: var(--accent); }
   .task-check.done { background: var(--accent); border-color: var(--accent); }
-  .task-check.done::after { content: '✓'; color: #000; font-size: 11px; font-weight: 700; }
-
+  .task-check.done::after { content: '✓'; color: #000; font-size: 9px; font-weight: 700; }
   .task-content { flex: 1; }
+  .task-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; line-height: 1.4; transition: color 0.2s; }
+  .task-check.done + .task-content .task-title { color: var(--text3); text-decoration: line-through; }
+  .task-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+  code { font-family: var(--mono); font-size: 10px; background: rgba(0,229,255,0.08); padding: 1px 4px; border-radius: 2px; color: var(--accent); }
+  .task-tag { font-family: var(--mono); font-size: 9px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
+  .tag-critical { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+  .tag-high     { background: rgba(245,158,11,.15); color: var(--accent3); border: 1px solid rgba(245,158,11,.3); }
+  .tag-medium   { background: rgba(0,229,255,.1); color: var(--accent); border: 1px solid rgba(0,229,255,.2); }
 
-  .task-title {
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 3px;
-    transition: color 0.2s;
-  }
-
-  .task-check.done + .task-content .task-title {
-    color: var(--text3);
-    text-decoration: line-through;
-  }
-
-  .task-desc {
-    font-size: 12px;
-    color: var(--text3);
-    line-height: 1.5;
-  }
-
-  .task-tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 3px;
-    flex-shrink: 0;
-    margin-top: 3px;
-  }
-
-  .tag-critical { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-  .tag-high { background: rgba(245,158,11,0.15); color: var(--accent3); border: 1px solid rgba(245,158,11,0.3); }
-  .tag-medium { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
-  .tag-ok { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
-
-  /* ── NEXT ACTIONS ── */
+  /* NEXT ACTIONS */
   .next-action-card {
-    background: linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(124,58,237,0.06) 100%);
-    border: 1px solid rgba(0,229,255,0.2);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 12px;
-    position: relative;
-    overflow: hidden;
+    background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, rgba(124,58,237,0.04) 100%);
+    border: 1px solid rgba(0,229,255,0.13); border-radius: 7px;
+    padding: 12px 14px 12px 17px; margin-bottom: 8px;
+    position: relative; overflow: hidden;
   }
+  .next-action-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); }
+  .action-priority { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 4px; }
+  .action-title { font-family: var(--sans); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .action-detail { font-size: 11px; color: var(--text2); line-height: 1.55; }
+  .action-time { display: inline-flex; align-items: center; gap: 4px; margin-top: 7px; font-family: var(--mono); font-size: 10px; color: var(--accent3); }
 
-  .next-action-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px; height: 100%;
-    background: var(--accent);
-  }
+  /* RESOURCES */
+  .rsec { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .rsec + .rsec, .resource-grid + .rsec { margin-top: 16px; }
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 7px; }
+  .resource-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; cursor: pointer; transition: all 0.2s; }
+  .resource-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .resource-type { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; margin-bottom: 3px; }
+  .resource-name { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 2px; line-height: 1.3; }
+  .resource-desc { font-size: 10px; color: var(--text3); line-height: 1.3; }
 
-  .action-priority {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-
-  .action-title {
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .action-detail {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.6;
-  }
-
-  .action-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  /* ── RESOURCE LINKS ── */
-  .resource-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  .resource-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-
-  .resource-card:hover {
-    border-color: var(--border2);
-    transform: translateY(-1px);
-  }
-
-  .resource-type {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-  }
-
-  .resource-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .resource-desc {
-    font-size: 11px;
-    color: var(--text3);
-    line-height: 1.4;
-  }
-
-  /* ── WEEKLY PLANNER ── */
-  .week-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .day-col {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .day-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 1px;
-    text-align: center;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 4px;
-  }
-
+  /* WEEKLY */
+  .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; }
+  .day-col { display: flex; flex-direction: column; gap: 4px; }
+  .day-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; text-align: center; padding-bottom: 5px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
   .day-label.today { color: var(--accent); }
-
-  .day-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 6px 7px;
-    font-size: 10px;
-    color: var(--text2);
-    line-height: 1.4;
-    min-height: 50px;
-    transition: border-color 0.15s;
-  }
-
+  .day-block { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; font-size: 9px; color: var(--text2); line-height: 1.4; min-height: 42px; transition: border-color 0.15s; }
   .day-block:hover { border-color: var(--border2); }
-  .day-block.block-cyan { border-left: 2px solid var(--accent); }
+  .day-block.block-cyan   { border-left: 2px solid var(--accent); }
   .day-block.block-purple { border-left: 2px solid var(--accent2); }
-  .day-block.block-amber { border-left: 2px solid var(--accent3); }
+  .day-block.block-amber  { border-left: 2px solid var(--accent3); }
 
-  /* ── ELON MODE BANNER ── */
-  .elon-banner {
-    background: linear-gradient(90deg, rgba(124,58,237,0.12) 0%, rgba(0,229,255,0.08) 100%);
-    border: 1px solid rgba(124,58,237,0.3);
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-
-  .elon-icon {
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .elon-text {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.7;
-    font-style: italic;
-  }
-
-  .elon-text strong { color: var(--accent2); font-style: normal; }
-
-  /* ── NOTES AREA ── */
-  .notes-wrapper {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .notes-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .notes-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 2px;
-  }
-
-  .notes-save-btn {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
-    background: rgba(0,229,255,0.1);
-    border: 1px solid rgba(0,229,255,0.2);
-    border-radius: 4px;
-    padding: 4px 10px;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-  }
-
-  .notes-save-btn:hover { background: rgba(0,229,255,0.2); }
-
-  #notes-area {
-    width: 100%;
-    min-height: 180px;
-    background: transparent;
-    border: none;
-    padding: 16px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.8;
-    resize: vertical;
-    outline: none;
-  }
-
+  /* NOTES */
+  .notes-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .notes-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  .notes-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; }
+  .notes-save-btn { font-family: var(--mono); font-size: 9px; color: var(--accent); background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.18); border-radius: 3px; padding: 3px 8px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+  .notes-save-btn:hover { background: rgba(0,229,255,0.16); }
+  #notes-area { width: 100%; min-height: 220px; background: transparent; border: none; padding: 14px; color: var(--text); font-family: var(--mono); font-size: 11px; line-height: 1.8; resize: vertical; outline: none; }
   #notes-area::placeholder { color: var(--text3); }
+  .notes-btns { margin-top: 10px; display: flex; gap: 8px; }
+  .btn-sm { font-family: var(--mono); font-size: 9px; border-radius: 3px; padding: 5px 10px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+  .btn-danger { color: var(--danger); background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+  .btn-muted  { color: var(--text3); background: var(--surface); border: 1px solid var(--border); }
 
-  /* ── OVERALL PROGRESS ── */
-  .overall-progress {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  .op-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-  }
-
-  .op-title {
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .op-pct {
-    font-family: var(--mono);
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .op-bar {
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .op-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    border-radius: 3px;
-    box-shadow: 0 0 12px rgba(0,229,255,0.4);
-    transition: width 1s ease;
-  }
-
-  /* ── STATS ROW ── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px;
-    text-align: center;
-  }
-
-  .stat-val {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    letter-spacing: 1px;
-  }
-
+  /* TOAST */
+  #toast { position: fixed; bottom: 18px; right: 18px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 9px 14px; font-family: var(--mono); font-size: 11px; color: var(--accent); transform: translateY(60px); opacity: 0; transition: all 0.3s ease; z-index: 1000; letter-spacing: 1px; }
   #toast.show { transform: translateY(0); opacity: 1; }
 
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
   @media (max-width: 768px) {
     .main { grid-template-columns: 1fr; }
     .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-    .week-grid { grid-template-columns: repeat(3, 1fr); }
+    .week-grid { grid-template-columns: repeat(3,1fr); }
     .hero::after { display: none; }
   }
 </style>
@@ -842,25 +293,23 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow">// TARGET DESIGNATION: FIGURE / 1X / PHYSICAL INTELLIGENCE</div>
-  <h1 class="hero-title">Embodied AI Engineer<br><span>Production C++ × VLA Foundation Models</span></h1>
-  <p class="hero-sub">Bạn đã là robotics engineer thực chiến — KHÔNG phải beginner. Lộ trình này không "học lại nền tảng". Nó đóng 3 gap thật so với JD của Figure/1X/PI: <strong style="color:var(--accent)">production-grade C++ real-time</strong> → <strong style="color:var(--accent2)">VLA / foundation models</strong> → <strong style="color:var(--accent3)">hardware integration</strong> → câu chuyện English. Mọi task = output đo được, push lên GitHub bằng tiếng Anh.</p>
+  <div class="hero-eyebrow">FIGURE · 1X · PHYSICAL INTELLIGENCE</div>
+  <h1 class="hero-title">Embodied AI Engineer — <span>Production C++ × VLA Foundation Models</span></h1>
 </div>
 
-<!-- MAIN GRID -->
+<!-- MAIN -->
 <div class="main">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <!-- MISSION CLOCK -->
     <div class="sidebar-section">
-      <div class="section-label">// MISSION TIMER</div>
+      <div class="s-label">MISSION TIMER</div>
       <div class="mission-clock">
-        <div class="clock-label">TIME REMAINING (LIVE)</div>
+        <div class="clock-lbl">TIME REMAINING</div>
         <div id="countdown-display">—</div>
-        <div class="clock-sub">Deadline: <span id="deadline-text">—</span></div>
-        <div class="clock-elapsed"><span>Đã trôi:</span> <span id="elapsed-display">—</span></div>
+        <div class="clock-row">→ <span id="deadline-text">—</span></div>
+        <div class="clock-row elapsed">↑ <span id="elapsed-display">—</span></div>
         <div class="start-date-row">
           <label for="start-date-input">START</label>
           <input type="date" id="start-date-input" onchange="onStartDateChange()">
@@ -868,217 +317,176 @@
       </div>
     </div>
 
-    <!-- SKILL RADAR -->
+    <!-- MERGED: Skill bars + Gap phases + Strength — one section, zero redundancy -->
     <div class="sidebar-section">
-      <div class="section-label">// SKILL MATRIX (vs Figure/1X/PI JD)</div>
+      <div class="s-label">SKILL / GAP MATRIX</div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">ROS2 / Nav2 / SLAM (đã production)</span>
-          <span class="skill-pct">75%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🟢</div>
+        <div class="sgm-info">
+          <div class="sgm-name">ROS2 / Nav2 / SLAM</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-green" style="width:75%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-green" style="width:75%"></div></div>
+        <div class="sgm-pct">75%</div>
+        <div class="sgm-phase"></div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">Python + RL/IL (DQN, HG-Dagger)</span>
-          <span class="skill-pct">65%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🟢</div>
+        <div class="sgm-info">
+          <div class="sgm-name">Python + RL/IL</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-green" style="width:65%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-green" style="width:65%"></div></div>
+        <div class="sgm-pct">65%</div>
+        <div class="sgm-phase"></div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">Micro-ROS / RTOS / ESP32</span>
-          <span class="skill-pct">55%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🔵</div>
+        <div class="sgm-info">
+          <div class="sgm-name">Micro-ROS / RTOS / ESP32</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-cyan" style="width:55%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:55%"></div></div>
+        <div class="sgm-pct">55%</div>
+        <div class="sgm-phase"></div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">Production C++ (real-time, multi-thread)</span>
-          <span class="skill-pct">15%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🔴</div>
+        <div class="sgm-info">
+          <div class="sgm-name">Production C++ real-time</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-red" style="width:15%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-red" style="width:15%"></div></div>
+        <div class="sgm-pct">15%</div>
+        <div class="sgm-phase">P1</div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">VLA / Foundation Models (RT-2, OpenVLA, π0)</span>
-          <span class="skill-pct">10%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🔴</div>
+        <div class="sgm-info">
+          <div class="sgm-name">VLA / Foundation Models</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-red" style="width:10%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-red" style="width:10%"></div></div>
+        <div class="sgm-pct">10%</div>
+        <div class="sgm-phase">P2</div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">Hardware/Mechatronics sâu (motor control, FOC)</span>
-          <span class="skill-pct">35%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🟠</div>
+        <div class="sgm-info">
+          <div class="sgm-name">Hardware / FOC / Torque</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-amber" style="width:35%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:35%"></div></div>
+        <div class="sgm-pct">35%</div>
+        <div class="sgm-phase">P3</div>
       </div>
 
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">English (paper, blog, interview)</span>
-          <span class="skill-pct">40%</span>
+      <div class="sgm-row">
+        <div class="sgm-icon">🟡</div>
+        <div class="sgm-info">
+          <div class="sgm-name">English narrative</div>
+          <div class="sgm-bar"><div class="sgm-fill fill-amber" style="width:40%"></div></div>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:40%"></div></div>
-      </div>
-    </div>
-
-    <!-- GAP ANALYSIS -->
-    <div class="sidebar-section">
-      <div class="section-label">// GAP ANALYSIS (real, not beginner)</div>
-
-      <div class="gap-item">
-        <div class="gap-icon">🔴</div>
-        <div class="gap-text">
-          <strong>#1 — Production C++ real-time</strong>
-          Tự đánh giá: đã ĐỌC code có class/smart pointer nhưng CHƯA TỰ VIẾT. Đây là gap LỚN NHẤT — không phải syntax C++, mà là OOP + memory ownership tự tay. P1T1 ép viết lần đầu, P1T1.5 (GATE) kiểm tra trước khi vào rclcpp executor. Không vượt GATE = không qua P1T2, dù timeline có trôi.
-        </div>
+        <div class="sgm-pct">40%</div>
+        <div class="sgm-phase">P4</div>
       </div>
 
-      <div class="gap-item">
-        <div class="gap-icon">🔴</div>
-        <div class="gap-text">
-          <strong>#2 — VLA / Foundation Models</strong>
-          Bạn có RL/IL (QR-DQN, HG-Dagger) nhưng chưa từng fine-tune một VLA thật (OpenVLA, π0, RT-2 style). Đây là core stack của cả 3 công ty.
-        </div>
-      </div>
-
-      <div class="gap-item">
-        <div class="gap-icon">🟠</div>
-        <div class="gap-text">
-          <strong>#3 — Hardware/Mechatronics sâu hơn</strong>
-          Đã có ESP32/micro-ROS, nhưng chưa motor control cấp thấp (FOC, torque control) — thứ Figure/1X làm trên actuator của họ.
-        </div>
-      </div>
-
-      <div class="gap-item">
-        <div class="gap-icon">🟡</div>
-        <div class="gap-text">
-          <strong>#4 — English narrative</strong>
-          Publication MethodsX là điểm cộng lớn, nhưng GitHub README, blog, LinkedIn đang tiếng Việt. Recruiter Figure/1X/PI đọc tiếng Anh.
-        </div>
-      </div>
-
-      <div class="gap-item">
-        <div class="gap-icon">🟢</div>
-        <div class="gap-text">
-          <strong>Lợi thế thật — đừng học lại</strong>
-          Production deployment thực tế (ByteHome), Tech Lead 5 người, publication quốc tế, Nav2/SLAM/Micro-ROS hands-on. KHÔNG ai trong cohort fresh-grad có hồ sơ này. Đừng "Phase 1: học ROS2 cơ bản" — đó là tự hạ giá trị.
-        </div>
+      <div class="strength-note">
+        <span class="strength-lbl">✓ STRENGTHS — không học lại</span>
+        ByteHome Tech Lead · production deploy · MethodsX publication · Nav2/SLAM/Micro-ROS hands-on
       </div>
     </div>
 
   </aside>
 
-  <!-- CONTENT AREA -->
+  <!-- CONTENT -->
   <div class="content">
 
-    <!-- TABS -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('roadmap', this)">ROADMAP</button>
-      <button class="tab-btn" onclick="switchTab('next', this)">NEXT ACTIONS</button>
-      <button class="tab-btn" onclick="switchTab('weekly', this)">WEEKLY PLAN</button>
-      <button class="tab-btn" onclick="switchTab('resources', this)">RESOURCES</button>
-      <button class="tab-btn" onclick="switchTab('notes', this)">NOTES</button>
+      <button class="tab-btn active" onclick="switchTab('roadmap',this)">ROADMAP</button>
+      <button class="tab-btn" onclick="switchTab('next',this)">NEXT ACTIONS</button>
+      <button class="tab-btn" onclick="switchTab('weekly',this)">WEEKLY</button>
+      <button class="tab-btn" onclick="switchTab('resources',this)">RESOURCES</button>
+      <button class="tab-btn" onclick="switchTab('notes',this)">NOTES</button>
     </div>
 
-    <!-- TAB: ROADMAP -->
+    <!-- ── ROADMAP ── -->
     <div class="tab-panel active" id="tab-roadmap">
 
-      <div class="elon-banner">
-        <div class="elon-icon">⚡</div>
-        <div class="elon-text">
-          <strong>Elon's verdict on lộ trình cũ:</strong> "Bạn đang yêu cầu một engineer đã ship sản phẩm robot thương mại đi học lại C++ pointers cơ bản. Đó là requirement không nên tồn tại — xóa nó." Roadmap mới chỉ có <strong>1 capstone</strong>: VLA fine-tune + production C++ real-time controller, chạy trên hardware bạn đã có (ESP32/RealSense). Không phase học-lại. Mỗi tuần = 1 commit có ý nghĩa, viết tiếng Anh.
-        </div>
+      <div class="mission-compass">
+        <em class="mc-icon">⬡</em>
+        <span><strong style="color:var(--accent)">1 capstone:</strong> VLA fine-tune + C++ real-time controller — language command → robot motion. Mỗi tuần = 1 commit tiếng Anh.</span>
       </div>
 
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-val" id="stat-done">0</div>
-          <div class="stat-label">Tasks Completed</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" id="stat-total">0</div>
-          <div class="stat-label">Total Tasks</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" id="stat-phase">P1</div>
-          <div class="stat-label">Current Phase</div>
-        </div>
+        <div class="stat-card"><div class="stat-val" id="stat-done">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Tasks</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-phase">P1</div><div class="stat-label">Active Phase</div></div>
       </div>
 
       <div class="overall-progress">
         <div class="op-header">
-          <span class="op-title">Mission Progress — Embodied AI @ Figure/1X/PI</span>
+          <span class="op-title">MISSION PROGRESS — Figure / 1X / PI</span>
           <span class="op-pct" id="op-pct">0%</span>
         </div>
-        <div class="op-bar">
-          <div class="op-fill" id="op-fill" style="width:0%"></div>
-        </div>
+        <div class="op-bar"><div class="op-fill" id="op-fill" style="width:0%"></div></div>
       </div>
 
-      <!-- PHASE 1 -->
+      <!-- P1 -->
       <div class="phase-card active-phase open" id="phase1">
         <div class="phase-header" onclick="togglePhase('phase1')">
           <span class="phase-num">P1</span>
-          <span class="phase-title">Production C++ Real-Time — Gap #1</span>
+          <span class="phase-title">Production C++ Real-Time</span>
           <span class="phase-timeline">THÁNG 1–2</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Bạn đã biết C++ đủ để viết firmware ESP32. Cái thiếu là production C++: class với constructor/destructor đúng, smart pointer, real-time control loop." — Gap thật, không phải "học C++ từ đầu". <strong style="color:var(--accent3)">Rủi ro thật:</strong> bạn nói đã <em>đọc</em> code có shared_ptr/unique_ptr nhưng chưa <em>tự viết</em>. P1T1 dưới đây ép bạn tự viết lần đầu — nếu sanitizer pass ở checkpoint P1T1.5, bạn đã sẵn sàng cho rclcpp executor (P1T2). Nếu chưa, dừng ở đó và lặp lại P1T1 với scope nhỏ hơn — KHÔNG tiến sang P1T2 khi chưa qua checkpoint.</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t1"></div>
               <div class="task-content">
-                <div class="task-title">Rewrite obstacle-avoidance node (HG-Dagger project) sang C++ real-time</div>
-                <div class="task-desc">Lấy chính project "more-than-imitation-learning" — port phần inference loop từ Python sang C++ với fixed-rate control loop (1kHz), không dynamic allocation trong loop. Benchmark latency trước/sau. <strong>Thiết kế bắt buộc:</strong> ít nhất 1 class tự viết (ví dụ <code>PolicyRunner</code>) có constructor/destructor rõ ràng, quản lý 1 resource (model handle, file, hoặc buffer) qua <code>std::unique_ptr</code> — không dùng raw <code>new</code>/<code>delete</code>. Đây là lần đầu tự viết pattern này, không phải đọc lại code mẫu.</div>
+                <div class="task-title">Port HG-Dagger inference → C++ <code>PolicyRunner</code> class</div>
+                <div class="task-desc">Constructor/destructor + <code>unique_ptr</code> resource mgmt. Fixed-rate 1kHz, no dynamic alloc in loop. Benchmark latency trước/sau.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t1b"></div>
               <div class="task-content">
-                <div class="task-title">⛔ GATE — Checkpoint trước khi vào P1T2</div>
-                <div class="task-desc">Chạy AddressSanitizer trên class từ P1T1 — phải sạch (0 leak, 0 use-after-free). Tự giải thích bằng lời (ghi vào Notes, English): "constructor làm gì, destructor làm gì, vì sao dùng unique_ptr ở đây thay vì raw pointer". Nếu PASS cả 2 → tick xong, sang P1T2. Nếu KHÔNG → đọc "C++ Concurrency in Action" chương 1 + LearnCpp.com phần Smart Pointers (link Resources), sửa lại P1T1, thử lại checkpoint — không cần unlock task mới, lặp ở đây.</div>
+                <div class="task-title">⛔ GATE — AddressSanitizer 0-leak + verbal ownership explanation</div>
+                <div class="task-desc">Fail → rework P1T1, không sang P1T2. Pass → ghi vào Notes (English): "constructor làm gì, destructor làm gì, vì sao <code>unique_ptr</code>."</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t2"></div>
               <div class="task-content">
-                <div class="task-title">Học rclcpp real-time patterns: lock-free queue, executor, callback groups</div>
-                <div class="task-desc">Đọc source code rclcpp executor + ros2_control. Viết 1 node C++ dùng MultiThreadedExecutor đúng cách, đo jitter bằng `ros2 topic hz`. (Yêu cầu: đã pass GATE P1T1.5 — node này sẽ dùng lại class <code>PolicyRunner</code> qua <code>shared_ptr</code> giữa các callback, nên nếu chưa vững unique_ptr/shared_ptr ở bước trước, phần này sẽ rất khó debug.)</div>
+                <div class="task-title">rclcpp MultiThreadedExecutor + callback groups</div>
+                <div class="task-desc">Reuse <code>PolicyRunner</code> qua <code>shared_ptr</code> giữa callbacks. Đo jitter: <code>ros2 topic hz</code>.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t3"></div>
               <div class="task-content">
-                <div class="task-title">Memory profiling: valgrind/sanitizer trên node C++ hiện có</div>
-                <div class="task-desc">Chạy AddressSanitizer + ThreadSanitizer trên code Skid-steer (RS485 C). Fix mọi warning. Đây là thứ interviewer Figure sẽ hỏi trực tiếp.</div>
+                <div class="task-title">AddressSanitizer + ThreadSanitizer trên Skid-steer RS485 C code</div>
+                <div class="task-desc">Fix mọi warning — câu hỏi interview trực tiếp của Figure.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t4"></div>
               <div class="task-content">
-                <div class="task-title">ros2_control hardware_interface — viết 1 custom hardware interface cho ESP32</div>
-                <div class="task-desc">Đây là pattern Figure/1X dùng để giao tiếp actuator. Tích hợp với Micro-ROS bạn đã có sẵn từ HaIBotLab.</div>
+                <div class="task-title">ros2_control custom hardware_interface cho ESP32 / Micro-ROS</div>
+                <div class="task-desc">Pattern Figure/1X dùng cho actuator. Tích hợp với Micro-ROS đã có từ HaIBotLab.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t5"></div>
               <div class="task-content">
-                <div class="task-title">Viết English README cho repo C++ trên — architecture diagram + benchmark numbers</div>
-                <div class="task-desc">Format: Problem → Approach → Latency before/after (số liệu thật) → How to run. Đây là artifact đầu tiên gửi recruiter.</div>
+                <div class="task-title">English README: Problem → Approach → Latency delta → How to run</div>
+                <div class="task-desc">Artifact đầu tiên gửi recruiter. Số liệu thật.</div>
               </div>
               <span class="task-tag tag-medium">MEDIUM</span>
             </li>
@@ -1086,46 +494,45 @@
         </div>
       </div>
 
-      <!-- PHASE 2 -->
+      <!-- P2 -->
       <div class="phase-card" id="phase2">
         <div class="phase-header" onclick="togglePhase('phase2')">
           <span class="phase-num">P2</span>
-          <span class="phase-title">VLA / Foundation Models — Gap #2</span>
+          <span class="phase-title">VLA / Foundation Models</span>
           <span class="phase-timeline">THÁNG 2–4</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"π0, RT-2, OpenVLA đều là: vision-language backbone + action head, fine-tune trên teleop data. Bạn đã có teleop data từ HG-Dagger. Đừng học khái niệm — fine-tune thật."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t1"></div>
               <div class="task-content">
-                <div class="task-title">Clone + chạy OpenVLA hoặc LeRobot (HuggingFace) trên GPU thuê (Vast — bạn đã quen)</div>
-                <div class="task-desc">Không đọc paper trước — chạy inference trên checkpoint pretrained, hiểu input/output shape, action tokenization. Note lại bằng English trong README.</div>
+                <div class="task-title">Chạy OpenVLA hoặc LeRobot inference trên Vast GPU</div>
+                <div class="task-desc">Checkpoint pretrained + dataset mẫu. Hiểu input shape (image + language token) → action chunk. Note English trong repo.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t2"></div>
               <div class="task-content">
-                <div class="task-title">Thu thập teleop dataset mới trên robot thật (RealSense D435 + arm/mobile base sẵn có)</div>
-                <div class="task-desc">Format theo chuẩn LeRobotDataset (giống RoboMimic bạn đã dùng). Mục tiêu: 50-100 episodes pick-and-place hoặc navigation task đơn giản.</div>
+                <div class="task-title">Thu thập 50–100 teleop episodes (RealSense D435)</div>
+                <div class="task-desc">Format chuẩn LeRobotDataset. Pick-and-place hoặc navigation task đơn giản.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t3"></div>
               <div class="task-content">
-                <div class="task-title">Fine-tune VLA (LoRA) trên dataset tự thu thập</div>
-                <div class="task-desc">LoRA fine-tune OpenVLA hoặc Pi0 trên Vast GPU. So sánh policy trước/sau fine-tune trên robot thật hoặc sim (MuJoCo). Đây là dòng CV mới quan trọng nhất.</div>
+                <div class="task-title">LoRA fine-tune VLA trên dataset tự thu thập</div>
+                <div class="task-desc">Vast GPU. Eval trước/sau trên robot thật hoặc MuJoCo. Dòng CV quan trọng nhất.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t4"></div>
               <div class="task-content">
-                <div class="task-title">CAPSTONE: Deploy VLA policy qua ROS2 node C++ (kết nối Phase 1 + Phase 2)</div>
-                <div class="task-desc">Inference VLA trên Jetson/PC → publish action qua topic → C++ real-time controller (từ P1) execute trên robot thật. End-to-end: "language command → VLA → C++ control → robot move". Video demo + GitHub + English blog post.</div>
+                <div class="task-title">★ CAPSTONE — VLA → ROS2 → C++ controller → robot</div>
+                <div class="task-desc">Language command end-to-end. Video demo + GitHub + English blog. Kết nối P1 + P2.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
@@ -1133,38 +540,37 @@
         </div>
       </div>
 
-      <!-- PHASE 3 -->
+      <!-- P3 -->
       <div class="phase-card" id="phase3">
         <div class="phase-header" onclick="togglePhase('phase3')">
           <span class="phase-num">P3</span>
-          <span class="phase-title">Hardware/Mechatronics sâu hơn — Gap #3</span>
+          <span class="phase-title">Hardware / Mechatronics sâu</span>
           <span class="phase-timeline">THÁNG 4–5</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Figure/1X actuator team làm FOC, torque control, current sensing. Bạn đã có ESP32 + motor — đi xuống 1 layer nữa."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t1"></div>
               <div class="task-content">
-                <div class="task-title">Implement FOC (Field-Oriented Control) cơ bản trên 1 BLDC motor + ESP32</div>
-                <div class="task-desc">Dùng SimpleFOC library để hiểu pipeline trước, sau đó tự viết lại current loop bằng C++. So sánh torque ripple.</div>
+                <div class="task-title">FOC trên BLDC + ESP32 (SimpleFOC → tự viết current loop C++)</div>
+                <div class="task-desc">So sánh torque ripple trước/sau.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t2"></div>
               <div class="task-content">
-                <div class="task-title">Tích hợp force/torque feedback vào VLA action loop (capstone P2)</div>
-                <div class="task-desc">Thêm current sensing như một observation modality cho policy — đây chính là hướng "tactile-aware manipulation" mà 1X/Figure publish.</div>
+                <div class="task-title">Current sensing → observation modality trong VLA action loop</div>
+                <div class="task-desc">Tactile-aware manipulation — hướng 1X/Figure đang publish.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t3"></div>
               <div class="task-content">
-                <div class="task-title">Đọc + viết note (English) về 1 paper actuator/whole-body control của Figure hoặc 1X</div>
-                <div class="task-desc">Tìm trên Figure/1X blog hoặc arXiv. Note: kiến trúc, vì sao họ chọn approach đó, liên hệ với capstone của bạn.</div>
+                <div class="task-title">Đọc 1 paper actuator/WBC của Figure hoặc 1X — note English</div>
+                <div class="task-desc">Kiến trúc + vì sao approach đó + liên hệ capstone.</div>
               </div>
               <span class="task-tag tag-medium">MEDIUM</span>
             </li>
@@ -1172,54 +578,53 @@
         </div>
       </div>
 
-      <!-- PHASE 4 -->
+      <!-- P4 -->
       <div class="phase-card" id="phase4">
         <div class="phase-header" onclick="togglePhase('phase4')">
           <span class="phase-num">P4</span>
-          <span class="phase-title">English Narrative & Application — Gap #4</span>
+          <span class="phase-title">English Narrative & Application</span>
           <span class="phase-timeline">THÁNG 5–6</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Apply Figure, 1X, Physical Intelligence — 3 công ty, biết rõ tech stack từng cái. Không apply đại trà."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t1"></div>
               <div class="task-content">
-                <div class="task-title">English resume + GitHub profile — rewrite toàn bộ theo capstone</div>
-                <div class="task-desc">Resume 1 trang, dẫn đầu bằng capstone (VLA + C++ controller), sau đó publication MethodsX, ByteHome (Tech Lead, production deploy), HaIBotLab. Mọi pinned repo có English README.</div>
+                <div class="task-title">Resume 1 trang + GitHub rewrite theo capstone</div>
+                <div class="task-desc">Thứ tự: capstone → MethodsX → ByteHome (Tech Lead) → HaIBotLab. Mọi pinned repo có English README.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t2"></div>
               <div class="task-content">
-                <div class="task-title">Đọc kỹ JD + research papers của Figure, 1X, Physical Intelligence — note tech stack cụ thể</div>
-                <div class="task-desc">Figure: Helix VLA. 1X: world models + Redwood AI. PI: π0/π0.5. Mỗi công ty 1 file note: stack, paper gần nhất, vì sao capstone của bạn liên quan.</div>
+                <div class="task-title">Research tech stack: Figure (Helix VLA) · 1X (world models) · PI (π0/π0.5)</div>
+                <div class="task-desc">Mỗi công ty 1 note: stack + paper gần nhất + liên hệ capstone.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t3"></div>
               <div class="task-content">
-                <div class="task-title">Cold outreach 10 engineers tại 3 công ty trên LinkedIn (English)</div>
-                <div class="task-desc">Kèm link capstone repo + video. Hỏi feedback, không xin việc trực tiếp ở message đầu.</div>
+                <div class="task-title">Cold outreach 10 engineers tại 3 công ty (LinkedIn, English)</div>
+                <div class="task-desc">Link capstone + video. Hỏi feedback — không xin việc ở message đầu.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t4"></div>
               <div class="task-content">
-                <div class="task-title">Mock interview: giải thích capstone bằng English trong 5 phút</div>
-                <div class="task-desc">Record video tự giải thích kiến trúc capstone. Practice đến khi tự nhiên — đây là phần loại nhiều candidate Việt Nam nhất, không phải technical skill.</div>
+                <div class="task-title">Record 5-min giải thích capstone kiến trúc (English)</div>
+                <div class="task-desc">Luyện đến khi tự nhiên — điểm loại nhiều candidate nhất.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t5"></div>
               <div class="task-content">
-                <div class="task-title">Apply Figure, 1X, Physical Intelligence (+ 2-3 backup: Skild AI, Dexterity)</div>
-                <div class="task-desc">Cover letter ngắn, reference đúng paper/blog của họ + link capstone. Theo dõi trong tracker.</div>
+                <div class="task-title">Apply Figure / 1X / PI + backup (Skild AI, Dexterity)</div>
+                <div class="task-desc">Cover letter: reference đúng paper/blog + link capstone.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
@@ -1227,232 +632,204 @@
         </div>
       </div>
 
-    </div>
+    </div><!-- /roadmap -->
 
-    <!-- TAB: NEXT ACTIONS -->
+    <!-- ── NEXT ACTIONS ── -->
     <div class="tab-panel" id="tab-next">
-      <div class="elon-banner">
-        <div class="elon-icon">🎯</div>
-        <div class="elon-text">
-          <strong>Rule:</strong> Mỗi tuần = 1 commit có ý nghĩa vào capstone repo. Không "đọc thêm paper" trừ khi bị block. Nếu tuần này không có commit, hỏi tại sao.
-        </div>
-      </div>
 
       <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #1 — DO THIS FIRST</div>
-        <div class="action-title">Tạo repo capstone "embodied-vla-controller" — định nghĩa scope rõ</div>
-        <div class="action-detail">README (English) viết trước khi code: "Goal: fine-tune a VLA policy on self-collected teleop data and deploy via a real-time C++ ROS2 controller on [robot bạn có]." Đây là 1 sentence quyết định cả 6 tháng — viết cho đúng.</div>
+        <div class="action-priority">#1 — HÔM NAY</div>
+        <div class="action-title">Tạo repo "embodied-vla-controller" — scope README</div>
+        <div class="action-detail">README (English) trước khi code: "Fine-tune a VLA policy on self-collected teleop data, deploy via C++ ROS2 controller on [robot]."</div>
         <div class="action-time">⏱ Hôm nay</div>
       </div>
 
       <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #2 — THIS WEEK</div>
-        <div class="action-title">Port HG-Dagger inference loop sang C++ với fixed-rate executor</div>
-        <div class="action-detail">Lấy code Python từ "more-than-imitation-learning", viết lại phần inference + control loop bằng C++ rclcpp, dùng MultiThreadedExecutor. Đo latency bằng `ros2 topic hz` — ghi số liệu vào benchmark.md.</div>
+        <div class="action-priority">#2 — TUẦN NÀY</div>
+        <div class="action-title">Port HG-Dagger inference → C++ rclcpp</div>
+        <div class="action-detail">MultiThreadedExecutor. Đo latency → benchmark.md. P1T1 + P1T2.</div>
         <div class="action-time">⏱ Tuần này</div>
       </div>
 
       <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #3 — 2 TUẦN TỚI</div>
-        <div class="action-title">Chạy thử OpenVLA hoặc LeRobot inference trên Vast GPU</div>
-        <div class="action-detail">Không cần data của bạn ngay — dùng checkpoint pretrained + dataset mẫu (RoboMimic). Hiểu shape input (image + language token) và output (action chunk). Note English trong repo.</div>
+        <div class="action-priority">#3 — 2 TUẦN TỚI</div>
+        <div class="action-title">Chạy OpenVLA hoặc LeRobot inference trên Vast GPU</div>
+        <div class="action-detail">Checkpoint pretrained + RoboMimic sample. Hiểu input/output shape. Note English trong repo.</div>
         <div class="action-time">⏱ 2 tuần tới</div>
       </div>
 
       <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #4 — THÁNG NÀY</div>
-        <div class="action-title">Đọc kiến trúc π0 (Physical Intelligence) hoặc RT-2 — note bằng English</div>
-        <div class="action-detail">Tập trung vào: vision-language backbone nào, action representation, training data format. So sánh với HG-Dagger approach bạn đã làm — viết 1 đoạn "how my work connects to this".</div>
+        <div class="action-priority">#4 — THÁNG NÀY</div>
+        <div class="action-title">Đọc π0 hoặc RT-2 — viết "how my work connects"</div>
+        <div class="action-detail">Backbone, action representation, training format. So sánh với HG-Dagger đã làm.</div>
         <div class="action-time">⏱ Tháng này</div>
       </div>
 
       <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #5 — BUILD HABIT</div>
-        <div class="action-title">Weekly commit + 1 dòng log (English) vào tab Notes</div>
-        <div class="action-detail">Mỗi tuần: 1 commit có ý nghĩa vào capstone repo + 1 dòng note tiếng Anh: "Week N — shipped X, blocked on Y, next Z." Sau 24 tuần = 24 commits có narrative rõ cho recruiter.</div>
-        <div class="action-time">⏱ Mỗi tuần</div>
+        <div class="action-priority">#5 — MỖI TUẦN</div>
+        <div class="action-title">1 commit có ý nghĩa + 1 dòng log English → Notes</div>
+        <div class="action-detail">"Week N — shipped X, blocked Y, next Z." 24 tuần = 24 commits có narrative cho recruiter.</div>
+        <div class="action-time">⏱ Habit</div>
       </div>
-    </div>
 
-    <!-- TAB: WEEKLY PLAN -->
+    </div><!-- /next -->
+
+    <!-- ── WEEKLY ── -->
     <div class="tab-panel" id="tab-weekly">
-      <p style="font-size:13px; color:var(--text2); margin-bottom:20px; line-height:1.7;">
-        Template tuần lý tưởng — điều chỉnh theo lịch đi làm tại VinRobotics. <strong style="color:var(--accent)">Tối thiểu 2 giờ/ngày</strong> cho Phase hiện tại. Cuối tuần dành cho capstone deep work.
-      </p>
-
       <div class="week-grid">
         <div class="day-col">
           <div class="day-label">T2</div>
-          <div class="day-block block-cyan">C++ real-time<br/>rclcpp pattern<br/>1h</div>
-          <div class="day-block block-purple">Capstone repo<br/>code<br/>1h</div>
+          <div class="day-block block-cyan">C++ real-time<br/>rclcpp 1h</div>
+          <div class="day-block block-purple">Capstone code<br/>1h</div>
         </div>
         <div class="day-col">
           <div class="day-label">T3</div>
-          <div class="day-block block-cyan">Port HG-Dagger<br/>→ C++<br/>1.5h</div>
+          <div class="day-block block-cyan">Port HG-Dagger<br/>→ C++ 1.5h</div>
           <div class="day-block block-amber">English log<br/>15m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T4</div>
-          <div class="day-block block-purple">VLA / LeRobot<br/>reading + run<br/>1.5h</div>
-          <div class="day-block block-cyan">Benchmark<br/>latency<br/>30m</div>
+          <div class="day-block block-purple">VLA / LeRobot<br/>run + read 1.5h</div>
+          <div class="day-block block-cyan">Benchmark<br/>latency 30m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T5</div>
-          <div class="day-block block-cyan">ros2_control<br/>hardware_interface<br/>1.5h</div>
-          <div class="day-block block-amber">GitHub push<br/>+ commit log<br/>30m</div>
+          <div class="day-block block-cyan">ros2_control<br/>hw_interface 1.5h</div>
+          <div class="day-block block-amber">GitHub push<br/>+ log 30m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T6</div>
-          <div class="day-block block-purple">VLA fine-tune<br/>setup Vast GPU<br/>1.5h</div>
-          <div class="day-block block-cyan">Capstone<br/>integration<br/>1h</div>
+          <div class="day-block block-purple">VLA fine-tune<br/>Vast GPU 1.5h</div>
+          <div class="day-block block-cyan">Capstone<br/>integration 1h</div>
         </div>
         <div class="day-col">
           <div class="day-label today">T7</div>
-          <div class="day-block block-cyan">CAPSTONE<br/>deep work<br/>3–4h</div>
+          <div class="day-block block-cyan">CAPSTONE<br/>deep work 3–4h</div>
         </div>
         <div class="day-col">
           <div class="day-label">CN</div>
-          <div class="day-block block-amber">Review week<br/>(English)<br/>30m</div>
-          <div class="day-block block-purple">LinkedIn<br/>outreach<br/>30m</div>
+          <div class="day-block block-amber">Review week<br/>(English) 30m</div>
+          <div class="day-block block-purple">LinkedIn<br/>outreach 30m</div>
         </div>
       </div>
+    </div><!-- /weekly -->
 
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
-        <div class="section-label" style="margin-bottom: 12px;">// ELON RULE: 80/20 TIME SPLIT</div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div>
-            <div style="font-size:12px; color:var(--accent); font-family:var(--mono); margin-bottom:6px;">80% — BUILDING CAPSTONE</div>
-            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Code C++ thật, fine-tune VLA thật, chạy trên hardware thật. 1 capstone duy nhất — không project phụ.</div>
-          </div>
-          <div>
-            <div style="font-size:12px; color:var(--text3); font-family:var(--mono); margin-bottom:6px;">20% — UNBLOCKING</div>
-            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Đọc rclcpp/LeRobot source, paper Figure/1X/PI — chỉ khi cần để unblock capstone, không đọc lan man.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: RESOURCES -->
+    <!-- ── RESOURCES ── -->
     <div class="tab-panel" id="tab-resources">
-      <div class="section-label" style="margin-bottom:12px;">// PRODUCTION C++ REAL-TIME (Gap #1)</div>
+
+      <div class="rsec">PRODUCTION C++ — Gap #1</div>
       <div class="resource-grid">
         <div class="resource-card">
           <div class="resource-type">WEBSITE</div>
-          <div class="resource-name">LearnCpp.com — Smart Pointers (Ch. 22)</div>
-          <div class="resource-desc">unique_ptr, shared_ptr, RAII — đọc TRƯỚC P1T1 nếu chưa từng tự viết class có destructor. 1-2 buổi đủ để bắt đầu.</div>
+          <div class="resource-name">LearnCpp.com — Ch.22 Smart Pointers</div>
+          <div class="resource-desc">unique_ptr, shared_ptr, RAII — đọc trước P1T1</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">CODE</div>
           <div class="resource-name">ros2_control source</div>
-          <div class="resource-desc">github/ros-controls — đọc hardware_interface + controller_manager, đây là pattern Figure/1X dùng</div>
+          <div class="resource-desc">github/ros-controls — hardware_interface + controller_manager</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">DOCS</div>
           <div class="resource-name">rclcpp Executors</div>
-          <div class="resource-desc">docs.ros.org — MultiThreadedExecutor, callback groups, real-time considerations</div>
+          <div class="resource-desc">docs.ros.org — MultiThreadedExecutor + callback groups</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">TOOL</div>
           <div class="resource-name">AddressSanitizer / ThreadSanitizer</div>
-          <div class="resource-desc">Compile flag -fsanitize=address,thread — chạy trên mọi node C++ trước khi push</div>
+          <div class="resource-desc">-fsanitize=address,thread — bắt buộc trước mọi push</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">BOOK</div>
           <div class="resource-name">C++ Concurrency in Action</div>
-          <div class="resource-desc">Anthony Williams — chương memory model + lock-free, đọc khi cần unblock</div>
+          <div class="resource-desc">Memory model + lock-free — đọc khi bị block</div>
         </div>
       </div>
 
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// VLA / FOUNDATION MODELS (Gap #2)</div>
+      <div class="rsec">VLA / FOUNDATION MODELS — Gap #2</div>
       <div class="resource-grid">
         <div class="resource-card">
           <div class="resource-type">CODE</div>
           <div class="resource-name">LeRobot (HuggingFace)</div>
-          <div class="resource-desc">github/huggingface/lerobot — VLA training/eval pipeline ready-to-run, dataset format chuẩn</div>
+          <div class="resource-desc">github/huggingface/lerobot — training pipeline + dataset format</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">CODE</div>
           <div class="resource-name">OpenVLA</div>
-          <div class="resource-desc">github/openvla — open weights, fine-tune script có sẵn, chạy trên Vast GPU</div>
+          <div class="resource-desc">Open weights + fine-tune script, chạy Vast GPU</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">PAPER</div>
-          <div class="resource-name">π0 (Physical Intelligence)</div>
-          <div class="resource-desc">physicalintelligence.company — đọc kỹ, đây là target company chính</div>
+          <div class="resource-name">π0 — Physical Intelligence</div>
+          <div class="resource-desc">physicalintelligence.company — target company, đọc kỹ</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">PAPER</div>
           <div class="resource-name">RT-2 / RT-X</div>
-          <div class="resource-desc">Google DeepMind — kiến trúc gốc của VLA, so sánh với π0</div>
+          <div class="resource-desc">Google DeepMind — kiến trúc gốc VLA</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">BLOG</div>
-          <div class="resource-name">Figure AI — Helix</div>
-          <div class="resource-desc">figure.ai/news — đọc kỹ tech stack VLA của Figure, reference khi apply</div>
+          <div class="resource-name">Figure — Helix VLA</div>
+          <div class="resource-desc">figure.ai/news — reference khi apply</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">BLOG</div>
-          <div class="resource-name">1X Technologies — World Models</div>
-          <div class="resource-desc">1x.tech — world model + EVE/NEO, đọc trước khi outreach</div>
+          <div class="resource-name">1X — World Models</div>
+          <div class="resource-desc">1x.tech — EVE/NEO, đọc trước outreach</div>
         </div>
       </div>
 
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// HARDWARE / MECHATRONICS (Gap #3)</div>
+      <div class="rsec">HARDWARE / MECHATRONICS — Gap #3</div>
       <div class="resource-grid">
         <div class="resource-card">
           <div class="resource-type">LIBRARY</div>
           <div class="resource-name">SimpleFOC</div>
-          <div class="resource-desc">simplefoc.com — FOC trên ESP32/Arduino, code mở để học rồi tự viết lại</div>
+          <div class="resource-desc">simplefoc.com — FOC ESP32, đọc rồi tự viết lại</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">COURSE</div>
-          <div class="resource-name">Modern Robotics (Coursera/edX)</div>
-          <div class="resource-desc">Lynch & Park — chương dynamics/control, đọc khi cần unblock FOC</div>
+          <div class="resource-name">Modern Robotics — Lynch & Park</div>
+          <div class="resource-desc">Dynamics/control — đọc khi unblock FOC</div>
         </div>
       </div>
 
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// ENGLISH NARRATIVE & APPLICATION (Gap #4)</div>
+      <div class="rsec">APPLY — Gap #4</div>
       <div class="resource-grid">
         <div class="resource-card">
           <div class="resource-type">JOBS</div>
           <div class="resource-name">Figure AI Careers</div>
-          <div class="resource-desc">figure.ai/careers — đọc JD kỹ trước khi viết resume</div>
+          <div class="resource-desc">figure.ai/careers</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">JOBS</div>
-          <div class="resource-name">1X Technologies Careers</div>
+          <div class="resource-name">1X Technologies</div>
           <div class="resource-desc">1x.tech/careers</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">JOBS</div>
-          <div class="resource-name">Physical Intelligence Careers</div>
+          <div class="resource-name">Physical Intelligence</div>
           <div class="resource-desc">physicalintelligence.company/careers</div>
         </div>
         <div class="resource-card">
-          <div class="resource-type">TWITTER/X</div>
-          <div class="resource-name">Follow: @chelseafinncmu, @sergeylevine</div>
-          <div class="resource-desc">Co-founder Physical Intelligence — theo dõi update π0</div>
+          <div class="resource-type">FOLLOW</div>
+          <div class="resource-name">@chelseafinncmu · @sergeylevine</div>
+          <div class="resource-desc">Co-founders PI — track π0 updates</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">PRACTICE</div>
-          <div class="resource-name">Pramp / interviewing.io (English mock)</div>
-          <div class="resource-desc">Mock technical interview bằng English — luyện giải thích capstone</div>
+          <div class="resource-name">Pramp / interviewing.io</div>
+          <div class="resource-desc">English mock — luyện giải thích capstone</div>
         </div>
       </div>
-    </div>
 
-    <!-- TAB: NOTES -->
+    </div><!-- /resources -->
+
+    <!-- ── NOTES ── -->
     <div class="tab-panel" id="tab-notes">
-      <div class="elon-banner">
-        <div class="elon-icon">📝</div>
-        <div class="elon-text">
-          Ghi chú hàng tuần. Weekly log, blockers, insights — khuyến khích viết bằng English để luyện narrative. <strong>Dữ liệu này được đồng bộ qua cloud</strong> — dùng chung cho mọi thiết bị, không mất khi reload trang.
-        </div>
-      </div>
-
       <div class="notes-wrapper">
         <div class="notes-toolbar">
-          <span class="notes-label">// WEEKLY LOG & NOTES</span>
+          <span class="notes-label">WEEKLY LOG — ENGLISH</span>
           <button class="notes-save-btn" onclick="saveNotes()">SAVE ⌘S</button>
         </div>
         <textarea id="notes-area" placeholder="[Week 1] — What did I ship?
@@ -1463,23 +840,20 @@ Next week:
 ---
 "></textarea>
       </div>
-
-      <div style="margin-top:16px; display:flex; gap:10px;">
-        <button onclick="clearNotes()" style="font-family:var(--mono); font-size:10px; color:var(--danger); background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); border-radius:4px; padding:6px 12px; cursor:pointer; letter-spacing:1px;">CLEAR</button>
-        <button onclick="exportNotes()" style="font-family:var(--mono); font-size:10px; color:var(--text3); background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:6px 12px; cursor:pointer; letter-spacing:1px;">EXPORT .TXT</button>
+      <div class="notes-btns">
+        <button onclick="clearNotes()" class="btn-sm btn-danger">CLEAR</button>
+        <button onclick="exportNotes()" class="btn-sm btn-muted">EXPORT .TXT</button>
       </div>
-    </div>
+    </div><!-- /notes -->
 
-  </div>
-</div>
+  </div><!-- /content -->
+</div><!-- /main -->
 
-<!-- TOAST -->
 <div id="toast">✓ SAVED</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-// ── FIREBASE CONFIG — THAY BẰNG CONFIG CỦA BẠN ──
 const firebaseConfig = {
   apiKey: "AIzaSyDNWayygSWU9IuyrEvyCXKqdO7VOUuaY2Q",
   authDomain: "robotics-mission.firebaseapp.com",
@@ -1494,9 +868,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const stateRef = db.ref('robotics_mission_v2');
 
-// MISSION_DURATION_DAYS: tổng thời gian mission, dùng để tính deadline = start + duration
 const MISSION_DURATION_DAYS = 182;
-
 let state = { tasks: {}, notes: '', startDateISO: null };
 let deadlineDate = null;
 let startDate = null;
@@ -1506,15 +878,12 @@ function saveState(newState) {
   stateRef.set(state).catch(e => console.error('Save error:', e));
 }
 
-// ── START DATE / DEADLINE ──
 function todayISO() {
   const d = new Date();
-  const tzOffset = d.getTimezoneOffset() * 60000;
-  return new Date(d - tzOffset).toISOString().slice(0, 10);
+  return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
 function computeDeadlineFromStart(startISO) {
-  // Parse as local date (not UTC) to avoid off-by-one-day issues
   const [y, m, d] = startISO.split('-').map(Number);
   const start = new Date(y, m - 1, d, 0, 0, 0, 0);
   const deadline = new Date(start);
@@ -1524,19 +893,10 @@ function computeDeadlineFromStart(startISO) {
 
 function setStartDate(startISO, persist) {
   const { start, deadline } = computeDeadlineFromStart(startISO);
-  startDate = start;
-  deadlineDate = deadline;
-
+  startDate = start; deadlineDate = deadline;
   document.getElementById('start-date-input').value = startISO;
-  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  }) + ` (+${MISSION_DURATION_DAYS} ngày)`;
-
-  if (persist) {
-    state.startDateISO = startISO;
-    saveState(state);
-  }
-
+  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
+  if (persist) { state.startDateISO = startISO; saveState(state); }
   tick();
 }
 
@@ -1547,28 +907,18 @@ function onStartDateChange() {
   showToast('✓ START DATE UPDATED');
 }
 
-// ── DATE & LIVE COUNTDOWN (seconds-accurate) ──
 function initDateTime() {
-  const now = new Date();
-
-  document.getElementById('nav-date').textContent = now.toLocaleDateString('vi-VN', {
-    weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).toUpperCase() + ' ' + now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-  // default start date: today, only used until state loads / overrides it
-  if (!startDate) {
-    setStartDate(todayISO(), false);
-  }
-
-  setInterval(() => {
+  if (!startDate) setStartDate(todayISO(), false);
+  const update = () => {
     const n = new Date();
-    document.getElementById('nav-date').textContent = n.toLocaleDateString('vi-VN', {
-      weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
-    }).toUpperCase() + ' ' + n.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }, 1000);
-
+    document.getElementById('nav-date').textContent =
+      n.toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' }).toUpperCase() +
+      ' ' + n.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+  update();
+  setInterval(update, 1000);
   tick();
-  setInterval(tick, 1000); // tick every second for accurate seconds display
+  setInterval(tick, 1000);
 }
 
 function formatDuration(totalSeconds, signPrefix) {
@@ -1583,19 +933,14 @@ function formatDuration(totalSeconds, signPrefix) {
 function tick() {
   if (!deadlineDate || !startDate) return;
   const now = new Date();
-
-  const remainingSec = (deadlineDate - now) / 1000;
-  document.getElementById('countdown-display').textContent = formatDuration(remainingSec, remainingSec < 0 ? '-' : '');
-
-  const elapsedSec = (now - startDate) / 1000;
-  const elapsedClamped = Math.max(0, elapsedSec);
+  const remainSec = (deadlineDate - now) / 1000;
+  document.getElementById('countdown-display').textContent = formatDuration(remainSec, remainSec < 0 ? '-' : '');
+  const elapsedSec = Math.max(0, (now - startDate) / 1000);
   const totalSec = MISSION_DURATION_DAYS * 86400;
-  const pctElapsed = totalSec > 0 ? Math.min(100, (elapsedClamped / totalSec) * 100) : 0;
-  document.getElementById('elapsed-display').textContent =
-    `${formatDuration(elapsedClamped, '')} (${pctElapsed.toFixed(2)}%)`;
+  const pct = totalSec > 0 ? Math.min(100, (elapsedSec / totalSec) * 100) : 0;
+  document.getElementById('elapsed-display').textContent = `${formatDuration(elapsedSec, '')} (${pct.toFixed(2)}%)`;
 }
 
-// ── TABS ──
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1603,12 +948,8 @@ function switchTab(id, btn) {
   btn.classList.add('active');
 }
 
-// ── PHASE TOGGLE ──
-function togglePhase(id) {
-  document.getElementById(id).classList.toggle('open');
-}
+function togglePhase(id) { document.getElementById(id).classList.toggle('open'); }
 
-// ── TASKS ──
 function toggleTask(el) {
   const id = el.getAttribute('data-id');
   const newDone = !el.classList.contains('done');
@@ -1620,52 +961,40 @@ function toggleTask(el) {
 }
 
 function updateProgress() {
-  const allTasks = document.querySelectorAll('.task-check');
-  const doneTasks = document.querySelectorAll('.task-check.done');
-  const total = allTasks.length;
-  const done = doneTasks.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-  document.getElementById('stat-done').textContent = done;
+  const all = document.querySelectorAll('.task-check');
+  const done = document.querySelectorAll('.task-check.done');
+  const total = all.length, doneCount = done.length;
+  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  document.getElementById('stat-done').textContent = doneCount;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('op-pct').textContent = pct + '%';
   document.getElementById('op-fill').style.width = pct + '%';
-
   const phases = ['phase1','phase2','phase3','phase4'];
-  let currentPhase = 'P4';
-  for(let i = 0; i < phases.length; i++) {
-    const phaseTasks = document.querySelectorAll(`#${phases[i]} .task-check`);
-    const phaseDone = document.querySelectorAll(`#${phases[i]} .task-check.done`);
-    if(phaseDone.length < phaseTasks.length) {
-      currentPhase = 'P' + (i+1);
-      break;
-    }
+  let cur = 'P4';
+  for (let i = 0; i < phases.length; i++) {
+    const pt = document.querySelectorAll(`#${phases[i]} .task-check`);
+    const pd = document.querySelectorAll(`#${phases[i]} .task-check.done`);
+    if (pd.length < pt.length) { cur = 'P' + (i + 1); break; }
   }
-  document.getElementById('stat-phase').textContent = currentPhase;
+  document.getElementById('stat-phase').textContent = cur;
 }
 
 function applyTasksFromState() {
   document.querySelectorAll('.task-check').forEach(el => {
-    const id = el.getAttribute('data-id');
-    el.classList.toggle('done', !!(state.tasks && state.tasks[id]));
+    el.classList.toggle('done', !!(state.tasks && state.tasks[el.getAttribute('data-id')]));
   });
   updateProgress();
 }
 
 function applyNotesFromState() {
   const area = document.getElementById('notes-area');
-  if(document.activeElement !== area) {
-    area.value = state.notes || '';
-  }
+  if (document.activeElement !== area) area.value = state.notes || '';
 }
 
 function applyStartDateFromState() {
-  if (state.startDateISO) {
-    setStartDate(state.startDateISO, false);
-  }
+  if (state.startDateISO) setStartDate(state.startDateISO, false);
 }
 
-// ── NOTES ──
 function saveNotes() {
   state.notes = document.getElementById('notes-area').value;
   saveState(state);
@@ -1673,23 +1002,20 @@ function saveNotes() {
 }
 
 function clearNotes() {
-  if(confirm('Xóa toàn bộ notes?')) {
-    document.getElementById('notes-area').value = '';
-    state.notes = '';
-    saveState(state);
-  }
+  if (!confirm('Xóa toàn bộ notes?')) return;
+  document.getElementById('notes-area').value = '';
+  state.notes = '';
+  saveState(state);
 }
 
 function exportNotes() {
-  const text = document.getElementById('notes-area').value;
-  const blob = new Blob([text], { type: 'text/plain' });
+  const blob = new Blob([document.getElementById('notes-area').value], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'embodied-ai-mission-notes.txt';
   a.click();
 }
 
-// ── TOAST ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1697,21 +1023,16 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-// ── KEYBOARD SHORTCUT ──
 document.addEventListener('keydown', e => {
-  if((e.metaKey || e.ctrlKey) && e.key === 's') {
-    e.preventDefault();
-    saveNotes();
-  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
 });
 
-// ── REALTIME SYNC: tự động cập nhật khi data đổi ──
-stateRef.on('value', (snapshot) => {
+stateRef.on('value', snapshot => {
   const data = snapshot.val();
-  if(data) {
+  if (data) {
     state = data;
-    if(!state.tasks) state.tasks = {};
-    if(state.notes === undefined) state.notes = '';
+    if (!state.tasks) state.tasks = {};
+    if (state.notes === undefined) state.notes = '';
     applyTasksFromState();
     applyNotesFromState();
     applyStartDateFromState();
