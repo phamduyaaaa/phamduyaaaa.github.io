@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MISSION CONTROL — Robotics & Embodied AI</title>
+<title>MISSION CONTROL — Embodied AI Engineer (Figure / 1X / PI)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -36,7 +36,6 @@
     overflow-x: hidden;
   }
 
-  /* ── SCANLINE OVERLAY ── */
   body::before {
     content: '';
     position: fixed; inset: 0;
@@ -104,18 +103,19 @@
   }
 
   .hero::after {
-    content: 'ROBOTICS\AEMBODIED AI';
+    content: 'FIGURE\A1X\API';
     white-space: pre;
     position: absolute;
-    right: -20px; top: 50%;
+    right: -10px; top: 50%;
     transform: translateY(-50%);
     font-family: var(--mono);
-    font-size: 80px;
+    font-size: 70px;
     font-weight: 700;
     color: rgba(0,229,255,0.04);
-    letter-spacing: -3px;
+    letter-spacing: -2px;
     pointer-events: none;
-    line-height: 1;
+    line-height: 1.1;
+    text-align: right;
   }
 
   .hero-eyebrow {
@@ -141,7 +141,7 @@
   .hero-sub {
     font-size: 14px;
     color: var(--text2);
-    max-width: 540px;
+    max-width: 560px;
     line-height: 1.7;
   }
 
@@ -194,18 +194,64 @@
 
   #countdown-display {
     font-family: var(--mono);
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-shadow: 0 0 20px rgba(0,229,255,0.4);
+    word-break: break-all;
   }
 
   .clock-sub {
     font-size: 11px;
     color: var(--text3);
     margin-top: 6px;
+    line-height: 1.6;
   }
+
+  .clock-elapsed {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--success);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    word-break: break-all;
+  }
+
+  .clock-elapsed span { color: var(--text3); }
+
+  .start-date-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .start-date-row label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .start-date-row input[type="date"] {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 6px;
+    outline: none;
+    color-scheme: dark;
+  }
+
+  .start-date-row input[type="date"]:focus { border-color: var(--accent); }
 
   /* ── PROGRESS BARS ── */
   .skill-item {
@@ -296,6 +342,7 @@
     top: 57px;
     background: var(--bg);
     z-index: 50;
+    overflow-x: auto;
   }
 
   .tab-btn {
@@ -310,6 +357,7 @@
     padding: 16px 20px;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
   }
 
   .tab-btn:hover { color: var(--text2); }
@@ -317,7 +365,10 @@
 
   /* ── TAB PANELS ── */
   .tab-panel { display: none; padding: 28px 24px; }
-  .tab-panel.active { display: block; }
+  /* The sticky tabs bar (48px tall, sticky at top: 57px in .content) overlaps
+     ~29px into the panel's default 28px top padding, clipping the first child
+     (e.g. the elon-banner). Bump top padding to clear it. */
+  .tab-panel.active { display: block; padding-top: 60px; }
 
   /* ── PHASE CARDS ── */
   .phase-card {
@@ -791,9 +842,9 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow">// TARGET DESIGNATION</div>
-  <h1 class="hero-title">Robotics Software Engineer<br><span>&amp; Embodied AI Engineer</span></h1>
-  <p class="hero-sub">Lộ trình 6 tháng theo tư duy first-principles. Mỗi ngày phải có output đo được — không phải "học", mà là <em>build, ship, iterate</em>.</p>
+  <div class="hero-eyebrow">// TARGET DESIGNATION: FIGURE / 1X / PHYSICAL INTELLIGENCE</div>
+  <h1 class="hero-title">Embodied AI Engineer<br><span>Production C++ × VLA Foundation Models</span></h1>
+  <p class="hero-sub">Bạn đã là robotics engineer thực chiến — KHÔNG phải beginner. Lộ trình này không "học lại nền tảng". Nó đóng 3 gap thật so với JD của Figure/1X/PI: <strong style="color:var(--accent)">production-grade C++ real-time</strong> → <strong style="color:var(--accent2)">VLA / foundation models</strong> → <strong style="color:var(--accent3)">hardware integration</strong> → câu chuyện English. Mọi task = output đo được, push lên GitHub bằng tiếng Anh.</p>
 </div>
 
 <!-- MAIN GRID -->
@@ -806,114 +857,119 @@
     <div class="sidebar-section">
       <div class="section-label">// MISSION TIMER</div>
       <div class="mission-clock">
-        <div class="clock-label">DAYS REMAINING</div>
-        <div id="countdown-display">182</div>
+        <div class="clock-label">TIME REMAINING (LIVE)</div>
+        <div id="countdown-display">—</div>
         <div class="clock-sub">Deadline: <span id="deadline-text">—</span></div>
+        <div class="clock-elapsed"><span>Đã trôi:</span> <span id="elapsed-display">—</span></div>
+        <div class="start-date-row">
+          <label for="start-date-input">START</label>
+          <input type="date" id="start-date-input" onchange="onStartDateChange()">
+        </div>
       </div>
     </div>
 
     <!-- SKILL RADAR -->
     <div class="sidebar-section">
-      <div class="section-label">// SKILL MATRIX</div>
+      <div class="section-label">// SKILL MATRIX (vs Figure/1X/PI JD)</div>
 
       <div class="skill-item">
         <div class="skill-header">
-          <span class="skill-name">Python</span>
-          <span class="skill-pct">35%</span>
+          <span class="skill-name">ROS2 / Nav2 / SLAM (đã production)</span>
+          <span class="skill-pct">75%</span>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-green" style="width:35%"></div></div>
+        <div class="skill-bar"><div class="skill-fill fill-green" style="width:75%"></div></div>
       </div>
 
       <div class="skill-item">
         <div class="skill-header">
-          <span class="skill-name">ROS2</span>
-          <span class="skill-pct">20%</span>
+          <span class="skill-name">Python + RL/IL (DQN, HG-Dagger)</span>
+          <span class="skill-pct">65%</span>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:20%"></div></div>
+        <div class="skill-bar"><div class="skill-fill fill-green" style="width:65%"></div></div>
       </div>
 
       <div class="skill-item">
         <div class="skill-header">
-          <span class="skill-name">Computer Vision</span>
-          <span class="skill-pct">25%</span>
+          <span class="skill-name">Micro-ROS / RTOS / ESP32</span>
+          <span class="skill-pct">55%</span>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:25%"></div></div>
+        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:55%"></div></div>
       </div>
 
       <div class="skill-item">
         <div class="skill-header">
-          <span class="skill-name">ML / Deep Learning</span>
-          <span class="skill-pct">30%</span>
-        </div>
-        <div class="skill-bar"><div class="skill-fill fill-purple" style="width:30%"></div></div>
-      </div>
-
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">C++ (Robot Systems)</span>
-          <span class="skill-pct">5%</span>
-        </div>
-        <div class="skill-bar"><div class="skill-fill fill-red" style="width:5%"></div></div>
-      </div>
-
-      <div class="skill-item">
-        <div class="skill-header">
-          <span class="skill-name">RL / Imitation Learning</span>
+          <span class="skill-name">Production C++ (real-time, multi-thread)</span>
           <span class="skill-pct">15%</span>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:15%"></div></div>
+        <div class="skill-bar"><div class="skill-fill fill-red" style="width:15%"></div></div>
       </div>
 
       <div class="skill-item">
         <div class="skill-header">
-          <span class="skill-name">Embedded Systems</span>
-          <span class="skill-pct">20%</span>
+          <span class="skill-name">VLA / Foundation Models (RT-2, OpenVLA, π0)</span>
+          <span class="skill-pct">10%</span>
         </div>
-        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:20%"></div></div>
+        <div class="skill-bar"><div class="skill-fill fill-red" style="width:10%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">Hardware/Mechatronics sâu (motor control, FOC)</span>
+          <span class="skill-pct">35%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:35%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">English (paper, blog, interview)</span>
+          <span class="skill-pct">40%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:40%"></div></div>
       </div>
     </div>
 
     <!-- GAP ANALYSIS -->
     <div class="sidebar-section">
-      <div class="section-label">// GAP ANALYSIS</div>
+      <div class="section-label">// GAP ANALYSIS (real, not beginner)</div>
 
       <div class="gap-item">
         <div class="gap-icon">🔴</div>
         <div class="gap-text">
-          <strong>C++ — Critical Gap</strong>
-          ROS2 production code = C++. Phải có nền tảng trong 2 tháng đầu.
+          <strong>#1 — Production C++ real-time</strong>
+          Tự đánh giá: đã ĐỌC code có class/smart pointer nhưng CHƯA TỰ VIẾT. Đây là gap LỚN NHẤT — không phải syntax C++, mà là OOP + memory ownership tự tay. P1T1 ép viết lần đầu, P1T1.5 (GATE) kiểm tra trước khi vào rclcpp executor. Không vượt GATE = không qua P1T2, dù timeline có trôi.
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🔴</div>
+        <div class="gap-text">
+          <strong>#2 — VLA / Foundation Models</strong>
+          Bạn có RL/IL (QR-DQN, HG-Dagger) nhưng chưa từng fine-tune một VLA thật (OpenVLA, π0, RT-2 style). Đây là core stack của cả 3 công ty.
         </div>
       </div>
 
       <div class="gap-item">
         <div class="gap-icon">🟠</div>
         <div class="gap-text">
-          <strong>Portfolio Projects</strong>
-          Chưa có project Robotics/Embodied AI đủ impress recruiter. Cần 2-3 projects github public.
+          <strong>#3 — Hardware/Mechatronics sâu hơn</strong>
+          Đã có ESP32/micro-ROS, nhưng chưa motor control cấp thấp (FOC, torque control) — thứ Figure/1X làm trên actuator của họ.
         </div>
       </div>
 
       <div class="gap-item">
         <div class="gap-icon">🟡</div>
         <div class="gap-text">
-          <strong>Sim-to-Real Pipeline</strong>
-          Isaac Sim / MuJoCo / Gazebo — chưa có hands-on experience.
-        </div>
-      </div>
-
-      <div class="gap-item">
-        <div class="gap-icon">🟡</div>
-        <div class="gap-text">
-          <strong>Networking</strong>
-          Chưa connect với robotics community quốc tế.
+          <strong>#4 — English narrative</strong>
+          Publication MethodsX là điểm cộng lớn, nhưng GitHub README, blog, LinkedIn đang tiếng Việt. Recruiter Figure/1X/PI đọc tiếng Anh.
         </div>
       </div>
 
       <div class="gap-item">
         <div class="gap-icon">🟢</div>
         <div class="gap-text">
-          <strong>Đa mảng = lợi thế</strong>
-          CV + ML + RL + Embedded — foundation đủ rộng, cần depth hơn breadth bây giờ.
+          <strong>Lợi thế thật — đừng học lại</strong>
+          Production deployment thực tế (ByteHome), Tech Lead 5 người, publication quốc tế, Nav2/SLAM/Micro-ROS hands-on. KHÔNG ai trong cohort fresh-grad có hồ sơ này. Đừng "Phase 1: học ROS2 cơ bản" — đó là tự hạ giá trị.
         </div>
       </div>
     </div>
@@ -938,7 +994,7 @@
       <div class="elon-banner">
         <div class="elon-icon">⚡</div>
         <div class="elon-text">
-          <strong>"First Principles Thinking"</strong> — Đừng học theo lộ trình người khác. Hỏi: Robot cần làm gì? Cần những gì để làm điều đó? Build ngược từ đó. 6 tháng đủ nếu bạn loại bỏ tất cả những gì không essential. <strong>Stop learning. Start building.</strong>
+          <strong>Elon's verdict on lộ trình cũ:</strong> "Bạn đang yêu cầu một engineer đã ship sản phẩm robot thương mại đi học lại C++ pointers cơ bản. Đó là requirement không nên tồn tại — xóa nó." Roadmap mới chỉ có <strong>1 capstone</strong>: VLA fine-tune + production C++ real-time controller, chạy trên hardware bạn đã có (ESP32/RealSense). Không phase học-lại. Mỗi tuần = 1 commit có ý nghĩa, viết tiếng Anh.
         </div>
       </div>
 
@@ -959,7 +1015,7 @@
 
       <div class="overall-progress">
         <div class="op-header">
-          <span class="op-title">Mission Progress — Robotics Engineer</span>
+          <span class="op-title">Mission Progress — Embodied AI @ Figure/1X/PI</span>
           <span class="op-pct" id="op-pct">0%</span>
         </div>
         <div class="op-bar">
@@ -971,50 +1027,58 @@
       <div class="phase-card active-phase open" id="phase1">
         <div class="phase-header" onclick="togglePhase('phase1')">
           <span class="phase-num">P1</span>
-          <span class="phase-title">Foundation Hardening — C++ & ROS2 Core</span>
+          <span class="phase-title">Production C++ Real-Time — Gap #1</span>
           <span class="phase-timeline">THÁNG 1–2</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Nếu bạn không thể viết C++ cho robot, bạn là người dùng công cụ, không phải người xây hệ thống." — First Principles view</div>
+          <div class="phase-quote">"Bạn đã biết C++ đủ để viết firmware ESP32. Cái thiếu là production C++: class với constructor/destructor đúng, smart pointer, real-time control loop." — Gap thật, không phải "học C++ từ đầu". <strong style="color:var(--accent3)">Rủi ro thật:</strong> bạn nói đã <em>đọc</em> code có shared_ptr/unique_ptr nhưng chưa <em>tự viết</em>. P1T1 dưới đây ép bạn tự viết lần đầu — nếu sanitizer pass ở checkpoint P1T1.5, bạn đã sẵn sàng cho rclcpp executor (P1T2). Nếu chưa, dừng ở đó và lặp lại P1T1 với scope nhỏ hơn — KHÔNG tiến sang P1T2 khi chưa qua checkpoint.</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t1"></div>
               <div class="task-content">
-                <div class="task-title">C++ cơ bản đến trung cấp (pointers, OOP, memory management)</div>
-                <div class="task-desc">Learncpp.com + C++ Primer. 2h/ngày, 3 tuần. Mục tiêu: tự viết được class, handle pointers, không leak memory.</div>
+                <div class="task-title">Rewrite obstacle-avoidance node (HG-Dagger project) sang C++ real-time</div>
+                <div class="task-desc">Lấy chính project "more-than-imitation-learning" — port phần inference loop từ Python sang C++ với fixed-rate control loop (1kHz), không dynamic allocation trong loop. Benchmark latency trước/sau. <strong>Thiết kế bắt buộc:</strong> ít nhất 1 class tự viết (ví dụ <code>PolicyRunner</code>) có constructor/destructor rõ ràng, quản lý 1 resource (model handle, file, hoặc buffer) qua <code>std::unique_ptr</code> — không dùng raw <code>new</code>/<code>delete</code>. Đây là lần đầu tự viết pattern này, không phải đọc lại code mẫu.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t1b"></div>
+              <div class="task-content">
+                <div class="task-title">⛔ GATE — Checkpoint trước khi vào P1T2</div>
+                <div class="task-desc">Chạy AddressSanitizer trên class từ P1T1 — phải sạch (0 leak, 0 use-after-free). Tự giải thích bằng lời (ghi vào Notes, English): "constructor làm gì, destructor làm gì, vì sao dùng unique_ptr ở đây thay vì raw pointer". Nếu PASS cả 2 → tick xong, sang P1T2. Nếu KHÔNG → đọc "C++ Concurrency in Action" chương 1 + LearnCpp.com phần Smart Pointers (link Resources), sửa lại P1T1, thử lại checkpoint — không cần unlock task mới, lặp ở đây.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t2"></div>
               <div class="task-content">
-                <div class="task-title">Setup ROS2 Humble trên Ubuntu, build workspace từ đầu</div>
-                <div class="task-desc">Không dùng tutorial sẵn có. Tự làm từng bước, debug khi lỗi. Log mọi error.</div>
+                <div class="task-title">Học rclcpp real-time patterns: lock-free queue, executor, callback groups</div>
+                <div class="task-desc">Đọc source code rclcpp executor + ros2_control. Viết 1 node C++ dùng MultiThreadedExecutor đúng cách, đo jitter bằng `ros2 topic hz`. (Yêu cầu: đã pass GATE P1T1.5 — node này sẽ dùng lại class <code>PolicyRunner</code> qua <code>shared_ptr</code> giữa các callback, nên nếu chưa vững unique_ptr/shared_ptr ở bước trước, phần này sẽ rất khó debug.)</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t3"></div>
               <div class="task-content">
-                <div class="task-title">ROS2 Node, Topic, Service, Action — tự build mini-project</div>
-                <div class="task-desc">Build robot publisher/subscriber system. Push lên GitHub public. Viết README chi tiết.</div>
+                <div class="task-title">Memory profiling: valgrind/sanitizer trên node C++ hiện có</div>
+                <div class="task-desc">Chạy AddressSanitizer + ThreadSanitizer trên code Skid-steer (RS485 C). Fix mọi warning. Đây là thứ interviewer Figure sẽ hỏi trực tiếp.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t4"></div>
               <div class="task-content">
-                <div class="task-title">Setup Gazebo simulation + spawn robot URDF</div>
-                <div class="task-desc">Dùng TurtleBot3 hoặc custom URDF. Điều khiển được robot trong sim.</div>
+                <div class="task-title">ros2_control hardware_interface — viết 1 custom hardware interface cho ESP32</div>
+                <div class="task-desc">Đây là pattern Figure/1X dùng để giao tiếp actuator. Tích hợp với Micro-ROS bạn đã có sẵn từ HaIBotLab.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p1t5"></div>
               <div class="task-content">
-                <div class="task-title">Tạo GitHub profile + pinned repositories strategy</div>
-                <div class="task-desc">README profile ấn tượng. Mọi project phải có: demo GIF, architecture diagram, clear usage.</div>
+                <div class="task-title">Viết English README cho repo C++ trên — architecture diagram + benchmark numbers</div>
+                <div class="task-desc">Format: Problem → Approach → Latency before/after (số liệu thật) → How to run. Đây là artifact đầu tiên gửi recruiter.</div>
               </div>
               <span class="task-tag tag-medium">MEDIUM</span>
             </li>
@@ -1026,42 +1090,42 @@
       <div class="phase-card" id="phase2">
         <div class="phase-header" onclick="togglePhase('phase2')">
           <span class="phase-num">P2</span>
-          <span class="phase-title">Perception Stack — Computer Vision meets Robot</span>
-          <span class="phase-timeline">THÁNG 2–3</span>
+          <span class="phase-title">VLA / Foundation Models — Gap #2</span>
+          <span class="phase-timeline">THÁNG 2–4</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Perception is everything. A robot that can't see can't act." — Embodied AI first principle</div>
+          <div class="phase-quote">"π0, RT-2, OpenVLA đều là: vision-language backbone + action head, fine-tune trên teleop data. Bạn đã có teleop data từ HG-Dagger. Đừng học khái niệm — fine-tune thật."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t1"></div>
               <div class="task-content">
-                <div class="task-title">ROS2 + Camera integration: object detection pipeline</div>
-                <div class="task-desc">Kết hợp CV skills sẵn có với ROS2. Publish detection results qua topic. Dùng YOLO hoặc MediaPipe.</div>
+                <div class="task-title">Clone + chạy OpenVLA hoặc LeRobot (HuggingFace) trên GPU thuê (Vast — bạn đã quen)</div>
+                <div class="task-desc">Không đọc paper trước — chạy inference trên checkpoint pretrained, hiểu input/output shape, action tokenization. Note lại bằng English trong README.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t2"></div>
               <div class="task-content">
-                <div class="task-title">Depth estimation + 3D point cloud xử lý cơ bản</div>
-                <div class="task-desc">RealSense hoặc dùng stereo sim trong Gazebo. Visualize trong RViz2.</div>
+                <div class="task-title">Thu thập teleop dataset mới trên robot thật (RealSense D435 + arm/mobile base sẵn có)</div>
+                <div class="task-desc">Format theo chuẩn LeRobotDataset (giống RoboMimic bạn đã dùng). Mục tiêu: 50-100 episodes pick-and-place hoặc navigation task đơn giản.</div>
               </div>
-              <span class="task-tag tag-high">HIGH</span>
+              <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t3"></div>
               <div class="task-content">
-                <div class="task-title">Navigation Stack (Nav2) — robot tự di chuyển tránh chướng ngại</div>
-                <div class="task-desc">Implement SLAM + Costmap + Path Planning. Demo trong Gazebo. Record video.</div>
+                <div class="task-title">Fine-tune VLA (LoRA) trên dataset tự thu thập</div>
+                <div class="task-desc">LoRA fine-tune OpenVLA hoặc Pi0 trên Vast GPU. So sánh policy trước/sau fine-tune trên robot thật hoặc sim (MuJoCo). Đây là dòng CV mới quan trọng nhất.</div>
               </div>
-              <span class="task-tag tag-high">HIGH</span>
+              <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p2t4"></div>
               <div class="task-content">
-                <div class="task-title">PROJECT #1: "Visual Navigation Robot" — Push GitHub + viết blog</div>
-                <div class="task-desc">Robot thấy object → tiếp cận → tránh chướng ngại. Đây là project đầu tiên đủ impress.</div>
+                <div class="task-title">CAPSTONE: Deploy VLA policy qua ROS2 node C++ (kết nối Phase 1 + Phase 2)</div>
+                <div class="task-desc">Inference VLA trên Jetson/PC → publish action qua topic → C++ real-time controller (từ P1) execute trên robot thật. End-to-end: "language command → VLA → C++ control → robot move". Video demo + GitHub + English blog post.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
@@ -1073,44 +1137,36 @@
       <div class="phase-card" id="phase3">
         <div class="phase-header" onclick="togglePhase('phase3')">
           <span class="phase-num">P3</span>
-          <span class="phase-title">Embodied AI Core — Policy Learning</span>
-          <span class="phase-timeline">THÁNG 3–4</span>
+          <span class="phase-title">Hardware/Mechatronics sâu hơn — Gap #3</span>
+          <span class="phase-timeline">THÁNG 4–5</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"The real challenge is not teaching a robot to move, but teaching it to think and act in the physical world."</div>
+          <div class="phase-quote">"Figure/1X actuator team làm FOC, torque control, current sensing. Bạn đã có ESP32 + motor — đi xuống 1 layer nữa."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t1"></div>
               <div class="task-content">
-                <div class="task-title">MuJoCo hoặc Isaac Gym — environment setup + RL training loop</div>
-                <div class="task-desc">Train simple locomotion task (ant walking, hopper). Dùng Stable-Baselines3 hoặc RLlib.</div>
+                <div class="task-title">Implement FOC (Field-Oriented Control) cơ bản trên 1 BLDC motor + ESP32</div>
+                <div class="task-desc">Dùng SimpleFOC library để hiểu pipeline trước, sau đó tự viết lại current loop bằng C++. So sánh torque ripple.</div>
               </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
+              <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t2"></div>
               <div class="task-content">
-                <div class="task-title">Imitation Learning — Behavior Cloning từ demo data</div>
-                <div class="task-desc">Collect human demo → train BC policy → evaluate. Dùng dataset sẵn có (RoboMimic, D4RL).</div>
+                <div class="task-title">Tích hợp force/torque feedback vào VLA action loop (capstone P2)</div>
+                <div class="task-desc">Thêm current sensing như một observation modality cho policy — đây chính là hướng "tactile-aware manipulation" mà 1X/Figure publish.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p3t3"></div>
               <div class="task-content">
-                <div class="task-title">Đọc &amp; implement 1 Embodied AI paper (ACT, Diffusion Policy, hoặc RT-2)</div>
-                <div class="task-desc">Không chỉ đọc — clone repo, chạy, modify 1 component, viết note. Post lên LinkedIn/Twitter.</div>
+                <div class="task-title">Đọc + viết note (English) về 1 paper actuator/whole-body control của Figure hoặc 1X</div>
+                <div class="task-desc">Tìm trên Figure/1X blog hoặc arXiv. Note: kiến trúc, vì sao họ chọn approach đó, liên hệ với capstone của bạn.</div>
               </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p3t4"></div>
-              <div class="task-content">
-                <div class="task-title">PROJECT #2: "Manipulation Policy" — robot học gắp vật</div>
-                <div class="task-desc">Trong sim: robot arm học pick-and-place qua IL hoặc RL. Video demo + code = portfolio gold.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
+              <span class="task-tag tag-medium">MEDIUM</span>
             </li>
           </ul>
         </div>
@@ -1120,81 +1176,50 @@
       <div class="phase-card" id="phase4">
         <div class="phase-header" onclick="togglePhase('phase4')">
           <span class="phase-num">P4</span>
-          <span class="phase-title">Integration & Capstone Project</span>
-          <span class="phase-timeline">THÁNG 5</span>
+          <span class="phase-title">English Narrative & Application — Gap #4</span>
+          <span class="phase-timeline">THÁNG 5–6</span>
           <span class="phase-chevron">▼</span>
         </div>
         <div class="phase-body">
-          <div class="phase-quote">"Ship something real. A finished project beats 10 half-done tutorials every single time."</div>
+          <div class="phase-quote">"Apply Figure, 1X, Physical Intelligence — 3 công ty, biết rõ tech stack từng cái. Không apply đại trà."</div>
           <ul class="task-list">
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t1"></div>
               <div class="task-content">
-                <div class="task-title">PROJECT #3 CAPSTONE: End-to-End Embodied AI System</div>
-                <div class="task-desc">Language command → perception → policy → action. Ví dụ: "Pick up the red cup" → robot thực thi trong sim. Combine tất cả skills.</div>
+                <div class="task-title">English resume + GitHub profile — rewrite toàn bộ theo capstone</div>
+                <div class="task-desc">Resume 1 trang, dẫn đầu bằng capstone (VLA + C++ controller), sau đó publication MethodsX, ByteHome (Tech Lead, production deploy), HaIBotLab. Mọi pinned repo có English README.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
               <div class="task-check" onclick="toggleTask(this)" data-id="p4t2"></div>
               <div class="task-content">
-                <div class="task-title">Viết technical blog 3-5 bài về những gì đã xây</div>
-                <div class="task-desc">Medium hoặc Substack. Bài về ROS2, bài về training policy, bài về lessons learned. SEO bằng cách tag đúng.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t3"></div>
-              <div class="task-content">
-                <div class="task-title">Đóng gói portfolio website cá nhân</div>
-                <div class="task-desc">Domain riêng, video demos embed, link GitHub, clear narrative "from X to robotics engineer".</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- PHASE 5 -->
-      <div class="phase-card" id="phase5">
-        <div class="phase-header" onclick="togglePhase('phase5')">
-          <span class="phase-num">P5</span>
-          <span class="phase-title">Job Hunting — Targeted, Not Shotgun</span>
-          <span class="phase-timeline">THÁNG 6</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <div class="phase-quote">"Apply to 5 companies you actually want to work at, not 50 random ones. Know their tech stack, their papers, their problems."</div>
-          <ul class="task-list">
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p5t1"></div>
-              <div class="task-content">
-                <div class="task-title">Research 20 target companies — build tracker</div>
-                <div class="task-desc">Figure AI, Physical Intelligence, Boston Dynamics, Agility, 1X, ALOHA startups, VinAI Robotics, nội địa Việt Nam. Biết CEO, tech stack, mục tiêu của họ.</div>
+                <div class="task-title">Đọc kỹ JD + research papers của Figure, 1X, Physical Intelligence — note tech stack cụ thể</div>
+                <div class="task-desc">Figure: Helix VLA. 1X: world models + Redwood AI. PI: π0/π0.5. Mỗi công ty 1 file note: stack, paper gần nhất, vì sao capstone của bạn liên quan.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
             <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p5t2"></div>
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t3"></div>
               <div class="task-content">
-                <div class="task-title">Cold outreach đến 10 robotics engineers trên LinkedIn</div>
-                <div class="task-desc">Không xin việc ngay. Hỏi về công việc, xin feedback về project. 1 message có project = 10x response rate.</div>
+                <div class="task-title">Cold outreach 10 engineers tại 3 công ty trên LinkedIn (English)</div>
+                <div class="task-desc">Kèm link capstone repo + video. Hỏi feedback, không xin việc trực tiếp ở message đầu.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p5t3"></div>
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t4"></div>
               <div class="task-content">
-                <div class="task-title">Luyện coding interview: ROS2, algorithms, ML system design</div>
-                <div class="task-desc">LeetCode medium + robotics system design questions. Luyện giải thích code sẵn của mình trong 5 phút.</div>
+                <div class="task-title">Mock interview: giải thích capstone bằng English trong 5 phút</div>
+                <div class="task-desc">Record video tự giải thích kiến trúc capstone. Practice đến khi tự nhiên — đây là phần loại nhiều candidate Việt Nam nhất, không phải technical skill.</div>
               </div>
               <span class="task-tag tag-high">HIGH</span>
             </li>
             <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p5t4"></div>
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t5"></div>
               <div class="task-content">
-                <div class="task-title">Apply + interview loop</div>
-                <div class="task-desc">Tailored cover letter mỗi application. Mention specific paper/project của company. Theo dõi mọi application trong tracker.</div>
+                <div class="task-title">Apply Figure, 1X, Physical Intelligence (+ 2-3 backup: Skild AI, Dexterity)</div>
+                <div class="task-desc">Cover letter ngắn, reference đúng paper/blog của họ + link capstone. Theo dõi trong tracker.</div>
               </div>
               <span class="task-tag tag-critical">CRITICAL</span>
             </li>
@@ -1209,86 +1234,86 @@
       <div class="elon-banner">
         <div class="elon-icon">🎯</div>
         <div class="elon-text">
-          <strong>Rule:</strong> Mỗi buổi sáng biết chính xác mình cần làm gì. Không "học chung chung" — chỉ tasks có output đo được. Nếu không xong trong ngày, tại sao?
+          <strong>Rule:</strong> Mỗi tuần = 1 commit có ý nghĩa vào capstone repo. Không "đọc thêm paper" trừ khi bị block. Nếu tuần này không có commit, hỏi tại sao.
         </div>
       </div>
 
       <div class="next-action-card">
         <div class="action-priority">// PRIORITY #1 — DO THIS FIRST</div>
-        <div class="action-title">Setup môi trường Ubuntu + ROS2 Humble</div>
-        <div class="action-detail">Nếu chưa có Ubuntu, cài dual-boot hoặc WSL2. Install ROS2 Humble theo docs chính thức. Chạy được talker/listener example = done. Thời gian thực tế: 3-4 giờ nếu lần đầu.</div>
-        <div class="action-time">⏱ Hôm nay hoặc cuối tuần này</div>
+        <div class="action-title">Tạo repo capstone "embodied-vla-controller" — định nghĩa scope rõ</div>
+        <div class="action-detail">README (English) viết trước khi code: "Goal: fine-tune a VLA policy on self-collected teleop data and deploy via a real-time C++ ROS2 controller on [robot bạn có]." Đây là 1 sentence quyết định cả 6 tháng — viết cho đúng.</div>
+        <div class="action-time">⏱ Hôm nay</div>
       </div>
 
       <div class="next-action-card">
         <div class="action-priority">// PRIORITY #2 — THIS WEEK</div>
-        <div class="action-title">Bắt đầu C++ trong 1 giờ/ngày song song ROS2</div>
-        <div class="action-detail">Learncpp.com Chapter 1-9. Không cần học hết — chỉ cần đủ để hiểu ROS2 C++ node. Viết ít nhất 1 file .cpp mỗi ngày, dù chỉ 20 dòng.</div>
-        <div class="action-time">⏱ Bắt đầu ngay hôm nay</div>
-      </div>
-
-      <div class="next-action-card">
-        <div class="action-priority">// PRIORITY #3 — 2 TUẦN TỚI</div>
-        <div class="action-title">Update GitHub: thêm robotics-related projects/notes</div>
-        <div class="action-detail">Tạo repo "robotics-journey" — document quá trình học. Mọi thứ bạn làm đều push lên. Recruiter xem commit history, không chỉ projects.</div>
+        <div class="action-title">Port HG-Dagger inference loop sang C++ với fixed-rate executor</div>
+        <div class="action-detail">Lấy code Python từ "more-than-imitation-learning", viết lại phần inference + control loop bằng C++ rclcpp, dùng MultiThreadedExecutor. Đo latency bằng `ros2 topic hz` — ghi số liệu vào benchmark.md.</div>
         <div class="action-time">⏱ Tuần này</div>
       </div>
 
       <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #3 — 2 TUẦN TỚI</div>
+        <div class="action-title">Chạy thử OpenVLA hoặc LeRobot inference trên Vast GPU</div>
+        <div class="action-detail">Không cần data của bạn ngay — dùng checkpoint pretrained + dataset mẫu (RoboMimic). Hiểu shape input (image + language token) và output (action chunk). Note English trong repo.</div>
+        <div class="action-time">⏱ 2 tuần tới</div>
+      </div>
+
+      <div class="next-action-card">
         <div class="action-priority">// PRIORITY #4 — THÁNG NÀY</div>
-        <div class="action-title">Đọc 2 Embodied AI papers (không cần hiểu hết)</div>
-        <div class="action-detail">Gợi ý: "ACT: Action Chunking with Transformers" và "Diffusion Policy". Không cần hiểu math hoàn toàn — hiểu pipeline và tại sao nó quan trọng. Note lại bằng tiếng Việt.</div>
+        <div class="action-title">Đọc kiến trúc π0 (Physical Intelligence) hoặc RT-2 — note bằng English</div>
+        <div class="action-detail">Tập trung vào: vision-language backbone nào, action representation, training data format. So sánh với HG-Dagger approach bạn đã làm — viết 1 đoạn "how my work connects to this".</div>
         <div class="action-time">⏱ Tháng này</div>
       </div>
 
       <div class="next-action-card">
         <div class="action-priority">// PRIORITY #5 — BUILD HABIT</div>
-        <div class="action-title">Daily log: 1 sentence về output hôm nay</div>
-        <div class="action-detail">Trong tab Notes: ghi mỗi ngày 1 dòng. Ví dụ: "14/06 — Setup ROS2 xong, chạy được talker/listener, lỗi ở bước X giải quyết bằng Y." Sau 30 ngày bạn sẽ thấy mình tiến xa đến đâu.</div>
-        <div class="action-time">⏱ Mỗi ngày</div>
+        <div class="action-title">Weekly commit + 1 dòng log (English) vào tab Notes</div>
+        <div class="action-detail">Mỗi tuần: 1 commit có ý nghĩa vào capstone repo + 1 dòng note tiếng Anh: "Week N — shipped X, blocked on Y, next Z." Sau 24 tuần = 24 commits có narrative rõ cho recruiter.</div>
+        <div class="action-time">⏱ Mỗi tuần</div>
       </div>
     </div>
 
     <!-- TAB: WEEKLY PLAN -->
     <div class="tab-panel" id="tab-weekly">
       <p style="font-size:13px; color:var(--text2); margin-bottom:20px; line-height:1.7;">
-        Template tuần lý tưởng — điều chỉnh theo lịch đi làm. <strong style="color:var(--accent)">Tối thiểu 2 giờ/ngày</strong> cho Phase hiện tại. Cuối tuần là thời gian cho projects lớn.
+        Template tuần lý tưởng — điều chỉnh theo lịch đi làm tại VinRobotics. <strong style="color:var(--accent)">Tối thiểu 2 giờ/ngày</strong> cho Phase hiện tại. Cuối tuần dành cho capstone deep work.
       </p>
 
       <div class="week-grid">
         <div class="day-col">
           <div class="day-label">T2</div>
-          <div class="day-block block-cyan">ROS2<br/>Tutorial<br/>1h</div>
-          <div class="day-block block-purple">C++<br/>Practice<br/>1h</div>
+          <div class="day-block block-cyan">C++ real-time<br/>rclcpp pattern<br/>1h</div>
+          <div class="day-block block-purple">Capstone repo<br/>code<br/>1h</div>
         </div>
         <div class="day-col">
           <div class="day-label">T3</div>
-          <div class="day-block block-cyan">ROS2<br/>Build node<br/>1.5h</div>
-          <div class="day-block block-amber">Paper<br/>Reading<br/>30m</div>
+          <div class="day-block block-cyan">Port HG-Dagger<br/>→ C++<br/>1.5h</div>
+          <div class="day-block block-amber">English log<br/>15m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T4</div>
-          <div class="day-block block-purple">C++<br/>Deep dive<br/>1h</div>
-          <div class="day-block block-cyan">Gazebo<br/>Setup<br/>1h</div>
+          <div class="day-block block-purple">VLA / LeRobot<br/>reading + run<br/>1.5h</div>
+          <div class="day-block block-cyan">Benchmark<br/>latency<br/>30m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T5</div>
-          <div class="day-block block-cyan">ROS2<br/>Integration<br/>1.5h</div>
-          <div class="day-block block-amber">GitHub<br/>Push + log<br/>30m</div>
+          <div class="day-block block-cyan">ros2_control<br/>hardware_interface<br/>1.5h</div>
+          <div class="day-block block-amber">GitHub push<br/>+ commit log<br/>30m</div>
         </div>
         <div class="day-col">
           <div class="day-label">T6</div>
-          <div class="day-block block-purple">ML/RL<br/>Study<br/>1h</div>
-          <div class="day-block block-cyan">Project<br/>Work<br/>1h</div>
+          <div class="day-block block-purple">VLA fine-tune<br/>setup Vast GPU<br/>1.5h</div>
+          <div class="day-block block-cyan">Capstone<br/>integration<br/>1h</div>
         </div>
         <div class="day-col">
           <div class="day-label today">T7</div>
-          <div class="day-block block-cyan">PROJECT<br/>Deep work<br/>3–4h</div>
+          <div class="day-block block-cyan">CAPSTONE<br/>deep work<br/>3–4h</div>
         </div>
         <div class="day-col">
           <div class="day-label">CN</div>
-          <div class="day-block block-amber">Review<br/>week<br/>30m</div>
-          <div class="day-block block-purple">Networking<br/>LinkedIn<br/>30m</div>
+          <div class="day-block block-amber">Review week<br/>(English)<br/>30m</div>
+          <div class="day-block block-purple">LinkedIn<br/>outreach<br/>30m</div>
         </div>
       </div>
 
@@ -1296,12 +1321,12 @@
         <div class="section-label" style="margin-bottom: 12px;">// ELON RULE: 80/20 TIME SPLIT</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div>
-            <div style="font-size:12px; color:var(--accent); font-family:var(--mono); margin-bottom:6px;">80% — BUILDING</div>
-            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Code viết tay, projects push GitHub, debug thực tế, chạy experiments. Đây mới là học thật.</div>
+            <div style="font-size:12px; color:var(--accent); font-family:var(--mono); margin-bottom:6px;">80% — BUILDING CAPSTONE</div>
+            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Code C++ thật, fine-tune VLA thật, chạy trên hardware thật. 1 capstone duy nhất — không project phụ.</div>
           </div>
           <div>
-            <div style="font-size:12px; color:var(--text3); font-family:var(--mono); margin-bottom:6px;">20% — CONSUMING</div>
-            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Đọc paper, xem tutorial, đọc docs. Chỉ khi bị blocked hoặc cần kiến thức cụ thể để unblock.</div>
+            <div style="font-size:12px; color:var(--text3); font-family:var(--mono); margin-bottom:6px;">20% — UNBLOCKING</div>
+            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Đọc rclcpp/LeRobot source, paper Figure/1X/PI — chỉ khi cần để unblock capstone, không đọc lan man.</div>
           </div>
         </div>
       </div>
@@ -1309,99 +1334,109 @@
 
     <!-- TAB: RESOURCES -->
     <div class="tab-panel" id="tab-resources">
-      <div class="section-label" style="margin-bottom:12px;">// ROS2 & ROBOTICS CORE</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">DOCS</div>
-          <div class="resource-name">ROS2 Humble Docs</div>
-          <div class="resource-desc">docs.ros.org — nguồn chân lý, đọc trước mọi tutorial</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">COURSE</div>
-          <div class="resource-name">Robotics Academy (ROS2)</div>
-          <div class="resource-desc">TheConstruct — interactive, không cần setup local</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">BOOK</div>
-          <div class="resource-name">Programming ROS2</div>
-          <div class="resource-desc">Brian Gerkey — đọc chương 1-5 trong tháng đầu</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CHANNEL</div>
-          <div class="resource-name">Articulated Robotics</div>
-          <div class="resource-desc">YouTube — best ROS2 series, thực tế nhất</div>
-        </div>
-      </div>
-
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// EMBODIED AI & POLICY LEARNING</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">PAPER</div>
-          <div class="resource-name">ACT (2023)</div>
-          <div class="resource-desc">"Action Chunking with Transformers" — Tony Zhao, Stanford. Nền tảng IL hiện đại.</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">PAPER</div>
-          <div class="resource-name">Diffusion Policy</div>
-          <div class="resource-desc">Chi &amp; al. — SOTA behavior cloning. Đọc sau ACT.</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CODE</div>
-          <div class="resource-name">RoboMimic</div>
-          <div class="resource-desc">github/StanfordVL — IL benchmark, dataset + training ready</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">SIM</div>
-          <div class="resource-name">MuJoCo</div>
-          <div class="resource-desc">mujoco.org — free, nhanh, dùng rộng trong research</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CODE</div>
-          <div class="resource-name">Stable-Baselines3</div>
-          <div class="resource-desc">RL library dễ dùng nhất, PyTorch. Bắt đầu RL từ đây.</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CHANNEL</div>
-          <div class="resource-name">Yannic Kilcher</div>
-          <div class="resource-desc">YouTube — paper explanations, robotics + ML</div>
-        </div>
-      </div>
-
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// C++ & SYSTEMS</div>
+      <div class="section-label" style="margin-bottom:12px;">// PRODUCTION C++ REAL-TIME (Gap #1)</div>
       <div class="resource-grid">
         <div class="resource-card">
           <div class="resource-type">WEBSITE</div>
-          <div class="resource-name">LearnCpp.com</div>
-          <div class="resource-desc">Tutorial C++ miễn phí tốt nhất. Chapter 1-15 là đủ cho robotics.</div>
+          <div class="resource-name">LearnCpp.com — Smart Pointers (Ch. 22)</div>
+          <div class="resource-desc">unique_ptr, shared_ptr, RAII — đọc TRƯỚC P1T1 nếu chưa từng tự viết class có destructor. 1-2 buổi đủ để bắt đầu.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CODE</div>
+          <div class="resource-name">ros2_control source</div>
+          <div class="resource-desc">github/ros-controls — đọc hardware_interface + controller_manager, đây là pattern Figure/1X dùng</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">DOCS</div>
+          <div class="resource-name">rclcpp Executors</div>
+          <div class="resource-desc">docs.ros.org — MultiThreadedExecutor, callback groups, real-time considerations</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">TOOL</div>
+          <div class="resource-name">AddressSanitizer / ThreadSanitizer</div>
+          <div class="resource-desc">Compile flag -fsanitize=address,thread — chạy trên mọi node C++ trước khi push</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">BOOK</div>
-          <div class="resource-name">C++ Primer (5th Ed)</div>
-          <div class="resource-desc">Lippman — reference khi cần đào sâu specific topic</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">PRACTICE</div>
-          <div class="resource-name">LeetCode (C++)</div>
-          <div class="resource-desc">Solve easy/medium bằng C++ — vừa học syntax vừa prep interview</div>
+          <div class="resource-name">C++ Concurrency in Action</div>
+          <div class="resource-desc">Anthony Williams — chương memory model + lock-free, đọc khi cần unblock</div>
         </div>
       </div>
 
-      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// COMMUNITY & NETWORK</div>
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// VLA / FOUNDATION MODELS (Gap #2)</div>
       <div class="resource-grid">
         <div class="resource-card">
-          <div class="resource-type">DISCORD</div>
-          <div class="resource-name">Robotics Discord</div>
-          <div class="resource-desc">Robot Dev community — hỏi bất kỳ câu hỏi nào về ROS2</div>
+          <div class="resource-type">CODE</div>
+          <div class="resource-name">LeRobot (HuggingFace)</div>
+          <div class="resource-desc">github/huggingface/lerobot — VLA training/eval pipeline ready-to-run, dataset format chuẩn</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CODE</div>
+          <div class="resource-name">OpenVLA</div>
+          <div class="resource-desc">github/openvla — open weights, fine-tune script có sẵn, chạy trên Vast GPU</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">PAPER</div>
+          <div class="resource-name">π0 (Physical Intelligence)</div>
+          <div class="resource-desc">physicalintelligence.company — đọc kỹ, đây là target company chính</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">PAPER</div>
+          <div class="resource-name">RT-2 / RT-X</div>
+          <div class="resource-desc">Google DeepMind — kiến trúc gốc của VLA, so sánh với π0</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">BLOG</div>
+          <div class="resource-name">Figure AI — Helix</div>
+          <div class="resource-desc">figure.ai/news — đọc kỹ tech stack VLA của Figure, reference khi apply</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">BLOG</div>
+          <div class="resource-name">1X Technologies — World Models</div>
+          <div class="resource-desc">1x.tech — world model + EVE/NEO, đọc trước khi outreach</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// HARDWARE / MECHATRONICS (Gap #3)</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">LIBRARY</div>
+          <div class="resource-name">SimpleFOC</div>
+          <div class="resource-desc">simplefoc.com — FOC trên ESP32/Arduino, code mở để học rồi tự viết lại</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">COURSE</div>
+          <div class="resource-name">Modern Robotics (Coursera/edX)</div>
+          <div class="resource-desc">Lynch & Park — chương dynamics/control, đọc khi cần unblock FOC</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// ENGLISH NARRATIVE & APPLICATION (Gap #4)</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">JOBS</div>
+          <div class="resource-name">Figure AI Careers</div>
+          <div class="resource-desc">figure.ai/careers — đọc JD kỹ trước khi viết resume</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">JOBS</div>
+          <div class="resource-name">1X Technologies Careers</div>
+          <div class="resource-desc">1x.tech/careers</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">JOBS</div>
+          <div class="resource-name">Physical Intelligence Careers</div>
+          <div class="resource-desc">physicalintelligence.company/careers</div>
         </div>
         <div class="resource-card">
           <div class="resource-type">TWITTER/X</div>
-          <div class="resource-name">Follow: @ericjang11, @chelseafinncmu</div>
-          <div class="resource-desc">Embodied AI researchers. Engage với content của họ.</div>
+          <div class="resource-name">Follow: @chelseafinncmu, @sergeylevine</div>
+          <div class="resource-desc">Co-founder Physical Intelligence — theo dõi update π0</div>
         </div>
         <div class="resource-card">
-          <div class="resource-type">NEWSLETTER</div>
-          <div class="resource-name">Robohub, The Robot Report</div>
-          <div class="resource-desc">Cập nhật industry trends mỗi tuần, biết ai đang build gì</div>
+          <div class="resource-type">PRACTICE</div>
+          <div class="resource-name">Pramp / interviewing.io (English mock)</div>
+          <div class="resource-desc">Mock technical interview bằng English — luyện giải thích capstone</div>
         </div>
       </div>
     </div>
@@ -1411,20 +1446,20 @@
       <div class="elon-banner">
         <div class="elon-icon">📝</div>
         <div class="elon-text">
-          Ghi chú hàng ngày. Daily log, blockers, insights, questions. <strong>Dữ liệu này được đồng bộ qua cloud</strong> — ùng chung cho mọi thiết bị, không mất khi reload trang.
+          Ghi chú hàng tuần. Weekly log, blockers, insights — khuyến khích viết bằng English để luyện narrative. <strong>Dữ liệu này được đồng bộ qua cloud</strong> — dùng chung cho mọi thiết bị, không mất khi reload trang.
         </div>
       </div>
 
       <div class="notes-wrapper">
         <div class="notes-toolbar">
-          <span class="notes-label">// DAILY LOG & NOTES</span>
+          <span class="notes-label">// WEEKLY LOG & NOTES</span>
           <button class="notes-save-btn" onclick="saveNotes()">SAVE ⌘S</button>
         </div>
-        <textarea id="notes-area" placeholder="[14/06/2026] — Hôm nay làm gì?
-Output đo được:
-Blocker gặp phải:
-Giải pháp:
-Ngày mai cần làm:
+        <textarea id="notes-area" placeholder="[Week 1] — What did I ship?
+Measurable output:
+Blocker:
+How I solved it:
+Next week:
 ---
 "></textarea>
       </div>
@@ -1457,40 +1492,107 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const stateRef = db.ref('robotics_mission_v1');
+const stateRef = db.ref('robotics_mission_v2');
 
-let state = { tasks: {}, notes: '' };
+// MISSION_DURATION_DAYS: tổng thời gian mission, dùng để tính deadline = start + duration
+const MISSION_DURATION_DAYS = 182;
+
+let state = { tasks: {}, notes: '', startDateISO: null };
+let deadlineDate = null;
+let startDate = null;
 
 function saveState(newState) {
   state = newState;
   stateRef.set(state).catch(e => console.error('Save error:', e));
 }
 
-// ── DATE & COUNTDOWN ──
+// ── START DATE / DEADLINE ──
+function todayISO() {
+  const d = new Date();
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return new Date(d - tzOffset).toISOString().slice(0, 10);
+}
+
+function computeDeadlineFromStart(startISO) {
+  // Parse as local date (not UTC) to avoid off-by-one-day issues
+  const [y, m, d] = startISO.split('-').map(Number);
+  const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+  const deadline = new Date(start);
+  deadline.setDate(deadline.getDate() + MISSION_DURATION_DAYS);
+  return { start, deadline };
+}
+
+function setStartDate(startISO, persist) {
+  const { start, deadline } = computeDeadlineFromStart(startISO);
+  startDate = start;
+  deadlineDate = deadline;
+
+  document.getElementById('start-date-input').value = startISO;
+  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  }) + ` (+${MISSION_DURATION_DAYS} ngày)`;
+
+  if (persist) {
+    state.startDateISO = startISO;
+    saveState(state);
+  }
+
+  tick();
+}
+
+function onStartDateChange() {
+  const val = document.getElementById('start-date-input').value;
+  if (!val) return;
+  setStartDate(val, true);
+  showToast('✓ START DATE UPDATED');
+}
+
+// ── DATE & LIVE COUNTDOWN (seconds-accurate) ──
 function initDateTime() {
   const now = new Date();
-  const deadline = new Date(now);
-  deadline.setDate(deadline.getDate() + 182);
 
   document.getElementById('nav-date').textContent = now.toLocaleDateString('vi-VN', {
     weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).toUpperCase();
+  }).toUpperCase() + ' ' + now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  });
-
-  function tick() {
-    const now2 = new Date();
-    const diff = deadline - now2;
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    document.getElementById('countdown-display').textContent =
-      `${String(d).padStart(3,'0')}D ${String(h).padStart(2,'0')}H ${String(m).padStart(2,'0')}M`;
+  // default start date: today, only used until state loads / overrides it
+  if (!startDate) {
+    setStartDate(todayISO(), false);
   }
+
+  setInterval(() => {
+    const n = new Date();
+    document.getElementById('nav-date').textContent = n.toLocaleDateString('vi-VN', {
+      weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).toUpperCase() + ' ' + n.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }, 1000);
+
   tick();
-  setInterval(tick, 60000);
+  setInterval(tick, 1000); // tick every second for accurate seconds display
+}
+
+function formatDuration(totalSeconds, signPrefix) {
+  const sec = Math.max(0, Math.floor(Math.abs(totalSeconds)));
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${signPrefix}${d}D ${String(h).padStart(2,'0')}H ${String(m).padStart(2,'0')}M ${String(s).padStart(2,'0')}S`;
+}
+
+function tick() {
+  if (!deadlineDate || !startDate) return;
+  const now = new Date();
+
+  const remainingSec = (deadlineDate - now) / 1000;
+  document.getElementById('countdown-display').textContent = formatDuration(remainingSec, remainingSec < 0 ? '-' : '');
+
+  const elapsedSec = (now - startDate) / 1000;
+  const elapsedClamped = Math.max(0, elapsedSec);
+  const totalSec = MISSION_DURATION_DAYS * 86400;
+  const pctElapsed = totalSec > 0 ? Math.min(100, (elapsedClamped / totalSec) * 100) : 0;
+  document.getElementById('elapsed-display').textContent =
+    `${formatDuration(elapsedClamped, '')} (${pctElapsed.toFixed(2)}%)`;
 }
 
 // ── TABS ──
@@ -1529,8 +1631,8 @@ function updateProgress() {
   document.getElementById('op-pct').textContent = pct + '%';
   document.getElementById('op-fill').style.width = pct + '%';
 
-  const phases = ['phase1','phase2','phase3','phase4','phase5'];
-  let currentPhase = 'P5';
+  const phases = ['phase1','phase2','phase3','phase4'];
+  let currentPhase = 'P4';
   for(let i = 0; i < phases.length; i++) {
     const phaseTasks = document.querySelectorAll(`#${phases[i]} .task-check`);
     const phaseDone = document.querySelectorAll(`#${phases[i]} .task-check.done`);
@@ -1557,6 +1659,12 @@ function applyNotesFromState() {
   }
 }
 
+function applyStartDateFromState() {
+  if (state.startDateISO) {
+    setStartDate(state.startDateISO, false);
+  }
+}
+
 // ── NOTES ──
 function saveNotes() {
   state.notes = document.getElementById('notes-area').value;
@@ -1577,7 +1685,7 @@ function exportNotes() {
   const blob = new Blob([text], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'robotics-mission-notes.txt';
+  a.download = 'embodied-ai-mission-notes.txt';
   a.click();
 }
 
@@ -1606,8 +1714,9 @@ stateRef.on('value', (snapshot) => {
     if(state.notes === undefined) state.notes = '';
     applyTasksFromState();
     applyNotesFromState();
+    applyStartDateFromState();
   } else {
-    saveState({ tasks: {}, notes: '' });
+    saveState({ tasks: {}, notes: '', startDateISO: todayISO() });
   }
 });
 
