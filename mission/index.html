@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSION CONTROL — Robotics & Embodied AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #080c12;
+    --surface: #0d1117;
+    --surface2: #131920;
+    --border: #1e2a35;
+    --border2: #243040;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --text: #e2eaf4;
+    --text2: #8fa3b8;
+    --text3: #4a6075;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,229,255,0.015) 2px,
+      rgba(0,229,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── TOP NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,12,18,0.95);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .nav-status {
+    display: flex; gap: 20px; align-items: center;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .nav-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  /* ── HEADER HERO ── */
+  .hero {
+    padding: 48px 28px 36px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: 'ROBOTICS\AEMBODIED AI';
+    white-space: pre;
+    position: absolute;
+    right: -20px; top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 80px;
+    font-weight: 700;
+    color: rgba(0,229,255,0.04);
+    letter-spacing: -3px;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: var(--sans);
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .hero-title span { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--text2);
+    max-width: 540px;
+    line-height: 1.7;
+  }
+
+  /* ── GRID LAYOUT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 140px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .sidebar-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ── MISSION CLOCK ── */
+  .mission-clock {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .clock-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  #countdown-display {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(0,229,255,0.4);
+  }
+
+  .clock-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* ── PROGRESS BARS ── */
+  .skill-item {
+    margin-bottom: 14px;
+  }
+
+  .skill-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .skill-name {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .skill-pct {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .skill-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .skill-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .fill-cyan { background: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.5); }
+  .fill-purple { background: var(--accent2); box-shadow: 0 0 8px rgba(124,58,237,0.5); }
+  .fill-amber { background: var(--accent3); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+  .fill-red { background: var(--danger); }
+  .fill-green { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+
+  /* ── GAP ANALYSIS ── */
+  .gap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .gap-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .gap-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .gap-text strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .content {
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    gap: 0;
+    position: sticky;
+    top: 57px;
+    background: var(--bg);
+    z-index: 50;
+  }
+
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; padding: 28px 24px; }
+  .tab-panel.active { display: block; }
+
+  /* ── PHASE CARDS ── */
+  .phase-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .phase-card:hover { border-color: var(--border2); }
+
+  .phase-card.active-phase { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,229,255,0.08); }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: var(--surface);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    flex-shrink: 0;
+    width: 32px;
+  }
+
+  .phase-title {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .phase-timeline {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent3);
+    flex-shrink: 0;
+  }
+
+  .phase-chevron {
+    font-size: 12px;
+    color: var(--text3);
+    transition: transform 0.2s;
+  }
+
+  .phase-card.open .phase-chevron { transform: rotate(180deg); }
+
+  .phase-body {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .phase-card.open .phase-body { display: block; }
+
+  .phase-quote {
+    font-size: 12px;
+    color: var(--accent);
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+    padding-left: 12px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .task-list { list-style: none; }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-item:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border2);
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+
+  .task-check:hover { border-color: var(--accent); }
+  .task-check.done { background: var(--accent); border-color: var(--accent); }
+  .task-check.done::after { content: '✓'; color: #000; font-size: 11px; font-weight: 700; }
+
+  .task-content { flex: 1; }
+
+  .task-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 3px;
+    transition: color 0.2s;
+  }
+
+  .task-check.done + .task-content .task-title {
+    color: var(--text3);
+    text-decoration: line-through;
+  }
+
+  .task-desc {
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+
+  .task-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .tag-critical { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+  .tag-high { background: rgba(245,158,11,0.15); color: var(--accent3); border: 1px solid rgba(245,158,11,0.3); }
+  .tag-medium { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+  .tag-ok { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+
+  /* ── NEXT ACTIONS ── */
+  .next-action-card {
+    background: linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(124,58,237,0.06) 100%);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .next-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+  }
+
+  .action-priority {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .action-title {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .action-detail {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  .action-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── RESOURCE LINKS ── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .resource-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .resource-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .resource-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .resource-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .resource-desc {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.4;
+  }
+
+  /* ── WEEKLY PLANNER ── */
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .day-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .day-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-align: center;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .day-label.today { color: var(--accent); }
+
+  .day-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 7px;
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.4;
+    min-height: 50px;
+    transition: border-color 0.15s;
+  }
+
+  .day-block:hover { border-color: var(--border2); }
+  .day-block.block-cyan { border-left: 2px solid var(--accent); }
+  .day-block.block-purple { border-left: 2px solid var(--accent2); }
+  .day-block.block-amber { border-left: 2px solid var(--accent3); }
+
+  /* ── ELON MODE BANNER ── */
+  .elon-banner {
+    background: linear-gradient(90deg, rgba(124,58,237,0.12) 0%, rgba(0,229,255,0.08) 100%);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .elon-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .elon-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .elon-text strong { color: var(--accent2); font-style: normal; }
+
+  /* ── NOTES AREA ── */
+  .notes-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .notes-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .notes-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+  }
+
+  .notes-save-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  .notes-save-btn:hover { background: rgba(0,229,255,0.2); }
+
+  #notes-area {
+    width: 100%;
+    min-height: 180px;
+    background: transparent;
+    border: none;
+    padding: 16px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    resize: vertical;
+    outline: none;
+  }
+
+  #notes-area::placeholder { color: var(--text3); }
+
+  /* ── OVERALL PROGRESS ── */
+  .overall-progress {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .op-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+  }
+
+  .op-title {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .op-pct {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .op-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .op-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 3px;
+    box-shadow: 0 0 12px rgba(0,229,255,0.4);
+    transition: width 1s ease;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    letter-spacing: 1px;
+  }
+
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .week-grid { grid-template-columns: repeat(3, 1fr); }
+    .hero::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">⬡ MISSION CONTROL</div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    <div class="nav-date" id="nav-date">—</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">// TARGET DESIGNATION</div>
+  <h1 class="hero-title">Robotics Software Engineer<br><span>&amp; Embodied AI Engineer</span></h1>
+  <p class="hero-sub">Lộ trình 6 tháng theo tư duy first-principles. Mỗi ngày phải có output đo được — không phải "học", mà là <em>build, ship, iterate</em>.</p>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- MISSION CLOCK -->
+    <div class="sidebar-section">
+      <div class="section-label">// MISSION TIMER</div>
+      <div class="mission-clock">
+        <div class="clock-label">DAYS REMAINING</div>
+        <div id="countdown-display">182</div>
+        <div class="clock-sub">Deadline: <span id="deadline-text">—</span></div>
+      </div>
+    </div>
+
+    <!-- SKILL RADAR -->
+    <div class="sidebar-section">
+      <div class="section-label">// SKILL MATRIX</div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">Python</span>
+          <span class="skill-pct">35%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-green" style="width:35%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">ROS2</span>
+          <span class="skill-pct">20%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:20%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">Computer Vision</span>
+          <span class="skill-pct">25%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:25%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">ML / Deep Learning</span>
+          <span class="skill-pct">30%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-purple" style="width:30%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">C++ (Robot Systems)</span>
+          <span class="skill-pct">5%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-red" style="width:5%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">RL / Imitation Learning</span>
+          <span class="skill-pct">15%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:15%"></div></div>
+      </div>
+
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">Embedded Systems</span>
+          <span class="skill-pct">20%</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill fill-amber" style="width:20%"></div></div>
+      </div>
+    </div>
+
+    <!-- GAP ANALYSIS -->
+    <div class="sidebar-section">
+      <div class="section-label">// GAP ANALYSIS</div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🔴</div>
+        <div class="gap-text">
+          <strong>C++ — Critical Gap</strong>
+          ROS2 production code = C++. Phải có nền tảng trong 2 tháng đầu.
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🟠</div>
+        <div class="gap-text">
+          <strong>Portfolio Projects</strong>
+          Chưa có project Robotics/Embodied AI đủ impress recruiter. Cần 2-3 projects github public.
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🟡</div>
+        <div class="gap-text">
+          <strong>Sim-to-Real Pipeline</strong>
+          Isaac Sim / MuJoCo / Gazebo — chưa có hands-on experience.
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🟡</div>
+        <div class="gap-text">
+          <strong>Networking</strong>
+          Chưa connect với robotics community quốc tế.
+        </div>
+      </div>
+
+      <div class="gap-item">
+        <div class="gap-icon">🟢</div>
+        <div class="gap-text">
+          <strong>Đa mảng = lợi thế</strong>
+          CV + ML + RL + Embedded — foundation đủ rộng, cần depth hơn breadth bây giờ.
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('roadmap', this)">ROADMAP</button>
+      <button class="tab-btn" onclick="switchTab('next', this)">NEXT ACTIONS</button>
+      <button class="tab-btn" onclick="switchTab('weekly', this)">WEEKLY PLAN</button>
+      <button class="tab-btn" onclick="switchTab('resources', this)">RESOURCES</button>
+      <button class="tab-btn" onclick="switchTab('notes', this)">NOTES</button>
+    </div>
+
+    <!-- TAB: ROADMAP -->
+    <div class="tab-panel active" id="tab-roadmap">
+
+      <div class="elon-banner">
+        <div class="elon-icon">⚡</div>
+        <div class="elon-text">
+          <strong>"First Principles Thinking"</strong> — Đừng học theo lộ trình người khác. Hỏi: Robot cần làm gì? Cần những gì để làm điều đó? Build ngược từ đó. 6 tháng đủ nếu bạn loại bỏ tất cả những gì không essential. <strong>Stop learning. Start building.</strong>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-done">0</div>
+          <div class="stat-label">Tasks Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-phase">P1</div>
+          <div class="stat-label">Current Phase</div>
+        </div>
+      </div>
+
+      <div class="overall-progress">
+        <div class="op-header">
+          <span class="op-title">Mission Progress — Robotics Engineer</span>
+          <span class="op-pct" id="op-pct">0%</span>
+        </div>
+        <div class="op-bar">
+          <div class="op-fill" id="op-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- PHASE 1 -->
+      <div class="phase-card active-phase open" id="phase1">
+        <div class="phase-header" onclick="togglePhase('phase1')">
+          <span class="phase-num">P1</span>
+          <span class="phase-title">Foundation Hardening — C++ & ROS2 Core</span>
+          <span class="phase-timeline">THÁNG 1–2</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-quote">"Nếu bạn không thể viết C++ cho robot, bạn là người dùng công cụ, không phải người xây hệ thống." — First Principles view</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t1"></div>
+              <div class="task-content">
+                <div class="task-title">C++ cơ bản đến trung cấp (pointers, OOP, memory management)</div>
+                <div class="task-desc">Learncpp.com + C++ Primer. 2h/ngày, 3 tuần. Mục tiêu: tự viết được class, handle pointers, không leak memory.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t2"></div>
+              <div class="task-content">
+                <div class="task-title">Setup ROS2 Humble trên Ubuntu, build workspace từ đầu</div>
+                <div class="task-desc">Không dùng tutorial sẵn có. Tự làm từng bước, debug khi lỗi. Log mọi error.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t3"></div>
+              <div class="task-content">
+                <div class="task-title">ROS2 Node, Topic, Service, Action — tự build mini-project</div>
+                <div class="task-desc">Build robot publisher/subscriber system. Push lên GitHub public. Viết README chi tiết.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t4"></div>
+              <div class="task-content">
+                <div class="task-title">Setup Gazebo simulation + spawn robot URDF</div>
+                <div class="task-desc">Dùng TurtleBot3 hoặc custom URDF. Điều khiển được robot trong sim.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p1t5"></div>
+              <div class="task-content">
+                <div class="task-title">Tạo GitHub profile + pinned repositories strategy</div>
+                <div class="task-desc">README profile ấn tượng. Mọi project phải có: demo GIF, architecture diagram, clear usage.</div>
+              </div>
+              <span class="task-tag tag-medium">MEDIUM</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase-card" id="phase2">
+        <div class="phase-header" onclick="togglePhase('phase2')">
+          <span class="phase-num">P2</span>
+          <span class="phase-title">Perception Stack — Computer Vision meets Robot</span>
+          <span class="phase-timeline">THÁNG 2–3</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-quote">"Perception is everything. A robot that can't see can't act." — Embodied AI first principle</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p2t1"></div>
+              <div class="task-content">
+                <div class="task-title">ROS2 + Camera integration: object detection pipeline</div>
+                <div class="task-desc">Kết hợp CV skills sẵn có với ROS2. Publish detection results qua topic. Dùng YOLO hoặc MediaPipe.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p2t2"></div>
+              <div class="task-content">
+                <div class="task-title">Depth estimation + 3D point cloud xử lý cơ bản</div>
+                <div class="task-desc">RealSense hoặc dùng stereo sim trong Gazebo. Visualize trong RViz2.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p2t3"></div>
+              <div class="task-content">
+                <div class="task-title">Navigation Stack (Nav2) — robot tự di chuyển tránh chướng ngại</div>
+                <div class="task-desc">Implement SLAM + Costmap + Path Planning. Demo trong Gazebo. Record video.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p2t4"></div>
+              <div class="task-content">
+                <div class="task-title">PROJECT #1: "Visual Navigation Robot" — Push GitHub + viết blog</div>
+                <div class="task-desc">Robot thấy object → tiếp cận → tránh chướng ngại. Đây là project đầu tiên đủ impress.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase-card" id="phase3">
+        <div class="phase-header" onclick="togglePhase('phase3')">
+          <span class="phase-num">P3</span>
+          <span class="phase-title">Embodied AI Core — Policy Learning</span>
+          <span class="phase-timeline">THÁNG 3–4</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-quote">"The real challenge is not teaching a robot to move, but teaching it to think and act in the physical world."</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p3t1"></div>
+              <div class="task-content">
+                <div class="task-title">MuJoCo hoặc Isaac Gym — environment setup + RL training loop</div>
+                <div class="task-desc">Train simple locomotion task (ant walking, hopper). Dùng Stable-Baselines3 hoặc RLlib.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p3t2"></div>
+              <div class="task-content">
+                <div class="task-title">Imitation Learning — Behavior Cloning từ demo data</div>
+                <div class="task-desc">Collect human demo → train BC policy → evaluate. Dùng dataset sẵn có (RoboMimic, D4RL).</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p3t3"></div>
+              <div class="task-content">
+                <div class="task-title">Đọc &amp; implement 1 Embodied AI paper (ACT, Diffusion Policy, hoặc RT-2)</div>
+                <div class="task-desc">Không chỉ đọc — clone repo, chạy, modify 1 component, viết note. Post lên LinkedIn/Twitter.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p3t4"></div>
+              <div class="task-content">
+                <div class="task-title">PROJECT #2: "Manipulation Policy" — robot học gắp vật</div>
+                <div class="task-desc">Trong sim: robot arm học pick-and-place qua IL hoặc RL. Video demo + code = portfolio gold.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase-card" id="phase4">
+        <div class="phase-header" onclick="togglePhase('phase4')">
+          <span class="phase-num">P4</span>
+          <span class="phase-title">Integration & Capstone Project</span>
+          <span class="phase-timeline">THÁNG 5</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-quote">"Ship something real. A finished project beats 10 half-done tutorials every single time."</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t1"></div>
+              <div class="task-content">
+                <div class="task-title">PROJECT #3 CAPSTONE: End-to-End Embodied AI System</div>
+                <div class="task-desc">Language command → perception → policy → action. Ví dụ: "Pick up the red cup" → robot thực thi trong sim. Combine tất cả skills.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t2"></div>
+              <div class="task-content">
+                <div class="task-title">Viết technical blog 3-5 bài về những gì đã xây</div>
+                <div class="task-desc">Medium hoặc Substack. Bài về ROS2, bài về training policy, bài về lessons learned. SEO bằng cách tag đúng.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p4t3"></div>
+              <div class="task-content">
+                <div class="task-title">Đóng gói portfolio website cá nhân</div>
+                <div class="task-desc">Domain riêng, video demos embed, link GitHub, clear narrative "from X to robotics engineer".</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 5 -->
+      <div class="phase-card" id="phase5">
+        <div class="phase-header" onclick="togglePhase('phase5')">
+          <span class="phase-num">P5</span>
+          <span class="phase-title">Job Hunting — Targeted, Not Shotgun</span>
+          <span class="phase-timeline">THÁNG 6</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-quote">"Apply to 5 companies you actually want to work at, not 50 random ones. Know their tech stack, their papers, their problems."</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p5t1"></div>
+              <div class="task-content">
+                <div class="task-title">Research 20 target companies — build tracker</div>
+                <div class="task-desc">Figure AI, Physical Intelligence, Boston Dynamics, Agility, 1X, ALOHA startups, VinAI Robotics, nội địa Việt Nam. Biết CEO, tech stack, mục tiêu của họ.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p5t2"></div>
+              <div class="task-content">
+                <div class="task-title">Cold outreach đến 10 robotics engineers trên LinkedIn</div>
+                <div class="task-desc">Không xin việc ngay. Hỏi về công việc, xin feedback về project. 1 message có project = 10x response rate.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p5t3"></div>
+              <div class="task-content">
+                <div class="task-title">Luyện coding interview: ROS2, algorithms, ML system design</div>
+                <div class="task-desc">LeetCode medium + robotics system design questions. Luyện giải thích code sẵn của mình trong 5 phút.</div>
+              </div>
+              <span class="task-tag tag-high">HIGH</span>
+            </li>
+            <li class="task-item">
+              <div class="task-check" onclick="toggleTask(this)" data-id="p5t4"></div>
+              <div class="task-content">
+                <div class="task-title">Apply + interview loop</div>
+                <div class="task-desc">Tailored cover letter mỗi application. Mention specific paper/project của company. Theo dõi mọi application trong tracker.</div>
+              </div>
+              <span class="task-tag tag-critical">CRITICAL</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB: NEXT ACTIONS -->
+    <div class="tab-panel" id="tab-next">
+      <div class="elon-banner">
+        <div class="elon-icon">🎯</div>
+        <div class="elon-text">
+          <strong>Rule:</strong> Mỗi buổi sáng biết chính xác mình cần làm gì. Không "học chung chung" — chỉ tasks có output đo được. Nếu không xong trong ngày, tại sao?
+        </div>
+      </div>
+
+      <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #1 — DO THIS FIRST</div>
+        <div class="action-title">Setup môi trường Ubuntu + ROS2 Humble</div>
+        <div class="action-detail">Nếu chưa có Ubuntu, cài dual-boot hoặc WSL2. Install ROS2 Humble theo docs chính thức. Chạy được talker/listener example = done. Thời gian thực tế: 3-4 giờ nếu lần đầu.</div>
+        <div class="action-time">⏱ Hôm nay hoặc cuối tuần này</div>
+      </div>
+
+      <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #2 — THIS WEEK</div>
+        <div class="action-title">Bắt đầu C++ trong 1 giờ/ngày song song ROS2</div>
+        <div class="action-detail">Learncpp.com Chapter 1-9. Không cần học hết — chỉ cần đủ để hiểu ROS2 C++ node. Viết ít nhất 1 file .cpp mỗi ngày, dù chỉ 20 dòng.</div>
+        <div class="action-time">⏱ Bắt đầu ngay hôm nay</div>
+      </div>
+
+      <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #3 — 2 TUẦN TỚI</div>
+        <div class="action-title">Update GitHub: thêm robotics-related projects/notes</div>
+        <div class="action-detail">Tạo repo "robotics-journey" — document quá trình học. Mọi thứ bạn làm đều push lên. Recruiter xem commit history, không chỉ projects.</div>
+        <div class="action-time">⏱ Tuần này</div>
+      </div>
+
+      <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #4 — THÁNG NÀY</div>
+        <div class="action-title">Đọc 2 Embodied AI papers (không cần hiểu hết)</div>
+        <div class="action-detail">Gợi ý: "ACT: Action Chunking with Transformers" và "Diffusion Policy". Không cần hiểu math hoàn toàn — hiểu pipeline và tại sao nó quan trọng. Note lại bằng tiếng Việt.</div>
+        <div class="action-time">⏱ Tháng này</div>
+      </div>
+
+      <div class="next-action-card">
+        <div class="action-priority">// PRIORITY #5 — BUILD HABIT</div>
+        <div class="action-title">Daily log: 1 sentence về output hôm nay</div>
+        <div class="action-detail">Trong tab Notes: ghi mỗi ngày 1 dòng. Ví dụ: "14/06 — Setup ROS2 xong, chạy được talker/listener, lỗi ở bước X giải quyết bằng Y." Sau 30 ngày bạn sẽ thấy mình tiến xa đến đâu.</div>
+        <div class="action-time">⏱ Mỗi ngày</div>
+      </div>
+    </div>
+
+    <!-- TAB: WEEKLY PLAN -->
+    <div class="tab-panel" id="tab-weekly">
+      <p style="font-size:13px; color:var(--text2); margin-bottom:20px; line-height:1.7;">
+        Template tuần lý tưởng — điều chỉnh theo lịch đi làm. <strong style="color:var(--accent)">Tối thiểu 2 giờ/ngày</strong> cho Phase hiện tại. Cuối tuần là thời gian cho projects lớn.
+      </p>
+
+      <div class="week-grid">
+        <div class="day-col">
+          <div class="day-label">T2</div>
+          <div class="day-block block-cyan">ROS2<br/>Tutorial<br/>1h</div>
+          <div class="day-block block-purple">C++<br/>Practice<br/>1h</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">T3</div>
+          <div class="day-block block-cyan">ROS2<br/>Build node<br/>1.5h</div>
+          <div class="day-block block-amber">Paper<br/>Reading<br/>30m</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">T4</div>
+          <div class="day-block block-purple">C++<br/>Deep dive<br/>1h</div>
+          <div class="day-block block-cyan">Gazebo<br/>Setup<br/>1h</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">T5</div>
+          <div class="day-block block-cyan">ROS2<br/>Integration<br/>1.5h</div>
+          <div class="day-block block-amber">GitHub<br/>Push + log<br/>30m</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">T6</div>
+          <div class="day-block block-purple">ML/RL<br/>Study<br/>1h</div>
+          <div class="day-block block-cyan">Project<br/>Work<br/>1h</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label today">T7</div>
+          <div class="day-block block-cyan">PROJECT<br/>Deep work<br/>3–4h</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">CN</div>
+          <div class="day-block block-amber">Review<br/>week<br/>30m</div>
+          <div class="day-block block-purple">Networking<br/>LinkedIn<br/>30m</div>
+        </div>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
+        <div class="section-label" style="margin-bottom: 12px;">// ELON RULE: 80/20 TIME SPLIT</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <div style="font-size:12px; color:var(--accent); font-family:var(--mono); margin-bottom:6px;">80% — BUILDING</div>
+            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Code viết tay, projects push GitHub, debug thực tế, chạy experiments. Đây mới là học thật.</div>
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--text3); font-family:var(--mono); margin-bottom:6px;">20% — CONSUMING</div>
+            <div style="font-size:12px; color:var(--text2); line-height:1.6;">Đọc paper, xem tutorial, đọc docs. Chỉ khi bị blocked hoặc cần kiến thức cụ thể để unblock.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RESOURCES -->
+    <div class="tab-panel" id="tab-resources">
+      <div class="section-label" style="margin-bottom:12px;">// ROS2 & ROBOTICS CORE</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">DOCS</div>
+          <div class="resource-name">ROS2 Humble Docs</div>
+          <div class="resource-desc">docs.ros.org — nguồn chân lý, đọc trước mọi tutorial</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">COURSE</div>
+          <div class="resource-name">Robotics Academy (ROS2)</div>
+          <div class="resource-desc">TheConstruct — interactive, không cần setup local</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">BOOK</div>
+          <div class="resource-name">Programming ROS2</div>
+          <div class="resource-desc">Brian Gerkey — đọc chương 1-5 trong tháng đầu</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CHANNEL</div>
+          <div class="resource-name">Articulated Robotics</div>
+          <div class="resource-desc">YouTube — best ROS2 series, thực tế nhất</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// EMBODIED AI & POLICY LEARNING</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">PAPER</div>
+          <div class="resource-name">ACT (2023)</div>
+          <div class="resource-desc">"Action Chunking with Transformers" — Tony Zhao, Stanford. Nền tảng IL hiện đại.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">PAPER</div>
+          <div class="resource-name">Diffusion Policy</div>
+          <div class="resource-desc">Chi &amp; al. — SOTA behavior cloning. Đọc sau ACT.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CODE</div>
+          <div class="resource-name">RoboMimic</div>
+          <div class="resource-desc">github/StanfordVL — IL benchmark, dataset + training ready</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">SIM</div>
+          <div class="resource-name">MuJoCo</div>
+          <div class="resource-desc">mujoco.org — free, nhanh, dùng rộng trong research</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CODE</div>
+          <div class="resource-name">Stable-Baselines3</div>
+          <div class="resource-desc">RL library dễ dùng nhất, PyTorch. Bắt đầu RL từ đây.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">CHANNEL</div>
+          <div class="resource-name">Yannic Kilcher</div>
+          <div class="resource-desc">YouTube — paper explanations, robotics + ML</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// C++ & SYSTEMS</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">WEBSITE</div>
+          <div class="resource-name">LearnCpp.com</div>
+          <div class="resource-desc">Tutorial C++ miễn phí tốt nhất. Chapter 1-15 là đủ cho robotics.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">BOOK</div>
+          <div class="resource-name">C++ Primer (5th Ed)</div>
+          <div class="resource-desc">Lippman — reference khi cần đào sâu specific topic</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">PRACTICE</div>
+          <div class="resource-name">LeetCode (C++)</div>
+          <div class="resource-desc">Solve easy/medium bằng C++ — vừa học syntax vừa prep interview</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px; margin-top:20px;">// COMMUNITY & NETWORK</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-type">DISCORD</div>
+          <div class="resource-name">Robotics Discord</div>
+          <div class="resource-desc">Robot Dev community — hỏi bất kỳ câu hỏi nào về ROS2</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">TWITTER/X</div>
+          <div class="resource-name">Follow: @ericjang11, @chelseafinncmu</div>
+          <div class="resource-desc">Embodied AI researchers. Engage với content của họ.</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-type">NEWSLETTER</div>
+          <div class="resource-name">Robohub, The Robot Report</div>
+          <div class="resource-desc">Cập nhật industry trends mỗi tuần, biết ai đang build gì</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: NOTES -->
+    <div class="tab-panel" id="tab-notes">
+      <div class="elon-banner">
+        <div class="elon-icon">📝</div>
+        <div class="elon-text">
+          Ghi chú hàng ngày. Daily log, blockers, insights, questions. <strong>Dữ liệu này được lưu local trong browser của bạn</strong> — không mất khi reload trang.
+        </div>
+      </div>
+
+      <div class="notes-wrapper">
+        <div class="notes-toolbar">
+          <span class="notes-label">// DAILY LOG & NOTES</span>
+          <button class="notes-save-btn" onclick="saveNotes()">SAVE ⌘S</button>
+        </div>
+        <textarea id="notes-area" placeholder="[14/06/2026] — Hôm nay làm gì?
+Output đo được:
+Blocker gặp phải:
+Giải pháp:
+Ngày mai cần làm:
+---
+"></textarea>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button onclick="clearNotes()" style="font-family:var(--mono); font-size:10px; color:var(--danger); background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); border-radius:4px; padding:6px 12px; cursor:pointer; letter-spacing:1px;">CLEAR</button>
+        <button onclick="exportNotes()" style="font-family:var(--mono); font-size:10px; color:var(--text3); background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:6px 12px; cursor:pointer; letter-spacing:1px;">EXPORT .TXT</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">✓ SAVED</div>
+
+<script>
+// ── STATE ──
+const STORAGE_KEY = 'robotics_mission_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { tasks: {}, notes: '' };
+  } catch(e) { return { tasks: {}, notes: '' }; }
+}
+
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+let state = loadState();
+
+// ── DATE & COUNTDOWN ──
+function initDateTime() {
+  const now = new Date();
+  const deadline = new Date(now);
+  deadline.setDate(deadline.getDate() + 182);
+
+  document.getElementById('nav-date').textContent = now.toLocaleDateString('vi-VN', {
+    weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).toUpperCase();
+
+  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // Live countdown
+  function tick() {
+    const now2 = new Date();
+    const diff = deadline - now2;
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    document.getElementById('countdown-display').textContent =
+      `${String(d).padStart(3,'0')}D ${String(h).padStart(2,'0')}H ${String(m).padStart(2,'0')}M`;
+  }
+  tick();
+  setInterval(tick, 60000);
+}
+
+// ── TABS ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── PHASE TOGGLE ──
+function togglePhase(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ── TASKS ──
+function toggleTask(el) {
+  const id = el.getAttribute('data-id');
+  el.classList.toggle('done');
+  state.tasks[id] = el.classList.contains('done');
+  saveState(state);
+  updateProgress();
+  showToast('✓ TASK UPDATED');
+}
+
+function updateProgress() {
+  const allTasks = document.querySelectorAll('.task-check');
+  const doneTasks = document.querySelectorAll('.task-check.done');
+  const total = allTasks.length;
+  const done = doneTasks.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('op-pct').textContent = pct + '%';
+  document.getElementById('op-fill').style.width = pct + '%';
+
+  // Update current phase stat
+  const phases = ['phase1','phase2','phase3','phase4','phase5'];
+  let currentPhase = 'P5';
+  for(let i = 0; i < phases.length; i++) {
+    const phaseTasks = document.querySelectorAll(`#${phases[i]} .task-check`);
+    const phaseDone = document.querySelectorAll(`#${phases[i]} .task-check.done`);
+    if(phaseDone.length < phaseTasks.length) {
+      currentPhase = 'P' + (i+1);
+      break;
+    }
+  }
+  document.getElementById('stat-phase').textContent = currentPhase;
+}
+
+function restoreTasks() {
+  Object.entries(state.tasks).forEach(([id, done]) => {
+    if(done) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if(el) el.classList.add('done');
+    }
+  });
+  updateProgress();
+}
+
+// ── NOTES ──
+function saveNotes() {
+  state.notes = document.getElementById('notes-area').value;
+  saveState(state);
+  showToast('✓ NOTES SAVED');
+}
+
+function clearNotes() {
+  if(confirm('Xóa toàn bộ notes?')) {
+    document.getElementById('notes-area').value = '';
+    state.notes = '';
+    saveState(state);
+  }
+}
+
+function exportNotes() {
+  const text = document.getElementById('notes-area').value;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'robotics-mission-notes.txt';
+  a.click();
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── KEYBOARD SHORTCUT ──
+document.addEventListener('keydown', e => {
+  if((e.metaKey || e.ctrlKey) && e.key === 's') {
+    e.preventDefault();
+    saveNotes();
+  }
+});
+
+// ── INIT ──
+initDateTime();
+restoreTasks();
+if(state.notes) {
+  document.getElementById('notes-area').value = state.notes;
+}
+</script>
+</body>
+</html>
