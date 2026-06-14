@@ -5,452 +5,1135 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MISSION CONTROL — Robotics / Embodied AI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
 
-  :root{
-    --bg:#080c12; --surface:#0d1117; --surface2:#131920; --surface3:#0f1520;
-    --border:#1e2a35; --border2:#243040; --accent:#00e5ff; --accent2:#7c3aed;
-    --accent3:#f59e0b; --danger:#ef4444; --success:#10b981;
-    --text:#e2eaf4; --text2:#8fa3b8; --text3:#4a6075; --mono:'Space Mono',monospace;
-    --sans:'Space Grotesk',sans-serif; --body:'Inter',sans-serif;
-  }
-  *{box-sizing:border-box} html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh; overflow-x:hidden;
-  }
-  body::before{
-    content:''; position:fixed; inset:0;
-    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);
-    pointer-events:none; z-index:9998;
-  }
-  
-  /* --- GLOBAL BLOCKER STATE --- */
-  body.global-blocker::after {
-    content:''; position:fixed; inset:0; border:4px solid var(--danger); opacity:0.4;
-    pointer-events:none; z-index:9999; animation:blockerPulse 2s infinite;
-  }
-  @keyframes blockerPulse { 0%,100%{opacity:0.2;} 50%{opacity:0.6;} }
-  /* Khóa các Task trên Dashboard khi có Blocker */
-  body.global-blocker .task-check {
-    pointer-events:none; border-color:var(--border2) !important; background:var(--surface2) !important;
-    opacity:0.3; cursor:not-allowed;
-  }
+:root {
+  --bg: #06090f;
+  --surface: #0b0f18;
+  --surface2: #0e1420;
+  --surface3: #111827;
+  --border: #1a2230;
+  --border2: #1e2d40;
+  --accent: #00d4ff;
+  --accent-dim: rgba(0,212,255,0.08);
+  --accent-border: rgba(0,212,255,0.2);
+  --purple: #8b5cf6;
+  --purple-dim: rgba(139,92,246,0.08);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.08);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.08);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.08);
+  --text: #dce8f5;
+  --text2: #7b93ab;
+  --text3: #3d5066;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
 
-  nav{
-    display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:42px;
-    border-bottom:1px solid var(--border); background:rgba(8,12,18,.97); backdrop-filter:blur(12px);
-    position:sticky; top:0; z-index:100;
-  }
-  .nav-logo{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:3px}
-  .nav-status{display:flex; gap:14px; align-items:center}
-  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success); animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  .nav-date{font-family:var(--mono); font-size:10px; color:var(--text3); letter-spacing:1px}
-  .hero{padding:16px 20px; border-bottom:1px solid var(--border); position:relative; overflow:hidden}
-  .hero::after{
-    content:'FIGURE\A 1X\A PI'; white-space:pre; position:absolute; right:0; top:50%; transform:translateY(-50%);
-    font-family:var(--mono); font-size:50px; font-weight:700; color:rgba(0,229,255,.03); pointer-events:none; text-align:right; line-height:1.1;
-  }
-  .hero-eyebrow{font-family:var(--mono); font-size:9px; color:var(--accent); letter-spacing:4px; text-transform:uppercase; margin-bottom:6px}
-  .hero-title{font-family:var(--sans); font-size:clamp(18px,3vw,28px); font-weight:700; line-height:1.2; letter-spacing:-.5px}
-  .hero-title span{color:var(--accent)}
-  .main{display:grid; grid-template-columns:290px 1fr; min-height:calc(100vh - 98px)}
-  .sidebar{border-right:1px solid var(--border); display:flex; flex-direction:column}
-  .sidebar-section{padding:14px 16px; border-bottom:1px solid var(--border)}
-  .s-label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px}
-  .mission-clock,.score-card,.burnout-card,.panel-card,.notes-wrapper,.summary-card,.control-card{
-    background:var(--surface); border:1px solid var(--border2); border-radius:8px;
-  }
-  .mission-clock{padding:12px}
-  .clock-lbl{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; margin-bottom:4px}
-  #countdown-display{font-family:var(--mono); font-size:16px; font-weight:700; color:var(--accent); text-shadow:0 0 14px rgba(0,229,255,.4); word-break:break-all; line-height:1.3}
-  .clock-row{font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:5px}
-  .clock-row span{color:var(--text2)}
-  .clock-row.elapsed span{color:var(--success)}
-  .start-date-row,.input-row{display:flex; align-items:center; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border)}
-  .start-date-row label,.input-row label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:1px; white-space:nowrap}
-  input[type="date"], input[type="range"], textarea, select{ font:inherit; }
-  .start-date-row input[type="date"], .input-row input, .input-row textarea, .input-row select{
-    flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text);
-    font-family:var(--mono); font-size:10px; padding:5px 6px; outline:none; color-scheme:dark;
-  }
-  .input-row textarea{resize:vertical; min-height:70px}
-  .input-row input:focus, .input-row textarea:focus, .input-row select:focus{border-color:var(--accent)}
-  .score-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
-  .score-item{padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface3)}
-  .score-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px}
-  .score-name{font-size:11px; color:var(--text2)}
-  .score-val{font-family:var(--mono); font-size:12px; color:var(--accent)}
-  .bar{height:6px; border-radius:999px; background:var(--border); overflow:hidden}
-  .bar > div{height:100%; border-radius:999px}
-  .bar-cyan{background:linear-gradient(90deg,var(--accent2),var(--accent))}
-  .bar-green{background:linear-gradient(90deg,var(--success),var(--accent))}
-  .bar-amber{background:linear-gradient(90deg,var(--accent3),#ffd58a)}
-  .bar-red{background:linear-gradient(90deg,var(--danger),#ff8a8a)}
-  .burnout-card{padding:10px}
-  .burnout-title{font-family:var(--mono); font-size:9px; color:var(--success); letter-spacing:2px; margin-bottom:6px}
-  .burnout-text{font-size:11px; color:var(--text2); line-height:1.55}
-  .burnout-pill{display:inline-block; margin-top:8px; padding:2px 7px; border-radius:999px; border:1px solid rgba(16,185,129,.25); background:rgba(16,185,129,.08); font-family:var(--mono); font-size:9px; color:var(--success)}
-  .skill-row{display:flex; gap:6px; align-items:center; margin-bottom:9px}
-  .skill-row:last-child{margin-bottom:0}
-  .skill-icon{width:16px; font-size:9px; flex:0 0 16px}
-  .skill-info{flex:1; min-width:0}
-  .skill-name{font-size:11px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px}
-  .skill-pct{font-family:var(--mono); font-size:10px; color:var(--text3); width:32px; text-align:right}
-  .skill-phase{font-family:var(--mono); font-size:9px; color:var(--accent3); width:20px; text-align:right}
-  .tabs{
-    display:flex; border-bottom:1px solid var(--border); padding:0 20px; position:sticky; top:42px; background:var(--bg);
-    z-index:50; overflow-x:auto; height:38px; align-items:flex-end
-  }
-  .tab-btn{
-    font-family:var(--mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text3);
-    background:none; border:none; border-bottom:2px solid transparent; padding:0 13px 8px; cursor:pointer; height:38px;
-    display:flex; align-items:flex-end; white-space:nowrap
-  }
-  .tab-btn:hover{color:var(--text2)}
-  .tab-btn.active{color:var(--accent); border-bottom-color:var(--accent)}
-  .tab-panel{display:none; padding:18px 20px}
-  .tab-panel.active{display:block}
-  .summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px}
-  .summary-card{padding:10px; text-align:center}
-  .summary-val{font-family:var(--mono); font-size:18px; font-weight:700; color:var(--accent); margin-bottom:2px}
-  .summary-label{font-size:10px; color:var(--text3)}
-  .mission-compass{
-    display:flex; align-items:center; gap:8px; padding:9px 12px; background:rgba(0,229,255,.04); border:1px solid rgba(0,229,255,.1);
-    border-radius:8px; margin-bottom:12px; font-size:12px; color:var(--text2); line-height:1.55
-  }
-  .mc-icon{color:var(--accent); flex-shrink:0; font-style:normal}
-  .panel-card{padding:12px 14px; margin-bottom:12px}
-  .panel-title{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px}
-  .panel-sub{font-size:12px; color:var(--text2); line-height:1.55}
-  .phase-card{border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; transition:all .3s;}
-  .phase-card.active-phase{border-color:var(--accent); box-shadow:0 0 14px rgba(0,229,255,.06)}
-  .phase-header{display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface); cursor:pointer; user-select:none}
-  .phase-num{font-family:var(--mono); font-size:10px; color:var(--accent); letter-spacing:2px; width:24px}
-  .phase-title{font-family:var(--sans); font-size:13px; font-weight:600; flex:1}
-  .phase-timeline{font-family:var(--mono); font-size:10px; color:var(--accent3)}
-  .phase-chevron{font-size:10px; color:var(--text3); transition:transform .2s}
-  .phase-card.open .phase-chevron{transform:rotate(180deg)}
-  .phase-body{display:none; padding:10px 14px; border-top:1px solid var(--border)}
-  .phase-card.open .phase-body{display:block}
-  
-  /* Khóa Phase CSS */
-  .phase-card.locked-phase .phase-header { opacity:0.5; cursor:not-allowed; }
-  .locked-msg {
-    font-family:var(--mono); font-size:11px; color:var(--text3); text-align:center; padding:20px 14px;
-    background:rgba(255,255,255,0.02); border:1px dashed var(--border2); border-radius:6px; line-height:1.6;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .task-list{list-style:none; margin:0; padding:0}
-  .task-item{display:flex; align-items:flex-start; gap:9px; padding:8px 0; border-bottom:1px solid var(--border)}
-  .task-item:last-child{border-bottom:none}
-  .task-check{
-    width:15px; height:15px; border:1.5px solid var(--border2); border-radius:3px; flex-shrink:0; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; margin-top:2px; transition:all .2s; background:var(--surface)
-  }
-  .task-check:hover{border-color:var(--accent)}
-  .task-check.done{background:var(--accent); border-color:var(--accent)}
-  .task-check.done::after{content:'✓'; color:#000; font-size:9px; font-weight:700}
-  .task-content{flex:1}
-  .task-title{font-size:12px; font-weight:600; margin-bottom:3px; line-height:1.4}
-  .task-desc{font-size:11px; color:var(--text3); line-height:1.55}
-  .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px}
-  
-  /* Smart Routing Highlight Animation */
-  @keyframes routeHighlight { 0% { background: rgba(0,229,255,0.25); box-shadow: 0 0 10px rgba(0,229,255,0.2); } 100% { background: transparent; box-shadow: 0 0 0 transparent; } }
-  .route-highlight { animation: routeHighlight 2.5s ease-out forwards; border-radius:4px; }
-  
-  /* Playbook Row Styling */
-  .playbook-row { transition: background 0.2s; cursor: pointer; }
-  .playbook-row:hover { background: rgba(0,229,255,.05) !important; }
+html, body { height: 100%; }
 
-  /* MÀU SẮC CATEGORY */
-  .pill{font-family:var(--mono); font-size:9px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text2); background:var(--surface3); font-weight:600; letter-spacing: 0.5px}
-  .type-portfolio { border-color: rgba(0,229,255,0.3) !important; color: var(--accent) !important; background: rgba(0,229,255,0.08) !important; }
-  .type-learning, .type-research { border-color: rgba(124,58,237,0.3) !important; color: var(--accent2) !important; background: rgba(124,58,237,0.08) !important; }
-  .type-recruiter { border-color: rgba(245,158,11,0.3) !important; color: var(--accent3) !important; background: rgba(245,158,11,0.08) !important; }
-  .type-networking { border-color: rgba(16,185,129,0.3) !important; color: var(--success) !important; background: rgba(16,185,129,0.08) !important; }
-  .type-interview, .type-unblock { border-color: rgba(239,68,68,0.3) !important; color: var(--danger) !important; background: rgba(239,68,68,0.08) !important; }
-  .type-recovery, .type-habit { border-color: rgba(142,163,184,0.3) !important; color: var(--text2) !important; background: rgba(142,163,184,0.08) !important; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
 
-  .card-portfolio::before { background: var(--accent) !important; }
-  .card-learning::before, .card-research::before { background: var(--accent2) !important; }
-  .card-recruiter::before { background: var(--accent3) !important; }
-  .card-networking::before { background: var(--success) !important; }
-  .card-interview::before, .card-unblock::before { background: var(--danger) !important; }
-  .card-recovery::before, .card-habit::before { background: var(--text3) !important; }
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.008) 3px, rgba(0,212,255,0.008) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
 
-  .tag-critical{color:var(--danger);}
-  .tag-high{color:var(--accent3);}
-  .tag-medium{color:var(--accent);}
-  .tag-low{color:var(--text2);}
+/* --- BLOCKER STATE --- */
+body.has-blocker::after {
+  content: 'BLOCKER ACTIVE';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red), transparent, var(--red));
+  pointer-events: none;
+  z-index: 10000;
+  animation: blockerSweep 3s infinite linear;
+}
+@keyframes blockerSweep {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+body.has-blocker .task-check:not(.done) {
+  pointer-events: none;
+  opacity: 0.25;
+  cursor: not-allowed;
+}
 
-  .task-check.done + .task-content .task-title{color:var(--text3); text-decoration:line-through}
-  .card-stack{display:grid; gap:16px}
-  
-  /* OBJECTIVE TREE GRAPH STYLES */
-  .objective-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .objective-header { padding: 12px 16px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .objective-title-wrapper { flex: 1; }
-  .objective-title { font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
-  .objective-meta { font-size: 11px; color: var(--text3); }
-  .objective-actions-list { padding: 12px 16px; display: grid; gap: 10px; }
-  
-  .action-card{ position:relative; overflow:hidden; padding:12px 14px 12px 17px; border-radius:6px; background:var(--surface); border:1px solid var(--border); transition: border-color 0.2s; }
-  .action-card:hover{ border-color: var(--border2); }
-  .action-card::before{content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent)}
-  
-  .action-top{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px}
-  .action-priority{font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--text3)}
-  .action-title{font-family:var(--sans); font-size:13px; font-weight:600; margin-bottom:4px; line-height: 1.4}
-  .action-detail{font-size:11px; color:var(--text2); line-height:1.55}
-  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
-  .action-time{font-family:var(--mono); font-size:10px; color:var(--text3)}
-  
-  .week-toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
-  .mini-btn{ font-family:var(--mono); font-size:9px; letter-spacing:1px; border-radius:4px; padding:6px 10px; cursor:pointer; border:1px solid var(--border); color:var(--text2); background:var(--surface); transition:all 0.2s; }
-  .mini-btn:hover{border-color:var(--border2); color:var(--text)}
-  .mini-btn.primary{color:var(--accent); background:rgba(0,229,255,.08); border-color:rgba(0,229,255,.18)}
-  .mini-btn.primary:hover{background:rgba(0,229,255,.15)}
-  .mini-btn.success{color:var(--surface); background:var(--success); border-color:var(--success); font-weight:700;}
-  
-  .week-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
-  .day-col{display:flex; flex-direction:column; gap:4px}
-  .day-label{ font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:1px; text-align:center; padding-bottom:5px; border-bottom:1px solid var(--border); margin-bottom:2px }
-  .day-label.today{color:var(--accent)}
-  .day-block{ background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:7px 7px 8px; font-size:9px; color:var(--text2); line-height:1.45; min-height:52px; transition:border-color .15s }
-  .day-block:hover{border-color:var(--border2)}
-  .day-block .dtitle{font-family:var(--mono); font-size:9px; letter-spacing:1px; color:var(--accent); margin-bottom:4px}
-  .day-block.block-cyan{border-left:2px solid var(--accent)}
-  .day-block.block-purple{border-left:2px solid var(--accent2)}
-  .day-block.block-amber{border-left:2px solid var(--accent3)}
-  .day-block.block-red{border-left:2px solid var(--danger)}
-  .week-note{ margin-top:10px; padding:10px 12px; background:rgba(0,229,255,.04); border:1px solid rgba(0,229,255,.1); border-radius:8px; font-size:11px; color:var(--text2); line-height:1.55 }
-  .table-wrap{overflow:auto; border:1px solid var(--border); border-radius:8px; background:var(--surface)}
-  table{width:100%; border-collapse:collapse; min-width:900px}
-  th,td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; font-size:11px}
-  th{ font-family:var(--mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); background:var(--surface2); text-align:left }
-  td{color:var(--text2)}
-  
-  .section-title{ font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:3px; text-transform:uppercase; margin:16px 0 8px }
-  .notes-wrapper{overflow:hidden}
-  .notes-toolbar{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--border)}
-  .notes-label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px}
-  .notes-save-btn{ font-family:var(--mono); font-size:9px; color:var(--accent); background:rgba(0,229,255,.08); border:1px solid rgba(0,229,255,.18); border-radius:4px; padding:4px 8px; cursor:pointer; letter-spacing:1px }
-  .notes-save-btn:hover{background:rgba(0,229,255,.16)}
-  #notes-area{ width:100%; min-height:240px; background:transparent; border:none; padding:14px; color:var(--text); font-family:var(--mono); font-size:11px; line-height:1.8; resize:vertical; outline:none }
-  .notes-btns{margin-top:10px; display:flex; gap:8px}
-  .btn-sm{ font-family:var(--mono); font-size:9px; border-radius:4px; padding:6px 10px; cursor:pointer; letter-spacing:1px; transition:all .2s }
-  .btn-danger{color:var(--danger); background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2)}
-  .btn-muted{color:var(--text3); background:var(--surface); border:1px solid var(--border)}
-  .control-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-  .control-card{padding:10px}
-  .control-title{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px}
-  .control-card .input-row{margin-top:0}
-  .small{font-size:10px; color:var(--text3); line-height:1.55}
-  .footer-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
-  .toast{ position:fixed; bottom:18px; right:18px; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:9px 14px; font-family:var(--mono); font-size:11px; color:var(--accent); transform:translateY(60px); opacity:0; transition:all .3s ease; z-index:1000; letter-spacing:1px }
-  .toast.show{transform:translateY(0); opacity:1}
-  ::-webkit-scrollbar{width:3px; height:3px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:var(--border2); border-radius:2px}
-  @media (max-width: 980px){ .main{grid-template-columns:1fr} .sidebar{border-right:none; border-bottom:1px solid var(--border)} .summary-grid,.control-grid{grid-template-columns:1fr 1fr} .week-grid{grid-template-columns:repeat(3,1fr)} .hero::after{display:none} }
-  @media (max-width: 640px){ .summary-grid,.control-grid{grid-template-columns:1fr} .week-grid{grid-template-columns:repeat(2,1fr)} }
+/* --- NAV --- */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 20px;
+  background: rgba(6,9,15,0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.nav-left { display: flex; align-items: center; gap: 14px; }
+.nav-logo { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 3px; }
+.nav-mission { font-size: 11px; color: var(--text2); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.status-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px; color: var(--text3);
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.5s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.nav-time { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+/* --- LAYOUT --- */
+.app { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 44px); }
+
+/* --- SIDEBAR --- */
+.sidebar {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: calc(100vh - 44px);
+  position: sticky;
+  top: 44px;
+}
+
+.sb-block { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.sb-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* Timer */
+.timer-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 12px; }
+.timer-val {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(0,212,255,0.3);
+  line-height: 1.3;
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+.timer-row { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 3px; }
+.timer-row span { color: var(--text2); }
+.date-input-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.date-input-row label { font-family: var(--mono); font-size: 9px; color: var(--text3); white-space: nowrap; }
+.date-input-row input[type="date"] {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 6px;
+  outline: none;
+  color-scheme: dark;
+}
+
+/* Readiness scores */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.score-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+}
+.score-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.score-name { font-size: 10px; color: var(--text2); }
+.score-num { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 700; }
+.bar { height: 4px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+.fill-cyan { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+.fill-green { background: linear-gradient(90deg, var(--green), var(--accent)); }
+.fill-amber { background: linear-gradient(90deg, var(--amber), #ffd58a); }
+.fill-red { background: linear-gradient(90deg, var(--red), #ff8a8a); }
+.score-total {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  text-align: center;
+  padding: 4px;
+  background: var(--accent-dim);
+  border-radius: 4px;
+}
+
+/* Skill matrix */
+.skill-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.skill-row:last-child { margin-bottom: 0; }
+.skill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.skill-info { flex: 1; min-width: 0; }
+.skill-name { font-size: 10px; color: var(--text2); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.skill-pct { font-family: var(--mono); font-size: 9px; color: var(--text3); width: 28px; text-align: right; flex-shrink: 0; }
+.skill-phase { font-family: var(--mono); font-size: 8px; color: var(--amber); width: 16px; text-align: right; flex-shrink: 0; }
+
+/* Energy */
+.energy-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 10px; }
+.energy-title { font-family: var(--mono); font-size: 9px; color: var(--green); letter-spacing: 2px; margin-bottom: 6px; }
+.energy-text { font-size: 11px; color: var(--text2); line-height: 1.55; margin-bottom: 8px; }
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.energy-tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(16,185,129,0.25);
+  background: var(--green-dim);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--green);
+}
+
+/* --- MAIN CONTENT --- */
+.content { display: flex; flex-direction: column; min-width: 0; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  position: sticky;
+  top: 44px;
+  background: rgba(6,9,15,0.97);
+  backdrop-filter: blur(16px);
+  z-index: 100;
+  height: 40px;
+  align-items: flex-end;
+  gap: 2px;
+  overflow-x: auto;
+}
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0 12px 8px;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-panel { display: none; padding: 20px; }
+.tab-panel.active { display: block; }
+
+/* --- DASHBOARD --- */
+.compass {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.compass-icon { color: var(--accent); font-style: normal; flex-shrink: 0; margin-top: 1px; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.stat-val { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+.stat-label { font-size: 10px; color: var(--text3); letter-spacing: 0.5px; }
+
+.signal-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.signal-text { font-size: 12px; color: var(--text2); }
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.pill-cyan { border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); }
+.pill-green { border-color: rgba(16,185,129,0.3); color: var(--green); background: var(--green-dim); }
+.pill-amber { border-color: rgba(245,158,11,0.3); color: var(--amber); background: var(--amber-dim); }
+.pill-red { border-color: rgba(239,68,68,0.3); color: var(--red); background: var(--red-dim); }
+.pill-purple { border-color: rgba(139,92,246,0.3); color: var(--purple); background: var(--purple-dim); }
+
+/* Section header */
+.section-header {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 16px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Phase cards */
+.phase-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.phase-card.active-phase { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,212,255,0.05); }
+.phase-card.locked-phase { opacity: 0.6; }
+
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.phase-header:hover { background: var(--surface2); }
+.phase-card.locked-phase .phase-header { cursor: not-allowed; }
+
+.phase-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  width: 24px;
+  flex-shrink: 0;
+}
+.phase-name { font-size: 13px; font-weight: 600; flex: 1; }
+.phase-timeline { font-family: var(--mono); font-size: 9px; color: var(--amber); }
+.phase-pct { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.phase-chevron { font-size: 9px; color: var(--text3); transition: transform 0.2s; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+
+.phase-body {
+  display: none;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+}
+.phase-card.open .phase-body { display: block; }
+
+.phase-sub { font-size: 11px; color: var(--text2); line-height: 1.55; margin-bottom: 10px; padding: 8px 10px; background: var(--surface); border-radius: 6px; border-left: 2px solid var(--accent); }
+
+/* Task list */
+.task-list { list-style: none; }
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  border-radius: 4px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-item.is-focus { background: rgba(0,212,255,0.04); padding: 10px 8px; }
+.task-check {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--border2);
+  border-radius: 3px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  transition: all 0.15s;
+  background: var(--surface);
+}
+.task-check:hover { border-color: var(--accent); background: var(--accent-dim); }
+.task-check.done { background: var(--accent); border-color: var(--accent); }
+.task-check.done::after { content: '✓'; color: #000; font-size: 9px; font-weight: 700; }
+.task-check.done + .task-content .task-title { text-decoration: line-through; color: var(--text3); }
+
+.task-content { flex: 1; min-width: 0; }
+.task-title { font-size: 12px; font-weight: 600; margin-bottom: 3px; line-height: 1.45; }
+.task-desc { font-size: 11px; color: var(--text3); line-height: 1.55; margin-bottom: 6px; }
+.task-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* Locked phase message */
+.locked-msg {
+  text-align: center;
+  padding: 20px;
+  background: var(--red-dim);
+  border: 1px dashed rgba(239,68,68,0.2);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* Task detail modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6,9,15,0.85);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 88vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 10;
+}
+.modal-phase-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.modal-title { font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
+.modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 16px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { border-color: var(--red); color: var(--red); }
+.modal-body { padding: 18px 20px; }
+
+/* Modal sections */
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-text { font-size: 12px; color: var(--text2); line-height: 1.7; }
+
+/* Why it matters box */
+.why-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.why-title { font-family: var(--mono); font-size: 9px; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px; }
+.why-text { font-size: 12px; color: var(--text); line-height: 1.6; }
+
+/* Keyword list */
+.kw-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.kw {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  background: var(--purple-dim);
+  border: 1px solid rgba(139,92,246,0.25);
+  color: var(--purple);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.kw:hover { background: rgba(139,92,246,0.15); }
+
+/* Steps */
+.steps { counter-reset: step; }
+.step {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.step-content { flex: 1; }
+.step-title { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.step-desc { font-size: 11px; color: var(--text2); line-height: 1.55; }
+
+/* Output box */
+.output-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+.output-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+.output-row:last-child { margin-bottom: 0; }
+.output-label { font-family: var(--mono); font-size: 9px; color: var(--amber); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+.output-val { font-size: 11px; color: var(--text); }
+
+/* Gate box */
+.gate-box {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--green-dim);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 6px;
+  margin-top: 8px;
+}
+.gate-icon { color: var(--green); flex-shrink: 0; font-size: 14px; }
+.gate-text { font-size: 11px; color: var(--text2); line-height: 1.55; }
+
+/* Modal actions */
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  bottom: 0;
+}
+.btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+.btn-primary:hover { background: #00b8db; }
+.btn-secondary { background: var(--surface2); border-color: var(--border2); color: var(--text2); }
+.btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+/* --- NEXT ACTIONS TAB --- */
+.control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.control-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.control-title { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
+
+textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: var(--accent); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.mini-btn {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  background: var(--surface);
+  transition: all 0.15s;
+}
+.mini-btn:hover { border-color: var(--border2); color: var(--text); }
+.mini-btn.cyan { color: var(--accent); background: var(--accent-dim); border-color: var(--accent-border); }
+.mini-btn.green { color: var(--green); background: var(--green-dim); border-color: rgba(16,185,129,0.3); }
+
+/* Objective groups */
+.obj-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.obj-header {
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.obj-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.obj-meta { font-size: 11px; color: var(--text3); }
+.obj-priority { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--text3); margin-bottom: 4px; }
+.obj-actions { padding: 12px 14px; display: grid; gap: 8px; }
+
+.action-card {
+  position: relative;
+  padding: 10px 12px 10px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.action-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+.action-cyan::before { background: var(--accent); }
+.action-purple::before { background: var(--purple); }
+.action-amber::before { background: var(--amber); }
+.action-green::before { background: var(--green); }
+.action-red::before { background: var(--red); }
+
+.action-title { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.action-detail { font-size: 11px; color: var(--text2); line-height: 1.55; }
+.action-footer { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.action-time { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+
+.complete-btn {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--green);
+  border: 1px solid var(--green);
+  color: #000;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.complete-btn:hover { background: #0d9668; }
+
+/* --- WEEKLY TAB --- */
+.week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+.day-col { display: flex; flex-direction: column; gap: 4px; }
+.day-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  text-align: center;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.day-label.today { color: var(--accent); }
+.day-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-size: 10px;
+  color: var(--text2);
+  min-height: 52px;
+  transition: border-color 0.15s;
+}
+.day-block:hover { border-color: var(--border2); }
+.day-block-title { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; color: var(--accent); margin-bottom: 3px; }
+.day-block.b-cyan { border-left: 2px solid var(--accent); }
+.day-block.b-purple { border-left: 2px solid var(--purple); }
+.day-block.b-amber { border-left: 2px solid var(--amber); }
+.day-block.b-red { border-left: 2px solid var(--red); }
+.day-block.b-green { border-left: 2px solid var(--green); }
+.week-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+/* --- PLAYBOOK TAB --- */
+.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; min-width: 860px; }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); background: var(--surface2); }
+td { font-size: 11px; color: var(--text2); }
+tr:last-child td { border-bottom: none; }
+.pb-row { cursor: pointer; transition: background 0.15s; }
+.pb-row:hover { background: rgba(0,212,255,0.04); }
+
+/* --- NOTES TAB --- */
+.notes-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.notes-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.notes-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; }
+.notes-save {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+.notes-save:hover { background: rgba(0,212,255,0.15); }
+#notes-area {
+  width: 100%;
+  min-height: 300px;
+  background: transparent;
+  border: none;
+  padding: 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.8;
+  resize: vertical;
+  outline: none;
+}
+
+/* Route highlight animation */
+@keyframes routeHL { 0% { box-shadow: inset 0 0 0 2px var(--accent); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
+.route-highlight { animation: routeHL 2s ease-out forwards; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  transform: translateY(60px);
+  opacity: 0;
+  transition: all 0.25s ease;
+  z-index: 1000;
+  letter-spacing: 1px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Responsive */
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+  .control-grid { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width: 600px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .week-grid { grid-template-columns: repeat(2,1fr); }
+  .score-grid { grid-template-columns: 1fr; }
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 </style>
 </head>
 <body>
+
+<!-- NAV -->
 <nav>
-  <div class="nav-logo">⬡ MISSION CONTROL</div>
-  <div class="nav-status">
-    <div class="status-dot"></div>
-    <div class="nav-date" id="nav-date">—</div>
+  <div class="nav-left">
+    <div class="nav-logo">⬡ MISSION CTRL</div>
+    <div class="nav-mission" style="display:none" id="nav-mission">Embodied AI Engineer · 6-Month Sprint</div>
+  </div>
+  <div class="nav-right">
+    <div class="status-chip"><div class="dot"></div><span id="nav-status">LIVE</span></div>
+    <div class="nav-time" id="nav-time">—</div>
   </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-eyebrow">FIGURE · 1X · PHYSICAL INTELLIGENCE</div>
-  <h1 class="hero-title">Embodied AI Engineer — <span>6-Month Job Hunt System</span></h1>
-</div>
+<!-- APP LAYOUT -->
+<div class="app">
 
-<div class="main">
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="s-label">MISSION TIMER</div>
-      <div class="mission-clock">
-        <div class="clock-lbl">TIME REMAINING</div>
-        <div id="countdown-display">—</div>
-        <div class="clock-row">→ <span id="deadline-text">—</span></div>
-        <div class="clock-row elapsed">↑ <span id="elapsed-display">—</span></div>
-        <div class="start-date-row">
-          <label for="start-date-input">START</label>
-          <input type="date" id="start-date-input" onchange="onStartDateChange()">
+
+    <!-- Timer -->
+    <div class="sb-block">
+      <div class="sb-label">Mission Timer</div>
+      <div class="timer-box">
+        <div class="timer-val" id="countdown">—</div>
+        <div class="timer-row">→ Deadline: <span id="deadline-text">—</span></div>
+        <div class="timer-row" style="margin-top:3px">↑ Elapsed: <span id="elapsed-text" style="color:var(--green)">—</span></div>
+        <div class="date-input-row">
+          <label for="start-date">START</label>
+          <input type="date" id="start-date" onchange="onStartDate()">
         </div>
       </div>
     </div>
 
-    <div class="sidebar-section">
-      <div class="s-label">RECRUITER READINESS</div>
-      <div class="score-card" style="padding:10px">
-        <div class="score-grid">
-          <div class="score-item"><div class="score-top"><span class="score-name">Artifact</span><span class="score-val" id="score-artifact">0</span></div><div class="bar"><div id="bar-artifact" class="bar-cyan" style="width:0%"></div></div></div>
-          <div class="score-item"><div class="score-top"><span class="score-name">Narrative</span><span class="score-val" id="score-narrative">0</span></div><div class="bar"><div id="bar-narrative" class="bar-green" style="width:0%"></div></div></div>
-          <div class="score-item"><div class="score-top"><span class="score-name">Signal</span><span class="score-val" id="score-signal">0</span></div><div class="bar"><div id="bar-signal" class="bar-amber" style="width:0%"></div></div></div>
-          <div class="score-item"><div class="score-top"><span class="score-name">Consistency</span><span class="score-val" id="score-consistency">0</span></div><div class="bar"><div id="bar-consistency" class="bar-red" style="width:0%"></div></div></div>
+    <!-- Readiness -->
+    <div class="sb-block">
+      <div class="sb-label">Recruiter Readiness</div>
+      <div class="score-grid">
+        <div class="score-item">
+          <div class="score-row"><span class="score-name">Artifact</span><span class="score-num" id="s-artifact">0</span></div>
+          <div class="bar"><div class="bar-fill fill-cyan" id="b-artifact" style="width:0%"></div></div>
         </div>
-        <div class="burnout-pill" id="score-total">Score 0/100</div>
+        <div class="score-item">
+          <div class="score-row"><span class="score-name">Narrative</span><span class="score-num" id="s-narrative">0</span></div>
+          <div class="bar"><div class="bar-fill fill-green" id="b-narrative" style="width:0%"></div></div>
+        </div>
+        <div class="score-item">
+          <div class="score-row"><span class="score-name">Signal</span><span class="score-num" id="s-signal">0</span></div>
+          <div class="bar"><div class="bar-fill fill-amber" id="b-signal" style="width:0%"></div></div>
+        </div>
+        <div class="score-item">
+          <div class="score-row"><span class="score-name">Consistency</span><span class="score-num" id="s-consist">0</span></div>
+          <div class="bar"><div class="bar-fill fill-red" id="b-consist" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="score-total" id="score-total">SCORE 0/100</div>
+    </div>
+
+    <!-- Skill matrix -->
+    <div class="sb-block">
+      <div class="sb-label">Skill / Gap Matrix</div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--green)"></div>
+        <div class="skill-info"><div class="skill-name">ROS2 / Nav2 / SLAM</div><div class="bar"><div class="bar-fill fill-green" style="width:75%"></div></div></div>
+        <div class="skill-pct">75%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--green)"></div>
+        <div class="skill-info"><div class="skill-name">Python + RL/IL</div><div class="bar"><div class="bar-fill fill-green" style="width:65%"></div></div></div>
+        <div class="skill-pct">65%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--accent)"></div>
+        <div class="skill-info"><div class="skill-name">Micro-ROS / ESP32</div><div class="bar"><div class="bar-fill fill-cyan" style="width:55%"></div></div></div>
+        <div class="skill-pct">55%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--red)"></div>
+        <div class="skill-info"><div class="skill-name">Production C++ realtime</div><div class="bar"><div class="bar-fill fill-red" style="width:15%"></div></div></div>
+        <div class="skill-pct">15%</div>
+        <div class="skill-phase">P1</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--red)"></div>
+        <div class="skill-info"><div class="skill-name">VLA / Foundation Models</div><div class="bar"><div class="bar-fill fill-red" style="width:10%"></div></div></div>
+        <div class="skill-pct">10%</div>
+        <div class="skill-phase">P2</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--amber)"></div>
+        <div class="skill-info"><div class="skill-name">FOC / Torque control</div><div class="bar"><div class="bar-fill fill-amber" style="width:35%"></div></div></div>
+        <div class="skill-pct">35%</div>
+        <div class="skill-phase">P3</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-dot" style="background:var(--amber)"></div>
+        <div class="skill-info"><div class="skill-name">English narrative</div><div class="bar"><div class="bar-fill fill-amber" style="width:40%"></div></div></div>
+        <div class="skill-pct">40%</div>
+        <div class="skill-phase">P4</div>
       </div>
     </div>
 
-    <div class="sidebar-section">
-      <div class="s-label">SKILL / GAP MATRIX</div>
-      <div class="skill-row"><div class="skill-icon">🟢</div><div class="skill-info"><div class="skill-name">ROS2 / Nav2 / SLAM</div><div class="bar"><div class="bar-green" style="width:75%"></div></div></div><div class="skill-pct">75%</div><div class="skill-phase"></div></div>
-      <div class="skill-row"><div class="skill-icon">🟢</div><div class="skill-info"><div class="skill-name">Python + RL/IL</div><div class="bar"><div class="bar-green" style="width:65%"></div></div></div><div class="skill-pct">65%</div><div class="skill-phase"></div></div>
-      <div class="skill-row"><div class="skill-icon">🔵</div><div class="skill-info"><div class="skill-name">Micro-ROS / RTOS / ESP32</div><div class="bar"><div class="bar-cyan" style="width:55%"></div></div></div><div class="skill-pct">55%</div><div class="skill-phase"></div></div>
-      <div class="skill-row"><div class="skill-icon">🔴</div><div class="skill-info"><div class="skill-name">Production C++ real-time</div><div class="bar"><div class="bar-red" style="width:15%"></div></div></div><div class="skill-pct">15%</div><div class="skill-phase">P1</div></div>
-      <div class="skill-row"><div class="skill-icon">🔴</div><div class="skill-info"><div class="skill-name">VLA / Foundation Models</div><div class="bar"><div class="bar-red" style="width:10%"></div></div></div><div class="skill-pct">10%</div><div class="skill-phase">P2</div></div>
-      <div class="skill-row"><div class="skill-icon">🟠</div><div class="skill-info"><div class="skill-name">Hardware / FOC / Torque</div><div class="bar"><div class="bar-amber" style="width:35%"></div></div></div><div class="skill-pct">35%</div><div class="skill-phase">P3</div></div>
-      <div class="skill-row"><div class="skill-icon">🟡</div><div class="skill-info"><div class="skill-name">English narrative</div><div class="bar"><div class="bar-amber" style="width:40%"></div></div></div><div class="skill-pct">40%</div><div class="skill-phase">P4</div></div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="s-label">ANTI-BURNOUT</div>
-      <div class="burnout-card">
-        <div class="burnout-title">SOLO EXECUTION RULE</div>
-        <div class="burnout-text">Mỗi tuần chỉ giữ 3 việc nặng: 1 build, 1 recruiter artifact, 1 review. Việc nhảy cóc bị khóa bằng hệ thống Progressive Disclosure.</div>
-        <div class="input-row" style="margin-top:10px">
-          <label for="energy-input">ENERGY</label>
-          <input id="energy-input" type="range" min="1" max="5" value="3" oninput="onEnergyChange(this.value)" />
-        </div>
-        <div class="burnout-pill" id="energy-label">Energy: 3/5</div>
+    <!-- Energy -->
+    <div class="sb-block">
+      <div class="sb-label">Anti-Burnout</div>
+      <div class="energy-box">
+        <div class="energy-title">SOLO EXECUTION RULE</div>
+        <div class="energy-text">Mỗi tuần chỉ giữ 3 việc nặng: 1 build, 1 recruiter artifact, 1 review. Click task để xem hướng dẫn chi tiết.</div>
+        <input type="range" id="energy-range" min="1" max="5" value="3" oninput="onEnergy(this.value)" style="margin-top:8px">
+        <div class="energy-tag" id="energy-label">Energy: 3/5</div>
       </div>
     </div>
+
   </aside>
 
+  <!-- MAIN CONTENT -->
   <div class="content">
+
+    <!-- TABS -->
     <div class="tabs">
-      <button class="tab-btn active" id="btn-tab-dashboard" onclick="switchTab('dashboard',this)">DASHBOARD</button>
-      <button class="tab-btn" id="btn-tab-next" onclick="switchTab('next',this)">NEXT ACTIONS</button>
-      <button class="tab-btn" id="btn-tab-weekly" onclick="switchTab('weekly',this)">WEEKLY</button>
-      <button class="tab-btn" id="btn-tab-playbook" onclick="switchTab('playbook',this)">PLAYBOOK</button>
-      <button class="tab-btn" id="btn-tab-notes" onclick="switchTab('notes',this)">NOTES</button>
+      <button class="tab-btn active" id="tbtn-dashboard" onclick="switchTab('dashboard',this)">DASHBOARD</button>
+      <button class="tab-btn" id="tbtn-next" onclick="switchTab('next',this)">NEXT ACTIONS</button>
+      <button class="tab-btn" id="tbtn-weekly" onclick="switchTab('weekly',this)">WEEKLY</button>
+      <button class="tab-btn" id="tbtn-playbook" onclick="switchTab('playbook',this)">PLAYBOOK</button>
+      <button class="tab-btn" id="tbtn-notes" onclick="switchTab('notes',this)">NOTES</button>
     </div>
 
+    <!-- DASHBOARD -->
     <div class="tab-panel active" id="tab-dashboard">
-      <div class="mission-compass">
-        <em class="mc-icon">⬡</em>
-        <span><strong style="color:var(--accent)">Goal:</strong> land Robotics / Embodied AI job in 6 months. Hệ thống này ưu tiên tín hiệu tuyển dụng cao: capstone, C++/ROS2 production, VLA integration, demo video, narrative tiếng Anh, outreach.</span>
+      <div class="compass">
+        <em class="compass-icon">⬡</em>
+        <span><strong style="color:var(--accent)">Mục tiêu:</strong> Trở thành Robotics/Embodied AI Engineer trong 6 tháng. Click vào bất kỳ task nào để xem đầy đủ: bạn đang làm gì, tại sao, keyword cần search, cần học gì, output cụ thể, và gate để pass.</span>
       </div>
 
       <div class="summary-grid">
-        <div class="summary-card"><div class="summary-val" id="stat-completed">0</div><div class="summary-label">Completed</div></div>
-        <div class="summary-card"><div class="summary-val" id="stat-total">0</div><div class="summary-label">Total Tasks</div></div>
-        <div class="summary-card"><div class="summary-val" id="stat-phase">P1</div><div class="summary-label">Active Phase</div></div>
-        <div class="summary-card"><div class="summary-val" id="stat-week">W1</div><div class="summary-label">Current Week</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-done">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Tasks</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-phase">P1</div><div class="stat-label">Active Phase</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-week">W1</div><div class="stat-label">Current Week</div></div>
       </div>
 
-      <div class="panel-card">
-        <div class="panel-title">EXECUTION SIGNAL</div>
-        <div class="panel-sub" id="execution-signal">—</div>
-        <div class="footer-row">
-          <span class="pill" id="health-pill">Healthy</span>
-          <span class="pill" id="focus-pill">Focus: Capstone</span>
-          <span class="pill" id="blocker-pill">Blocker: none</span>
+      <div class="signal-bar">
+        <div class="signal-text" id="signal-text">—</div>
+        <div class="pill-row">
+          <span class="pill pill-green" id="pill-health">Healthy</span>
+          <span class="pill pill-cyan" id="pill-focus">Focus: Capstone</span>
+          <span class="pill" id="pill-blocker">Blocker: none</span>
         </div>
       </div>
 
-      <div class="section-title">PHASED ROADMAP</div>
+      <div class="section-header">PHASED ROADMAP — Click task để xem detail</div>
       <div id="phase-container"></div>
     </div>
 
+    <!-- NEXT ACTIONS -->
     <div class="tab-panel" id="tab-next">
       <div class="control-grid">
-        <div class="control-card" style="border-left: 3px solid var(--danger)">
-          <div class="control-title" style="color:var(--danger)">URGENT BLOCKER (Tạo Global Blocker)</div>
-          <div class="input-row"><label for="blocker-input">TEXT</label><textarea id="blocker-input" oninput="debounceSyncAndRender()" placeholder="Nhập chữ vào đây sẽ khóa toàn bộ UI để ép tập trung tháo gỡ Blocker..."></textarea></div>
+        <div class="control-card" style="border-left:3px solid var(--red)">
+          <div class="control-title" style="color:var(--red)">Urgent Blocker (Tạo Global Lock)</div>
+          <textarea id="blocker-input" oninput="debounceSave()" placeholder="Nhập blocker → toàn bộ UI sẽ lock để ép bạn tháo gỡ trước..."></textarea>
         </div>
         <div class="control-card">
-          <div class="control-title">WEEKLY REVIEW</div>
-          <div class="input-row"><label for="review-input">DONE</label><textarea id="review-input" oninput="debounceSyncAndRender()" placeholder="What shipped? What is blocked? What changes next week?"></textarea></div>
+          <div class="control-title">Weekly Review</div>
+          <textarea id="review-input" oninput="debounceSave()" placeholder="What shipped? What's blocked? What changes next week?"></textarea>
         </div>
       </div>
-      <div class="week-toolbar" style="margin-top:12px;">
-        <button class="mini-btn primary" onclick="regenerateAll()">REGENERATE FROM STATE</button>
-        <button class="mini-btn" onclick="advanceWeekManually()">SIMULATE NEXT WEEK</button>
-        <button class="mini-btn" onclick="resetSimulation()">RESET TIMELINE</button>
-        <button class="mini-btn" onclick="markFocusCapstone()">FOCUS: CAPSTONE</button>
-        <button class="mini-btn" onclick="markFocusRecruiter()">FOCUS: RECRUITER</button>
+      <div class="toolbar">
+        <button class="mini-btn cyan" onclick="regenAll()">REGENERATE</button>
+        <button class="mini-btn" onclick="advWeek()">SIMULATE NEXT WEEK</button>
+        <button class="mini-btn" onclick="resetWeek()">RESET TIMELINE</button>
+        <button class="mini-btn cyan" onclick="setFocus('capstone')">FOCUS: CAPSTONE</button>
+        <button class="mini-btn" onclick="setFocus('recruiter')">FOCUS: RECRUITER</button>
       </div>
-      
-      <div class="section-title">OBJECTIVE GRAPH (ACTIONABLE)</div>
-      <div class="week-note" id="next-actions-note" style="margin-top:0; margin-bottom:16px;">
-        Click nút <strong>✓ COMPLETE TASK</strong> để hoàn thành trực tiếp từ đây. Hệ thống tự động đồng bộ qua Dashboard và Playbook.
-      </div>
-      <div class="card-stack" id="next-actions-container"></div>
+      <div class="section-header">Objective Graph — Actionable</div>
+      <div id="next-container"></div>
     </div>
 
+    <!-- WEEKLY -->
     <div class="tab-panel" id="tab-weekly">
-      <div class="week-toolbar">
-        <button class="mini-btn primary" onclick="regenerateWeek()">REGENERATE WEEK</button>
-        <button class="mini-btn" onclick="document.getElementById('energy-input').value=5; onEnergyChange(5)">BOOST ENERGY</button>
-        <button class="mini-btn" onclick="document.getElementById('energy-input').value=1; onEnergyChange(1)">LOW ENERGY MODE</button>
+      <div class="toolbar">
+        <button class="mini-btn cyan" onclick="regenAll()">REGENERATE WEEK</button>
+        <button class="mini-btn green" onclick="boostEnergy()">BOOST ENERGY</button>
+        <button class="mini-btn" onclick="dropEnergy()">LOW ENERGY MODE</button>
       </div>
-      <div class="week-grid" id="weekly-grid"></div>
-      <div class="week-note" id="weekly-note">Weekly plan sẽ tự đổi theo tuần, trạng thái hoàn thành, năng lượng, blocker và độ thiếu tín hiệu tuyển dụng.</div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="week-note" id="week-note">Weekly plan tự điều chỉnh theo tuần hiện tại, task đã xong, mức năng lượng và blocker.</div>
     </div>
 
+    <!-- PLAYBOOK -->
     <div class="tab-panel" id="tab-playbook">
-      <div class="section-title">TASK TAXONOMY (SMART ROUTING)</div>
-      <div class="week-note" style="margin-top:0; margin-bottom:12px;">Click vào bất kỳ dòng nào đang báo 🎯 FOCUS để chuyển hướng trực tiếp tới Dashboard.</div>
+      <div class="section-header">Task Taxonomy — Click dòng để đi thẳng tới Dashboard</div>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>Objective (Task)</th>
-              <th>Gate (Quality Check)</th>
-              <th>Recruiter Artifact</th>
-              <th>Category</th>
-            </tr>
+            <tr><th>Objective</th><th>Gate (Pass Condition)</th><th>Recruiter Artifact</th><th>Phase</th><th>Status</th></tr>
           </thead>
-          <tbody id="playbook-table"></tbody>
+          <tbody id="playbook-tbody"></tbody>
         </table>
       </div>
 
-      <div class="section-title">6-MONTH CADENCE</div>
+      <div class="section-header" style="margin-top:20px">6-Month Phase Cadence</div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr><th>Phase</th><th>Focus</th><th>Exit Criteria</th></tr>
-          </thead>
+          <thead><tr><th>Phase</th><th>Focus</th><th>Exit Criteria (dấu hiệu pass)</th></tr></thead>
           <tbody>
-            <tr><td>P1 · Weeks 1–6</td><td>C++ production / ROS2 / latency / ownership</td><td>1 robust C++ component, benchmarks, sanitizer clean, English README</td></tr>
-            <tr><td>P2 · Weeks 7–14</td><td>VLA / teleop data / fine-tune / end-to-end demo</td><td>Robot or simulator demo, dataset, training log, video</td></tr>
-            <tr><td>P3 · Weeks 15–20</td><td>Hardware / tactile / FOC / control / robustness</td><td>1 deeper mechatronics artifact with measurable delta</td></tr>
-            <tr><td>P4 · Weeks 21–26</td><td>Narrative / outreach / applications / interviews</td><td>Resume, LinkedIn, outreach pipeline, mock interviews, applications</td></tr>
+            <tr><td><strong>P1</strong> · Tuần 1–6</td><td>Production C++ / ROS2 / latency / ownership</td><td>1 C++ component robust, benchmarks, ASan clean, English README</td></tr>
+            <tr><td><strong>P2</strong> · Tuần 7–14</td><td>VLA / teleop data / fine-tune / end-to-end demo</td><td>Robot/sim demo, dataset, training log, video public</td></tr>
+            <tr><td><strong>P3</strong> · Tuần 15–20</td><td>Hardware / tactile / FOC / robustness</td><td>1 mechatronics artifact với measurable delta</td></tr>
+            <tr><td><strong>P4</strong> · Tuần 21–26</td><td>Narrative / outreach / applications / interviews</td><td>Resume 1 trang, LinkedIn, outreach pipeline, mock interviews done</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header" style="margin-top:20px">Elon Musk Lens — Tại sao mỗi phase quan trọng</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Principle</th><th>Ứng dụng trong plan này</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Physics First Principles</strong></td><td>P1: Đừng học framework rồi copy. Viết C++ từ scratch để hiểu tại sao 1kHz loop quan trọng với real-time control.</td></tr>
+            <tr><td><strong>Demonstration &gt; Resume</strong></td><td>P2: 1 video demo robot làm theo lệnh nói quan trọng hơn 10 trang CV. Figure và 1X đều hire theo demo.</td></tr>
+            <tr><td><strong>Vertical Integration</strong></td><td>P3: Hiểu từ motor → driver → firmware → ROS2 → VLA. Không phụ thuộc vào người khác để debug.</td></tr>
+            <tr><td><strong>Move Fast with Proof</strong></td><td>P4: Outreach với artifact cụ thể, không spam LinkedIn. "Tôi đã build X, đây là video" có reply rate cao hơn 10x.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
+    <!-- NOTES -->
     <div class="tab-panel" id="tab-notes">
-      <div class="notes-wrapper">
-        <div class="notes-toolbar">
-          <span class="notes-label">WEEKLY LOG — ENGLISH</span>
-          <button class="notes-save-btn" onclick="saveNotes()">SAVE ⌘S</button>
+      <div class="notes-wrap">
+        <div class="notes-bar">
+          <span class="notes-label">WEEKLY LOG — ENGLISH (viết bằng tiếng Anh để luyện narrative)</span>
+          <button class="notes-save" onclick="saveNotes()">SAVE ⌘S</button>
         </div>
-        <textarea id="notes-area" oninput="debounceSyncAndRender()" placeholder="[Week X] — What did I ship? ..."></textarea>
+        <textarea id="notes-area" oninput="debounceSave()" placeholder="[Week X — Phase PX]
+What did I ship this week?
+- ...
+
+What was harder than expected?
+- ...
+
+What would I explain to a Figure recruiter?
+- ...
+
+Next week I will:
+- ..."></textarea>
       </div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .app -->
+
+<!-- TASK DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" style="display:none" onclick="closeModalIfBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-phase-tag" id="m-phase">P1 · LEARNING</div>
+      <div class="modal-title" id="m-title">Task Title</div>
+      <div class="pill-row" id="m-tags"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="m-body">
+      <!-- Dynamic content -->
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="m-done-btn" onclick="modalMarkDone()">✓ MARK DONE</button>
+      <button class="btn btn-secondary" onclick="closeModal()">CLOSE</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">✓ ACTION TRIGGERED</div>
+<div class="toast" id="toast">—</div>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-// --- FIREBASE SETUP ---
-const firebaseConfig = {
+// =========================================================
+// FIREBASE
+// =========================================================
+const FB_CONFIG = {
   apiKey: "AIzaSyDNWayygSWU9IuyrEvyCXKqdO7VOUuaY2Q",
   authDomain: "robotics-mission.firebaseapp.com",
   databaseURL: "https://robotics-mission-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -459,455 +1142,977 @@ const firebaseConfig = {
   messagingSenderId: "1036228218743",
   appId: "1:1036228218743:web:291e9864146edcec24db72"
 };
-
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
-const stateRef = db.ref('robotics_mission_v4'); 
+const STATE_REF = db.ref('robotics_v5');
 
-const MISSION_DURATION_DAYS = 182;
-const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
+// =========================================================
+// TASK DATABASE — with full detail for modal
+// =========================================================
 const TASKS = [
-  { id:'p1_policy_runner', phase:'P1', category:'learning', objective:'Production C++ real-time', deliverable:'Port HG-Dagger inference to C++ PolicyRunner', metric:'1kHz loop, no dynamic allocation, benchmark latency delta', gate:'ASan clean + verbal ownership explanation', artifact:'English README + benchmark.md', priority:'critical', estHours:10, title:'Port HG-Dagger inference → C++ PolicyRunner class', desc:'Constructor/destructor, unique_ptr ownership, fixed-rate loop, measurable latency before/after.' },
-  { id:'p1_executor', phase:'P1', category:'portfolio', objective:'ROS2 execution model', deliverable:'rclcpp MultiThreadedExecutor + callback groups', metric:'jitter measured with ros2 topic hz', gate:'thread-safe shared ownership', artifact:'Design note + diagram', priority:'critical', estHours:8, title:'rclcpp MultiThreadedExecutor + callback groups', desc:'Integrate PolicyRunner through shared_ptr, remove hidden race conditions.' },
-  { id:'p1_sanitizers', phase:'P1', category:'learning', objective:'Robust C++ hygiene', deliverable:'ASan/TSan on skid-steer RS485 code', metric:'0 leak, 0 race, 0 warning left', gate:'every warning resolved', artifact:'Sanitizer log', priority:'high', estHours:6, title:'AddressSanitizer + ThreadSanitizer on RS485 C code', desc:'Use tooling as interview proof, not as decoration.' },
-  { id:'p1_hwif', phase:'P1', category:'portfolio', objective:'ROS2 hardware integration', deliverable:'custom ros2_control hardware_interface', metric:'hardware can be driven through controller_manager', gate:'integration passes on device/sim', artifact:'Repo module + demo clip', priority:'high', estHours:8, title:'ros2_control custom hardware_interface for ESP32 / Micro-ROS', desc:'Production-style actuator interface pattern with your existing Micro-ROS base.' },
-  { id:'p1_readme', phase:'P1', category:'recruiter', objective:'Recruiter signal', deliverable:'English README for the C++ component', metric:'problem → approach → metric → run steps', gate:'clear to external reader', artifact:'Public repo polish', priority:'medium', estHours:3, title:'English README: Problem → Approach → Metric → How to run', desc:'Convert technical work into readable hiring signal.' },
-  { id:'p2_inference', phase:'P2', category:'learning', objective:'VLA entry point', deliverable:'Run OpenVLA / LeRobot inference', metric:'successful inference on sample input', gate:'understand shapes + action chunking', artifact:'Run log + notes', priority:'critical', estHours:8, title:'Run OpenVLA or LeRobot inference', desc:'Use pretrained checkpoint before any fine-tune fantasy.' },
-  { id:'p2_data', phase:'P2', category:'portfolio', objective:'Data engine', deliverable:'50–100 teleop episodes', metric:'dataset adheres to LeRobot format', gate:'collection pipeline stable', artifact:'Dataset README + metadata', priority:'critical', estHours:12, title:'Collect teleop episodes (RealSense D435)', desc:'This is the hidden bottleneck. No data, no model, no demo.' },
-  { id:'p2_lora', phase:'P2', category:'research', objective:'Adaptation', deliverable:'LoRA fine-tune VLA on own data', metric:'pre/post eval improvement', gate:'evaluation reproducible', artifact:'training log + result chart', priority:'critical', estHours:14, title:'LoRA fine-tune VLA on self-collected data', desc:'Use measurable delta; otherwise it is just expensive experimentation.' },
-  { id:'p2_capstone', phase:'P2', category:'portfolio', objective:'End-to-end demo', deliverable:'VLA → ROS2 → C++ controller → robot', metric:'language command to motion succeeds', gate:'video demo stable', artifact:'demo video + public repo', priority:'critical', estHours:12, title:'Capstone integration: VLA → ROS2 → C++ controller → robot', desc:'This is the core hiring artifact. Everything else supports it.' },
-  { id:'p3_foc', phase:'P3', category:'learning', objective:'Mechatronics depth', deliverable:'FOC on BLDC + ESP32', metric:'torque ripple comparison', gate:'current loop stable', artifact:'measured plots', priority:'high', estHours:10, title:'FOC on BLDC + ESP32', desc:'SimpleFOC first, then your own current loop C++.' },
-  { id:'p3_tactile', phase:'P3', category:'research', objective:'Embodied sensing', deliverable:'current sensing as observation modality', metric:'action loop uses sensed feedback', gate:'integration with capstone', artifact:'tech note', priority:'high', estHours:6, title:'Current sensing → observation modality', desc:'A small but differentiated axis for Figure/1X style work.' },
-  { id:'p4_resume', phase:'P4', category:'recruiter', objective:'Application readiness', deliverable:'1-page resume + GitHub rewrite', metric:'all pinned repos have clear English README', gate:'recruiter can scan in 60 seconds', artifact:'resume.pdf + profile', priority:'critical', estHours:8, title:'Resume 1 page + GitHub rewrite around capstone', desc:'Move from “engineer did things” to “engineer owns a coherent story.”' },
-  { id:'p4_stack_notes', phase:'P4', category:'research', objective:'Company targeting', deliverable:'Figure / 1X / PI stack notes', metric:'1 note per company with latest paper/blog + your link', gate:'reference accuracy', artifact:'company notes', priority:'critical', estHours:5, title:'Research company stack and connect to capstone', desc:'Search not for trivia; search for alignment.' },
-  { id:'p4_outreach', phase:'P4', category:'networking', objective:'Warm signal', deliverable:'10 engineers outreach', metric:'reply rate + feedback rate', gate:'no job ask in first message', artifact:'outreach log', priority:'high', estHours:5, title:'Cold outreach to engineers for feedback', desc:'Use the project as the conversation anchor.' },
-  { id:'p4_interview', phase:'P4', category:'interview', objective:'Interview conversion', deliverable:'5-minute capstone explanation', metric:'natural explanation + no filler', gate:'can answer architecture questions', artifact:'recorded video + script', priority:'high', estHours:4, title:'Record 5-min capstone explanation', desc:'Do not wait until the end. Start when artifact exists.' }
+  {
+    id: 'p1_policy_runner',
+    phase: 'P1', category: 'learning',
+    title: 'Port HG-Dagger inference → C++ PolicyRunner class',
+    shortDesc: 'Viết class C++ chạy inference policy ở 1kHz, không dynamic allocation.',
+    priority: 'critical', estHours: 10,
+    detail: {
+      why: 'Figure AI, 1X, Physical Intelligence đều yêu cầu C++ engineer có thể viết inference loop real-time. Python quá chậm cho 1kHz control. Đây là skill gap lớn nhất và phải giải quyết trong tuần 1–3. Nếu không có C++ production-level code, resume của bạn sẽ bị filter out ở vòng đầu.',
+      whatYouAreDoing: 'Bạn sẽ lấy HG-Dagger (một policy network nhỏ đã được train bằng Python/PyTorch) và viết lại inference pipeline của nó bằng C++17. Class này sẽ chạy trong vòng lặp real-time 1000Hz, không được phép allocate memory động (new/delete) trong vòng lặp.',
+      keywords: ['C++17 RAII', 'unique_ptr shared_ptr', 'fixed-size memory pool', 'lock-free queue', 'cmake build system', 'libtorch C++ API', 'ONNX Runtime C++', 'std::array vs std::vector', 'cache line alignment', 'AddressSanitizer'],
+      searchGuide: 'Search: "libtorch C++ inference tutorial", "ONNX Runtime C++ example", "real-time C++ no dynamic allocation", "cmake find_package libtorch"',
+      steps: [
+        { title: 'Setup environment', desc: 'Install libtorch (C++ API) hoặc ONNX Runtime. Build hello world inference với cmake. Search: "download libtorch", "cmake target_link_libraries torch".' },
+        { title: 'Viết PolicyRunner interface', desc: 'class PolicyRunner { public: explicit PolicyRunner(std::string_view model_path); ~PolicyRunner(); Eigen::VectorXf infer(const Eigen::VectorXf& obs); private: // no raw new/delete }; Tất cả resources dùng unique_ptr.' },
+        { title: 'Load và chạy model', desc: 'Dùng torch::jit::load() hoặc Ort::Session để load model file. Viết benchmark: đo latency avg/p99 cho 10000 lần infer. Target: < 1ms per call.' },
+        { title: 'Implement 1kHz timer loop', desc: 'Dùng std::chrono::high_resolution_clock + busy-wait hoặc timerfd (Linux) để giữ đúng 1000Hz. Đo jitter.' },
+        { title: 'Chạy AddressSanitizer', desc: 'Build với -fsanitize=address,undefined. Fix mọi warning. Screenshot kết quả sạch = artifact.' },
+      ],
+      outputs: [
+        { label: 'CODE', val: 'PolicyRunner.hpp / .cpp trong repo, build được bằng cmake' },
+        { label: 'BENCHMARK', val: 'benchmark.md: latency avg, p99, p99.9 cho 10000 iterations' },
+        { label: 'README', val: 'English README: vấn đề, approach, build steps, kết quả đo được' },
+        { label: 'LOG', val: 'ASan output screenshot: 0 errors, 0 leaks' },
+      ],
+      gate: 'ASan/UBSan chạy sạch (0 error). Bạn có thể giải thích bằng miệng trong 3 phút: tại sao dùng unique_ptr, tại sao không new trong loop, latency là bao nhiêu.',
+    }
+  },
+  {
+    id: 'p1_executor',
+    phase: 'P1', category: 'portfolio',
+    title: 'rclcpp MultiThreadedExecutor + callback groups cho policy node',
+    shortDesc: 'Tích hợp PolicyRunner vào ROS2 node, tránh race condition.',
+    priority: 'critical', estHours: 8,
+    detail: {
+      why: 'Hầu hết robotics engineer biết viết ROS2 subscriber/publisher. Nhưng biết xử lý concurrency đúng trong ROS2 (callback groups, executor types) là dấu hiệu của senior-level engineer. Figure và Physical Intelligence dùng multi-threaded ROS2 node với real-time controller.',
+      whatYouAreDoing: 'Bạn sẽ viết một ROS2 node tích hợp PolicyRunner. Node này nhận observation từ sensor topic, chạy inference trong callback group riêng, publish action command. Phải thread-safe, không data race.',
+      keywords: ['rclcpp::MultiThreadedExecutor', 'rclcpp::CallbackGroup', 'MutuallyExclusive vs Reentrant', 'shared_ptr lifecycle ROS2', 'ros2 topic hz latency', 'ros2_control ControllerInterface', 'lifecycle node', 'QoS sensor_data best_effort'],
+      searchGuide: 'Search: "rclcpp MultiThreadedExecutor callback groups tutorial", "ROS2 real-time executor", "ros2_control write custom controller", "ROS2 thread safety node"',
+      steps: [
+        { title: 'Tạo ROS2 package', desc: 'ros2 pkg create --build-type ament_cmake policy_executor. Thêm dependency: rclcpp, std_msgs, sensor_msgs.' },
+        { title: 'Viết PolicyExecutorNode', desc: 'Tạo 2 callback groups: (1) sensor_group cho subscriber (MutuallyExclusive), (2) policy_group cho timer. Dùng shared_ptr để chia sẻ PolicyRunner qua threads.' },
+        { title: 'Test thread safety với TSan', desc: 'Build với -fsanitize=thread. Chạy node trong 60 giây. 0 race conditions = pass.' },
+        { title: 'Đo latency end-to-end', desc: 'ros2 topic hz /action_cmd, ros2 topic delay /action_cmd. Document jitter.' },
+        { title: 'Vẽ architecture diagram', desc: 'Vẽ sơ đồ luồng dữ liệu: sensor → callback → PolicyRunner → action. Thêm vào README.' },
+      ],
+      outputs: [
+        { label: 'CODE', val: 'policy_executor ROS2 package, buildable colcon build' },
+        { label: 'DIAGRAM', val: 'Sơ đồ architecture thread model' },
+        { label: 'TEST', val: 'TSan output sạch + latency measurement' },
+        { label: 'NOTE', val: 'Design note: tại sao chọn MultiThreadedExecutor vs SingleThreaded' },
+      ],
+      gate: 'Chạy được trên thực tế. TSan sạch. Giải thích được sự khác nhau giữa MutuallyExclusive và Reentrant callback group.',
+    }
+  },
+  {
+    id: 'p1_sanitizers',
+    phase: 'P1', category: 'learning',
+    title: 'AddressSanitizer + ThreadSanitizer trên toàn bộ C++ codebase',
+    shortDesc: 'Dùng ASan/TSan như interview proof, không phải decoration.',
+    priority: 'high', estHours: 6,
+    detail: {
+      why: 'Trong interview tại Figure, 1X, interviewer sẽ hỏi "Bạn làm sao đảm bảo code không có memory leak?". Câu trả lời "Tôi careful" bị điểm thấp. Câu trả lời "Tôi dùng ASan/TSan, đây là output" được điểm cao. Đây là hygiene cơ bản của production C++ engineer.',
+      whatYouAreDoing: 'Bạn áp dụng ASan (phát hiện buffer overflow, use-after-free, memory leak) và TSan (phát hiện data race) lên skid-steer RS485 codebase hiện tại và PolicyRunner. Sau đó fix mọi warning cho đến khi sạch hoàn toàn.',
+      keywords: ['AddressSanitizer -fsanitize=address', 'ThreadSanitizer -fsanitize=thread', 'UBSan -fsanitize=undefined', 'LeakSanitizer LSAN', 'valgrind memcheck', 'CMakeSanitizer', 'clang-tidy static analysis', 'sanitizer suppressions'],
+      searchGuide: 'Search: "cmake AddressSanitizer CMakeLists", "GCC AddressSanitizer tutorial", "fix use after free ASan", "ThreadSanitizer false positive suppress"',
+      steps: [
+        { title: 'Enable ASan trong CMake', desc: 'Thêm target_compile_options(${TARGET} PRIVATE -fsanitize=address,undefined) và target_link_options(). Build và chạy.' },
+        { title: 'Fix từng warning một', desc: 'Không skip. Mỗi warning = 1 commit riêng với message rõ ràng. Chụp screenshot trước và sau.' },
+        { title: 'Enable TSan', desc: 'TSan và ASan không chạy cùng nhau. Tạo cmake target riêng. Fix data race nếu có.' },
+        { title: 'Document process', desc: 'Ghi lại: có bao nhiêu bug tìm thấy, bug nào nguy hiểm nhất, cách fix. Đây là nội dung interview story.' },
+      ],
+      outputs: [
+        { label: 'BEFORE', val: 'Screenshot ASan output có lỗi (baseline)' },
+        { label: 'AFTER', val: 'Screenshot ASan output: 0 errors, 0 leaks' },
+        { label: 'LOG', val: 'sanitizer_findings.md: danh sách bug tìm thấy và cách fix' },
+        { label: 'CI', val: 'CMake option BUILD_WITH_SANITIZERS=ON để dễ reproduce' },
+      ],
+      gate: 'ASan + TSan + UBSan đều chạy sạch. Bạn có thể kể chuyện: "Tôi tìm thấy X bug với ASan, đây là cách tôi fix" trong interview.',
+    }
+  },
+  {
+    id: 'p1_hwif',
+    phase: 'P1', category: 'portfolio',
+    title: 'Custom ros2_control hardware_interface cho ESP32 / Micro-ROS',
+    shortDesc: 'Viết actuator interface production-style, drive qua controller_manager.',
+    priority: 'high', estHours: 8,
+    detail: {
+      why: 'ros2_control là tiêu chuẩn trong robotics industry. Biết viết custom hardware_interface cho thấy bạn hiểu kiến trúc phân lớp của robotics stack, không chỉ biết publish topic. 1X và Figure đều dùng pattern này.',
+      whatYouAreDoing: 'Bạn implement class kế thừa hardware_interface::SystemInterface hoặc ActuatorInterface, override on_init(), read(), write(). Class này talk to ESP32 qua Micro-ROS transport. Controller_manager có thể load/unload nó như một plugin.',
+      keywords: ['ros2_control hardware_interface', 'hardware_interface::SystemInterface', 'controller_manager', 'pluginlib plugin', 'Micro-ROS custom transport', 'URDF transmission element', 'ros2_control xacro', 'lifecycle state machine'],
+      searchGuide: 'Search: "ros2_control write custom hardware interface tutorial", "ros2_control SystemInterface example", "Micro-ROS custom transport serial", "pluginlib export_class ros2"',
+      steps: [
+        { title: 'Đọc ros2_control architecture', desc: 'Đọc tài liệu chính thức ros2_control. Hiểu: Controller Manager, Resource Manager, Hardware Interface layer. Vẽ sơ đồ ra giấy trước khi code.' },
+        { title: 'Create plugin package', desc: 'Kế thừa hardware_interface::SystemInterface. Export via pluginlib_export_class macro. Viết plugin.xml.' },
+        { title: 'Implement on_init() / read() / write()', desc: 'on_init(): parse URDF params. read(): đọc encoder từ ESP32 qua serial/Micro-ROS. write(): gửi velocity command.' },
+        { title: 'Test với mock controller', desc: 'Dùng joint_trajectory_controller để drive fake joints. Verify trong RViz hoặc plot joint_states.' },
+        { title: 'Demo clip', desc: 'Record terminal + RViz: ros2 control list_hardware_interfaces, sau đó publish command và thấy joint_states thay đổi.' },
+      ],
+      outputs: [
+        { label: 'CODE', val: 'ROS2 package: custom_hw_interface, buildable với colcon' },
+        { label: 'VIDEO', val: 'Demo clip 60 giây: load interface, chạy controller, joint_states di chuyển' },
+        { label: 'README', val: 'English README: hardware requirements, wiring, build steps' },
+        { label: 'DIAGRAM', val: 'Kiến trúc: ESP32 → Micro-ROS → hardware_interface → controller_manager' },
+      ],
+      gate: 'ros2 control list_hardware_interfaces hiển thị interface của bạn. Controller có thể load và joint_states thay đổi theo command.',
+    }
+  },
+  {
+    id: 'p1_readme',
+    phase: 'P1', category: 'recruiter',
+    title: 'English README: Problem → Approach → Metric → How to run',
+    shortDesc: 'Convert technical work thành readable hiring signal cho recruiter.',
+    priority: 'medium', estHours: 3,
+    detail: {
+      why: 'Recruiter tại Figure/1X dành < 60 giây cho mỗi GitHub repo. Nếu không có README rõ ràng, họ sẽ skip. README tốt = bạn tự giải thích được work của mình. Đây là "Narrative Score" trong Recruiter Readiness.',
+      whatYouAreDoing: 'Viết English README chuẩn cho C++ project theo format: Problem Statement → Technical Approach → Measurable Results → How to Build → How to Run. Không viết quá 500 từ.',
+      keywords: ['technical writing', 'problem statement format', 'GitHub badges', 'demo gif recording', 'asciinema terminal recording', 'markdown table formatting'],
+      searchGuide: 'Search: "good robotics project README example", "how to write technical README", "asciinema record terminal"',
+      steps: [
+        { title: 'Viết Problem Statement (3 câu)', desc: '"Robot X cần làm Y nhưng hiện tại Z là bottleneck. Vấn đề cụ thể là... Nếu không giải quyết thì hậu quả là..."' },
+        { title: 'Technical Approach (5 bullet points)', desc: 'Liệt kê: architecture, key design decisions, tại sao chọn approach này thay vì alternatives.' },
+        { title: 'Results section với số', desc: '"Before: Xms. After: Yms. Improvement: Z%. Tested on: hardware/OS."' },
+        { title: 'Build & Run section', desc: 'Copy-pasteable commands. Test trên clean Ubuntu fresh install.' },
+        { title: 'Add demo gif hoặc screenshot', desc: 'Dùng peek (Linux) hoặc LICEcap (Win/Mac) để record 15 giây terminal. Thêm vào top of README.' },
+      ],
+      outputs: [
+        { label: 'README', val: 'README.md tiếng Anh, < 500 từ, có demo gif' },
+        { label: 'FORMAT', val: 'Problem → Approach → Results (với số) → Build → Run' },
+        { label: 'TEST', val: 'Nhờ người khác đọc cold và hỏi: họ hiểu được bạn đang build gì không?' },
+      ],
+      gate: 'Một người không biết project có thể đọc README và hiểu: bạn giải quyết vấn đề gì, bằng cách nào, kết quả ra sao.',
+    }
+  },
+  {
+    id: 'p2_inference',
+    phase: 'P2', category: 'learning',
+    title: 'Run OpenVLA hoặc LeRobot inference từ pretrained checkpoint',
+    shortDesc: 'Hiểu input/output shapes và action chunking trước khi fine-tune.',
+    priority: 'critical', estHours: 8,
+    detail: {
+      why: 'VLA (Vision-Language-Action) model là core technology của Figure AI và Physical Intelligence. Nếu bạn chưa bao giờ run inference VLA, bạn không thể nói trong interview rằng bạn hiểu embodied AI. Bước này là foundation bắt buộc trước khi làm bất cứ thứ gì khác ở P2.',
+      whatYouAreDoing: 'Download pretrained OpenVLA hoặc LeRobot checkpoint. Chạy inference trên sample inputs (camera image + language instruction). Hiểu: input tensor shapes, action space, action chunking là gì, tại sao cần chunking.',
+      keywords: ['OpenVLA vision language action', 'LeRobot Hugging Face', 'action chunking', 'imitation learning inference', 'tokenized action space', 'VLM backbone', 'prismatic-vla', 'octo-model', 'diffusion policy', 'ACT policy'],
+      searchGuide: 'Search: "OpenVLA inference example GitHub", "LeRobot tutorial inference", "action chunking robotics paper", "huggingface lerobot quickstart"',
+      steps: [
+        { title: 'Đọc paper gốc (abstract + method)', desc: 'OpenVLA: https://arxiv.org/abs/2406.09246. LeRobot: đọc GitHub README. Hiểu: tại sao VLA, không phải pure RL hoặc pure IL?' },
+        { title: 'Setup environment', desc: 'pip install lerobot hoặc clone openvla. CUDA check. Nếu không có GPU: dùng Google Colab T4 (miễn phí).' },
+        { title: 'Run inference script', desc: 'Dùng example script từ repo. Input: 1 image + 1 language string. Output: action vector. Print shapes ra. Hiểu mỗi dimension nghĩa là gì.' },
+        { title: 'Experiment với inputs', desc: 'Thay đổi language instruction. Thay đổi image. Quan sát action thay đổi thế nào. Ghi chú observations.' },
+        { title: 'Đọc action chunking code', desc: 'Tìm trong code: action_horizon, prediction_horizon. Hiểu tại sao predict nhiều steps một lúc (temporal ensembling).' },
+      ],
+      outputs: [
+        { label: 'NOTEBOOK', val: 'Jupyter notebook: load model → run inference → visualize output' },
+        { label: 'NOTES', val: 'vla_notes.md: input shapes, output format, action chunking explanation bằng lời của bạn' },
+        { label: 'LOG', val: 'Screenshot inference thành công với sample output' },
+      ],
+      gate: 'Bạn có thể giải thích: (1) VLA input là gì, (2) output là gì, (3) action chunking giải quyết vấn đề gì, (4) điểm khác nhau giữa OpenVLA và ACT.',
+    }
+  },
+  {
+    id: 'p2_data',
+    phase: 'P2', category: 'portfolio',
+    title: 'Thu thập 50–100 teleop episodes với RealSense D435',
+    shortDesc: 'Dataset là bottleneck ẩn. Không có data → không có model → không có demo.',
+    priority: 'critical', estHours: 12,
+    detail: {
+      why: 'Đây là bước mọi người underestimate nhất. Nhiều engineer dành 2 tuần fine-tune nhưng chỉ có 5 episodes tệ. Result: model không học được gì. Physical Intelligence nổi tiếng vì data quality. Tuyển dụng engineer biết collect good data, không chỉ biết train.',
+      whatYouAreDoing: 'Build data collection pipeline: RealSense D435 cho RGB-D image, teleop controller (keyboard hoặc gamepad hoặc leader-follower arm), save theo LeRobot dataset format. Collect 50–100 episodes của 1 task đơn giản (pick and place, push object, etc.).',
+      keywords: ['RealSense D435 ROS2 driver', 'LeRobot dataset format', 'HDF5 episode storage', 'teleop keyboard ROS2', 'SpaceMouse teleop', 'data quality filtering', 'episode success rate', 'dataset statistics'],
+      searchGuide: 'Search: "realsense-ros2-wrapper install", "lerobot record dataset tutorial", "ROS2 rosbag2 record custom", "teleop_twist_keyboard ROS2"',
+      steps: [
+        { title: 'Setup RealSense ROS2 driver', desc: 'apt install ros-humble-realsense2-camera. Test: ros2 launch realsense2_camera rs_launch.py. Verify point cloud và RGB image topic.' },
+        { title: 'Viết data recorder node', desc: 'Subscribe: /camera/color/image_raw, /joint_states hoặc /cmd_vel. Save theo HDF5 hoặc LeRobot format. Mỗi episode = 1 file.' },
+        { title: 'Setup teleop', desc: 'Dùng keyboard teleop hoặc PS4 gamepad. Test: bạn có thể control robot smooth không?' },
+        { title: 'Collect data có discipline', desc: 'Mỗi episode: reset to same start position, perform task consistently, mark success/failure. Filter bỏ episodes tệ.' },
+        { title: 'Viết data statistics script', desc: 'Episode count, success rate, episode length distribution, image quality check (blur detection). Đây là dataset README.' },
+      ],
+      outputs: [
+        { label: 'DATASET', val: '50–100 episodes theo LeRobot format, success rate > 70%' },
+        { label: 'CODE', val: 'data_collector ROS2 package + filter script' },
+        { label: 'README', val: 'Dataset README: task description, setup, statistics, download link' },
+        { label: 'STATS', val: 'histogram episode length, success rate, failure modes' },
+      ],
+      gate: 'Dataset load được bằng lerobot API. lerobot.datasets.LeRobotDataset("your_dataset") không error. Success rate > 70%.',
+    }
+  },
+  {
+    id: 'p2_lora',
+    phase: 'P2', category: 'research',
+    title: 'LoRA fine-tune VLA trên self-collected data',
+    shortDesc: 'Dùng measurable delta; không có số thì chỉ là expensive experimentation.',
+    priority: 'critical', estHours: 14,
+    detail: {
+      why: 'Fine-tune VLA = bạn chứng minh bạn hiểu full ML cycle: data → train → evaluate. Đây là skill cốt lõi của embodied AI engineer. LoRA (Low-Rank Adaptation) giúp fine-tune với GPU nhỏ (1x A100 hoặc Colab A100).',
+      whatYouAreDoing: 'Dùng dataset từ bước trước, fine-tune pretrained VLA checkpoint với LoRA. Đánh giá trước và sau: success rate trên held-out episodes. Target: improvement > 10% (pre vs post).',
+      keywords: ['LoRA low-rank adaptation', 'PEFT HuggingFace', 'VLA fine-tuning', 'action success rate evaluation', 'train val test split', 'wandb experiment tracking', 'gradient checkpointing', 'mixed precision fp16 bf16', 'learning rate schedule'],
+      searchGuide: 'Search: "lerobot fine-tuning tutorial", "OpenVLA fine-tune LoRA", "huggingface peft LoRA example", "wandb pytorch integration"',
+      steps: [
+        { title: 'Split dataset', desc: 'Train 80%, val 10%, test 10%. Không shuffle episodes — split theo chronological order để tránh data leakage.' },
+        { title: 'Setup training với LoRA', desc: 'from peft import LoraConfig, get_peft_model. Target modules: query và value projection layers. rank=16, alpha=32.' },
+        { title: 'Pre-training baseline', desc: 'Chạy pretrained model (không fine-tune) trên test set. Record success rate. Đây là baseline.' },
+        { title: 'Fine-tune 10–20 epochs', desc: 'Track loss curve. Nếu val loss không giảm sau 5 epochs → giảm learning rate. Log với wandb hoặc tensorboard.' },
+        { title: 'Post-training evaluation', desc: 'Chạy fine-tuned model trên test set. Compare success rate. Plot learning curve. Đây là main artifact.' },
+      ],
+      outputs: [
+        { label: 'MODEL', val: 'LoRA checkpoint, compatible với base model' },
+        { label: 'PLOT', val: 'training_log.png: loss curve + success rate before/after' },
+        { label: 'REPORT', val: 'finetuning_results.md: hyperparams, pre/post success rate, analysis' },
+        { label: 'CODE', val: 'Training script, reproducible với 1 command' },
+      ],
+      gate: 'Post fine-tune success rate > pre fine-tune success rate (với số cụ thể). Bạn có thể giải thích tại sao LoRA, không phải full fine-tune.',
+    }
+  },
+  {
+    id: 'p2_capstone',
+    phase: 'P2', category: 'portfolio',
+    title: 'Capstone: VLA → ROS2 → C++ controller → robot thực tế',
+    shortDesc: 'Core hiring artifact. Language command → robot motion. Video là bằng chứng.',
+    priority: 'critical', estHours: 12,
+    detail: {
+      why: 'Đây là toàn bộ lý do của 6 tháng này. Figure AI và 1X muốn xem: bạn có thể integrate AI model với robotics stack không? 1 video demo 30 giây "robot nhặt vật theo lệnh nói" quan trọng hơn 100 trang CV. Đây là điều phân biệt bạn với hàng ngàn applicant khác.',
+      whatYouAreDoing: 'Integrate tất cả: (1) Fine-tuned VLA model chạy inference, (2) ROS2 bridge nhận action output, (3) C++ PolicyRunner/controller execute trên robot. End-to-end: nói "pick up the red cube" → robot thực hiện.',
+      keywords: ['ROS2 action server client', 'VLA action space mapping', 'joint trajectory controller', 'MoveIt2 motion planning', 'robot URDF xacro', 'camera calibration extrinsic', 'coordinate frame transform tf2', 'end-to-end robotics demo'],
+      searchGuide: 'Search: "ROS2 action server example", "MoveIt2 tutorial humble", "tf2 coordinate transform ROS2", "publish joint trajectory ROS2"',
+      steps: [
+        { title: 'Define integration architecture', desc: 'Vẽ block diagram: Camera → VLA Inference Node → Action Bridge Node → C++ Controller → Joint Commands → Robot. Xác định: message types, frequency, latency budget.' },
+        { title: 'Viết VLA Inference Node (Python)', desc: 'Subscribe /camera/image, nhận language command qua ROS2 service/topic. Publish predicted_action topic.' },
+        { title: 'Viết Action Bridge Node (C++)', desc: 'Convert VLA output (numpy action vector) → JointTrajectory message. Publish với đúng timing.' },
+        { title: 'Test từng layer riêng', desc: 'Test inference node standalone. Test bridge standalone với fake input. Test controller standalone. Sau đó mới connect.' },
+        { title: 'Record demo video', desc: '60 giây: setup, command, execution, result. Quay 3 lần, chọn lần tốt nhất. Upload lên YouTube unlisted hoặc Google Drive.' },
+      ],
+      outputs: [
+        { label: 'VIDEO', val: 'Demo video 60s: ngôn ngữ → robot action, upload public/unlisted' },
+        { label: 'REPO', val: 'GitHub repo: capstone_vla, README với architecture diagram và video link' },
+        { label: 'DIAGRAM', val: 'System architecture: full stack từ camera đến actuator' },
+        { label: 'WRITEUP', val: 'Technical writeup: design decisions, failure modes, lessons learned' },
+      ],
+      gate: 'Video demo hoạt động stable 3/5 lần thử. Repo public. Bạn có thể demo live trong interview (quan trọng nhất).',
+    }
+  },
+  {
+    id: 'p3_foc',
+    phase: 'P3', category: 'learning',
+    title: 'FOC (Field Oriented Control) trên BLDC motor với ESP32',
+    shortDesc: 'SimpleFOC trước, rồi viết current loop C++ của riêng bạn.',
+    priority: 'high', estHours: 10,
+    detail: {
+      why: 'Figure AI và 1X làm việc với legged robots cần torque control chính xác. FOC là algorithm biến BLDC motor thành torque-controlled actuator. Engineer hiểu FOC → hiểu tại sao robot có thể "cảm nhận" lực tác động. Đây là hardware depth mà software engineer thường thiếu.',
+      whatYouAreDoing: 'Dùng SimpleFOC library trên ESP32 để run FOC cho BLDC motor. Sau đó implement current loop C++ của bạn: đọc ADC current sensor, tính Park/Clarke transform, điều khiển Id/Iq. Đo torque ripple trước và sau.',
+      keywords: ['FOC field oriented control', 'Park Clarke transform', 'space vector PWM SVPWM', 'current loop PID', 'SimpleFOC ESP32', 'AS5600 magnetic encoder', 'ADC current sensing', 'torque ripple', 'BLDC motor electrical model'],
+      searchGuide: 'Search: "SimpleFOC ESP32 BLDC tutorial", "FOC park clarke transform explained", "SVPWM implementation C", "AS5600 encoder SPI interface"',
+      steps: [
+        { title: 'Đọc lý thuyết FOC', desc: 'YouTube: "Field Oriented Control Explained" (Texas Instruments). Hiểu: tại sao cần Park/Clarke, tại sao 2 current controllers (Id, Iq).' },
+        { title: 'Run SimpleFOC demo', desc: 'Cài SimpleFOC. Kết nối BLDC + encoder + driver. Chạy torque mode. Đo torque ripple bằng oscilloscope hoặc current sensor ADC.' },
+        { title: 'Implement Clarke transform từ scratch', desc: 'Từ 3-phase currents (Ia, Ib, Ic) → 2-phase stationary frame (Iα, Iβ). Verify bằng cách so sánh với SimpleFOC output.' },
+        { title: 'Implement Park transform', desc: 'Từ (Iα, Iβ) + rotor angle θ → rotating frame (Id, Iq). Implement PID cho Id và Iq riêng biệt.' },
+        { title: 'Đo và so sánh', desc: 'Plot torque ripple: SimpleFOC vs your implementation. Đây là measurable delta artifact.' },
+      ],
+      outputs: [
+        { label: 'CODE', val: 'ESP32 C++ FOC implementation, standalone + SimpleFOC comparison' },
+        { label: 'PLOT', val: 'torque_ripple_comparison.png: SimpleFOC vs custom implementation' },
+        { label: 'NOTE', val: 'foc_notes.md: math walkthrough + implementation details' },
+      ],
+      gate: 'BLDC motor spin smooth ở torque mode với custom FOC. Bạn giải thích được Park/Clarke transform không cần nhìn notes.',
+    }
+  },
+  {
+    id: 'p3_tactile',
+    phase: 'P3', category: 'research',
+    title: 'Current sensing → observation modality trong policy loop',
+    shortDesc: 'Axis khác biệt cho Figure/1X style work: cảm biến lực qua current.',
+    priority: 'high', estHours: 6,
+    detail: {
+      why: 'Một trong những thứ khó nhất trong robot manipulation là tactile sensing. Figure AI dùng haptic feedback. Cách đơn giản nhất để có approximation của force feedback: đọc motor current. Khi robot cầm vật cứng vs mềm, current spike khác nhau. Dùng current signal như 1 observation channel trong policy = differentiating factor.',
+      whatYouAreDoing: 'Tích hợp current sensor signal (từ FOC loop) như một observation dimension vào capstone policy. Train hoặc evaluate: policy với current obs vs không có current obs. Ghi lại kết quả.',
+      keywords: ['impedance control', 'force torque sensing', 'motor current estimation', 'proprioceptive sensing', 'contact detection current', 'whole body control', 'tactile policy learning'],
+      searchGuide: 'Search: "motor current contact detection", "current sensing proprioception robotics", "impedance control tutorial ROS2"',
+      steps: [
+        { title: 'Build current observation pipeline', desc: 'Đọc Iq (torque current) từ FOC loop. Publish lên /motor/current_obs ROS2 topic tại 100Hz.' },
+        { title: 'Tích hợp vào observation vector', desc: 'Thêm current_obs vào observation space của policy. Retrain hoặc evaluate zero-shot.' },
+        { title: 'So sánh với baseline', desc: 'Run policy với và không có current observation. Quan sát: có giảm drop rate không? Ghi lại bằng số.' },
+        { title: 'Viết tech note', desc: 'Tại sao current sensing = cheap haptic sensing. Limitations. Kết quả.' },
+      ],
+      outputs: [
+        { label: 'CODE', val: 'current_obs_publisher node, integration với policy observation' },
+        { label: 'RESULT', val: 'So sánh success rate: với vs không có current obs' },
+        { label: 'NOTE', val: 'current_sensing_tactile.md: rationale, implementation, findings' },
+      ],
+      gate: 'Current signal được publish và integrated vào observation. Có số so sánh (dù improvement nhỏ hay không đáng kể).',
+    }
+  },
+  {
+    id: 'p4_resume',
+    phase: 'P4', category: 'recruiter',
+    title: 'Resume 1 trang + GitHub rewrite xoay quanh capstone',
+    shortDesc: 'Chuyển từ "engineer did things" sang "engineer owns a coherent story".',
+    priority: 'critical', estHours: 8,
+    detail: {
+      why: 'Resume của robotics engineer thường mắc 2 lỗi: (1) liệt kê skills như shopping list, (2) mô tả job duties thay vì impact. Figure/1X recruiter muốn xem: bạn sở hữu cái gì, đã build gì, kết quả đo được ra sao. 1 trang, không exception.',
+      whatYouAreDoing: 'Viết lại resume với format: Summary (2 câu, VLA + C++ + ROS2) → Projects (capstone first) → Experience (impact-oriented) → Skills (verified, not fantasy). Rewrite GitHub profile: capstone pinned đầu tiên, bio updated, mọi pinned repo có English README.',
+      keywords: ['ATS-friendly resume format', 'impact-oriented bullets XYZ Google format', 'GitHub profile README', 'LinkedIn headline robotics', 'quantified achievements', 'technical portfolio'],
+      searchGuide: 'Search: "robotics engineer resume example", "Google XYZ resume format", "GitHub profile README md", "ATS resume checker free"',
+      steps: [
+        { title: 'Audit GitHub', desc: 'List tất cả public repos. Archive repos không liên quan. Pin 4 repos: capstone, C++ component, FOC, dataset. Add README nếu thiếu.' },
+        { title: 'Viết bullets theo XYZ format', desc: '"Accomplished X by doing Y, resulting in Z." Ví dụ: "Integrated fine-tuned VLA model with ROS2 C++ controller, achieving 75% pick-and-place success rate on novel objects."' },
+        { title: 'Summary statement', desc: '2 câu: "Robotics software engineer với X năm kinh nghiệm ROS2/C++. Chuyên về VLA integration và real-time control (1kHz)."' },
+        { title: 'ATS check', desc: 'Paste vào https://resumeworded.com hoặc Jobscan. Score > 70 là pass.' },
+        { title: 'Cold review', desc: 'Nhờ 1 người không biết bạn đọc 30 giây và nói: bạn là ai, làm gì được. Nếu họ không biết → sửa lại.' },
+      ],
+      outputs: [
+        { label: 'FILE', val: 'resume.pdf, 1 trang, ATS-friendly' },
+        { label: 'GITHUB', val: '4 repos pinned, có English README, bio updated' },
+        { label: 'LINKEDIN', val: 'Headline + About section + featured capstone demo' },
+        { label: 'TEST', val: 'ATS score > 70, cold-read test passed' },
+      ],
+      gate: 'Recruiter scan 60 giây biết: bạn build VLA+ROS2+C++ system, kết quả đo được là gì, link demo video ở đâu.',
+    }
+  },
+  {
+    id: 'p4_stack_notes',
+    phase: 'P4', category: 'research',
+    title: 'Research company tech stack và connect với capstone',
+    shortDesc: 'Figure / 1X / Physical Intelligence: đọc papers + blog, tìm điểm kết nối.',
+    priority: 'critical', estHours: 5,
+    detail: {
+      why: 'Trong interview, câu hỏi phổ biến nhất: "Tại sao bạn muốn join chúng tôi?" Câu trả lời tệ: "Vì tôi thích robotics." Câu trả lời tốt: "Tôi đọc paper GR00T của các bạn — approach về VLA fine-tune với proprio data rất gần với những gì tôi đã experiment trong capstone của tôi..." Cần research thật sự.',
+      whatYouAreDoing: 'Tạo 1 note cho mỗi company mục tiêu: latest tech paper/blog, công nghệ cốt lõi, open questions, và điểm nối với capstone của bạn. Dùng để prep outreach message và interview.',
+      keywords: ['Figure AI robot GR00T', '1X robotics NEO', 'Physical Intelligence pi0', 'Boston Dynamics Atlas', 'Apptronik Apollo', 'Agility Robotics Digit', 'Unitree robotics', 'Sanctuary AI', 'embodied intelligence research'],
+      searchGuide: 'Search: "Figure AI research paper 2024", "Physical Intelligence pi0 paper", "1X robotics blog", "embodied AI company landscape 2024"',
+      steps: [
+        { title: 'List 5–7 target companies', desc: 'Figure AI, 1X, Physical Intelligence, Boston Dynamics (SpotArm), Apptronik, Agility Robotics, Unitree. Rank theo fit với skill của bạn.' },
+        { title: 'Deep research mỗi company (1h/company)', desc: 'Đọc: careers page, recent papers/blog posts, LinkedIn profiles của engineers, tech stack hints từ job postings.' },
+        { title: 'Tìm điểm kết nối với capstone', desc: 'Ví dụ: "1X dùng imitation learning trên teleoperated data — tôi đã collect 80 episodes với RealSense và fine-tune VLA." Đây là conversation anchor.' },
+        { title: 'Viết company notes', desc: '1 file per company: tech stack, key papers, people to reach, your connection point, questions to ask.' },
+      ],
+      outputs: [
+        { label: 'NOTES', val: 'company_notes/ folder: 1 markdown file per company' },
+        { label: 'FORMAT', val: 'Tech stack + Latest work + Your connection + Questions to ask' },
+        { label: 'RANKING', val: 'Ranked list: why each company, fit score 1–5' },
+      ],
+      gate: 'Với mỗi company, bạn có thể nói 1 điều cụ thể họ đang work on và 1 câu kết nối với work của bạn.',
+    }
+  },
+  {
+    id: 'p4_outreach',
+    phase: 'P4', category: 'networking',
+    title: 'Cold outreach 10 engineers để xin feedback về capstone',
+    shortDesc: 'Không job ask trong message đầu. Dùng project làm anchor.',
+    priority: 'high', estHours: 5,
+    detail: {
+      why: 'Apply qua job portal có reply rate < 3%. Warm outreach từ engineer referral có rate 60%+. Nhưng phải đúng approach: không spam "xin job", mà "xin feedback về project". Engineer thích nói về tech, không thích bị asked for favors. 1 feedback conversation thường kết thúc bằng "bạn nên apply, để tôi refer".',
+      whatYouAreDoing: 'Tìm 10 engineers tại target companies trên LinkedIn. Viết message cá nhân hóa: mention cụ thể work của họ + xin feedback về 1 khía cạnh cụ thể của capstone. Không mention việc làm trong message đầu tiên.',
+      keywords: ['LinkedIn outreach template', 'cold email robotics', 'engineer referral strategy', 'personal brand robotics', 'content creator GitHub', 'Twitter robotics community', 'Discord robotics'],
+      searchGuide: 'Search: "LinkedIn cold outreach engineer template", "how to get robotics job referral", "cold email technical professional"',
+      steps: [
+        { title: 'Build target list', desc: 'LinkedIn: search "robotics engineer [company]". Filter: 2nd degree connections first. Save 20 profiles → pick 10 most aligned.' },
+        { title: 'Research mỗi người (10 min/person)', desc: 'Đọc posts của họ, papers họ đăng, projects họ public. Tìm 1 điều cụ thể để mention.' },
+        { title: 'Viết message template', desc: '"Hi [Name], Tôi đang build [specific thing]. Tôi thấy bạn đã work on [their specific work] — rất interesting vì [connection]. Bạn có 15 phút để cho tôi feedback về [specific aspect of your project] không?"' },
+        { title: 'Send và track', desc: 'Send 3 messages/tuần. Track: sent, opened, replied, conversation, outcome. Không send all 10 cùng lúc.' },
+        { title: 'Follow up sau 1 tuần', desc: '1 follow up chỉ. "Hi [Name], just wanted to bump this up in case it got buried..."' },
+      ],
+      outputs: [
+        { label: 'SHEET', val: 'outreach_log.csv: name, company, date, message, status, notes' },
+        { label: 'TEMPLATE', val: 'outreach_template.md: personalized messages for each archetype' },
+        { label: 'METRIC', val: 'Reply rate (target: > 30%), feedback conversations (target: 3+)' },
+      ],
+      gate: '10 messages sent. 3+ replies. 1+ feedback conversation hoàn thành. Log đầy đủ.',
+    }
+  },
+  {
+    id: 'p4_interview',
+    phase: 'P4', category: 'interview',
+    title: 'Record 5-minute capstone explanation, không filler, không script',
+    shortDesc: 'Natural explanation + sẵn sàng answer architecture questions.',
+    priority: 'high', estHours: 4,
+    detail: {
+      why: 'Phone screen tại Figure/1X thường bắt đầu: "Tell me about a project you built." Nếu bạn nói "Uh, tôi đã... uh... build một cái..." → game over. Nếu bạn nói clear, confident, technical trong 5 phút → bạn đã pass soft filter. Cần practice, không phải luck.',
+      whatYouAreDoing: 'Record video 5 phút giải thích capstone project. Format: Problem (30s) → Architecture (2m) → Challenges (1m30s) → Results + Demo (1m). Không đọc script. Quay, xem lại, sửa, quay lại. Ít nhất 5 lần.',
+      keywords: ['technical communication', 'STAR method interview', 'system design explanation', 'mock technical interview', 'Pramp interview practice', 'robotics interview questions', 'behavioral interview FAANG'],
+      searchGuide: 'Search: "technical interview system design practice", "STAR method example robotics", "Pramp technical interview", "how to explain project in interview"',
+      steps: [
+        { title: 'Viết outline (không phải script)', desc: 'Problem → Why hard → Your approach → Key decisions → Results → Lessons. Bullet points, không câu hoàn chỉnh.' },
+        { title: 'Lần 1: Quay không chuẩn bị', desc: 'Xem lại. Note: filler words (uh, um, like), điểm không rõ, chỗ mất track.' },
+        { title: 'Lần 2–3: Focus vào architecture', desc: 'Phải nói được: tại sao VLA, tại sao LoRA, tại sao C++ cho controller, tại sao ROS2 middleware.' },
+        { title: 'Lần 4: Mock Q&A', desc: 'Nhờ bạn hỏi: "Tại sao không dùng pure RL?", "Latency của pipeline là bao nhiêu?", "Nếu fine-tune không improve thì bạn làm gì?"' },
+        { title: 'Lần 5: Final recording', desc: 'Upload lên YouTube unlisted. Link thêm vào LinkedIn và resume.' },
+      ],
+      outputs: [
+        { label: 'VIDEO', val: 'Recorded 5-min explanation, uploaded (unlisted OK)' },
+        { label: 'SCRIPT', val: 'explanation_outline.md: bullet points (không phải full script)' },
+        { label: 'QA', val: '10 câu hỏi architecture + câu trả lời chuẩn bị sẵn' },
+      ],
+      gate: 'Có thể explain capstone trong 5 phút không dùng filler words. Trả lời được 10 câu hỏi architecture mà không cần chuẩn bị thêm.',
+    }
+  }
 ];
 
-function defaultState(){
-  return { startDateISO: todayISO(), tasks: {}, notes: '', blocker: '', weeklyReview: '', energy: 3, focus: 'capstone', currentWeekOverride: null, lastSavedAt: null };
+// =========================================================
+// STATE
+// =========================================================
+const MISSION_DAYS = 182;
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function defaultState() {
+  return {
+    startISO: todayISO(),
+    tasks: {},
+    notes: '',
+    blocker: '',
+    review: '',
+    energy: 3,
+    focus: 'capstone',
+    weekOverride: null,
+  };
 }
 
 let state = defaultState();
-let syncTimeout = null;
+let saveTimer = null;
+let currentModalId = null;
 
-stateRef.on('value', snapshot => {
-  const data = snapshot.val();
-  if (data) state = { ...defaultState(), ...data, tasks: { ...(data.tasks || {}) } };
+STATE_REF.on('value', snap => {
+  const d = snap.val();
+  if (d) state = { ...defaultState(), ...d, tasks: { ...(d.tasks || {}) } };
   else state = defaultState();
-  renderAll(); 
+  renderAll();
 });
 
-function persist(){
-  state.lastSavedAt = new Date().toISOString();
-  stateRef.set(state).catch(e => console.error('Save error:', e));
+function persist() {
+  STATE_REF.set({ ...state, _saved: new Date().toISOString() }).catch(e => console.error(e));
 }
 
-function saveStateAndToast(msg='✓ SAVED'){ persist(); toast(msg); }
-function todayISO(){ const d = new Date(); return new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
-
-function computeDeadlineFromStart(startISO){
-  const [y,m,d] = startISO.split('-').map(Number);
-  const start = new Date(y, m-1, d, 0, 0, 0, 0);
-  const deadline = new Date(start);
-  deadline.setDate(deadline.getDate() + MISSION_DURATION_DAYS);
-  return {start, deadline};
+function debounceSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { syncInputs(); persist(); renderAll(); }, 350);
 }
 
-function formatDuration(totalSeconds, signPrefix=''){
-  const sec = Math.max(0, Math.floor(Math.abs(totalSeconds)));
-  const dd = Math.floor(sec/86400); const hh = Math.floor((sec%86400)/3600); const mm = Math.floor((sec%3600)/60); const ss = sec%60;
-  return `${signPrefix}${dd}D ${String(hh).padStart(2,'0')}H ${String(mm).padStart(2,'0')}M ${String(ss).padStart(2,'0')}S`;
+function syncInputs() {
+  state.notes = document.getElementById('notes-area').value;
+  state.blocker = document.getElementById('blocker-input').value;
+  state.review = document.getElementById('review-input').value;
+  state.energy = +document.getElementById('energy-range').value;
 }
 
-function getCurrentWeek(){
-  if (state.currentWeekOverride) return state.currentWeekOverride;
-  const now = new Date(); const {start} = computeDeadlineFromStart(state.startDateISO || todayISO());
-  return Math.max(1, Math.floor(Math.floor((now - start) / (1000*60*60*24))/7) + 1);
+function applyInputs() {
+  const focus = (el, val) => { if (document.activeElement !== el) el.value = val; };
+  document.getElementById('start-date').value = state.startISO || todayISO();
+  focus(document.getElementById('notes-area'), state.notes || '');
+  focus(document.getElementById('blocker-input'), state.blocker || '');
+  focus(document.getElementById('review-input'), state.review || '');
+  document.getElementById('energy-range').value = state.energy || 3;
+  document.getElementById('energy-label').textContent = `Energy: ${state.energy || 3}/5`;
 }
 
-function currentPhaseByWeek(week){
-  if(week <= 6) return 'P1'; if(week <= 14) return 'P2'; if(week <= 20) return 'P3'; return 'P4';
+function todayISO() {
+  const d = new Date();
+  return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-function taskDone(id){ return !!state.tasks[id]; }
-function incompleteTasks(){ return TASKS.filter(t => !taskDone(t.id)); }
-function completedCount(){ return TASKS.filter(t => taskDone(t.id)).length; }
-function activeTasksForPhase(phase){ return TASKS.filter(t => t.phase === phase); }
-function phaseCompletion(phase){ const all = activeTasksForPhase(phase); return all.length ? Math.round((all.filter(t => taskDone(t.id)).length / all.length) * 100) : 0; }
-function blockersText(){ return (state.blocker || '').trim(); }
-function energyLevel(){ return Math.max(1, Math.min(5, Number(state.energy || 3))); }
+// =========================================================
+// COMPUTED
+// =========================================================
+function deadline() {
+  const [y,m,d] = (state.startISO || todayISO()).split('-').map(Number);
+  const start = new Date(y, m-1, d);
+  const end = new Date(start);
+  end.setDate(end.getDate() + MISSION_DAYS);
+  return { start, end };
+}
 
-function findMissingSignalAreas(){
+function currentWeek() {
+  if (state.weekOverride) return state.weekOverride;
+  const { start } = deadline();
+  return Math.max(1, Math.floor((new Date() - start) / 864e5 / 7) + 1);
+}
+
+function phaseForWeek(w) {
+  if (w <= 6) return 'P1';
+  if (w <= 14) return 'P2';
+  if (w <= 20) return 'P3';
+  return 'P4';
+}
+
+function isDone(id) { return !!state.tasks[id]; }
+function doneTasks() { return TASKS.filter(t => isDone(t.id)); }
+function pendingTasks() { return TASKS.filter(t => !isDone(t.id)); }
+function phaseCompletion(p) {
+  const all = TASKS.filter(t => t.phase === p);
+  return all.length ? Math.round(doneTasks().filter(t => t.phase === p).length / all.length * 100) : 0;
+}
+
+function readiness() {
+  const a = Math.min(100, Math.round(doneTasks().length / TASKS.length * 100));
+  const n = Math.min(100, Math.round((state.notes || '').length / 800 * 100));
+  const s = Math.min(100, Math.round(doneTasks().filter(t => ['recruiter','networking','interview'].includes(t.category)).length / 4 * 100));
+  const c = Math.min(100, Math.round(currentWeek() / 26 * 100));
+  return { a, n, s, c, total: Math.round(a*0.35 + n*0.2 + s*0.25 + c*0.2) };
+}
+
+function missingSignals() {
   const gaps = [];
-  if(Math.round((completedCount()/TASKS.length)*100) < 40) gaps.push('artifact');
-  if(!state.notes || state.notes.length < 80) gaps.push('narrative');
-  if((state.blocker||'').length > 0) gaps.push('blocker');
-  if(TASKS.filter(t => ['recruiter','networking','interview'].includes(t.category) && taskDone(t.id)).length < 2) gaps.push('signal');
+  if (readiness().a < 40) gaps.push('artifact');
+  if ((state.notes || '').length < 80) gaps.push('narrative');
+  if ((state.blocker || '').trim()) gaps.push('blocker');
+  if (doneTasks().filter(t => ['recruiter','networking','interview'].includes(t.category)).length < 2) gaps.push('signal');
   return gaps;
 }
 
-function readinessScore(){
-  const a = Math.min(100, Math.round((completedCount()/TASKS.length)*100));
-  const n = Math.min(100, Math.round(((state.notes||'').length/800)*100));
-  const s = Math.min(100, Math.round((TASKS.filter(t => ['recruiter','networking','interview'].includes(t.category) && taskDone(t.id)).length / 4) * 100));
-  const c = Math.min(100, Math.round((getCurrentWeek()/26) * 100));
-  return {artifact:a, narrative:n, signal:s, consistency:c, total: Math.round((a*0.35) + (n*0.2) + (s*0.25) + (c*0.2))};
-}
-
-function rankTasksForNextActions(){
-  const phase = currentPhaseByWeek(getCurrentWeek());
-  const gaps = findMissingSignalAreas();
-  return incompleteTasks().map(t => {
-    let s = (t.priority === 'critical'?100 : t.priority==='high'?70 : t.priority==='medium'?40 : 20);
-    s += (t.phase === phase ? 60 : 0);
-    s += (['recruiter','networking','interview'].includes(t.category) ? 35 : 0);
-    s += (t.category === 'portfolio' ? 25 : 0);
-    s += (gaps.includes('artifact') && ['portfolio','learning'].includes(t.category) ? 12 : 0);
-    s += (gaps.includes('narrative') && t.category === 'recruiter' ? 20 : 0);
-    s += (gaps.includes('signal') && ['recruiter','networking','interview'].includes(t.category) ? 25 : 0);
-    s += (energyLevel() <= 2 && t.estHours <= 6 ? 15 : 0);
+function ranked() {
+  const phase = phaseForWeek(currentWeek());
+  const gaps = missingSignals();
+  const energy = +state.energy || 3;
+  return pendingTasks().map(t => {
+    let s = { critical: 100, high: 70, medium: 40, low: 20 }[t.priority] || 20;
+    if (t.phase === phase) s += 60;
+    if (['recruiter','networking','interview'].includes(t.category)) s += 35;
+    if (t.category === 'portfolio') s += 25;
+    if (gaps.includes('artifact') && ['portfolio','learning'].includes(t.category)) s += 12;
+    if (gaps.includes('narrative') && t.category === 'recruiter') s += 20;
+    if (gaps.includes('signal') && ['recruiter','networking','interview'].includes(t.category)) s += 25;
+    if (energy <= 2 && t.estHours <= 6) s += 15;
     if (state.focus === 'recruiter' && ['recruiter','networking','interview'].includes(t.category)) s += 50;
     if (state.focus === 'capstone' && ['portfolio','learning'].includes(t.category)) s += 50;
-    return {...t, score: s - (t.estHours * 2)};
-  }).sort((a,b)=>b.score-a.score);
+    return { ...t, _score: s };
+  }).sort((a, b) => b._score - a._score);
 }
 
-// --- BRIDGE LOGIC ---
-function getSmartActiveTargets() {
-  const ranked = rankTasksForNextActions();
-  return { targets: ranked.slice(0, 2).map(t => t.id), hasBlocker: blockersText().length > 0 };
+// =========================================================
+// RENDER
+// =========================================================
+function renderAll() {
+  applyInputs();
+  renderTimer();
+  renderReadiness();
+  renderSignalBar();
+  renderPhases();
+  renderNextActions();
+  renderWeekly();
+  renderPlaybook();
+  updateNav();
 }
 
-// --- GLOBAL BLOCKER APPLY ---
-function applyGlobalBlocker() {
-  if (blockersText().length > 0) {
-    document.body.classList.add('global-blocker');
-    document.getElementById('blocker-pill').textContent = 'Blocker: URGENT';
-    document.getElementById('blocker-pill').className = 'pill type-unblock';
-  } else {
-    document.body.classList.remove('global-blocker');
-    document.getElementById('blocker-pill').textContent = 'Blocker: none';
-    document.getElementById('blocker-pill').className = 'pill';
-  }
+function renderTimer() {
+  const { start, end } = deadline();
+  const now = new Date();
+  const remSec = (end - now) / 1000;
+  document.getElementById('countdown').textContent = fmtDuration(Math.max(0, remSec));
+  document.getElementById('deadline-text').textContent = end.toLocaleDateString('vi-VN', { year:'numeric', month:'long', day:'numeric' });
+  const elapsed = Math.max(0, now - start) / 1000;
+  const pct = (elapsed / (MISSION_DAYS * 86400) * 100).toFixed(1);
+  document.getElementById('elapsed-text').textContent = `${fmtDuration(elapsed)} (${pct}%)`;
 }
 
-// --- FEATURE: SMART ROUTING ---
-function routeToTask(taskId) {
-  // Đổi tab
-  switchTab('dashboard', document.getElementById('btn-tab-dashboard'));
-  // Mở phase
-  const taskObj = TASKS.find(t => t.id === taskId);
-  if(taskObj) {
-    const pIdx = ['P1','P2','P3','P4'].indexOf(taskObj.phase) + 1;
-    const pCard = document.getElementById('phase' + pIdx);
-    if (pCard && !pCard.classList.contains('open') && !pCard.classList.contains('locked-phase')) {
-      togglePhase('phase' + pIdx);
-    }
-  }
-  // Cuộn và highlight
-  setTimeout(() => {
-    const taskCheck = document.querySelector(`.task-check[data-id="${taskId}"]`);
-    if(taskCheck) {
-      const taskItem = taskCheck.closest('.task-item');
-      taskItem.scrollIntoView({behavior: 'smooth', block: 'center'});
-      taskItem.classList.remove('route-highlight');
-      void taskItem.offsetWidth; // trigger reflow
-      taskItem.classList.add('route-highlight');
-    }
-  }, 150);
+function fmtDuration(sec) {
+  const s = Math.floor(sec);
+  const d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), ss = s%60;
+  return `${d}D ${pad(h)}H ${pad(m)}M ${pad(ss)}S`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function renderReadiness() {
+  const r = readiness();
+  setScoreEl('a', r.a, 'fill-cyan');
+  setScoreEl('narrative', r.n, 'fill-green');
+  setScoreEl('signal', r.s, 'fill-amber');
+  setScoreEl('consist', r.c, 'fill-red');
+  document.getElementById('score-total').textContent = `SCORE ${r.total}/100`;
 }
 
-// --- FEATURE: TWO-WAY ACTIONABILITY ---
-function toggleTaskDirectly(taskId) {
-  state.tasks[taskId] = true; // Hard mark done
-  persist();
-  renderAll();
-  toast('✓ TASK CROSSED OFF!');
+function setScoreEl(key, val, cls) {
+  document.getElementById(`s-${key}`).textContent = val;
+  const b = document.getElementById(`b-${key}`);
+  if (b) { b.style.width = val + '%'; b.className = 'bar-fill ' + cls; }
 }
 
-function generateObjectiveGraph(){
-  const blockers = blockersText(); const energy = energyLevel(); const missing = findMissingSignalAreas();
-  const graph = [];
-  
-  if(blockers){
-    graph.push({
-      isBlocker: true, taskId: null, objective: "HỆ THỐNG BỊ CHẶN (BLOCKER)", phase: "URGENT", category: "unblock",
-      actions: [{ title: 'Tháo gỡ Blocker ngay lập tức', detail: blockers, time: '24h', type: 'unblock' }]
+function renderSignalBar() {
+  const w = currentWeek();
+  document.getElementById('signal-text').textContent = `Week ${w} · ${phaseForWeek(w)} · ${pendingTasks().length} tasks remaining · Energy ${state.energy}/5`;
+  document.getElementById('stat-done').textContent = doneTasks().length;
+  document.getElementById('stat-total').textContent = TASKS.length;
+  document.getElementById('stat-phase').textContent = phaseForWeek(w);
+  document.getElementById('stat-week').textContent = `W${w}`;
+
+  const hasBlocker = (state.blocker || '').trim().length > 0;
+  document.body.classList.toggle('has-blocker', hasBlocker);
+
+  const bpill = document.getElementById('pill-blocker');
+  bpill.textContent = hasBlocker ? 'Blocker: URGENT' : 'Blocker: none';
+  bpill.className = hasBlocker ? 'pill pill-red' : 'pill';
+
+  const r = readiness();
+  const hp = document.getElementById('pill-health');
+  hp.textContent = r.total >= 75 ? 'Healthy' : r.total >= 50 ? 'At risk' : 'Critical';
+  hp.className = r.total >= 75 ? 'pill pill-green' : r.total >= 50 ? 'pill pill-amber' : 'pill pill-red';
+
+  document.getElementById('pill-focus').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter' : 'Capstone'}`;
+}
+
+function renderPhases() {
+  const phases = ['P1','P2','P3','P4'];
+  const phaseInfo = {
+    P1: { label: 'Production C++ Real-Time', weeks: 'Tuần 1–6', desc: 'Xây nền tảng C++ production-grade. Mọi company robotics đều filter theo C++ depth. Không có phase này = không qua được phone screen.' },
+    P2: { label: 'VLA / Foundation Models', weeks: 'Tuần 7–14', desc: 'Capstone phase. Demo video end-to-end là hiring artifact chính. Figure và 1X đặc biệt chú trọng người có thể làm được điều này.' },
+    P3: { label: 'Hardware / Mechatronics', weeks: 'Tuần 15–20', desc: 'Depth vào hardware để hiểu stack từ motor đến AI. Differentiator so với pure software engineer.' },
+    P4: { label: 'Narrative & Applications', weeks: 'Tuần 21–26', desc: 'Convert work thành signal tuyển dụng. Resume, outreach, mock interview. Không làm phase này → work của bạn không được nhìn thấy.' },
+  };
+
+  const top2 = ranked().slice(0,2).map(t => t.id);
+  const hasBlocker = (state.blocker || '').trim().length > 0;
+
+  document.getElementById('phase-container').innerHTML = phases.map((p, i) => {
+    const prev = phases[i-1];
+    const locked = i > 0 && phaseCompletion(prev) < 100;
+    const info = phaseInfo[p];
+    const tasks = TASKS.filter(t => t.phase === p);
+    const hasFocus = tasks.some(t => top2.includes(t.id));
+    const isOpen = hasFocus && !locked;
+    const pct = phaseCompletion(p);
+
+    return `<div class="phase-card ${hasFocus && !locked ? 'active-phase' : ''} ${isOpen ? 'open' : ''} ${locked ? 'locked-phase' : ''}" id="ph${i+1}">
+      <div class="phase-header" onclick="${locked ? '' : `togglePhase('ph${i+1}')`}">
+        <span class="phase-badge">${p}</span>
+        <span class="phase-name">${esc(info.label)} ${locked ? '🔒' : ''}</span>
+        <span class="phase-timeline">${esc(info.weeks)}</span>
+        <span class="phase-pct">${pct}%</span>
+        ${!locked ? '<span class="phase-chevron">▼</span>' : ''}
+      </div>
+      <div class="phase-body">
+        ${locked ? `
+          <div class="locked-msg">
+            🔒 <strong>Phase bị khóa</strong><br><br>
+            Hoàn thành 100% tasks của <strong>${prev}</strong> để mở khóa phase này.<br>
+            <em style="color:var(--text3)">Nhảy cóc = ảo giác tiến độ, loãng hiring signal.</em>
+          </div>
+        ` : `
+          <div class="phase-sub">${esc(info.desc)}</div>
+          <ul class="task-list">
+            ${tasks.map(t => {
+              const isFocus = top2.includes(t.id) && !isDone(t.id);
+              return `<li class="task-item ${isFocus ? 'is-focus' : ''}" style="cursor:pointer" onclick="openModal('${esc(t.id)}')">
+                <div class="task-check ${isDone(t.id) ? 'done' : ''}" onclick="event.stopPropagation(); toggleTask(this)" data-id="${esc(t.id)}"></div>
+                <div class="task-content">
+                  <div class="task-title">${esc(t.title)} ${isFocus ? '<span style="color:var(--accent);font-size:10px;margin-left:5px">🎯 NEXT</span>' : ''}</div>
+                  <div class="task-desc">${esc(t.shortDesc)}</div>
+                  <div class="task-tags">
+                    <span class="pill ${priorityPill(t.priority)}">${esc(t.priority.toUpperCase())}</span>
+                    <span class="pill ${catPill(t.category)}">${esc(t.category.toUpperCase())}</span>
+                    <span class="pill" style="color:var(--text3)">~${t.estHours}h</span>
+                    <span class="pill" style="color:var(--accent3);font-size:9px">📋 click để xem detail</span>
+                  </div>
+                </div>
+              </li>`;
+            }).join('')}
+          </ul>
+        `}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function catPill(c) {
+  return { portfolio:'pill-cyan', learning:'pill-purple', research:'pill-purple', recruiter:'pill-amber', networking:'pill-green', interview:'pill-red', unblock:'pill-red', recovery:'', habit:'' }[c] || '';
+}
+function priorityPill(p) {
+  return { critical:'pill-red', high:'pill-amber', medium:'pill-cyan', low:'' }[p] || '';
+}
+
+function renderNextActions() {
+  const top = ranked().slice(0, 2);
+  const gaps = missingSignals();
+  const energy = +state.energy || 3;
+  const hasBlocker = (state.blocker || '').trim().length > 0;
+  const groups = [];
+
+  if (hasBlocker) {
+    groups.push({
+      priority: '#0 — URGENT', title: 'HỆ THỐNG BỊ CHẶN — GIẢI QUYẾT BLOCKER TRƯỚC',
+      phase: 'URGENT', cat: 'unblock', taskId: null,
+      actions: [{ title: 'Tháo gỡ blocker', detail: state.blocker, time: '24h', type: 'red' }]
     });
   }
 
-  rankTasksForNextActions().slice(0, 2).forEach((obj, idx) => {
-    let actions = [];
-    if(['learning','research'].includes(obj.category)) {
-      actions.push({ title: `Đọc tài liệu cho: ${obj.title}`, detail: 'Chỉ đọc những phần cần thiết.', time: '1h', type: obj.category });
-      actions.push({ title: 'Chạy thử nghiệm', detail: `Gate: ${obj.gate}`, time: '3h', type: obj.category });
-    } else if(obj.category === 'portfolio') {
-      actions.push({ title: `Setup khung code`, detail: 'Tạo interface, config file.', time: '1h', type: obj.category });
-      actions.push({ title: `Implement logic cốt lõi`, detail: `Gate: ${obj.gate}`, time: '4h', type: obj.category });
+  top.forEach((t, i) => {
+    const actions = [];
+    if (['learning','research'].includes(t.category)) {
+      actions.push({ title: `Đọc & research: ${t.title}`, detail: `Keywords: ${t.detail.keywords.slice(0,3).join(', ')}`, time: '1h', type: 'purple' });
+      actions.push({ title: 'Implement & test', detail: `Gate: ${t.detail.gate.slice(0,80)}...`, time: `${t.estHours-1}h`, type: 'cyan' });
+    } else if (t.category === 'portfolio') {
+      actions.push({ title: `Setup codebase / architecture`, detail: `Click task trên Dashboard để xem full steps`, time: '1h', type: 'cyan' });
+      actions.push({ title: `Build core logic & artifact`, detail: `Output: ${t.detail.outputs[0]?.val}`, time: `${t.estHours-1}h`, type: 'cyan' });
     } else {
-      actions.push({ title: `Draft nội dung`, detail: 'Liệt kê các ý chính.', time: '1h', type: obj.category });
-      actions.push({ title: `Đóng gói Artifact`, detail: `Cần có: ${obj.artifact}`, time: '2h', type: obj.category });
+      actions.push({ title: `Draft & produce`, detail: t.shortDesc, time: '1h', type: 'amber' });
+      actions.push({ title: `Package artifact`, detail: `Output: ${t.detail.outputs[0]?.val}`, time: `${t.estHours-1}h`, type: 'amber' });
     }
-    graph.push({ isBlocker: false, taskId: obj.id, objective: obj.title, phase: obj.phase, category: obj.category, priorityLabel: `#${idx+1} PRIORITY`, actions: actions });
+    groups.push({
+      priority: `#${i+1} PRIORITY · ~${t.estHours}h`, title: t.title,
+      phase: t.phase, cat: t.category, taskId: t.id, actions
+    });
   });
 
-  let sysActions = [];
-  if(missing.includes('narrative')) sysActions.push({ title: 'Cập nhật English Narrative', detail: 'Chuyển kết quả sang text.', time: '45m', type: 'recruiter' });
-  if(missing.includes('signal')) sysActions.push({ title: 'Warm Outreach', detail: 'Gửi 3 feedback messages.', time: '30m', type: 'networking' });
-  if(energy <= 2) sysActions.push({ title: 'Low Energy Cleanup', detail: 'Sắp xếp note, code rác.', time: '30m', type: 'recovery' });
-  else sysActions.push({ title: 'Consistency Check-in', detail: '1 commit ý nghĩa.', time: '15m', type: 'habit' });
-  if(sysActions.length > 0) graph.push({ isBlocker: false, taskId: null, objective: "DUY TRÌ HỆ THỐNG", phase: "HABIT", category: "habit", priorityLabel: "MAINTENANCE", actions: sysActions });
-  
-  return graph;
-}
+  const sys = [];
+  if (gaps.includes('narrative')) sys.push({ title: 'Update English notes', detail: 'Convert tuần này vào Notes tab, tiếng Anh.', time: '30m', type: 'amber' });
+  if (gaps.includes('signal')) sys.push({ title: 'Warm outreach', detail: 'Gửi 1 feedback message đến engineer ở target company.', time: '20m', type: 'green' });
+  if (energy <= 2) sys.push({ title: 'Low energy: cleanup', detail: 'Sắp xếp notes, commit code WIP.', time: '20m', type: 'purple' });
+  else sys.push({ title: 'Consistency commit', detail: '1 commit có ý nghĩa trên main project.', time: '15m', type: 'green' });
 
-function generatedWeekPlan(){
-  const week = getCurrentWeek(); const phase = currentPhaseByWeek(week); const energy = energyLevel(); const missing = findMissingSignalAreas();
-  const ranked = rankTasksForNextActions();
-  const focusTasks = ranked.filter(t => t.phase === phase).slice(0, 4);
-  const plan = new Array(7).fill(null).map(() => []);
-  plan[0].push({title:'Weekly reset', body:'Review last week, clear blocker.', kind:'block-cyan'});
-  
-  if(energy >= 4){
-    plan[1].push({title:'Deep work', body:focusTasks[0] ? focusTasks[0].title : 'Core build', kind:'block-cyan'});
-    plan[2].push({title:'Deep work', body:focusTasks[1] ? focusTasks[1].title : 'Supporting build', kind:'block-purple'});
-    plan[3].push({title:'Integration', body:'Connect pieces into repo', kind:'block-cyan'});
-    plan[4].push({title:'Recruiter artifact', body: missing.includes('narrative') ? 'Write README' : 'Polish demo', kind:'block-amber'});
-    plan[5].push({title:'Outreach', body: missing.includes('signal') ? 'Send messages' : 'Practice interview', kind:'block-amber'});
-    plan[6].push({title:'Review', body:'Close week, rest.', kind:'block-purple'});
-  } else {
-    plan[1].push({title:'Low-energy build', body:focusTasks[0] ? focusTasks[0].title : 'Compact task', kind:'block-cyan'});
-    plan[2].push({title:'Cleanup', body:'Reduce debt, write notes.', kind:'block-amber'});
-    plan[3].push({title:'Learning', body:'Read what unblocks build.', kind:'block-purple'});
-    plan[4].push({title:'Deliverable', body:'One visible artifact.', kind:'block-cyan'});
-    plan[5].push({title:'Outreach light', body:'1 feedback message.', kind:'block-amber'});
-    plan[6].push({title:'Recovery', body:'Stop early.', kind:'block-red'});
-  }
-  return {week, plan, extra: []};
-}
+  if (sys.length) groups.push({ priority: 'MAINTENANCE', title: 'System Health', phase: 'HABIT', cat: 'habit', taskId: null, actions: sys });
 
-function renderNextActions(){
-  const graph = generateObjectiveGraph();
-  document.getElementById('next-actions-container').innerHTML = graph.map(group => `
-    <div class="objective-group">
-      <div class="objective-header">
-        <div class="objective-title-wrapper">
-          <div class="action-priority" style="margin-bottom:4px">${escapeHtml(group.isBlocker ? '#0 — URGENT' : group.priorityLabel)}</div>
-          <div class="objective-title">${escapeHtml(group.objective)}</div>
-          <div class="objective-meta">Phase: ${escapeHtml(group.phase)}</div>
+  document.getElementById('next-container').innerHTML = groups.map(g => `
+    <div class="obj-group">
+      <div class="obj-header">
+        <div>
+          <div class="obj-priority">${esc(g.priority)}</div>
+          <div class="obj-title">${esc(g.title)}</div>
+          <div class="obj-meta">Phase: ${esc(g.phase)}</div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-          <div class="pill type-${group.category}">${escapeHtml(group.category.toUpperCase())}</div>
-          ${group.taskId ? `<button class="mini-btn success" onclick="toggleTaskDirectly('${group.taskId}')">✓ COMPLETE TASK</button>` : ''}
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <span class="pill ${catPill(g.cat)}">${esc(g.cat.toUpperCase())}</span>
+          ${g.taskId ? `<button class="complete-btn" onclick="directComplete('${esc(g.taskId)}')">✓ COMPLETE</button>` : ''}
         </div>
       </div>
-      <div class="objective-actions-list">
-        ${group.actions.map(a => `
-          <div class="action-card card-${a.type}">
-            <div class="action-title">${escapeHtml(a.title)}</div>
-            <div class="action-detail">${escapeHtml(a.detail)}</div>
-            <div class="action-footer"><span class="pill type-${a.type}">${escapeHtml(a.type.toUpperCase())}</span><span class="action-time">⏱ ${escapeHtml(a.time)}</span></div>
+      <div class="obj-actions">
+        ${g.actions.map(a => `
+          <div class="action-card action-${a.type}">
+            <div class="action-title">${esc(a.title)}</div>
+            <div class="action-detail">${esc(a.detail)}</div>
+            <div class="action-footer"><span class="pill">⏱ ${esc(a.time)}</span></div>
           </div>
         `).join('')}
       </div>
     </div>
   `).join('');
-  document.getElementById('execution-signal').textContent = `Current week ${getCurrentWeek()} · phase ${currentPhaseByWeek(getCurrentWeek())} · energy ${energyLevel()}/5`;
-  document.getElementById('focus-pill').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter' : state.focus === 'capstone' ? 'Capstone' : 'General'}`;
 }
 
-function renderWeekly(){
-  const data = generatedWeekPlan();
-  document.getElementById('stat-week').textContent = `W${data.week}`;
-  document.getElementById('weekly-grid').innerHTML = DAYS.map((d, i) => `
+function renderWeekly() {
+  const w = currentWeek();
+  const phase = phaseForWeek(w);
+  const energy = +state.energy || 3;
+  const top = ranked().slice(0, 4);
+  const todayIdx = (new Date().getDay() + 6) % 7;
+
+  const plan = [
+    [{ t:'Weekly reset', b:'Review + clear blocker', c:'b-amber' }],
+    [{ t:'Deep work', b: top[0]?.title || 'Core build — '+phase, c:'b-cyan' }],
+    [{ t:'Deep work', b: top[1]?.title || 'Build: '+phase, c:'b-purple' }],
+    [{ t:'Integration', b:'Connect pieces, commit', c:'b-cyan' }],
+    [{ t:'Artifact', b: top[2]?.title || 'Recruiter artifact', c:'b-amber' }],
+    [{ t:'Signal', b: top[3]?.title || 'Outreach / interview prep', c:'b-green' }],
+    [{ t:'Review + rest', b:'Log notes, plan next week', c:'b-purple' }],
+  ];
+
+  if (energy <= 2) {
+    plan[1] = [{ t:'Light work', b: top[0]?.title || 'Compact task', c:'b-cyan' }];
+    plan[2] = [{ t:'Cleanup', b:'Reduce debt, write notes', c:'b-amber' }];
+    plan[3] = [{ t:'Reading', b:'Learn what unblocks build', c:'b-purple' }];
+    plan[4] = [{ t:'1 output', b:'One visible artifact', c:'b-cyan' }];
+    plan[6] = [{ t:'Recovery', b:'Stop early', c:'b-red' }];
+  }
+
+  document.getElementById('week-grid').innerHTML = DAYS.map((d, i) => `
     <div class="day-col">
-      <div class="day-label ${i===((new Date().getDay()+6)%7) ? 'today' : ''}">${d}</div>
-      ${(data.plan[i] || []).map(item => `<div class="day-block ${item.kind}"><div class="dtitle">${escapeHtml(item.title)}</div><div>${escapeHtml(item.body)}</div></div>`).join('')}
+      <div class="day-label ${i===todayIdx?'today':''}">${d}</div>
+      ${plan[i].map(b => `
+        <div class="day-block ${b.c}">
+          <div class="day-block-title">${esc(b.t)}</div>
+          <div>${esc(b.b)}</div>
+        </div>
+      `).join('')}
     </div>
   `).join('');
+
+  document.getElementById('week-note').textContent = `Week ${w} · Phase ${phase} · Energy ${energy}/5 · ${pendingTasks().length} tasks pending`;
 }
 
 function renderPlaybook() {
-  const { targets, hasBlocker } = getSmartActiveTargets();
-  document.getElementById('playbook-table').innerHTML = TASKS.map(t => {
-    const isDone = taskDone(t.id); const isTarget = targets.includes(t.id) && !isDone;
-    let sPill = isDone ? `<span class="pill type-networking">✓ DONE</span>` : hasBlocker ? `<span class="pill type-unblock">LOCKED</span>` : isTarget ? `<span class="pill type-portfolio" style="animation:pulse 2s infinite">🎯 FOCUS</span>` : `<span class="pill type-recovery">WAITING</span>`;
-    let rowStyle = isDone ? 'opacity:0.5;' : hasBlocker ? 'opacity:0.7; border-left:2px solid var(--danger);' : isTarget ? 'background:rgba(0,229,255,.04); border-left:2px solid var(--accent);' : '';
-    
-    // Thêm onClick vào tag row nếu nó không bị done để thực hiện Smart Routing
-    return `
-      <tr class="playbook-row" style="${rowStyle}" onclick="${!isDone ? `routeToTask('${t.id}')` : ''}">
-        <td>
-          <div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:var(--text); ${isDone ? 'text-decoration:line-through' : ''}">${escapeHtml(t.objective)}</strong>${sPill}</div>
-          <div class="small">${escapeHtml(t.title)}</div>
-        </td>
-        <td style="${isDone ? 'text-decoration:line-through' : ''}">${escapeHtml(t.gate)}</td>
-        <td style="${isDone ? 'text-decoration:line-through' : ''}">${escapeHtml(t.artifact)}</td>
-        <td><span class="pill type-${t.category}">${escapeHtml(t.category.toUpperCase())}</span></td>
-      </tr>
-    `;
+  const top2 = ranked().slice(0,2).map(t => t.id);
+  const hasBlocker = (state.blocker || '').trim().length > 0;
+
+  document.getElementById('playbook-tbody').innerHTML = TASKS.map(t => {
+    const done = isDone(t.id);
+    const isFocus = top2.includes(t.id) && !done;
+    let statusPill;
+    if (done) statusPill = `<span class="pill pill-green">✓ DONE</span>`;
+    else if (hasBlocker) statusPill = `<span class="pill pill-red">LOCKED</span>`;
+    else if (isFocus) statusPill = `<span class="pill pill-cyan">🎯 FOCUS</span>`;
+    else statusPill = `<span class="pill" style="color:var(--text3)">WAITING</span>`;
+
+    return `<tr class="pb-row" onclick="${!done ? `openModal('${esc(t.id)}')` : ''}" style="${done?'opacity:0.5':''} ${isFocus?'border-left:2px solid var(--accent)':''}">
+      <td>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);${done?'text-decoration:line-through':''}">${esc(t.title)}</strong>
+          ${statusPill}
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">${esc(t.shortDesc)}</div>
+      </td>
+      <td>${esc(t.detail.gate.slice(0,80))}${t.detail.gate.length>80?'…':''}</td>
+      <td>${esc(t.detail.outputs.map(o=>o.label).join(' · '))}</td>
+      <td><span class="pill">${esc(t.phase)}</span></td>
+      <td><span class="pill ${catPill(t.category)}">${esc(t.category.toUpperCase())}</span></td>
+    </tr>`;
   }).join('');
 }
 
-// --- FEATURE: PROGRESSIVE DISCLOSURE ---
-function renderPhases() {
-  const phases = ['P1','P2','P3','P4'];
-  const labels = { P1:['Weeks 1–6','Production C++ / ROS2'], P2:['Weeks 7–14','VLA / fine-tune / demo'], P3:['Weeks 15–20','Hardware / FOC'], P4:['Weeks 21–26','Narrative / interviews'] };
-  const { targets } = getSmartActiveTargets();
+// =========================================================
+// MODAL
+// =========================================================
+function openModal(id) {
+  const t = TASKS.find(x => x.id === id);
+  if (!t) return;
+  currentModalId = id;
+  const d = t.detail;
 
-  document.getElementById('phase-container').innerHTML = phases.map((p, idx) => {
-    const tasks = TASKS.filter(t => t.phase === p);
-    
-    // Logic Progressive Disclosure: Phase sau chỉ mở khi Phase trước 100%
-    let isLocked = false;
-    if (idx > 0) isLocked = phaseCompletion(phases[idx-1]) < 100;
-    
-    const hasActiveTarget = tasks.some(t => targets.includes(t.id));
-    const isOpen = (hasActiveTarget || (idx === 0 && !targets.length)) && !isLocked;
+  document.getElementById('m-phase').textContent = `${t.phase} · ${t.category.toUpperCase()} · ~${t.estHours}h`;
+  document.getElementById('m-title').textContent = t.title;
+  document.getElementById('m-tags').innerHTML = [
+    `<span class="pill ${priorityPill(t.priority)}">${t.priority.toUpperCase()}</span>`,
+    `<span class="pill ${catPill(t.category)}">${t.category.toUpperCase()}</span>`,
+  ].join('');
 
-    return `
-      <div class="phase-card ${(hasActiveTarget && !isLocked) ? 'active-phase' : ''} ${isOpen ? 'open' : ''} ${isLocked ? 'locked-phase' : ''}" id="phase${idx+1}">
-        <div class="phase-header" onclick="${isLocked ? '' : `togglePhase('phase${idx+1}')`}">
-          <span class="phase-num">${p}</span>
-          <span class="phase-title">${phaseTitle(p)} ${isLocked ? ' 🔒' : ''}</span>
-          <span class="phase-timeline">${labels[p][0]}</span>
-          <span class="phase-chevron">${isLocked ? '' : '▼'}</span>
-        </div>
-        <div class="phase-body">
-          ${isLocked ? `
-            <div class="locked-msg">
-              🔒 <strong>PHASE ĐANG BỊ KHÓA BỞI HỆ THỐNG</strong><br><br>
-              Hoàn thành 100% các Task ở <b>Phase ${phases[idx-1]}</b> để mở khóa.<br>
-              <i>Việc nhảy cóc sẽ tạo ra ảo giác tiến độ nhưng làm loãng tín hiệu tuyển dụng (Hiring Signal).</i>
-            </div>
-          ` : `
-            <div class="small" style="margin-bottom:10px">${escapeHtml(labels[p][1])} · Completion ${phaseCompletion(p)}%</div>
-            <ul class="task-list">
-              ${tasks.map(t => {
-                const isTarget = targets.includes(t.id) && !taskDone(t.id);
-                return `
-                <li class="task-item" style="${isTarget ? 'background:rgba(0,229,255,.05); border-radius:4px; padding:8px;' : ''}">
-                  <div class="task-check ${taskDone(t.id) ? 'done' : ''}" onclick="toggleTask(this)" data-id="${escapeHtml(t.id)}"></div>
-                  <div class="task-content">
-                    <div class="task-title">${escapeHtml(t.title)} ${isTarget ? '<span style="color:var(--accent); font-size:10px; margin-left:6px; letter-spacing:1px">🎯 NEXT ACTION</span>' : ''}</div>
-                    <div class="task-desc">${escapeHtml(t.desc)}</div>
-                    <div class="task-meta">
-                      <span class="pill ${t.priority==='critical'?'tag-critical':t.priority==='high'?'tag-high':t.priority==='medium'?'tag-medium':'tag-low'}">${escapeHtml(t.priority.toUpperCase())}</span>
-                      <span class="pill type-${t.category}">${escapeHtml(t.category.toUpperCase())}</span>
-                    </div>
-                  </div>
-                </li>
-              `}).join('')}
-            </ul>
-          `}
-        </div>
+  const doneBtn = document.getElementById('m-done-btn');
+  doneBtn.textContent = isDone(id) ? '✓ COMPLETED' : '✓ MARK DONE';
+  doneBtn.disabled = isDone(id);
+  doneBtn.style.opacity = isDone(id) ? '0.5' : '1';
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="why-box">
+      <div class="why-title">⬡ TẠI SAO TASK NÀY QUAN TRỌNG (Elon Musk lens)</div>
+      <div class="why-text">${esc(d.why)}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Bạn thực sự đang làm gì</div>
+      <div class="modal-text">${esc(d.whatYouAreDoing)}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Keywords cần search & học</div>
+      <div class="kw-list">
+        ${d.keywords.map(k => `<span class="kw" onclick="navigator.clipboard.writeText('${esc(k)}');toast('Copied: ${esc(k)}')" title="Click để copy">${esc(k)}</span>`).join('')}
       </div>
-    `;
-  }).join('');
+      <div class="modal-text" style="margin-top:10px;padding:8px 10px;background:var(--surface2);border-radius:4px;border-left:2px solid var(--accent)">${esc(d.searchGuide)}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Các bước thực hiện</div>
+      <div class="steps">
+        ${d.steps.map(s => `<div class="step"><div class="step-content"><div class="step-title">${esc(s.title)}</div><div class="step-desc">${esc(s.desc)}</div></div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Output cụ thể cần có</div>
+      <div class="output-box">
+        ${d.outputs.map(o => `<div class="output-row"><span class="output-label">[${esc(o.label)}]</span><span class="output-val">${esc(o.val)}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="gate-box">
+      <span class="gate-icon">✓</span>
+      <span class="gate-text"><strong style="color:var(--green)">GATE — Pass condition:</strong> ${esc(d.gate)}</span>
+    </div>
+  `;
+
+  document.getElementById('modal-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
-function phaseTitle(p){ return {P1:'Production C++ Real-Time', P2:'VLA / Foundation Models', P3:'Hardware / Mechatronics', P4:'Narrative & Applications'}[p] || p; }
-
-function updateTimer(){
-  const {start, deadline} = computeDeadlineFromStart(state.startDateISO || todayISO());
-  const now = new Date(); const remainSec = (deadline - now) / 1000;
-  document.getElementById('countdown-display').textContent = formatDuration(remainSec, remainSec < 0 ? '-' : '');
-  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN',{year:'numeric',month:'long',day:'numeric'});
-  const elapsedSec = Math.max(0, (now - start) / 1000); const pct = (elapsedSec / (MISSION_DURATION_DAYS * 86400)) * 100;
-  document.getElementById('elapsed-display').textContent = `${formatDuration(elapsedSec,'')} (${pct.toFixed(2)}%)`;
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  currentModalId = null;
 }
 
-function updateNav(){
-  const n = new Date();
-  document.getElementById('nav-date').textContent = n.toLocaleDateString('vi-VN', {weekday:'short', year:'numeric', month:'2-digit', day:'2-digit'}).toUpperCase() + ' ' + n.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+function closeModalIfBg(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
 }
 
-function updateScores(){
-  const s = readinessScore();
-  document.getElementById('score-artifact').textContent = s.artifact; document.getElementById('score-narrative').textContent = s.narrative; document.getElementById('score-signal').textContent = s.signal; document.getElementById('score-consistency').textContent = s.consistency;
-  document.getElementById('bar-artifact').style.width = s.artifact + '%'; document.getElementById('bar-narrative').style.width = s.narrative + '%';
-  document.getElementById('bar-signal').style.width = s.signal + '%'; document.getElementById('bar-consistency').style.width = s.consistency + '%';
-  document.getElementById('score-total').textContent = `Score ${s.total}/100`;
-  {
-  const healthPill = document.getElementById('health-pill');
-  const healthText = s.total >= 75 ? 'Healthy' : s.total >= 50 ? 'At risk' : 'Critical';
-  healthPill.textContent = healthText;
-  healthPill.className = 'pill ' + (s.total >= 75 ? 'type-networking' : s.total >= 50 ? 'type-portfolio' : 'type-unblock');
-}
+function modalMarkDone() {
+  if (!currentModalId) return;
+  state.tasks[currentModalId] = true;
+  syncInputs(); persist(); renderAll();
+  closeModal();
+  toast('✓ TASK COMPLETED!');
 }
 
-function updateSummary(){
-  document.getElementById('stat-completed').textContent = completedCount(); document.getElementById('stat-total').textContent = TASKS.length;
-  document.getElementById('stat-phase').textContent = currentPhaseByWeek(getCurrentWeek());
-}
-
-function applyStateToInputs(){
-  document.getElementById('start-date-input').value = state.startDateISO || todayISO();
-  if (document.activeElement !== document.getElementById('notes-area')) document.getElementById('notes-area').value = state.notes || '';
-  if (document.activeElement !== document.getElementById('blocker-input')) document.getElementById('blocker-input').value = state.blocker || '';
-  if (document.activeElement !== document.getElementById('review-input')) document.getElementById('review-input').value = state.weeklyReview || '';
-  document.getElementById('energy-input').value = energyLevel();
-  document.getElementById('energy-label').textContent = `Energy: ${energyLevel()}/5`;
-}
-
-function syncStateFromInputs(){
-  state.notes = document.getElementById('notes-area').value;
-  state.blocker = document.getElementById('blocker-input').value;
-  state.weeklyReview = document.getElementById('review-input').value;
-  state.energy = Number(document.getElementById('energy-input').value || 3);
-}
-
-function debounceSyncAndRender() {
-  clearTimeout(syncTimeout);
-  syncTimeout = setTimeout(() => {
-    syncStateFromInputs();
-    persist();
-    renderAll();
-  }, 400); // 400ms delay to prevent jitter when typing fast
-}
-
-function renderAll(){
-  applyStateToInputs();
-  applyGlobalBlocker(); // <--- Tính năng ép chặn UI
-  renderNextActions();
-  renderPhases();
-  renderPlaybook();
-  renderWeekly();
-  updateScores();
-  updateSummary();
-  updateTimer();
-  updateNav();
-}
-
-function regenerateAll(){ syncStateFromInputs(); persist(); renderAll(); toast('✓ REGENERATED'); }
-function regenerateWeek(){ syncStateFromInputs(); persist(); renderAll(); toast('✓ WEEK REGENERATED'); }
-function advanceWeekManually(){ syncStateFromInputs(); state.currentWeekOverride = getCurrentWeek() + 1; persist(); renderAll(); toast(`✓ TUẦN ${state.currentWeekOverride}`); }
-function resetSimulation(){ syncStateFromInputs(); state.currentWeekOverride = null; persist(); renderAll(); toast('✓ ĐÃ RESET'); }
-function markFocusCapstone(){ state.focus='capstone'; persist(); renderAll(); toast('✓ FOCUS: CAPSTONE'); }
-function markFocusRecruiter(){ state.focus='recruiter'; persist(); renderAll(); toast('✓ FOCUS: RECRUITER'); }
-function onEnergyChange(val){ state.energy = Number(val); document.getElementById('energy-label').textContent = `Energy: ${state.energy}/5`; persist(); renderAll(); }
-function onStartDateChange(){ const val = document.getElementById('start-date-input').value; if(!val) return; state.startDateISO = val; persist(); renderAll(); toast('✓ DATE UPDATED'); }
-function togglePhase(id){ document.getElementById(id).classList.toggle('open'); }
-
-function toggleTask(el){
-  if(document.body.classList.contains('global-blocker')) return; // Bị khóa không cho check từ Dashboard
+// =========================================================
+// INTERACTIONS
+// =========================================================
+function toggleTask(el) {
+  if (document.body.classList.contains('has-blocker')) { toast('⚠ Giải quyết blocker trước!'); return; }
   const id = el.getAttribute('data-id');
-  const newDone = !el.classList.contains('done');
-  state.tasks[id] = newDone;
-  syncStateFromInputs(); persist(); renderAll(); toast('✓ TASK UPDATED');
+  state.tasks[id] = !state.tasks[id];
+  syncInputs(); persist(); renderAll();
+  toast(state.tasks[id] ? '✓ DONE!' : '↩ UNDONE');
 }
 
-function saveNotes(){ syncStateFromInputs(); persist(); toast('✓ SAVED'); }
-function clearNotes(){ if(!confirm('Xóa notes?')) return; state.notes = ''; document.getElementById('notes-area').value = ''; persist(); toast('✓ CLEARED'); }
-function switchTab(id, btn){ document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); btn.classList.add('active'); }
-function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1700); }
-function escapeHtml(str){ return String(str ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+function directComplete(id) {
+  state.tasks[id] = true;
+  syncInputs(); persist(); renderAll();
+  toast('✓ COMPLETED!');
+}
 
-document.addEventListener('keydown', e => { if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's'){ e.preventDefault(); saveNotes(); } });
-setInterval(() => { updateNav(); updateTimer(); }, 1000);
+function togglePhase(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
 
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function onStartDate() {
+  const v = document.getElementById('start-date').value;
+  if (!v) return;
+  state.startISO = v;
+  persist(); renderAll();
+  toast('✓ Date updated');
+}
+
+function onEnergy(v) {
+  state.energy = +v;
+  document.getElementById('energy-label').textContent = `Energy: ${v}/5`;
+  persist(); renderAll();
+}
+
+function boostEnergy() { document.getElementById('energy-range').value = 5; onEnergy(5); }
+function dropEnergy() { document.getElementById('energy-range').value = 1; onEnergy(1); }
+
+function regenAll() { syncInputs(); persist(); renderAll(); toast('✓ REGENERATED'); }
+function advWeek() { syncInputs(); state.weekOverride = currentWeek() + 1; persist(); renderAll(); toast(`→ Week ${state.weekOverride}`); }
+function resetWeek() { syncInputs(); state.weekOverride = null; persist(); renderAll(); toast('✓ RESET'); }
+function setFocus(f) { state.focus = f; persist(); renderAll(); toast(`✓ FOCUS: ${f.toUpperCase()}`); }
+function saveNotes() { syncInputs(); persist(); toast('✓ SAVED'); }
+
+function updateNav() {
+  const now = new Date();
+  document.getElementById('nav-time').textContent = now.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveNotes(); }
+  if (e.key === 'Escape' && currentModalId) closeModal();
+});
+
+// Clock tick
+setInterval(updateNav, 1000);
+setInterval(renderTimer, 1000);
+
+// Initial render
 renderAll();
 </script>
 </body>
