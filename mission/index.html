@@ -136,26 +136,53 @@
   .task-title{font-size:12px; font-weight:600; margin-bottom:3px; line-height:1.4}
   .task-desc{font-size:11px; color:var(--text3); line-height:1.55}
   .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px}
-  .pill{font-family:var(--mono); font-size:9px; padding:1px 6px; border-radius:999px; border:1px solid var(--border); color:var(--text2); background:var(--surface3)}
-  .tag-critical{background:rgba(239,68,68,.15); color:var(--danger); border:1px solid rgba(239,68,68,.3)}
-  .tag-high{background:rgba(245,158,11,.15); color:var(--accent3); border:1px solid rgba(245,158,11,.3)}
-  .tag-medium{background:rgba(0,229,255,.1); color:var(--accent); border:1px solid rgba(0,229,255,.2)}
-  .tag-low{background:rgba(142,163,184,.08); color:var(--text2); border:1px solid rgba(142,163,184,.16)}
+  
+  /* --- HỆ THỐNG MÀU SẮC CATEGORY (MỚI) --- */
+  .pill{font-family:var(--mono); font-size:9px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text2); background:var(--surface3); font-weight:600; letter-spacing: 0.5px}
+  .type-portfolio { border-color: rgba(0,229,255,0.3) !important; color: var(--accent) !important; background: rgba(0,229,255,0.08) !important; }
+  .type-learning, .type-research { border-color: rgba(124,58,237,0.3) !important; color: var(--accent2) !important; background: rgba(124,58,237,0.08) !important; }
+  .type-recruiter { border-color: rgba(245,158,11,0.3) !important; color: var(--accent3) !important; background: rgba(245,158,11,0.08) !important; }
+  .type-networking { border-color: rgba(16,185,129,0.3) !important; color: var(--success) !important; background: rgba(16,185,129,0.08) !important; }
+  .type-interview, .type-unblock { border-color: rgba(239,68,68,0.3) !important; color: var(--danger) !important; background: rgba(239,68,68,0.08) !important; }
+  .type-recovery, .type-habit { border-color: rgba(142,163,184,0.3) !important; color: var(--text2) !important; background: rgba(142,163,184,0.08) !important; }
+
+  /* MÀU ĐƯỜNG KẺ THẺ ACTION */
+  .card-portfolio::before { background: var(--accent) !important; }
+  .card-learning::before, .card-research::before { background: var(--accent2) !important; }
+  .card-recruiter::before { background: var(--accent3) !important; }
+  .card-networking::before { background: var(--success) !important; }
+  .card-interview::before, .card-unblock::before { background: var(--danger) !important; }
+  .card-recovery::before, .card-habit::before { background: var(--text3) !important; }
+
+  .tag-critical{color:var(--danger);}
+  .tag-high{color:var(--accent3);}
+  .tag-medium{color:var(--accent);}
+  .tag-low{color:var(--text2);}
+
   .task-check.done + .task-content .task-title{color:var(--text3); text-decoration:line-through}
   .card-stack{display:grid; gap:10px}
   .action-card{
     position:relative; overflow:hidden; padding:12px 14px 12px 17px; border-radius:8px;
-    background:linear-gradient(135deg, rgba(0,229,255,.05) 0%, rgba(124,58,237,.05) 100%);
-    border:1px solid rgba(0,229,255,.13)
+    background:var(--surface); border:1px solid var(--border); transition: border-color 0.2s;
   }
+  .action-card:hover{ border-color: var(--border2); }
   .action-card::before{content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent)}
-  .action-top{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:4px}
+  .action-top{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px}
   .action-priority{font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--text3)}
-  .action-title{font-family:var(--sans); font-size:13px; font-weight:700; margin-bottom:4px}
+  .action-title{font-family:var(--sans); font-size:14px; font-weight:700; margin-bottom:6px; line-height: 1.3}
+  
+  /* LABEL THỂ HIỆN PLAYBOOK OBJECTIVE */
+  .action-objective {
+    font-family: var(--mono); font-size: 9px; color: var(--text3);
+    margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border2);
+    letter-spacing: 0.5px;
+  }
+  .action-objective span { color: var(--text); font-weight: 700; }
+
   .action-detail{font-size:11px; color:var(--text2); line-height:1.55}
-  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
-  .action-time{font-family:var(--mono); font-size:10px; color:var(--accent3)}
-  .action-type{font-family:var(--mono); font-size:9px; color:var(--text2); border:1px solid var(--border); border-radius:999px; padding:1px 6px}
+  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+  .action-time{font-family:var(--mono); font-size:10px; color:var(--text3)}
+  
   .week-toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
   .mini-btn{
     font-family:var(--mono); font-size:9px; letter-spacing:1px; border-radius:4px; padding:6px 10px; cursor:pointer;
@@ -554,7 +581,6 @@ function formatDuration(totalSeconds, signPrefix=''){
   return `${signPrefix}${dd}D ${String(hh).padStart(2,'0')}H ${String(mm).padStart(2,'0')}M ${String(ss).padStart(2,'0')}S`;
 }
 
-// HÀM QUAN TRỌNG: Sửa lỗi lấy nhầm thời gian thực tế
 function getCurrentWeek(){
   if (state.currentWeekOverride) return state.currentWeekOverride;
   const now = new Date();
@@ -608,9 +634,8 @@ function readinessScore(){
   return {artifact, narrative, signal, consistency, total};
 }
 
-// HÀM QUAN TRỌNG: Sửa lỗi Focus không được cộng điểm
 function rankTasksForNextActions(){
-  const week = getCurrentWeek(); // Lấy theo tuần giả lập
+  const week = getCurrentWeek(); 
   const phase = currentPhaseByWeek(week);
   const gaps = findMissingSignalAreas();
   const missing = incompleteTasks();
@@ -626,7 +651,6 @@ function rankTasksForNextActions(){
     score += gaps.includes('signal') && ['recruiter','networking','interview'].includes(t.category) ? 25 : 0;
     score += energyLevel() <= 2 && t.estHours <= 6 ? 15 : 0;
     
-    // Đã tiêm biến state.focus vào để cộng điểm ưu tiên
     if (state.focus === 'recruiter' && ['recruiter', 'networking', 'interview'].includes(t.category)) score += 50;
     if (state.focus === 'capstone' && ['portfolio', 'learning'].includes(t.category)) score += 50;
 
@@ -653,7 +677,8 @@ function generateNextActions(){
       title:'Giải blocker hiện tại trước khi nhận thêm việc',
       detail:blockers,
       time:'24h',
-      type:'unblock'
+      type:'unblock',
+      objective:'System Unblocking'
     });
   }
 
@@ -661,9 +686,10 @@ function generateNextActions(){
     cards.push({
       priority:`#${idx+1} — ${t.phase}`,
       title:t.title,
-      detail:`${t.desc} | Objective: ${t.objective}. Metric: ${t.metric}. Gate: ${t.gate}.`,
+      detail:`${t.desc} | Metric: ${t.metric}. Gate: ${t.gate}.`,
       time:`${Math.max(1, Math.round(t.estHours/2))}–${t.estHours}h`,
-      type:t.category
+      type:t.category,
+      objective:t.objective
     });
   });
 
@@ -674,7 +700,8 @@ function generateNextActions(){
       title:'Viết / sửa English narrative cho project',
       detail:'Một commit hoặc một note không đủ. Cần biến kết quả kỹ thuật thành câu chuyện scan được trong 60 giây.',
       time:'30–60m',
-      type:'recruiter'
+      type:'recruiter',
+      objective:'Application readiness / Narrative'
     });
   }
   if(missing.includes('signal')){
@@ -683,7 +710,8 @@ function generateNextActions(){
       title:'Gửi 3–5 feedback messages cho engineers/recruiters',
       detail:'Không xin việc trong tin đầu. Chỉ xin phản hồi, context, và tín hiệu thị trường.',
       time:'30m',
-      type:'networking'
+      type:'networking',
+      objective:'Warm signal / Outreach'
     });
   }
   if(energy <= 2){
@@ -692,7 +720,8 @@ function generateNextActions(){
       title:'Chuyển sang review, note, cleanup, or merge',
       detail:'Không ép deep work khi năng lượng thấp. Thực hiện task ngắn nhưng đóng tín hiệu.',
       time:'20–45m',
-      type:'recovery'
+      type:'recovery',
+      objective:'Anti-Burnout / Sustain'
     });
   } else {
     cards.push({
@@ -700,7 +729,8 @@ function generateNextActions(){
       title:'1 commit có ý nghĩa + 1 dòng weekly log',
       detail:'Mỗi tuần phải xuất ra một artifact có thể đưa cho recruiter đọc ngay.',
       time:'15m',
-      type:'habit'
+      type:'habit',
+      objective:'Consistency & Logging'
     });
   }
   return cards;
@@ -753,12 +783,13 @@ function renderNextActions(){
   const cards = generateNextActions();
   const root = document.getElementById('next-actions-container');
   root.innerHTML = cards.map(c => `
-    <div class="action-card">
+    <div class="action-card card-${c.type}">
       <div class="action-top">
         <div class="action-priority">${escapeHtml(c.priority)}</div>
-        <div class="action-type">${escapeHtml(c.type)}</div>
+        <div class="pill type-${c.type}">${escapeHtml(c.type.toUpperCase())}</div>
       </div>
       <div class="action-title">${escapeHtml(c.title)}</div>
+      <div class="action-objective">↳ OBJECTIVE: <span>${escapeHtml(c.objective)}</span></div>
       <div class="action-detail">${escapeHtml(c.detail)}</div>
       <div class="action-footer"><span class="action-time">⏱ ${escapeHtml(c.time)}</span></div>
     </div>
@@ -797,7 +828,7 @@ function renderPlaybook(){
       <td>${escapeHtml(t.metric)}</td>
       <td>${escapeHtml(t.gate)}</td>
       <td>${escapeHtml(t.artifact)}</td>
-      <td><span class="pill ${t.priority==='critical'?'tag-critical':t.priority==='high'?'tag-high':t.priority==='medium'?'tag-medium':'tag-low'}">${escapeHtml(t.category)}</span></td>
+      <td><span class="pill type-${t.category}">${escapeHtml(t.category.toUpperCase())}</span></td>
     </tr>
   `).join('');
 }
@@ -832,8 +863,8 @@ function renderPhases(){
                   <div class="task-desc">${escapeHtml(t.desc)}</div>
                   <div class="task-meta">
                     <span class="pill ${t.priority==='critical'?'tag-critical':t.priority==='high'?'tag-high':t.priority==='medium'?'tag-medium':'tag-low'}">${escapeHtml(t.priority.toUpperCase())}</span>
-                    <span class="pill">${escapeHtml(t.category)}</span>
-                    <span class="pill">≈ ${t.estHours}h</span>
+                    <span class="pill type-${t.category}">${escapeHtml(t.category.toUpperCase())}</span>
+                    <span class="pill" style="color:var(--text3)">≈ ${t.estHours}h</span>
                   </div>
                 </div>
               </li>
