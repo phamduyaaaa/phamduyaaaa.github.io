@@ -1,290 +1,248 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MISSION CONTROL — Embodied AI</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MISSION CONTROL — Robotics / Embodied AI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
 
-  :root {
-    --bg: #080c12;
-    --surface: #0d1117;
-    --surface2: #131920;
-    --border: #1e2a35;
-    --border2: #243040;
-    --accent: #00e5ff;
-    --accent2: #7c3aed;
-    --accent3: #f59e0b;
-    --danger: #ef4444;
-    --success: #10b981;
-    --text: #e2eaf4;
-    --text2: #8fa3b8;
-    --text3: #4a6075;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Space Grotesk', sans-serif;
-    --body: 'Inter', sans-serif;
+  :root{
+    --bg:#080c12; --surface:#0d1117; --surface2:#131920; --surface3:#0f1520;
+    --border:#1e2a35; --border2:#243040; --accent:#00e5ff; --accent2:#7c3aed;
+    --accent3:#f59e0b; --danger:#ef4444; --success:#10b981;
+    --text:#e2eaf4; --text2:#8fa3b8; --text3:#4a6075; --mono:'Space Mono',monospace;
+    --sans:'Space Grotesk',sans-serif; --body:'Inter',sans-serif;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body);
-    min-height: 100vh;
-    overflow-x: hidden;
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh; overflow-x:hidden;
   }
-
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px);
-    pointer-events: none;
-    z-index: 9999;
+  body::before{
+    content:''; position:fixed; inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);
+    pointer-events:none; z-index:9999;
   }
-
-  /* ── NAV ── */
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(8,12,18,0.97);
-    backdrop-filter: blur(12px);
-    position: sticky; top: 0; z-index: 100;
-    height: 42px;
+  nav{
+    display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:42px;
+    border-bottom:1px solid var(--border); background:rgba(8,12,18,.97); backdrop-filter:blur(12px);
+    position:sticky; top:0; z-index:100;
   }
-  .nav-logo { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 3px; }
-  .nav-status { display: flex; gap: 14px; align-items: center; }
-  .status-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--success); box-shadow: 0 0 6px var(--success);
-    animation: pulse 2s infinite;
+  .nav-logo{font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:3px}
+  .nav-status{display:flex; gap:14px; align-items:center}
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success); animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .nav-date{font-family:var(--mono); font-size:10px; color:var(--text3); letter-spacing:1px}
+  .hero{padding:16px 20px; border-bottom:1px solid var(--border); position:relative; overflow:hidden}
+  .hero::after{
+    content:'FIGURE\A1X\API'; white-space:pre; position:absolute; right:0; top:50%; transform:translateY(-50%);
+    font-family:var(--mono); font-size:50px; font-weight:700; color:rgba(0,229,255,.03); pointer-events:none; text-align:right; line-height:1.1;
   }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  .nav-date { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; }
-
-  /* ── HERO ── */
-  .hero {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    position: relative; overflow: hidden;
+  .hero-eyebrow{font-family:var(--mono); font-size:9px; color:var(--accent); letter-spacing:4px; text-transform:uppercase; margin-bottom:6px}
+  .hero-title{font-family:var(--sans); font-size:clamp(18px,3vw,28px); font-weight:700; line-height:1.2; letter-spacing:-.5px}
+  .hero-title span{color:var(--accent)}
+  .main{display:grid; grid-template-columns:290px 1fr; min-height:calc(100vh - 98px)}
+  .sidebar{border-right:1px solid var(--border); display:flex; flex-direction:column}
+  .sidebar-section{padding:14px 16px; border-bottom:1px solid var(--border)}
+  .s-label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px}
+  .mission-clock,.score-card,.burnout-card,.panel-card,.notes-wrapper,.summary-card,.control-card{
+    background:var(--surface); border:1px solid var(--border2); border-radius:8px;
   }
-  .hero::after {
-    content: 'FIGURE\A1X\API';
-    white-space: pre;
-    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-    font-family: var(--mono); font-size: 50px; font-weight: 700;
-    color: rgba(0,229,255,0.03); pointer-events: none;
-    line-height: 1.1; text-align: right;
+  .mission-clock{padding:12px}
+  .clock-lbl{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; margin-bottom:4px}
+  #countdown-display{font-family:var(--mono); font-size:16px; font-weight:700; color:var(--accent); text-shadow:0 0 14px rgba(0,229,255,.4); word-break:break-all; line-height:1.3}
+  .clock-row{font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:5px}
+  .clock-row span{color:var(--text2)}
+  .clock-row.elapsed span{color:var(--success)}
+  .start-date-row,.input-row{display:flex; align-items:center; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border)}
+  .start-date-row label,.input-row label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:1px; white-space:nowrap}
+  input[type="date"], input[type="range"], textarea, select{
+    font:inherit;
   }
-  .hero-eyebrow { font-family: var(--mono); font-size: 9px; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
-  .hero-title { font-family: var(--sans); font-size: clamp(18px, 3vw, 28px); font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; }
-  .hero-title span { color: var(--accent); }
-
-  /* ── LAYOUT ── */
-  .main { display: grid; grid-template-columns: 264px 1fr; min-height: calc(100vh - 98px); }
-
-  /* ── SIDEBAR ── */
-  .sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-  .sidebar-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .s-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
-
-  /* CLOCK */
-  .mission-clock { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 12px; }
-  .clock-lbl { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; margin-bottom: 4px; }
-  #countdown-display {
-    font-family: var(--mono); font-size: 16px; font-weight: 700;
-    color: var(--accent); text-shadow: 0 0 14px rgba(0,229,255,0.4);
-    word-break: break-all; line-height: 1.3;
+  .start-date-row input[type="date"], .input-row input, .input-row textarea, .input-row select{
+    flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text);
+    font-family:var(--mono); font-size:10px; padding:5px 6px; outline:none; color-scheme:dark;
   }
-  .clock-row { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 5px; }
-  .clock-row span { color: var(--text2); }
-  .clock-row.elapsed span { color: var(--success); }
-  .start-date-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
-  .start-date-row label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; }
-  .start-date-row input[type="date"] {
-    flex: 1; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 3px; color: var(--text); font-family: var(--mono);
-    font-size: 10px; padding: 3px 5px; outline: none; color-scheme: dark;
+  .input-row textarea{resize:vertical; min-height:70px}
+  .input-row input:focus, .input-row textarea:focus, .input-row select:focus{border-color:var(--accent)}
+  .score-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
+  .score-item{padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface3)}
+  .score-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px}
+  .score-name{font-size:11px; color:var(--text2)}
+  .score-val{font-family:var(--mono); font-size:12px; color:var(--accent)}
+  .bar{height:6px; border-radius:999px; background:var(--border); overflow:hidden}
+  .bar > div{height:100%; border-radius:999px}
+  .bar-cyan{background:linear-gradient(90deg,var(--accent2),var(--accent))}
+  .bar-green{background:linear-gradient(90deg,var(--success),var(--accent))}
+  .bar-amber{background:linear-gradient(90deg,var(--accent3),#ffd58a)}
+  .bar-red{background:linear-gradient(90deg,var(--danger),#ff8a8a)}
+  .burnout-card{padding:10px}
+  .burnout-title{font-family:var(--mono); font-size:9px; color:var(--success); letter-spacing:2px; margin-bottom:6px}
+  .burnout-text{font-size:11px; color:var(--text2); line-height:1.55}
+  .burnout-pill{display:inline-block; margin-top:8px; padding:2px 7px; border-radius:999px; border:1px solid rgba(16,185,129,.25); background:rgba(16,185,129,.08); font-family:var(--mono); font-size:9px; color:var(--success)}
+  .skill-row{display:flex; gap:6px; align-items:center; margin-bottom:9px}
+  .skill-row:last-child{margin-bottom:0}
+  .skill-icon{width:16px; font-size:9px; flex:0 0 16px}
+  .skill-info{flex:1; min-width:0}
+  .skill-name{font-size:11px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px}
+  .skill-pct{font-family:var(--mono); font-size:10px; color:var(--text3); width:32px; text-align:right}
+  .skill-phase{font-family:var(--mono); font-size:9px; color:var(--accent3); width:20px; text-align:right}
+  .tabs{
+    display:flex; border-bottom:1px solid var(--border); padding:0 20px; position:sticky; top:42px; background:var(--bg);
+    z-index:50; overflow-x:auto; height:38px; align-items:flex-end
   }
-  .start-date-row input:focus { border-color: var(--accent); }
-
-  /* SKILL / GAP MATRIX — merged */
-  .sgm-row { display: flex; align-items: center; gap: 0; margin-bottom: 9px; }
-  .sgm-row:last-child { margin-bottom: 0; }
-  .sgm-icon { font-size: 9px; flex-shrink: 0; width: 16px; line-height: 1; }
-  .sgm-info { flex: 1; min-width: 0; }
-  .sgm-name { font-size: 11px; color: var(--text2); line-height: 1; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sgm-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .sgm-fill { height: 100%; border-radius: 2px; }
-  .fill-green { background: var(--success); }
-  .fill-cyan  { background: var(--accent); box-shadow: 0 0 5px rgba(0,229,255,0.4); }
-  .fill-amber { background: var(--accent3); }
-  .fill-red   { background: var(--danger); }
-  .sgm-pct { font-family: var(--mono); font-size: 10px; color: var(--text3); text-align: right; width: 30px; flex-shrink: 0; padding-left: 5px; }
-  .sgm-phase { font-family: var(--mono); font-size: 9px; color: var(--accent3); width: 20px; text-align: right; flex-shrink: 0; }
-
-  /* STRENGTH */
-  .strength-note {
-    margin-top: 11px; padding: 8px 10px;
-    background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15);
-    border-radius: 5px; font-size: 10px; color: var(--text2); line-height: 1.5;
+  .tab-btn{
+    font-family:var(--mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text3);
+    background:none; border:none; border-bottom:2px solid transparent; padding:0 13px 8px; cursor:pointer; height:38px;
+    display:flex; align-items:flex-end; white-space:nowrap
   }
-  .strength-lbl { font-family: var(--mono); font-size: 9px; color: var(--success); letter-spacing: 2px; display: block; margin-bottom: 3px; }
-
-  /* ── CONTENT ── */
-  .content {
-    
+  .tab-btn:hover{color:var(--text2)}
+  .tab-btn.active{color:var(--accent); border-bottom-color:var(--accent)}
+  .tab-panel{display:none; padding:18px 20px}
+  .tab-panel.active{display:block}
+  .summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px}
+  .summary-card{padding:10px; text-align:center}
+  .summary-val{font-family:var(--mono); font-size:18px; font-weight:700; color:var(--accent); margin-bottom:2px}
+  .summary-label{font-size:10px; color:var(--text3)}
+  .mission-compass{
+    display:flex; align-items:center; gap:8px; padding:9px 12px; background:rgba(0,229,255,.04); border:1px solid rgba(0,229,255,.1);
+    border-radius:8px; margin-bottom:12px; font-size:12px; color:var(--text2); line-height:1.55
   }
-
-  /* TABS */
-  .tabs {
-    display: flex; border-bottom: 1px solid var(--border);
-    padding: 0 20px; position: sticky; top: 42px;
-    background: var(--bg); z-index: 50; overflow-x: auto;
-    height: 38px; align-items: flex-end;
+  .mc-icon{color:var(--accent); flex-shrink:0; font-style:normal}
+  .panel-card{padding:12px 14px; margin-bottom:12px}
+  .panel-title{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px}
+  .panel-sub{font-size:12px; color:var(--text2); line-height:1.55}
+  .phase-card{border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden}
+  .phase-card.active-phase{border-color:var(--accent); box-shadow:0 0 14px rgba(0,229,255,.06)}
+  .phase-header{display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface); cursor:pointer; user-select:none}
+  .phase-num{font-family:var(--mono); font-size:10px; color:var(--accent); letter-spacing:2px; width:24px}
+  .phase-title{font-family:var(--sans); font-size:13px; font-weight:600; flex:1}
+  .phase-timeline{font-family:var(--mono); font-size:10px; color:var(--accent3)}
+  .phase-chevron{font-size:10px; color:var(--text3); transition:transform .2s}
+  .phase-card.open .phase-chevron{transform:rotate(180deg)}
+  .phase-body{display:none; padding:10px 14px; border-top:1px solid var(--border)}
+  .phase-card.open .phase-body{display:block}
+  .task-list{list-style:none; margin:0; padding:0}
+  .task-item{display:flex; align-items:flex-start; gap:9px; padding:8px 0; border-bottom:1px solid var(--border)}
+  .task-item:last-child{border-bottom:none}
+  .task-check{
+    width:15px; height:15px; border:1.5px solid var(--border2); border-radius:3px; flex-shrink:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; margin-top:2px; transition:all .2s; background:var(--surface)
   }
-  .tab-btn {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--text3); background: none; border: none;
-    border-bottom: 2px solid transparent; padding: 0 13px 8px;
-    cursor: pointer; transition: all 0.2s; white-space: nowrap; height: 38px;
-    display: flex; align-items: flex-end;
+  .task-check:hover{border-color:var(--accent)}
+  .task-check.done{background:var(--accent); border-color:var(--accent)}
+  .task-check.done::after{content:'✓'; color:#000; font-size:9px; font-weight:700}
+  .task-content{flex:1}
+  .task-title{font-size:12px; font-weight:600; margin-bottom:3px; line-height:1.4}
+  .task-desc{font-size:11px; color:var(--text3); line-height:1.55}
+  .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px}
+  .pill{font-family:var(--mono); font-size:9px; padding:1px 6px; border-radius:999px; border:1px solid var(--border); color:var(--text2); background:var(--surface3)}
+  .tag-critical{background:rgba(239,68,68,.15); color:var(--danger); border:1px solid rgba(239,68,68,.3)}
+  .tag-high{background:rgba(245,158,11,.15); color:var(--accent3); border:1px solid rgba(245,158,11,.3)}
+  .tag-medium{background:rgba(0,229,255,.1); color:var(--accent); border:1px solid rgba(0,229,255,.2)}
+  .tag-low{background:rgba(142,163,184,.08); color:var(--text2); border:1px solid rgba(142,163,184,.16)}
+  .task-check.done + .task-content .task-title{color:var(--text3); text-decoration:line-through}
+  .card-stack{display:grid; gap:10px}
+  .action-card{
+    position:relative; overflow:hidden; padding:12px 14px 12px 17px; border-radius:8px;
+    background:linear-gradient(135deg, rgba(0,229,255,.05) 0%, rgba(124,58,237,.05) 100%);
+    border:1px solid rgba(0,229,255,.13)
   }
-  .tab-btn:hover { color: var(--text2); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* PANELS */
-  .tab-panel { display: none; padding: 18px 20px; }
-  .tab-panel.active { display: block; }
-
-  /* STATS */
-  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 11px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; }
-  .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
-  .stat-label { font-size: 10px; color: var(--text3); }
-
-  /* PROGRESS */
-  .overall-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px; margin-bottom: 12px; }
-  .op-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
-  .op-title { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: 1px; }
-  .op-pct { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--accent); }
-  .op-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .op-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 2px; box-shadow: 0 0 8px rgba(0,229,255,0.3); transition: width 1s ease; }
-
-  /* COMPASS */
-  .mission-compass {
-    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
-    background: rgba(0,229,255,0.04); border: 1px solid rgba(0,229,255,0.1);
-    border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--text2); line-height: 1.5;
+  .action-card::before{content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent)}
+  .action-top{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:4px}
+  .action-priority{font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--text3)}
+  .action-title{font-family:var(--sans); font-size:13px; font-weight:700; margin-bottom:4px}
+  .action-detail{font-size:11px; color:var(--text2); line-height:1.55}
+  .action-footer{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+  .action-time{font-family:var(--mono); font-size:10px; color:var(--accent3)}
+  .action-type{font-family:var(--mono); font-size:9px; color:var(--text2); border:1px solid var(--border); border-radius:999px; padding:1px 6px}
+  .week-toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
+  .mini-btn{
+    font-family:var(--mono); font-size:9px; letter-spacing:1px; border-radius:4px; padding:6px 10px; cursor:pointer;
+    border:1px solid var(--border); color:var(--text2); background:var(--surface)
   }
-  .mc-icon { color: var(--accent); flex-shrink: 0; font-style: normal; }
-
-  /* PHASE CARDS */
-  .phase-card { border: 1px solid var(--border); border-radius: 7px; margin-bottom: 7px; overflow: hidden; transition: border-color 0.2s; }
-  .phase-card:hover { border-color: var(--border2); }
-  .phase-card.active-phase { border-color: var(--accent); box-shadow: 0 0 14px rgba(0,229,255,0.06); }
-  .phase-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--surface); cursor: pointer; user-select: none; }
-  .phase-num { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px; flex-shrink: 0; width: 22px; }
-  .phase-title { font-family: var(--sans); font-size: 13px; font-weight: 600; flex: 1; }
-  .phase-timeline { font-family: var(--mono); font-size: 10px; color: var(--accent3); flex-shrink: 0; }
-  .phase-chevron { font-size: 10px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
-  .phase-card.open .phase-chevron { transform: rotate(180deg); }
-  .phase-body { display: none; padding: 10px 14px; border-top: 1px solid var(--border); }
-  .phase-card.open .phase-body { display: block; }
-
-  /* TASKS */
-  .task-list { list-style: none; }
-  .task-item { display: flex; align-items: flex-start; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .task-item:last-child { border-bottom: none; }
-  .task-check {
-    width: 15px; height: 15px; border: 1.5px solid var(--border2);
-    border-radius: 3px; flex-shrink: 0; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 2px; transition: all 0.2s; background: var(--surface);
+  .mini-btn:hover{border-color:var(--border2); color:var(--text)}
+  .mini-btn.primary{color:var(--accent); background:rgba(0,229,255,.08); border-color:rgba(0,229,255,.18)}
+  .week-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
+  .day-col{display:flex; flex-direction:column; gap:4px}
+  .day-label{
+    font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:1px; text-align:center; padding-bottom:5px;
+    border-bottom:1px solid var(--border); margin-bottom:2px
   }
-  .task-check:hover { border-color: var(--accent); }
-  .task-check.done { background: var(--accent); border-color: var(--accent); }
-  .task-check.done::after { content: '✓'; color: #000; font-size: 9px; font-weight: 700; }
-  .task-content { flex: 1; }
-  .task-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; line-height: 1.4; transition: color 0.2s; }
-  .task-check.done + .task-content .task-title { color: var(--text3); text-decoration: line-through; }
-  .task-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
-  code { font-family: var(--mono); font-size: 10px; background: rgba(0,229,255,0.08); padding: 1px 4px; border-radius: 2px; color: var(--accent); }
-  .task-tag { font-family: var(--mono); font-size: 9px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
-  .tag-critical { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
-  .tag-high     { background: rgba(245,158,11,.15); color: var(--accent3); border: 1px solid rgba(245,158,11,.3); }
-  .tag-medium   { background: rgba(0,229,255,.1); color: var(--accent); border: 1px solid rgba(0,229,255,.2); }
-
-  /* NEXT ACTIONS */
-  .next-action-card {
-    background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, rgba(124,58,237,0.04) 100%);
-    border: 1px solid rgba(0,229,255,0.13); border-radius: 7px;
-    padding: 12px 14px 12px 17px; margin-bottom: 8px;
-    position: relative; overflow: hidden;
+  .day-label.today{color:var(--accent)}
+  .day-block{
+    background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:7px 7px 8px; font-size:9px;
+    color:var(--text2); line-height:1.45; min-height:52px; transition:border-color .15s
   }
-  .next-action-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); }
-  .action-priority { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--text3); margin-bottom: 4px; }
-  .action-title { font-family: var(--sans); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-  .action-detail { font-size: 11px; color: var(--text2); line-height: 1.55; }
-  .action-time { display: inline-flex; align-items: center; gap: 4px; margin-top: 7px; font-family: var(--mono); font-size: 10px; color: var(--accent3); }
-
-  /* RESOURCES */
-  .rsec { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-  .rsec + .rsec, .resource-grid + .rsec { margin-top: 16px; }
-  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 7px; }
-  .resource-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; cursor: pointer; transition: all 0.2s; }
-  .resource-card:hover { border-color: var(--border2); transform: translateY(-1px); }
-  .resource-type { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; margin-bottom: 3px; }
-  .resource-name { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 2px; line-height: 1.3; }
-  .resource-desc { font-size: 10px; color: var(--text3); line-height: 1.3; }
-
-  /* WEEKLY */
-  .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; }
-  .day-col { display: flex; flex-direction: column; gap: 4px; }
-  .day-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; text-align: center; padding-bottom: 5px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
-  .day-label.today { color: var(--accent); }
-  .day-block { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; font-size: 9px; color: var(--text2); line-height: 1.4; min-height: 42px; transition: border-color 0.15s; }
-  .day-block:hover { border-color: var(--border2); }
-  .day-block.block-cyan   { border-left: 2px solid var(--accent); }
-  .day-block.block-purple { border-left: 2px solid var(--accent2); }
-  .day-block.block-amber  { border-left: 2px solid var(--accent3); }
-
-  /* NOTES */
-  .notes-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .notes-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid var(--border); }
-  .notes-label { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 2px; }
-  .notes-save-btn { font-family: var(--mono); font-size: 9px; color: var(--accent); background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.18); border-radius: 3px; padding: 3px 8px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
-  .notes-save-btn:hover { background: rgba(0,229,255,0.16); }
-  #notes-area { width: 100%; min-height: 220px; background: transparent; border: none; padding: 14px; color: var(--text); font-family: var(--mono); font-size: 11px; line-height: 1.8; resize: vertical; outline: none; }
-  #notes-area::placeholder { color: var(--text3); }
-  .notes-btns { margin-top: 10px; display: flex; gap: 8px; }
-  .btn-sm { font-family: var(--mono); font-size: 9px; border-radius: 3px; padding: 5px 10px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
-  .btn-danger { color: var(--danger); background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
-  .btn-muted  { color: var(--text3); background: var(--surface); border: 1px solid var(--border); }
-
-  /* TOAST */
-  #toast { position: fixed; bottom: 18px; right: 18px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 9px 14px; font-family: var(--mono); font-size: 11px; color: var(--accent); transform: translateY(60px); opacity: 0; transition: all 0.3s ease; z-index: 1000; letter-spacing: 1px; }
-  #toast.show { transform: translateY(0); opacity: 1; }
-
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-  @media (max-width: 768px) {
-    .main { grid-template-columns: 1fr; }
-    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-    .week-grid { grid-template-columns: repeat(3,1fr); }
-    .hero::after { display: none; }
+  .day-block:hover{border-color:var(--border2)}
+  .day-block .dtitle{font-family:var(--mono); font-size:9px; letter-spacing:1px; color:var(--accent); margin-bottom:4px}
+  .day-block.block-cyan{border-left:2px solid var(--accent)}
+  .day-block.block-purple{border-left:2px solid var(--accent2)}
+  .day-block.block-amber{border-left:2px solid var(--accent3)}
+  .day-block.block-red{border-left:2px solid var(--danger)}
+  .week-note{
+    margin-top:10px; padding:10px 12px; background:rgba(0,229,255,.04); border:1px solid rgba(0,229,255,.1); border-radius:8px;
+    font-size:11px; color:var(--text2); line-height:1.55
+  }
+  .table-wrap{overflow:auto; border:1px solid var(--border); border-radius:8px; background:var(--surface)}
+  table{width:100%; border-collapse:collapse; min-width:900px}
+  th,td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; font-size:11px}
+  th{
+    font-family:var(--mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3);
+    background:var(--surface2); text-align:left
+  }
+  td{color:var(--text2)}
+  tr:hover td{background:rgba(0,229,255,.02)}
+  .section-title{
+    font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:3px; text-transform:uppercase; margin:16px 0 8px
+  }
+  .notes-wrapper{overflow:hidden}
+  .notes-toolbar{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--border)}
+  .notes-label{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px}
+  .notes-save-btn{
+    font-family:var(--mono); font-size:9px; color:var(--accent); background:rgba(0,229,255,.08); border:1px solid rgba(0,229,255,.18);
+    border-radius:4px; padding:4px 8px; cursor:pointer; letter-spacing:1px
+  }
+  .notes-save-btn:hover{background:rgba(0,229,255,.16)}
+  #notes-area{
+    width:100%; min-height:240px; background:transparent; border:none; padding:14px; color:var(--text); font-family:var(--mono);
+    font-size:11px; line-height:1.8; resize:vertical; outline:none
+  }
+  .notes-btns{margin-top:10px; display:flex; gap:8px}
+  .btn-sm{
+    font-family:var(--mono); font-size:9px; border-radius:4px; padding:6px 10px; cursor:pointer; letter-spacing:1px; transition:all .2s
+  }
+  .btn-danger{color:var(--danger); background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2)}
+  .btn-muted{color:var(--text3); background:var(--surface); border:1px solid var(--border)}
+  .control-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .control-card{padding:10px}
+  .control-title{font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px}
+  .control-card .input-row{margin-top:0}
+  .small{font-size:10px; color:var(--text3); line-height:1.55}
+  .footer-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .toast{
+    position:fixed; bottom:18px; right:18px; background:var(--surface2); border:1px solid var(--border2); border-radius:8px;
+    padding:9px 14px; font-family:var(--mono); font-size:11px; color:var(--accent); transform:translateY(60px); opacity:0;
+    transition:all .3s ease; z-index:1000; letter-spacing:1px
+  }
+  .toast.show{transform:translateY(0); opacity:1}
+  ::-webkit-scrollbar{width:3px; height:3px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2); border-radius:2px}
+  @media (max-width: 980px){
+    .main{grid-template-columns:1fr}
+    .sidebar{border-right:none; border-bottom:1px solid var(--border)}
+    .summary-grid,.control-grid{grid-template-columns:1fr 1fr}
+    .week-grid{grid-template-columns:repeat(3,1fr)}
+    .hero::after{display:none}
+  }
+  @media (max-width: 640px){
+    .summary-grid,.control-grid{grid-template-columns:1fr}
+    .week-grid{grid-template-columns:repeat(2,1fr)}
   }
 </style>
 </head>
 <body>
-
-<!-- NAV -->
 <nav>
   <div class="nav-logo">⬡ MISSION CONTROL</div>
   <div class="nav-status">
@@ -293,18 +251,13 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-eyebrow">FIGURE · 1X · PHYSICAL INTELLIGENCE</div>
-  <h1 class="hero-title">Embodied AI Engineer — <span>Production C++ × VLA Foundation Models</span></h1>
+  <h1 class="hero-title">Embodied AI Engineer — <span>6-Month Job Hunt System</span></h1>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-
     <div class="sidebar-section">
       <div class="s-label">MISSION TIMER</div>
       <div class="mission-clock">
@@ -319,543 +272,194 @@
       </div>
     </div>
 
-    <!-- MERGED: Skill bars + Gap phases + Strength — one section, zero redundancy -->
     <div class="sidebar-section">
-      <div class="s-label">SKILL / GAP MATRIX</div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🟢</div>
-        <div class="sgm-info">
-          <div class="sgm-name">ROS2 / Nav2 / SLAM</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-green" style="width:75%"></div></div>
+      <div class="s-label">RECRUITER READINESS</div>
+      <div class="score-card" style="padding:10px">
+        <div class="score-grid">
+          <div class="score-item">
+            <div class="score-top"><span class="score-name">Artifact</span><span class="score-val" id="score-artifact">0</span></div>
+            <div class="bar"><div id="bar-artifact" class="bar-cyan" style="width:0%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-top"><span class="score-name">Narrative</span><span class="score-val" id="score-narrative">0</span></div>
+            <div class="bar"><div id="bar-narrative" class="bar-green" style="width:0%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-top"><span class="score-name">Signal</span><span class="score-val" id="score-signal">0</span></div>
+            <div class="bar"><div id="bar-signal" class="bar-amber" style="width:0%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-top"><span class="score-name">Consistency</span><span class="score-val" id="score-consistency">0</span></div>
+            <div class="bar"><div id="bar-consistency" class="bar-red" style="width:0%"></div></div>
+          </div>
         </div>
-        <div class="sgm-pct">75%</div>
-        <div class="sgm-phase"></div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🟢</div>
-        <div class="sgm-info">
-          <div class="sgm-name">Python + RL/IL</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-green" style="width:65%"></div></div>
-        </div>
-        <div class="sgm-pct">65%</div>
-        <div class="sgm-phase"></div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🔵</div>
-        <div class="sgm-info">
-          <div class="sgm-name">Micro-ROS / RTOS / ESP32</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-cyan" style="width:55%"></div></div>
-        </div>
-        <div class="sgm-pct">55%</div>
-        <div class="sgm-phase"></div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🔴</div>
-        <div class="sgm-info">
-          <div class="sgm-name">Production C++ real-time</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-red" style="width:15%"></div></div>
-        </div>
-        <div class="sgm-pct">15%</div>
-        <div class="sgm-phase">P1</div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🔴</div>
-        <div class="sgm-info">
-          <div class="sgm-name">VLA / Foundation Models</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-red" style="width:10%"></div></div>
-        </div>
-        <div class="sgm-pct">10%</div>
-        <div class="sgm-phase">P2</div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🟠</div>
-        <div class="sgm-info">
-          <div class="sgm-name">Hardware / FOC / Torque</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-amber" style="width:35%"></div></div>
-        </div>
-        <div class="sgm-pct">35%</div>
-        <div class="sgm-phase">P3</div>
-      </div>
-
-      <div class="sgm-row">
-        <div class="sgm-icon">🟡</div>
-        <div class="sgm-info">
-          <div class="sgm-name">English narrative</div>
-          <div class="sgm-bar"><div class="sgm-fill fill-amber" style="width:40%"></div></div>
-        </div>
-        <div class="sgm-pct">40%</div>
-        <div class="sgm-phase">P4</div>
-      </div>
-
-      <div class="strength-note">
-        <span class="strength-lbl">✓ STRENGTHS — không học lại</span>
-        ByteHome Tech Lead · production deploy · MethodsX publication · Nav2/SLAM/Micro-ROS hands-on
+        <div class="burnout-pill" id="score-total">Score 0/100</div>
       </div>
     </div>
 
+    <div class="sidebar-section">
+      <div class="s-label">SKILL / GAP MATRIX</div>
+      <div class="skill-row"><div class="skill-icon">🟢</div><div class="skill-info"><div class="skill-name">ROS2 / Nav2 / SLAM</div><div class="bar"><div class="bar-green" style="width:75%"></div></div></div><div class="skill-pct">75%</div><div class="skill-phase"></div></div>
+      <div class="skill-row"><div class="skill-icon">🟢</div><div class="skill-info"><div class="skill-name">Python + RL/IL</div><div class="bar"><div class="bar-green" style="width:65%"></div></div></div><div class="skill-pct">65%</div><div class="skill-phase"></div></div>
+      <div class="skill-row"><div class="skill-icon">🔵</div><div class="skill-info"><div class="skill-name">Micro-ROS / RTOS / ESP32</div><div class="bar"><div class="bar-cyan" style="width:55%"></div></div></div><div class="skill-pct">55%</div><div class="skill-phase"></div></div>
+      <div class="skill-row"><div class="skill-icon">🔴</div><div class="skill-info"><div class="skill-name">Production C++ real-time</div><div class="bar"><div class="bar-red" style="width:15%"></div></div></div><div class="skill-pct">15%</div><div class="skill-phase">P1</div></div>
+      <div class="skill-row"><div class="skill-icon">🔴</div><div class="skill-info"><div class="skill-name">VLA / Foundation Models</div><div class="bar"><div class="bar-red" style="width:10%"></div></div></div><div class="skill-pct">10%</div><div class="skill-phase">P2</div></div>
+      <div class="skill-row"><div class="skill-icon">🟠</div><div class="skill-info"><div class="skill-name">Hardware / FOC / Torque</div><div class="bar"><div class="bar-amber" style="width:35%"></div></div></div><div class="skill-pct">35%</div><div class="skill-phase">P3</div></div>
+      <div class="skill-row"><div class="skill-icon">🟡</div><div class="skill-info"><div class="skill-name">English narrative</div><div class="bar"><div class="bar-amber" style="width:40%"></div></div></div><div class="skill-pct">40%</div><div class="skill-phase">P4</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="s-label">ANTI-BURNOUT</div>
+      <div class="burnout-card">
+        <div class="burnout-title">SOLO EXECUTION RULE</div>
+        <div class="burnout-text">
+          Mỗi tuần chỉ giữ 3 việc nặng: 1 build, 1 recruiter artifact, 1 review. Cái gì không tăng tín hiệu tuyển dụng hoặc không tháo nút thắt thì lược bỏ.
+        </div>
+        <div class="input-row" style="margin-top:10px">
+          <label for="energy-input">ENERGY</label>
+          <input id="energy-input" type="range" min="1" max="5" value="3" oninput="onEnergyChange(this.value)" />
+        </div>
+        <div class="burnout-pill" id="energy-label">Energy: 3/5</div>
+      </div>
+    </div>
   </aside>
 
-  <!-- CONTENT -->
   <div class="content">
-
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('roadmap',this)">ROADMAP</button>
+      <button class="tab-btn active" onclick="switchTab('dashboard',this)">DASHBOARD</button>
       <button class="tab-btn" onclick="switchTab('next',this)">NEXT ACTIONS</button>
       <button class="tab-btn" onclick="switchTab('weekly',this)">WEEKLY</button>
-      <button class="tab-btn" onclick="switchTab('resources',this)">RESOURCES</button>
+      <button class="tab-btn" onclick="switchTab('playbook',this)">PLAYBOOK</button>
       <button class="tab-btn" onclick="switchTab('notes',this)">NOTES</button>
     </div>
 
-    <!-- ── ROADMAP ── -->
-    <div class="tab-panel active" id="tab-roadmap">
-
+    <div class="tab-panel active" id="tab-dashboard">
       <div class="mission-compass">
         <em class="mc-icon">⬡</em>
-        <span><strong style="color:var(--accent)">1 capstone:</strong> VLA fine-tune + C++ real-time controller — language command → robot motion. Mỗi tuần = 1 commit tiếng Anh.</span>
+        <span><strong style="color:var(--accent)">Goal:</strong> land Robotics / Embodied AI job in 6 months. Hệ thống này ưu tiên tín hiệu tuyển dụng cao: capstone, C++/ROS2 production, VLA integration, demo video, narrative tiếng Anh, outreach.</span>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-val" id="stat-done">0</div><div class="stat-label">Completed</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Tasks</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-phase">P1</div><div class="stat-label">Active Phase</div></div>
+      <div class="summary-grid">
+        <div class="summary-card"><div class="summary-val" id="stat-completed">0</div><div class="summary-label">Completed</div></div>
+        <div class="summary-card"><div class="summary-val" id="stat-total">0</div><div class="summary-label">Total Tasks</div></div>
+        <div class="summary-card"><div class="summary-val" id="stat-phase">P1</div><div class="summary-label">Active Phase</div></div>
+        <div class="summary-card"><div class="summary-val" id="stat-week">W1</div><div class="summary-label">Current Week</div></div>
       </div>
 
-      <div class="overall-progress">
-        <div class="op-header">
-          <span class="op-title">MISSION PROGRESS — Figure / 1X / PI</span>
-          <span class="op-pct" id="op-pct">0%</span>
-        </div>
-        <div class="op-bar"><div class="op-fill" id="op-fill" style="width:0%"></div></div>
-      </div>
-
-      <!-- P1 -->
-      <div class="phase-card active-phase open" id="phase1">
-        <div class="phase-header" onclick="togglePhase('phase1')">
-          <span class="phase-num">P1</span>
-          <span class="phase-title">Production C++ Real-Time</span>
-          <span class="phase-timeline">THÁNG 1–2</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <ul class="task-list">
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t1"></div>
-              <div class="task-content">
-                <div class="task-title">Port HG-Dagger inference → C++ <code>PolicyRunner</code> class</div>
-                <div class="task-desc">Constructor/destructor + <code>unique_ptr</code> resource mgmt. Fixed-rate 1kHz, no dynamic alloc in loop. Benchmark latency trước/sau.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t1b"></div>
-              <div class="task-content">
-                <div class="task-title">⛔ GATE — AddressSanitizer 0-leak + verbal ownership explanation</div>
-                <div class="task-desc">Fail → rework P1T1, không sang P1T2. Pass → ghi vào Notes (English): "constructor làm gì, destructor làm gì, vì sao <code>unique_ptr</code>."</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t2"></div>
-              <div class="task-content">
-                <div class="task-title">rclcpp MultiThreadedExecutor + callback groups</div>
-                <div class="task-desc">Reuse <code>PolicyRunner</code> qua <code>shared_ptr</code> giữa callbacks. Đo jitter: <code>ros2 topic hz</code>.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t3"></div>
-              <div class="task-content">
-                <div class="task-title">AddressSanitizer + ThreadSanitizer trên Skid-steer RS485 C code</div>
-                <div class="task-desc">Fix mọi warning — câu hỏi interview trực tiếp của Figure.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t4"></div>
-              <div class="task-content">
-                <div class="task-title">ros2_control custom hardware_interface cho ESP32 / Micro-ROS</div>
-                <div class="task-desc">Pattern Figure/1X dùng cho actuator. Tích hợp với Micro-ROS đã có từ HaIBotLab.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p1t5"></div>
-              <div class="task-content">
-                <div class="task-title">English README: Problem → Approach → Latency delta → How to run</div>
-                <div class="task-desc">Artifact đầu tiên gửi recruiter. Số liệu thật.</div>
-              </div>
-              <span class="task-tag tag-medium">MEDIUM</span>
-            </li>
-          </ul>
+      <div class="panel-card">
+        <div class="panel-title">EXECUTION SIGNAL</div>
+        <div class="panel-sub" id="execution-signal">—</div>
+        <div class="footer-row">
+          <span class="pill" id="health-pill">Healthy</span>
+          <span class="pill" id="focus-pill">Focus: Capstone</span>
+          <span class="pill" id="blocker-pill">Blocker: none</span>
         </div>
       </div>
 
-      <!-- P2 -->
-      <div class="phase-card" id="phase2">
-        <div class="phase-header" onclick="togglePhase('phase2')">
-          <span class="phase-num">P2</span>
-          <span class="phase-title">VLA / Foundation Models</span>
-          <span class="phase-timeline">THÁNG 2–4</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <ul class="task-list">
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p2t1"></div>
-              <div class="task-content">
-                <div class="task-title">Chạy OpenVLA hoặc LeRobot inference trên Vast GPU</div>
-                <div class="task-desc">Checkpoint pretrained + dataset mẫu. Hiểu input shape (image + language token) → action chunk. Note English trong repo.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p2t2"></div>
-              <div class="task-content">
-                <div class="task-title">Thu thập 50–100 teleop episodes (RealSense D435)</div>
-                <div class="task-desc">Format chuẩn LeRobotDataset. Pick-and-place hoặc navigation task đơn giản.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p2t3"></div>
-              <div class="task-content">
-                <div class="task-title">LoRA fine-tune VLA trên dataset tự thu thập</div>
-                <div class="task-desc">Vast GPU. Eval trước/sau trên robot thật hoặc MuJoCo. Dòng CV quan trọng nhất.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p2t4"></div>
-              <div class="task-content">
-                <div class="task-title">★ CAPSTONE — VLA → ROS2 → C++ controller → robot</div>
-                <div class="task-desc">Language command end-to-end. Video demo + GitHub + English blog. Kết nối P1 + P2.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <div class="section-title">PHASED ROADMAP</div>
+      <div id="phase-container"></div>
+    </div>
 
-      <!-- P3 -->
-      <div class="phase-card" id="phase3">
-        <div class="phase-header" onclick="togglePhase('phase3')">
-          <span class="phase-num">P3</span>
-          <span class="phase-title">Hardware / Mechatronics sâu</span>
-          <span class="phase-timeline">THÁNG 4–5</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <ul class="task-list">
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p3t1"></div>
-              <div class="task-content">
-                <div class="task-title">FOC trên BLDC + ESP32 (SimpleFOC → tự viết current loop C++)</div>
-                <div class="task-desc">So sánh torque ripple trước/sau.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p3t2"></div>
-              <div class="task-content">
-                <div class="task-title">Current sensing → observation modality trong VLA action loop</div>
-                <div class="task-desc">Tactile-aware manipulation — hướng 1X/Figure đang publish.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p3t3"></div>
-              <div class="task-content">
-                <div class="task-title">Đọc 1 paper actuator/WBC của Figure hoặc 1X — note English</div>
-                <div class="task-desc">Kiến trúc + vì sao approach đó + liên hệ capstone.</div>
-              </div>
-              <span class="task-tag tag-medium">MEDIUM</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- P4 -->
-      <div class="phase-card" id="phase4">
-        <div class="phase-header" onclick="togglePhase('phase4')">
-          <span class="phase-num">P4</span>
-          <span class="phase-title">English Narrative & Application</span>
-          <span class="phase-timeline">THÁNG 5–6</span>
-          <span class="phase-chevron">▼</span>
-        </div>
-        <div class="phase-body">
-          <ul class="task-list">
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t1"></div>
-              <div class="task-content">
-                <div class="task-title">Resume 1 trang + GitHub rewrite theo capstone</div>
-                <div class="task-desc">Thứ tự: capstone → MethodsX → ByteHome (Tech Lead) → HaIBotLab. Mọi pinned repo có English README.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t2"></div>
-              <div class="task-content">
-                <div class="task-title">Research tech stack: Figure (Helix VLA) · 1X (world models) · PI (π0/π0.5)</div>
-                <div class="task-desc">Mỗi công ty 1 note: stack + paper gần nhất + liên hệ capstone.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t3"></div>
-              <div class="task-content">
-                <div class="task-title">Cold outreach 10 engineers tại 3 công ty (LinkedIn, English)</div>
-                <div class="task-desc">Link capstone + video. Hỏi feedback — không xin việc ở message đầu.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t4"></div>
-              <div class="task-content">
-                <div class="task-title">Record 5-min giải thích capstone kiến trúc (English)</div>
-                <div class="task-desc">Luyện đến khi tự nhiên — điểm loại nhiều candidate nhất.</div>
-              </div>
-              <span class="task-tag tag-high">HIGH</span>
-            </li>
-            <li class="task-item">
-              <div class="task-check" onclick="toggleTask(this)" data-id="p4t5"></div>
-              <div class="task-content">
-                <div class="task-title">Apply Figure / 1X / PI + backup (Skild AI, Dexterity)</div>
-                <div class="task-desc">Cover letter: reference đúng paper/blog + link capstone.</div>
-              </div>
-              <span class="task-tag tag-critical">CRITICAL</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-    </div><!-- /roadmap -->
-
-    <!-- ── NEXT ACTIONS ── -->
     <div class="tab-panel" id="tab-next">
-
-      <div class="next-action-card">
-        <div class="action-priority">#1 — HÔM NAY</div>
-        <div class="action-title">Tạo repo "embodied-vla-controller" — scope README</div>
-        <div class="action-detail">README (English) trước khi code: "Fine-tune a VLA policy on self-collected teleop data, deploy via C++ ROS2 controller on [robot]."</div>
-        <div class="action-time">⏱ Hôm nay</div>
+      <div class="control-grid">
+        <div class="control-card">
+          <div class="control-title">CURRENT BLOCKER</div>
+          <div class="input-row"><label for="blocker-input">TEXT</label><textarea id="blocker-input" placeholder="Ví dụ: không có dataset, không rõ demo scope, bị kẹt C++ memory ownership..."></textarea></div>
+        </div>
+        <div class="control-card">
+          <div class="control-title">WEEKLY REVIEW</div>
+          <div class="input-row"><label for="review-input">DONE</label><textarea id="review-input" placeholder="What shipped? What is blocked? What changes next week?"></textarea></div>
+        </div>
       </div>
-
-      <div class="next-action-card">
-        <div class="action-priority">#2 — TUẦN NÀY</div>
-        <div class="action-title">Port HG-Dagger inference → C++ rclcpp</div>
-        <div class="action-detail">MultiThreadedExecutor. Đo latency → benchmark.md. P1T1 + P1T2.</div>
-        <div class="action-time">⏱ Tuần này</div>
+      <div class="week-toolbar">
+        <button class="mini-btn primary" onclick="regenerateAll()">REGENERATE FROM STATE</button>
+        <button class="mini-btn" onclick="advanceWeekManually()">SIMULATE NEXT WEEK</button>
+        <button class="mini-btn" onclick="markFocusCapstone()">FOCUS: CAPSTONE</button>
+        <button class="mini-btn" onclick="markFocusRecruiter()">FOCUS: RECRUITER SIGNAL</button>
+        <button class="mini-btn" onclick="saveStateAndToast('✓ SAVED')">SAVE</button>
       </div>
+      <div class="section-title">AUTO-GENERATED NEXT ACTIONS</div>
+      <div class="card-stack" id="next-actions-container"></div>
+      <div class="week-note" id="next-actions-note">Next actions được tạo từ: incomplete critical tasks + blocker text + energy + recruiter gap + current week. Không còn là danh sách chết.</div>
+    </div>
 
-      <div class="next-action-card">
-        <div class="action-priority">#3 — 2 TUẦN TỚI</div>
-        <div class="action-title">Chạy OpenVLA hoặc LeRobot inference trên Vast GPU</div>
-        <div class="action-detail">Checkpoint pretrained + RoboMimic sample. Hiểu input/output shape. Note English trong repo.</div>
-        <div class="action-time">⏱ 2 tuần tới</div>
-      </div>
-
-      <div class="next-action-card">
-        <div class="action-priority">#4 — THÁNG NÀY</div>
-        <div class="action-title">Đọc π0 hoặc RT-2 — viết "how my work connects"</div>
-        <div class="action-detail">Backbone, action representation, training format. So sánh với HG-Dagger đã làm.</div>
-        <div class="action-time">⏱ Tháng này</div>
-      </div>
-
-      <div class="next-action-card">
-        <div class="action-priority">#5 — MỖI TUẦN</div>
-        <div class="action-title">1 commit có ý nghĩa + 1 dòng log English → Notes</div>
-        <div class="action-detail">"Week N — shipped X, blocked Y, next Z." 24 tuần = 24 commits có narrative cho recruiter.</div>
-        <div class="action-time">⏱ Habit</div>
-      </div>
-
-    </div><!-- /next -->
-
-    <!-- ── WEEKLY ── -->
     <div class="tab-panel" id="tab-weekly">
-      <div class="week-grid">
-        <div class="day-col">
-          <div class="day-label">T2</div>
-          <div class="day-block block-cyan">C++ real-time<br/>rclcpp 1h</div>
-          <div class="day-block block-purple">Capstone code<br/>1h</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label">T3</div>
-          <div class="day-block block-cyan">Port HG-Dagger<br/>→ C++ 1.5h</div>
-          <div class="day-block block-amber">English log<br/>15m</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label">T4</div>
-          <div class="day-block block-purple">VLA / LeRobot<br/>run + read 1.5h</div>
-          <div class="day-block block-cyan">Benchmark<br/>latency 30m</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label">T5</div>
-          <div class="day-block block-cyan">ros2_control<br/>hw_interface 1.5h</div>
-          <div class="day-block block-amber">GitHub push<br/>+ log 30m</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label">T6</div>
-          <div class="day-block block-purple">VLA fine-tune<br/>Vast GPU 1.5h</div>
-          <div class="day-block block-cyan">Capstone<br/>integration 1h</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label today">T7</div>
-          <div class="day-block block-cyan">CAPSTONE<br/>deep work 3–4h</div>
-        </div>
-        <div class="day-col">
-          <div class="day-label">CN</div>
-          <div class="day-block block-amber">Review week<br/>(English) 30m</div>
-          <div class="day-block block-purple">LinkedIn<br/>outreach 30m</div>
-        </div>
+      <div class="week-toolbar">
+        <button class="mini-btn primary" onclick="regenerateWeek()">REGENERATE WEEK</button>
+        <button class="mini-btn" onclick="document.getElementById('energy-input').value=5; onEnergyChange(5)">BOOST ENERGY</button>
+        <button class="mini-btn" onclick="document.getElementById('energy-input').value=1; onEnergyChange(1)">LOW ENERGY MODE</button>
       </div>
-    </div><!-- /weekly -->
+      <div class="week-grid" id="weekly-grid"></div>
+      <div class="week-note" id="weekly-note">Weekly plan sẽ tự đổi theo tuần, trạng thái hoàn thành, năng lượng, blocker và độ thiếu tín hiệu tuyển dụng.</div>
+    </div>
 
-    <!-- ── RESOURCES ── -->
-    <div class="tab-panel" id="tab-resources">
-
-      <div class="rsec">PRODUCTION C++ — Gap #1</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">WEBSITE</div>
-          <div class="resource-name">LearnCpp.com — Ch.22 Smart Pointers</div>
-          <div class="resource-desc">unique_ptr, shared_ptr, RAII — đọc trước P1T1</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CODE</div>
-          <div class="resource-name">ros2_control source</div>
-          <div class="resource-desc">github/ros-controls — hardware_interface + controller_manager</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">DOCS</div>
-          <div class="resource-name">rclcpp Executors</div>
-          <div class="resource-desc">docs.ros.org — MultiThreadedExecutor + callback groups</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">TOOL</div>
-          <div class="resource-name">AddressSanitizer / ThreadSanitizer</div>
-          <div class="resource-desc">-fsanitize=address,thread — bắt buộc trước mọi push</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">BOOK</div>
-          <div class="resource-name">C++ Concurrency in Action</div>
-          <div class="resource-desc">Memory model + lock-free — đọc khi bị block</div>
-        </div>
+    <div class="tab-panel" id="tab-playbook">
+      <div class="section-title">TASK TAXONOMY</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Objective</th>
+              <th>Deliverable</th>
+              <th>Metric</th>
+              <th>Gate</th>
+              <th>Recruiter Artifact</th>
+              <th>Category</th>
+            </tr>
+          </thead>
+          <tbody id="playbook-table"></tbody>
+        </table>
       </div>
 
-      <div class="rsec">VLA / FOUNDATION MODELS — Gap #2</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">CODE</div>
-          <div class="resource-name">LeRobot (HuggingFace)</div>
-          <div class="resource-desc">github/huggingface/lerobot — training pipeline + dataset format</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">CODE</div>
-          <div class="resource-name">OpenVLA</div>
-          <div class="resource-desc">Open weights + fine-tune script, chạy Vast GPU</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">PAPER</div>
-          <div class="resource-name">π0 — Physical Intelligence</div>
-          <div class="resource-desc">physicalintelligence.company — target company, đọc kỹ</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">PAPER</div>
-          <div class="resource-name">RT-2 / RT-X</div>
-          <div class="resource-desc">Google DeepMind — kiến trúc gốc VLA</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">BLOG</div>
-          <div class="resource-name">Figure — Helix VLA</div>
-          <div class="resource-desc">figure.ai/news — reference khi apply</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">BLOG</div>
-          <div class="resource-name">1X — World Models</div>
-          <div class="resource-desc">1x.tech — EVE/NEO, đọc trước outreach</div>
-        </div>
+      <div class="section-title">6-MONTH CADENCE</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Focus</th>
+              <th>Exit Criteria</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>P1 · Weeks 1–6</td><td>C++ production / ROS2 / latency / ownership</td><td>1 robust C++ component, benchmarks, sanitizer clean, English README</td></tr>
+            <tr><td>P2 · Weeks 7–14</td><td>VLA / teleop data / fine-tune / end-to-end demo</td><td>Robot or simulator demo, dataset, training log, video</td></tr>
+            <tr><td>P3 · Weeks 15–20</td><td>Hardware / tactile / FOC / control / robustness</td><td>1 deeper mechatronics artifact with measurable delta</td></tr>
+            <tr><td>P4 · Weeks 21–26</td><td>Narrative / outreach / applications / interviews</td><td>Resume, LinkedIn, outreach pipeline, mock interviews, applications</td></tr>
+          </tbody>
+        </table>
       </div>
+    </div>
 
-      <div class="rsec">HARDWARE / MECHATRONICS — Gap #3</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">LIBRARY</div>
-          <div class="resource-name">SimpleFOC</div>
-          <div class="resource-desc">simplefoc.com — FOC ESP32, đọc rồi tự viết lại</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">COURSE</div>
-          <div class="resource-name">Modern Robotics — Lynch & Park</div>
-          <div class="resource-desc">Dynamics/control — đọc khi unblock FOC</div>
-        </div>
-      </div>
-
-      <div class="rsec">APPLY — Gap #4</div>
-      <div class="resource-grid">
-        <div class="resource-card">
-          <div class="resource-type">JOBS</div>
-          <div class="resource-name">Figure AI Careers</div>
-          <div class="resource-desc">figure.ai/careers</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">JOBS</div>
-          <div class="resource-name">1X Technologies</div>
-          <div class="resource-desc">1x.tech/careers</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">JOBS</div>
-          <div class="resource-name">Physical Intelligence</div>
-          <div class="resource-desc">physicalintelligence.company/careers</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">FOLLOW</div>
-          <div class="resource-name">@chelseafinncmu · @sergeylevine</div>
-          <div class="resource-desc">Co-founders PI — track π0 updates</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-type">PRACTICE</div>
-          <div class="resource-name">Pramp / interviewing.io</div>
-          <div class="resource-desc">English mock — luyện giải thích capstone</div>
-        </div>
-      </div>
-
-    </div><!-- /resources -->
-
-    <!-- ── NOTES ── -->
     <div class="tab-panel" id="tab-notes">
       <div class="notes-wrapper">
         <div class="notes-toolbar">
           <span class="notes-label">WEEKLY LOG — ENGLISH</span>
           <button class="notes-save-btn" onclick="saveNotes()">SAVE ⌘S</button>
         </div>
-        <textarea id="notes-area" placeholder="[Week 1] — What did I ship?
+        <textarea id="notes-area" placeholder="[Week X] — What did I ship?
 Measurable output:
 Blocker:
 How I solved it:
 Next week:
----
-"></textarea>
+---"></textarea>
       </div>
       <div class="notes-btns">
         <button onclick="clearNotes()" class="btn-sm btn-danger">CLEAR</button>
         <button onclick="exportNotes()" class="btn-sm btn-muted">EXPORT .TXT</button>
       </div>
-    </div><!-- /notes -->
+    </div>
+  </div>
+</div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+<div class="toast" id="toast">✓ SAVED</div>
 
-<div id="toast">✓ SAVED</div>
-
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
+// --- FIREBASE SETUP ---
 const firebaseConfig = {
   apiKey: "AIzaSyDNWayygSWU9IuyrEvyCXKqdO7VOUuaY2Q",
   authDomain: "robotics-mission.firebaseapp.com",
@@ -868,182 +472,678 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const stateRef = db.ref('robotics_mission_v2');
+// Tự động định tuyến sang nhánh v3 để tránh xung đột với v2 cũ
+const stateRef = db.ref('robotics_mission_v3'); 
 
 const MISSION_DURATION_DAYS = 182;
-let state = { tasks: {}, notes: '', startDateISO: null };
-let deadlineDate = null;
-let startDate = null;
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-function saveState(newState) {
-  state = newState;
+const TASKS = [
+  {
+    id:'p1_policy_runner', phase:'P1', category:'learning',
+    objective:'Production C++ real-time', deliverable:'Port HG-Dagger inference to C++ PolicyRunner',
+    metric:'1kHz loop, no dynamic allocation, benchmark latency delta', gate:'ASan clean + verbal ownership explanation',
+    artifact:'English README + benchmark.md', priority:'critical', estHours:10,
+    title:'Port HG-Dagger inference → C++ PolicyRunner class',
+    desc:'Constructor/destructor, unique_ptr ownership, fixed-rate loop, measurable latency before/after.'
+  },
+  {
+    id:'p1_executor', phase:'P1', category:'portfolio',
+    objective:'ROS2 execution model', deliverable:'rclcpp MultiThreadedExecutor + callback groups',
+    metric:'jitter measured with ros2 topic hz', gate:'thread-safe shared ownership',
+    artifact:'Design note + diagram', priority:'critical', estHours:8,
+    title:'rclcpp MultiThreadedExecutor + callback groups',
+    desc:'Integrate PolicyRunner through shared_ptr, remove hidden race conditions.'
+  },
+  {
+    id:'p1_sanitizers', phase:'P1', category:'learning',
+    objective:'Robust C++ hygiene', deliverable:'ASan/TSan on skid-steer RS485 code',
+    metric:'0 leak, 0 race, 0 warning left', gate:'every warning resolved',
+    artifact:'Sanitizer log', priority:'high', estHours:6,
+    title:'AddressSanitizer + ThreadSanitizer on RS485 C code',
+    desc:'Use tooling as interview proof, not as decoration.'
+  },
+  {
+    id:'p1_hwif', phase:'P1', category:'portfolio',
+    objective:'ROS2 hardware integration', deliverable:'custom ros2_control hardware_interface',
+    metric:'hardware can be driven through controller_manager', gate:'integration passes on device/sim',
+    artifact:'Repo module + demo clip', priority:'high', estHours:8,
+    title:'ros2_control custom hardware_interface for ESP32 / Micro-ROS',
+    desc:'Production-style actuator interface pattern with your existing Micro-ROS base.'
+  },
+  {
+    id:'p1_readme', phase:'P1', category:'recruiter',
+    objective:'Recruiter signal', deliverable:'English README for the C++ component',
+    metric:'problem → approach → metric → run steps', gate:'clear to external reader',
+    artifact:'Public repo polish', priority:'medium', estHours:3,
+    title:'English README: Problem → Approach → Metric → How to run',
+    desc:'Convert technical work into readable hiring signal.'
+  },
+  {
+    id:'p2_inference', phase:'P2', category:'learning',
+    objective:'VLA entry point', deliverable:'Run OpenVLA / LeRobot inference',
+    metric:'successful inference on sample input', gate:'understand shapes + action chunking',
+    artifact:'Run log + notes', priority:'critical', estHours:8,
+    title:'Run OpenVLA or LeRobot inference',
+    desc:'Use pretrained checkpoint before any fine-tune fantasy.'
+  },
+  {
+    id:'p2_data', phase:'P2', category:'portfolio',
+    objective:'Data engine', deliverable:'50–100 teleop episodes',
+    metric:'dataset adheres to LeRobot format', gate:'collection pipeline stable',
+    artifact:'Dataset README + metadata', priority:'critical', estHours:12,
+    title:'Collect teleop episodes (RealSense D435)',
+    desc:'This is the hidden bottleneck. No data, no model, no demo.'
+  },
+  {
+    id:'p2_lora', phase:'P2', category:'research',
+    objective:'Adaptation', deliverable:'LoRA fine-tune VLA on own data',
+    metric:'pre/post eval improvement', gate:'evaluation reproducible',
+    artifact:'training log + result chart', priority:'critical', estHours:14,
+    title:'LoRA fine-tune VLA on self-collected data',
+    desc:'Use measurable delta; otherwise it is just expensive experimentation.'
+  },
+  {
+    id:'p2_capstone', phase:'P2', category:'portfolio',
+    objective:'End-to-end demo', deliverable:'VLA → ROS2 → C++ controller → robot',
+    metric:'language command to motion succeeds', gate:'video demo stable',
+    artifact:'demo video + public repo', priority:'critical', estHours:12,
+    title:'Capstone integration: VLA → ROS2 → C++ controller → robot',
+    desc:'This is the core hiring artifact. Everything else supports it.'
+  },
+  {
+    id:'p3_foc', phase:'P3', category:'learning',
+    objective:'Mechatronics depth', deliverable:'FOC on BLDC + ESP32',
+    metric:'torque ripple comparison', gate:'current loop stable',
+    artifact:'measured plots', priority:'high', estHours:10,
+    title:'FOC on BLDC + ESP32',
+    desc:'SimpleFOC first, then your own current loop C++.'
+  },
+  {
+    id:'p3_tactile', phase:'P3', category:'research',
+    objective:'Embodied sensing', deliverable:'current sensing as observation modality',
+    metric:'action loop uses sensed feedback', gate:'integration with capstone',
+    artifact:'tech note', priority:'high', estHours:6,
+    title:'Current sensing → observation modality',
+    desc:'A small but differentiated axis for Figure/1X style work.'
+  },
+  {
+    id:'p4_resume', phase:'P4', category:'recruiter',
+    objective:'Application readiness', deliverable:'1-page resume + GitHub rewrite',
+    metric:'all pinned repos have clear English README', gate:'recruiter can scan in 60 seconds',
+    artifact:'resume.pdf + profile', priority:'critical', estHours:8,
+    title:'Resume 1 page + GitHub rewrite around capstone',
+    desc:'Move from “engineer did things” to “engineer owns a coherent story.”'
+  },
+  {
+    id:'p4_stack_notes', phase:'P4', category:'research',
+    objective:'Company targeting', deliverable:'Figure / 1X / PI stack notes',
+    metric:'1 note per company with latest paper/blog + your link', gate:'reference accuracy',
+    artifact:'company notes', priority:'critical', estHours:5,
+    title:'Research company stack and connect to capstone',
+    desc:'Search not for trivia; search for alignment.'
+  },
+  {
+    id:'p4_outreach', phase:'P4', category:'networking',
+    objective:'Warm signal', deliverable:'10 engineers outreach',
+    metric:'reply rate + feedback rate', gate:'no job ask in first message',
+    artifact:'outreach log', priority:'high', estHours:5,
+    title:'Cold outreach to engineers for feedback',
+    desc:'Use the project as the conversation anchor.'
+  },
+  {
+    id:'p4_interview', phase:'P4', category:'interview',
+    objective:'Interview conversion', deliverable:'5-minute capstone explanation',
+    metric:'natural explanation + no filler', gate:'can answer architecture questions',
+    artifact:'recorded video + script', priority:'high', estHours:4,
+    title:'Record 5-min capstone explanation',
+    desc:'Do not wait until the end. Start when artifact exists.'
+  }
+];
+
+function defaultState(){
+  return {
+    startDateISO: todayISO(),
+    tasks: {},
+    notes: '',
+    blocker: '',
+    weeklyReview: '',
+    energy: 3,
+    focus: 'capstone',
+    currentWeekOverride: null,
+    lastSavedAt: null
+  };
+}
+
+let state = defaultState();
+
+// Tự động đồng bộ từ Firebase về Web (Nghe sự kiện realtime)
+stateRef.on('value', snapshot => {
+  const data = snapshot.val();
+  if (data) {
+    state = {...defaultState(), ...data, tasks:{...(data.tasks||{})}};
+  } else {
+    state = defaultState();
+  }
+  // Render lại toàn bộ giao diện (có bảo vệ ô input đang gõ)
+  renderAll(); 
+});
+
+function persist(){
+  state.lastSavedAt = new Date().toISOString();
+  // Đẩy thẳng lên Firebase thay vì LocalStorage
   stateRef.set(state).catch(e => console.error('Save error:', e));
 }
 
-function todayISO() {
-  const d = new Date();
-  return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+function saveStateAndToast(msg='✓ SAVED'){
+  persist();
+  toast(msg);
 }
 
-function computeDeadlineFromStart(startISO) {
-  const [y, m, d] = startISO.split('-').map(Number);
-  const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+function todayISO(){
+  const d = new Date();
+  return new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
+
+function computeDeadlineFromStart(startISO){
+  const [y,m,d] = startISO.split('-').map(Number);
+  const start = new Date(y, m-1, d, 0, 0, 0, 0);
   const deadline = new Date(start);
   deadline.setDate(deadline.getDate() + MISSION_DURATION_DAYS);
-  return { start, deadline };
+  return {start, deadline};
 }
 
-function setStartDate(startISO, persist) {
-  const { start, deadline } = computeDeadlineFromStart(startISO);
-  startDate = start; deadlineDate = deadline;
-  document.getElementById('start-date-input').value = startISO;
-  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
-  if (persist) { state.startDateISO = startISO; saveState(state); }
-  tick();
-}
-
-function onStartDateChange() {
-  const val = document.getElementById('start-date-input').value;
-  if (!val) return;
-  setStartDate(val, true);
-  showToast('✓ START DATE UPDATED');
-}
-
-function initDateTime() {
-  if (!startDate) setStartDate(todayISO(), false);
-  const update = () => {
-    const n = new Date();
-    document.getElementById('nav-date').textContent =
-      n.toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' }).toUpperCase() +
-      ' ' + n.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  };
-  update();
-  setInterval(update, 1000);
-  tick();
-  setInterval(tick, 1000);
-}
-
-function formatDuration(totalSeconds, signPrefix) {
+function formatDuration(totalSeconds, signPrefix=''){
   const sec = Math.max(0, Math.floor(Math.abs(totalSeconds)));
-  const d = Math.floor(sec / 86400);
-  const h = Math.floor((sec % 86400) / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${signPrefix}${d}D ${String(h).padStart(2,'0')}H ${String(m).padStart(2,'0')}M ${String(s).padStart(2,'0')}S`;
+  const dd = Math.floor(sec/86400);
+  const hh = Math.floor((sec%86400)/3600);
+  const mm = Math.floor((sec%3600)/60);
+  const ss = sec%60;
+  return `${signPrefix}${dd}D ${String(hh).padStart(2,'0')}H ${String(mm).padStart(2,'0')}M ${String(ss).padStart(2,'0')}S`;
 }
 
-function tick() {
-  if (!deadlineDate || !startDate) return;
+function phaseIndex(p){ return {P1:1,P2:2,P3:3,P4:4}[p] || 99; }
+
+function weeksSinceStart(){
   const now = new Date();
-  const remainSec = (deadlineDate - now) / 1000;
+  const {start} = computeDeadlineFromStart(state.startDateISO || todayISO());
+  const diffDays = Math.floor((now - start) / (1000*60*60*24));
+  return Math.max(1, Math.floor(diffDays/7) + 1);
+}
+
+function currentPhaseByWeek(week){
+  if(week <= 6) return 'P1';
+  if(week <= 14) return 'P2';
+  if(week <= 20) return 'P3';
+  return 'P4';
+}
+
+function taskDone(id){ return !!state.tasks[id]; }
+
+function incompleteTasks(){
+  return TASKS.filter(t => !taskDone(t.id));
+}
+
+function completedCount(){ return TASKS.filter(t => taskDone(t.id)).length; }
+
+function activeTasksForPhase(phase){
+  return TASKS.filter(t => t.phase === phase);
+}
+
+function phaseCompletion(phase){
+  const all = activeTasksForPhase(phase);
+  const done = all.filter(t => taskDone(t.id)).length;
+  return all.length ? Math.round(done / all.length * 100) : 0;
+}
+
+function blockersText(){
+  return (state.blocker || '').trim();
+}
+
+function energyLevel(){
+  return Math.max(1, Math.min(5, Number(state.energy || 3)));
+}
+
+function findMissingSignalAreas(){
+  const gaps = [];
+  const artifact = Math.round((completedCount()/TASKS.length)*100);
+  if(artifact < 40) gaps.push('artifact');
+  if(!state.notes || state.notes.length < 80) gaps.push('narrative');
+  if((state.blocker||'').length > 0) gaps.push('blocker');
+  const recruiterTasksDone = TASKS.filter(t => ['recruiter','networking','interview'].includes(t.category) && taskDone(t.id)).length;
+  if(recruiterTasksDone < 2) gaps.push('signal');
+  return gaps;
+}
+
+function readinessScore(){
+  const artifact = Math.min(100, Math.round((completedCount()/TASKS.length)*100));
+  const narrative = Math.min(100, Math.round(((state.notes||'').length/800)*100));
+  const signal = Math.min(100, Math.round((TASKS.filter(t => ['recruiter','networking','interview'].includes(t.category) && taskDone(t.id)).length / 4) * 100));
+  const consistency = Math.min(100, Math.round((weeksSinceStart()/26) * 100));
+  const total = Math.round((artifact*0.35) + (narrative*0.2) + (signal*0.25) + (consistency*0.2));
+  return {artifact, narrative, signal, consistency, total};
+}
+
+function rankTasksForNextActions(){
+  const week = weeksSinceStart();
+  const phase = currentPhaseByWeek(week);
+  const gaps = findMissingSignalAreas();
+  const missing = incompleteTasks();
+
+  const scored = missing.map(t => {
+    let score = 0;
+    score += t.priority === 'critical' ? 100 : t.priority === 'high' ? 70 : t.priority === 'medium' ? 40 : 20;
+    score += t.phase === phase ? 60 : 0;
+    score += t.category === 'recruiter' || t.category === 'networking' || t.category === 'interview' ? 35 : 0;
+    score += t.category === 'portfolio' ? 25 : 0;
+    score += gaps.includes('artifact') && ['portfolio','learning'].includes(t.category) ? 12 : 0;
+    score += gaps.includes('narrative') && t.category === 'recruiter' ? 20 : 0;
+    score += gaps.includes('signal') && ['recruiter','networking','interview'].includes(t.category) ? 25 : 0;
+    score += energyLevel() <= 2 && t.estHours <= 6 ? 15 : 0;
+    score -= t.estHours * 2;
+    return {...t, score};
+  });
+
+  scored.sort((a,b)=>b.score-a.score);
+  return scored;
+}
+
+function generateNextActions(){
+  const blockers = blockersText();
+  const week = weeksSinceStart();
+  const phase = currentPhaseByWeek(week);
+  const energy = energyLevel();
+  const ranked = rankTasksForNextActions();
+  const top = ranked.slice(0, 3);
+
+  const cards = [];
+  if(blockers){
+    cards.push({
+      priority:'#0 — UNBLOCK',
+      title:'Giải blocker hiện tại trước khi nhận thêm việc',
+      detail:blockers,
+      time:'24h',
+      type:'unblock'
+    });
+  }
+
+  top.forEach((t, idx) => {
+    cards.push({
+      priority:`#${idx+1} — ${t.phase}`,
+      title:t.title,
+      detail:`${t.desc} | Objective: ${t.objective}. Metric: ${t.metric}. Gate: ${t.gate}.`,
+      time:`${Math.max(1, Math.round(t.estHours/2))}–${t.estHours}h`,
+      type:t.category
+    });
+  });
+
+  const missing = findMissingSignalAreas();
+  if(missing.includes('narrative')){
+    cards.push({
+      priority:'#N — RECRUITER',
+      title:'Viết / sửa English narrative cho project',
+      detail:'Một commit hoặc một note không đủ. Cần biến kết quả kỹ thuật thành câu chuyện scan được trong 60 giây.',
+      time:'30–60m',
+      type:'recruiter'
+    });
+  }
+  if(missing.includes('signal')){
+    cards.push({
+      priority:'#N+1 — OUTREACH',
+      title:'Gửi 3–5 feedback messages cho engineers/recruiters',
+      detail:'Không xin việc trong tin đầu. Chỉ xin phản hồi, context, và tín hiệu thị trường.',
+      time:'30m',
+      type:'networking'
+    });
+  }
+  if(energy <= 2){
+    cards.push({
+      priority:'#RECOVER — LOW ENERGY',
+      title:'Chuyển sang review, note, cleanup, or merge',
+      detail:'Không ép deep work khi năng lượng thấp. Thực hiện task ngắn nhưng đóng tín hiệu.',
+      time:'20–45m',
+      type:'recovery'
+    });
+  } else {
+    cards.push({
+      priority:'#HABIT — CONSISTENCY',
+      title:'1 commit có ý nghĩa + 1 dòng weekly log',
+      detail:'Mỗi tuần phải xuất ra một artifact có thể đưa cho recruiter đọc ngay.',
+      time:'15m',
+      type:'habit'
+    });
+  }
+  return cards;
+}
+
+function generatedWeekPlan(){
+  const week = state.currentWeekOverride || weeksSinceStart();
+  const phase = currentPhaseByWeek(week);
+  const energy = energyLevel();
+  const missing = findMissingSignalAreas();
+  const ranked = rankTasksForNextActions();
+
+  const focusTasks = ranked.filter(t => t.phase === phase).slice(0, 4);
+  const all = [...focusTasks];
+  if(all.length < 4){
+    ranked.forEach(t => { if(all.length < 4 && !all.find(x => x.id === t.id)) all.push(t); });
+  }
+
+  const plan = new Array(7).fill(null).map(() => []);
+  plan[0].push({title:'Weekly reset', body:'Review last week, clear blocker, pick one measurable goal.', kind:'block-cyan'});
+  plan[0].push({title:'Scope selection', body:`Choose 1 core build and 1 recruiter artifact. Phase ${phase}.`, kind:'block-purple'});
+
+  if(energy >= 4){
+    plan[1].push({title:'Deep work', body:focusTasks[0] ? focusTasks[0].title : 'Core build', kind:'block-cyan'});
+    plan[2].push({title:'Deep work', body:focusTasks[1] ? focusTasks[1].title : 'Supporting build', kind:'block-purple'});
+    plan[3].push({title:'Integration', body:focusTasks[2] ? focusTasks[2].title : 'Connect pieces into repo', kind:'block-cyan'});
+    plan[4].push({title:'Recruiter artifact', body: missing.includes('narrative') ? 'Write English README / notes' : 'Polish demo/video/README', kind:'block-amber'});
+    plan[5].push({title:'Outreach / interview', body: missing.includes('signal') ? 'Send engineer feedback messages' : 'Practice 5-minute explanation', kind:'block-amber'});
+    plan[6].push({title:'Review / rest', body:'Close week, update progress, reduce WIP.', kind:'block-purple'});
+  } else {
+    plan[1].push({title:'Low-energy build', body:focusTasks[0] ? focusTasks[0].title : 'One compact build task', kind:'block-cyan'});
+    plan[2].push({title:'Cleanup', body:'Reduce debt, remove friction, write notes.', kind:'block-amber'});
+    plan[3].push({title:'Learning', body:'Read only what unblocks current build.', kind:'block-purple'});
+    plan[4].push({title:'Small deliverable', body:'Make one visible artifact.', kind:'block-cyan'});
+    plan[5].push({title:'Outreach light', body:'1–2 feedback messages, not mass spam.', kind:'block-amber'});
+    plan[6].push({title:'Recovery', body:'Stop early if drained.', kind:'block-red'});
+  }
+
+  const extra = [];
+  if(blockersText()) extra.push('Blocker exists: task selection should favor unblocking, not piling more work.');
+  if(missing.includes('artifact')) extra.push('Artifact gap: keep output external-facing, not just local notes.');
+  if(missing.includes('narrative')) extra.push('Narrative gap: convert technical output into English scanability.');
+  if(missing.includes('signal')) extra.push('Recruiter signal gap: reach out, ask for feedback, and expose the work.');
+  if(energy <= 2) extra.push('Low energy mode: avoid deep, multi-hour tasks today.');
+
+  return {week, phase, plan, extra, energy};
+}
+
+function renderNextActions(){
+  const cards = generateNextActions();
+  const root = document.getElementById('next-actions-container');
+  root.innerHTML = cards.map(c => `
+    <div class="action-card">
+      <div class="action-top">
+        <div class="action-priority">${escapeHtml(c.priority)}</div>
+        <div class="action-type">${escapeHtml(c.type)}</div>
+      </div>
+      <div class="action-title">${escapeHtml(c.title)}</div>
+      <div class="action-detail">${escapeHtml(c.detail)}</div>
+      <div class="action-footer"><span class="action-time">⏱ ${escapeHtml(c.time)}</span></div>
+    </div>
+  `).join('');
+
+  document.getElementById('execution-signal').textContent =
+    `Current week ${weeksSinceStart()} · phase ${currentPhaseByWeek(weeksSinceStart())} · energy ${energyLevel()}/5 · ${cards.length} next actions generated from live state.`;
+  document.getElementById('focus-pill').textContent = `Focus: ${state.focus === 'recruiter' ? 'Recruiter signal' : state.focus === 'capstone' ? 'Capstone' : state.focus === 'learning' ? 'Learning' : 'General'}`;
+  document.getElementById('blocker-pill').textContent = `Blocker: ${blockersText() ? 'present' : 'none'}`;
+}
+
+function renderWeekly(){
+  const data = generatedWeekPlan();
+  document.getElementById('stat-week').textContent = `W${data.week}`;
+  const grid = document.getElementById('weekly-grid');
+  grid.innerHTML = DAYS.map((d, i) => `
+    <div class="day-col">
+      <div class="day-label ${i===new Date().getDay()-1 ? 'today' : ''}">${d}</div>
+      ${(data.plan[i] || []).map(item => `
+        <div class="day-block ${item.kind}">
+          <div class="dtitle">${escapeHtml(item.title)}</div>
+          <div>${escapeHtml(item.body)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  document.getElementById('weekly-note').textContent = (data.extra.length ? data.extra.join(' ') : 'Plan is balanced. Keep WIP low and preserve one recruiter-facing output this week.');
+}
+
+function renderPlaybook(){
+  const root = document.getElementById('playbook-table');
+  root.innerHTML = TASKS.map(t => `
+    <tr>
+      <td><strong style="color:var(--text)">${escapeHtml(t.objective)}</strong><div class="small">${escapeHtml(t.title)}</div></td>
+      <td>${escapeHtml(t.deliverable)}</td>
+      <td>${escapeHtml(t.metric)}</td>
+      <td>${escapeHtml(t.gate)}</td>
+      <td>${escapeHtml(t.artifact)}</td>
+      <td><span class="pill ${t.priority==='critical'?'tag-critical':t.priority==='high'?'tag-high':t.priority==='medium'?'tag-medium':'tag-low'}">${escapeHtml(t.category)}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderPhases(){
+  const phases = ['P1','P2','P3','P4'];
+  const labels = {
+    P1:['Weeks 1–6','Production C++ / ROS2 / sanitizer / latency'],
+    P2:['Weeks 7–14','VLA / teleop / fine-tune / demo'],
+    P3:['Weeks 15–20','Hardware / tactile / FOC / robustness'],
+    P4:['Weeks 21–26','Narrative / outreach / apply / interviews']
+  };
+  const root = document.getElementById('phase-container');
+  root.innerHTML = phases.map((p, idx) => {
+    const tasks = TASKS.filter(t => t.phase === p);
+    return `
+      <div class="phase-card ${idx===0 ? 'active-phase open' : ''}" id="phase${idx+1}">
+        <div class="phase-header" onclick="togglePhase('phase${idx+1}')">
+          <span class="phase-num">${p}</span>
+          <span class="phase-title">${phaseTitle(p)}</span>
+          <span class="phase-timeline">${labels[p][0]}</span>
+          <span class="phase-chevron">▼</span>
+        </div>
+        <div class="phase-body">
+          <div class="small" style="margin-bottom:10px">${escapeHtml(labels[p][1])} · Completion ${phaseCompletion(p)}%</div>
+          <ul class="task-list">
+            ${tasks.map(t => `
+              <li class="task-item">
+                <div class="task-check ${taskDone(t.id) ? 'done' : ''}" onclick="toggleTask(this)" data-id="${escapeHtml(t.id)}"></div>
+                <div class="task-content">
+                  <div class="task-title">${escapeHtml(t.title)}</div>
+                  <div class="task-desc">${escapeHtml(t.desc)}</div>
+                  <div class="task-meta">
+                    <span class="pill ${t.priority==='critical'?'tag-critical':t.priority==='high'?'tag-high':t.priority==='medium'?'tag-medium':'tag-low'}">${escapeHtml(t.priority.toUpperCase())}</span>
+                    <span class="pill">${escapeHtml(t.category)}</span>
+                    <span class="pill">≈ ${t.estHours}h</span>
+                  </div>
+                </div>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function phaseTitle(p){
+  return {
+    P1:'Production C++ Real-Time',
+    P2:'VLA / Foundation Models',
+    P3:'Hardware / Mechatronics',
+    P4:'Narrative & Applications'
+  }[p] || p;
+}
+
+function updateTimer(){
+  const startISO = state.startDateISO || todayISO();
+  const {start, deadline} = computeDeadlineFromStart(startISO);
+  const now = new Date();
+  const remainSec = (deadline - now) / 1000;
   document.getElementById('countdown-display').textContent = formatDuration(remainSec, remainSec < 0 ? '-' : '');
-  const elapsedSec = Math.max(0, (now - startDate) / 1000);
+  document.getElementById('deadline-text').textContent = deadline.toLocaleDateString('vi-VN',{year:'numeric',month:'long',day:'numeric'});
+  const elapsedSec = Math.max(0, (now - start) / 1000);
   const totalSec = MISSION_DURATION_DAYS * 86400;
   const pct = totalSec > 0 ? Math.min(100, (elapsedSec / totalSec) * 100) : 0;
-  document.getElementById('elapsed-display').textContent = `${formatDuration(elapsedSec, '')} (${pct.toFixed(2)}%)`;
+  document.getElementById('elapsed-display').textContent = `${formatDuration(elapsedSec,'')} (${pct.toFixed(2)}%)`;
 }
 
-function switchTab(id, btn) {
+function updateNav(){
+  const n = new Date();
+  document.getElementById('nav-date').textContent =
+    n.toLocaleDateString('vi-VN', {weekday:'short', year:'numeric', month:'2-digit', day:'2-digit'}).toUpperCase() +
+    ' ' + n.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+
+function updateScores(){
+  const s = readinessScore();
+  document.getElementById('score-artifact').textContent = s.artifact;
+  document.getElementById('score-narrative').textContent = s.narrative;
+  document.getElementById('score-signal').textContent = s.signal;
+  document.getElementById('score-consistency').textContent = s.consistency;
+  document.getElementById('bar-artifact').style.width = s.artifact + '%';
+  document.getElementById('bar-narrative').style.width = s.narrative + '%';
+  document.getElementById('bar-signal').style.width = s.signal + '%';
+  document.getElementById('bar-consistency').style.width = s.consistency + '%';
+  document.getElementById('score-total').textContent = `Score ${s.total}/100`;
+  document.getElementById('health-pill').textContent = s.total >= 75 ? 'Healthy' : s.total >= 50 ? 'At risk' : 'Critical';
+}
+
+function updateSummary(){
+  document.getElementById('stat-completed').textContent = completedCount();
+  document.getElementById('stat-total').textContent = TASKS.length;
+  document.getElementById('stat-phase').textContent = currentPhaseByWeek(weeksSinceStart());
+}
+
+// BẢO VỆ CON TRỎ (Cursor Protection): Không ghi đè nếu người dùng đang gõ
+function applyStateToInputs(){
+  document.getElementById('start-date-input').value = state.startDateISO || todayISO();
+  
+  const notesArea = document.getElementById('notes-area');
+  if (document.activeElement !== notesArea) {
+    notesArea.value = state.notes || '';
+  }
+
+  const blockerInput = document.getElementById('blocker-input');
+  if (document.activeElement !== blockerInput) {
+    blockerInput.value = state.blocker || '';
+  }
+
+  const reviewInput = document.getElementById('review-input');
+  if (document.activeElement !== reviewInput) {
+    reviewInput.value = state.weeklyReview || '';
+  }
+
+  document.getElementById('energy-input').value = energyLevel();
+  document.getElementById('energy-label').textContent = `Energy: ${energyLevel()}/5`;
+}
+
+// Đồng bộ từ Giao diện (thẻ Input) ngược lại State trước khi đẩy lên Firebase
+function syncStateFromInputs(){
+  state.notes = document.getElementById('notes-area').value;
+  state.blocker = document.getElementById('blocker-input').value;
+  state.weeklyReview = document.getElementById('review-input').value;
+  state.energy = Number(document.getElementById('energy-input').value || 3);
+}
+
+function renderAll(){
+  applyStateToInputs();
+  renderPhases();
+  renderNextActions();
+  renderWeekly();
+  renderPlaybook();
+  updateScores();
+  updateSummary();
+  updateTimer();
+  updateNav();
+  // KHÔNG gọi persist() ở đây để tránh lặp vô hạn (Infinite Loop) với Firebase
+}
+
+// Các hàm tác động của người dùng (Có gọi persist để lưu lên Cloud)
+function regenerateAll(){ syncStateFromInputs(); persist(); renderAll(); toast('✓ REGENERATED'); }
+function regenerateWeek(){ syncStateFromInputs(); persist(); renderWeekly(); renderNextActions(); updateSummary(); updateScores(); toast('✓ WEEK REGENERATED'); }
+function advanceWeekManually(){
+  syncStateFromInputs();
+  state.currentWeekOverride = (state.currentWeekOverride || weeksSinceStart()) + 1;
+  persist();
+  renderAll();
+  toast('✓ WEEK ADVANCED');
+}
+function markFocusCapstone(){ state.focus='capstone'; persist(); renderNextActions(); toast('✓ FOCUS SET'); }
+function markFocusRecruiter(){ state.focus='recruiter'; persist(); renderNextActions(); toast('✓ FOCUS SET'); }
+function onEnergyChange(val){ 
+  state.energy = Number(val); 
+  document.getElementById('energy-label').textContent = `Energy: ${state.energy}/5`; 
+  persist(); 
+  renderWeekly(); 
+  renderNextActions(); 
+  updateScores(); 
+}
+function onStartDateChange(){
+  const val = document.getElementById('start-date-input').value;
+  if(!val) return;
+  state.startDateISO = val;
+  persist();
+  renderAll();
+  toast('✓ START DATE UPDATED');
+}
+function togglePhase(id){ document.getElementById(id).classList.toggle('open'); }
+function toggleTask(el){
+  const id = el.getAttribute('data-id');
+  const newDone = !el.classList.contains('done');
+  el.classList.toggle('done', newDone);
+  state.tasks[id] = newDone;
+  syncStateFromInputs();
+  persist();
+  renderSummaryOnly();
+  renderNextActions();
+  renderWeekly();
+  renderPlaybook();
+  updateScores();
+  toast('✓ TASK UPDATED');
+}
+function renderSummaryOnly(){
+  updateSummary();
+  updateTimer();
+}
+function saveNotes(){
+  syncStateFromInputs();
+  persist();
+  toast('✓ NOTES SAVED');
+}
+function clearNotes(){
+  if(!confirm('Xóa toàn bộ notes?')) return;
+  state.notes = '';
+  document.getElementById('notes-area').value = '';
+  persist();
+  toast('✓ CLEARED');
+}
+function exportNotes(){
+  const blob = new Blob([document.getElementById('notes-area').value], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mission-control-weekly-log.txt';
+  a.click();
+}
+function switchTab(id, btn){
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
 }
-
-function togglePhase(id) { document.getElementById(id).classList.toggle('open'); }
-
-function toggleTask(el) {
-  const id = el.getAttribute('data-id');
-  const newDone = !el.classList.contains('done');
-  el.classList.toggle('done', newDone);
-  state.tasks[id] = newDone;
-  saveState(state);
-  updateProgress();
-  showToast('✓ TASK UPDATED');
-}
-
-function updateProgress() {
-  const all = document.querySelectorAll('.task-check');
-  const done = document.querySelectorAll('.task-check.done');
-  const total = all.length, doneCount = done.length;
-  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-  document.getElementById('stat-done').textContent = doneCount;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('op-pct').textContent = pct + '%';
-  document.getElementById('op-fill').style.width = pct + '%';
-  const phases = ['phase1','phase2','phase3','phase4'];
-  let cur = 'P4';
-  for (let i = 0; i < phases.length; i++) {
-    const pt = document.querySelectorAll(`#${phases[i]} .task-check`);
-    const pd = document.querySelectorAll(`#${phases[i]} .task-check.done`);
-    if (pd.length < pt.length) { cur = 'P' + (i + 1); break; }
-  }
-  document.getElementById('stat-phase').textContent = cur;
-}
-
-function applyTasksFromState() {
-  document.querySelectorAll('.task-check').forEach(el => {
-    el.classList.toggle('done', !!(state.tasks && state.tasks[el.getAttribute('data-id')]));
-  });
-  updateProgress();
-}
-
-function applyNotesFromState() {
-  const area = document.getElementById('notes-area');
-  if (document.activeElement !== area) area.value = state.notes || '';
-}
-
-function applyStartDateFromState() {
-  if (state.startDateISO) setStartDate(state.startDateISO, false);
-}
-
-function saveNotes() {
-  state.notes = document.getElementById('notes-area').value;
-  saveState(state);
-  showToast('✓ NOTES SAVED');
-}
-
-function clearNotes() {
-  if (!confirm('Xóa toàn bộ notes?')) return;
-  document.getElementById('notes-area').value = '';
-  state.notes = '';
-  saveState(state);
-}
-
-function exportNotes() {
-  const blob = new Blob([document.getElementById('notes-area').value], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'embodied-ai-mission-notes.txt';
-  a.click();
-}
-
-function showToast(msg) {
+function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(() => t.classList.remove('show'), 1700);
+}
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
 
+// Bắt sự kiện phím tắt (Ctrl + S)
 document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
-});
-
-stateRef.on('value', snapshot => {
-  const data = snapshot.val();
-  if (data) {
-    state = data;
-    if (!state.tasks) state.tasks = {};
-    if (state.notes === undefined) state.notes = '';
-    applyTasksFromState();
-    applyNotesFromState();
-    applyStartDateFromState();
-  } else {
-    saveState({ tasks: {}, notes: '', startDateISO: todayISO() });
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's'){
+    e.preventDefault(); saveNotes();
   }
 });
 
-initDateTime();
+setInterval(() => {
+  updateNav();
+  updateTimer();
+}, 1000);
+
+// Chạy 1 lần render đồng bộ lúc mới load để UI không bị trắng
+renderAll();
 </script>
 </body>
 </html>
