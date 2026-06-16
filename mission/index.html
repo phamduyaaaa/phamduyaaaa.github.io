@@ -23,10 +23,18 @@ body::before{content:'';position:fixed;inset:0;background:
   pointer-events:none;z-index:0}
 
 /* ── NAV ── */
-nav{display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;height:44px;border-bottom:1px solid var(--border);
-  background:rgba(6,10,15,.96);backdrop-filter:blur(16px);
-  position:sticky;top:0;z-index:200}
+nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  height:44px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg); /* FIX: Dùng nền đặc tuyệt đối, gỡ blur để chống lỗi đâm xuyên */
+  position:sticky;
+  top:0;
+  z-index:1000; /* FIX: Tăng z-index lên cao nhất */
+}
 .nav-logo{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:3px;display:flex;align-items:center;gap:8px}
 .nav-logo .dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -80,18 +88,17 @@ nav{display:flex;align-items:center;justify-content:space-between;
   padding:0 24px;
   position:sticky;
   top:44px;
-  background:rgba(6,10,15,.96);
-  backdrop-filter:blur(16px);
-  z-index:100;
+  background:var(--bg); /* FIX: Màu nền đặc tuyệt đối dập tắt mọi render xuyên thấu */
+  z-index:990; /* FIX: Nâng Z-index cao hơn content */
   overflow-x:auto;
-  -ms-overflow-style:none; /* Ẩn scrollbar ngang cho tab */
+  -ms-overflow-style:none; 
   scrollbar-width:none;
-  height:40px;
+  height:42px; /* FIX: Tăng chiều cao thêm 2px cho thoáng */
   align-items:flex-end;
   gap:2px;
-  box-shadow:inset 0 -1px 0 var(--border); /* Thay thế border-bottom bị lỗi đè vạch */
+  box-shadow:inset 0 -1px 0 var(--border);
 }
-.tabs::-webkit-scrollbar{display:none} /* Ẩn scrollbar ngang cho tab */
+.tabs::-webkit-scrollbar{display:none}
 
 .tab-btn{
   font-family:var(--mono);
@@ -102,9 +109,9 @@ nav{display:flex;align-items:center;justify-content:space-between;
   background:none;
   border:none;
   border-bottom:2px solid transparent;
-  padding:0 12px 8px;
+  padding:0 12px 10px; /* FIX: Đẩy padding bottom lên để border hoàn toàn rõ ràng */
   cursor:pointer;
-  height:40px;
+  height:42px;
   display:flex;
   align-items:flex-end;
   white-space:nowrap;
@@ -112,7 +119,7 @@ nav{display:flex;align-items:center;justify-content:space-between;
 }
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab-panel{display:none;padding:24px}
+.tab-panel{display:none;padding:24px;scroll-margin-top:100px}
 .tab-panel.active{display:block}
 
 /* ── PHASE HEADER STRIP ── */
@@ -619,6 +626,7 @@ const DAILY_PLAN = [
   {label:'Day 5',theme:'Portfolio Repository Freeze',taskMain:'Tiến hành kiểm duyệt, làm sạch mã nguồn lần cuối, đóng băng trạng thái hiển thị của trang cá nhân GitHub',taskSub:'Ghim (Pin) dự án Capstone VLA này lên vị trí trang trọng đầu tiên trên hồ sơ GitHub cá nhân (GitHub Profile README). Tạo các huy hiệu trạng thái (CI badges) đẹp mắt.',hours:2,priority:'medium',category:'recruiter',input:'GitHub Profile page',output:'Hồ sơ diện mạo GitHub kĩ sư chuyên nghiệp sáng đèn',keywords:['GitHub pinned repositories','developer profile design','shields.io badges incorporation'],gate:'Trang GitHub cá nhân bộc lộ rõ signal kĩ sư thực thụ: Có dự án sâu sắc, mã nguồn sạch sẽ gọn gàng, tài liệu tiếng Anh chỉn chu',resources:['https://github.com/abhisheknaiidu/awesome-github-profile-readme']}
  ]},
 
+// Tự động suy rộng dữ liệu thô cho các tuần chặng cuối để đảm bảo tính toán chu kỳ lặp liên tục của javascript engine điều khiển giao diện HTML...
 {week:19, phase:'P4', focusLabel:'EMBODIED AI STACK COMPETITIVE DEEP RESEARCH', summary:'Nghiên cứu kiến trúc kĩ thuật thực tế của các hãng robot mục tiêu như Figure AI (Figure 02), 1X Technologies (Eve/Neo), và Physical Intelligence (mô hình π0). Viết các bài phân tích hệ thống kĩ thuật kĩ thuật thấu đáo.', exitCriteria:['Hoàn thành 3 bài ghi chép phân tích sâu cấu trúc kĩ thuật của 3 hãng mục tiêu bằng tiếng Anh'], days:[{label:'Day 1',theme:'Figure AI Base',taskMain:'Research Figure 02 perception stack',taskSub:'Analyses control loop and language model execution layer.',hours:2,priority:'high',category:'research',input:'Public videos, jobs listing parameters',output:'docs/figure_stack_analysis.md',keywords:['Figure 02','humanoid actuation'],gate:'Understand whole-body control integration',resources:[]}]},
 {week:20, phase:'P4', focusLabel:'5-MINUTE WALKTHROUGH DEMO VIDEO PRODUCTION', summary:'Sản xuất một video thuyết minh kĩ thuật chuyên sâu dài 5 phút bằng tiếng Anh giới thiệu trực diện kiến trúc mã nguồn cánh tay robot chạy mô hình VLA phối hợp lõi C++ thời gian thực.', exitCriteria:['Video demo xuất bản hoàn thiện tiếng Anh rõ nét âm thanh, upload Youtube/Loom'], days:[{label:'Day 1',theme:'Screen Capture Script',taskMain:'Draft structural speech script for video demonstration',taskSub:'Breakdown down to 60s problem, 120s architecture walk, 120s code execution.',hours:2,priority:'critical',category:'recruiter',input:'Capstone project complete layout',output:'video_script.md ready',keywords:['technical presentation','Loom speech preparation'],gate:'Script timed perfectly under 5 minutes',resources:[]}]},
 {week:21, phase:'P4', focusLabel:'ENGINEER-TO-ENGINEER COLD OUTREACH SPRINT', summary:'Khởi động chiến dịch kết nối mạng lưới kĩ sư kĩ sư quốc tế. Gửi thông điệp văn minh tiếp cận kĩ sư tại Silicon Valley xin feedback chuyên môn về dự án Capstone vừa làm, tuyệt đối không xin việc trực tiếp.', exitCriteria:['Gửi tin nhắn tiếp cận cá nhân hóa thành công tới tối thiểu 10 kĩ sư Embodied AI quốc tế'], days:[{label:'Day 1',theme:'LinkedIn Outreaching Templates',taskMain:'Craft personalized non-spam technical connection notes',taskSub:'Focus on requesting review for the LoRA action prediction anomaly data.',hours:2,priority:'critical',category:'networking',input:'LinkedIn profiles list',output:'outreach_messages.md',keywords:['cold connection','professional engagement'],gate:'No generic messages, each note targets a specific paper or contribution',resources:[]}]},
@@ -661,7 +669,7 @@ const ANTI_PATTERNS = [
 // ═══════════════════════════════════════════════════════════
 // ENGINE LOGIC
 // ═══════════════════════════════════════════════════════════
-const LS_KEY = 'embodied_mission_control_v7';
+const LS_KEY = 'embodied_mission_control_v8';
 function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }catch(e){ return {}; } }
 function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
 let state = loadState();
@@ -774,7 +782,7 @@ function goPhase(p){
   if(document.querySelectorAll('.tab-btn')[btnIdx]) document.querySelectorAll('.tab-btn')[btnIdx].classList.add('active');
   document.querySelectorAll('.pnav-item').forEach(el=>el.classList.remove('active'));
   if(document.getElementById('pnav-'+p)) document.getElementById('pnav-'+p).classList.add('active');
-  window.scrollTo({top: 0, behavior: 'smooth'}); /* Fix: Trượt mượt lên trên khi đổi trang */
+  window.scrollTo({top: 0, behavior: 'smooth'}); 
 }
 
 function switchTab(id, btn){
@@ -787,7 +795,7 @@ function switchTab(id, btn){
     document.querySelectorAll('.pnav-item').forEach(el=>el.classList.remove('active'));
     if(document.getElementById('pnav-'+phaseMap[id])) document.getElementById('pnav-'+phaseMap[id]).classList.add('active');
   }
-  window.scrollTo({top: 0, behavior: 'smooth'}); /* Fix: Căn chỉnh lại vị trí scroll tránh cắt text */
+  window.scrollTo({top: 0, behavior: 'smooth'}); 
 }
 
 function updateTimer(){
