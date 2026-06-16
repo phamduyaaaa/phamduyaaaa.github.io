@@ -30,7 +30,7 @@ nav{
   padding:0 20px;
   height:44px;
   border-bottom:1px solid var(--border);
-  background:var(--bg); /* Solid background chống lỗi render xuyên thấu */
+  background:var(--bg);
   position:sticky;
   top:0;
   z-index:1000;
@@ -82,47 +82,36 @@ nav{
 .bar-r{background:linear-gradient(90deg,var(--danger),#fca5a5)}
 .sk-pct{font-family:var(--mono);font-size:9px;color:var(--text3);width:28px;text-align:right}
 
-/* ── TABS (UX OPTIMIZED) ── */
+/* ── TABS ── */
 .tabs{
-  display:flex;
-  padding:0 24px;
-  position:sticky;
-  top:44px;
-  background:var(--bg); /* Chống đâm xuyên */
-  z-index:990; /* Đè lên content */
-  overflow-x:auto;
-  -ms-overflow-style:none; 
-  scrollbar-width:none;
-  height:42px;
-  align-items:flex-end;
-  gap:2px;
-  box-shadow:inset 0 -1px 0 var(--border); /* Khắc phục lỗi đè border */
+  display:flex; padding:0 24px; position:sticky; top:44px; background:var(--bg); z-index:990;
+  overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none; height:42px; align-items:flex-end; gap:2px; box-shadow:inset 0 -1px 0 var(--border);
 }
 .tabs::-webkit-scrollbar{display:none}
-
 .tab-btn{
-  font-family:var(--mono);
-  font-size:9px;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  color:var(--text3);
-  background:none;
-  border:none;
-  border-bottom:2px solid transparent;
-  padding:0 12px 10px;
-  cursor:pointer;
-  height:42px;
-  display:flex;
-  align-items:flex-end;
-  white-space:nowrap;
-  transition:all .15s;
+  font-family:var(--mono); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text3); background:none;
+  border:none; border-bottom:2px solid transparent; padding:0 12px 10px; cursor:pointer; height:42px; display:flex; align-items:flex-end; white-space:nowrap; transition:all .15s;
 }
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-
-/* Minimalist Padding System - Đẩy lùi W0 xuống tạo độ thoáng */
 .tab-panel{display:none;padding:48px 24px 24px 24px;scroll-margin-top:100px}
 .tab-panel.active{display:block}
+
+/* ── INTERACTIVE TASK SYSTEM ── */
+.checkbox-btn {
+  width:16px; height:16px; border:1px solid var(--text3); border-radius:4px;
+  display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; margin-right:8px; transition:all 0.2s ease;
+  background:var(--surface2); vertical-align:middle;
+}
+.checkbox-btn:hover { border-color:var(--accent); }
+.checkbox-btn.checked { background:var(--success); border-color:var(--success); }
+.checkbox-btn.checked::after { content:'✓'; color:#000; font-size:11px; font-weight:900; }
+
+.row-done td { opacity: 0.4; transition: opacity 0.3s; }
+.row-done .task-main { text-decoration: line-through; color: var(--text3); }
+.row-done .day-theme { color: var(--text3); text-decoration: line-through; }
+.row-done:hover td { opacity: 0.7; }
 
 /* ── PHASE HEADER STRIP ── */
 .phase-strip{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
@@ -133,7 +122,7 @@ nav{
 .ps-goal{padding:12px 18px;background:rgba(0,229,255,.03);font-size:12px;color:var(--text2);line-height:1.6;border-bottom:1px solid var(--border)}
 
 /* ── WEEK BLOCK ── */
-.week-block{margin-bottom:24px;border:1px solid var(--border);border-radius:10px;overflow:hidden} /* margin-bottom: 24px giúp các tuần thoáng hơn */
+.week-block{margin-bottom:24px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .week-head{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--surface);cursor:pointer;user-select:none;transition:background .15s}
 .week-head:hover{background:var(--surface2)}
 .wh-num{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;width:28px}
@@ -152,9 +141,9 @@ table.daily th{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-t
 table.daily td{color:var(--text2);line-height:1.55}
 table.daily tr:last-child td{border-bottom:none}
 table.daily tr:hover td{background:rgba(255,255,255,.015)}
-.day-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;white-space:nowrap}
-.day-theme{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px}
-.task-main{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4}
+.day-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;white-space:nowrap;display:flex;align-items:center;}
+.day-theme{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px;transition: color 0.3s;}
+.task-main{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4;transition: color 0.3s;}
 .task-sub{font-size:11px;color:var(--text2)}
 .kw-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .kw{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);letter-spacing:.5px}
@@ -185,7 +174,7 @@ table.daily tr:hover td{background:rgba(255,255,255,.015)}
 
 /* ── SUMMARY TAB ── */
 .summary-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.sh-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center}
+.sh-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center; transition: all 0.3s;}
 .sh-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);margin-bottom:4px}
 .sh-label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:1px}
 .timeline-row{display:flex;gap:3px;margin:16px 0;height:8px;border-radius:4px;overflow:hidden}
@@ -319,7 +308,7 @@ table.pb tr:last-child td{border-bottom:none}
       <div class="summary-hero">
         <div class="sh-card"><div class="sh-val">182</div><div class="sh-label">TOTAL DAYS</div></div>
         <div class="sh-card"><div class="sh-val">26</div><div class="sh-label">WEEKS</div></div>
-        <div class="sh-card"><div class="sh-val" id="ov-done">0</div><div class="sh-label">DAYS DONE</div></div>
+        <div class="sh-card"><div class="sh-val" id="ov-done" style="color:var(--success)">0</div><div class="sh-label" style="color:var(--success)">TASKS DONE</div></div>
         <div class="sh-card"><div class="sh-val" id="ov-week">W1</div><div class="sh-label">CURRENT WEEK</div></div>
       </div>
       
@@ -672,10 +661,13 @@ const ANTI_PATTERNS = [
 // ═══════════════════════════════════════════════════════════
 // ENGINE LOGIC
 // ═══════════════════════════════════════════════════════════
-const LS_KEY = 'embodied_mission_control_v10';
+const LS_KEY = 'embodied_mission_control_v11';
 function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }catch(e){ return {}; } }
 function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
 let state = loadState();
+
+// Tích hợp state cho hệ thống checkbox tương tác
+state.tasks = state.tasks || {};
 
 function getStartDate(){
   if(state.startDate) return new Date(state.startDate);
@@ -704,9 +696,29 @@ function renderOverview(){
   `).join('');
 }
 
+function toggleTask(taskId) {
+  state.tasks[taskId] = !state.tasks[taskId];
+  saveState(state);
+  
+  const tr = document.getElementById('tr-' + taskId);
+  const btn = document.getElementById('btn-' + taskId);
+  
+  if (state.tasks[taskId]) {
+    tr.classList.add('row-done');
+    btn.classList.add('checked');
+    toast('✓ TASK COMPLETED');
+  } else {
+    tr.classList.remove('row-done');
+    btn.classList.remove('checked');
+  }
+  
+  updateStats();
+}
+
 function renderWeekBlock(w) {
   const catColors = {portfolio:'cat-portfolio',learning:'cat-learning',recruiter:'cat-recruiter',research:'cat-research',networking:'cat-networking',habit:'cat-habit',interview:'p-critical'};
   const priColors = {critical:'p-critical',high:'p-high',medium:'p-medium',low:'p-low'};
+  
   return `
     <div class="week-block" id="week-block-${w.week}">
       <div class="week-head" onclick="toggleWeek(${w.week})">
@@ -721,10 +733,16 @@ function renderWeekBlock(w) {
           <table class="daily">
             <thead><tr><th style="width:100px">Timeline/Tags</th><th style="width:140px">Core Domain</th><th style="width:260px">Execution Directive</th><th style="width:200px">Input Matrix</th><th style="width:200px">Output Artifact</th><th>Keywords & Docs Links</th><th style="width:140px">Exit Gate Check</th></tr></thead>
             <tbody>
-              ${w.days.map(d=>`
-                <tr>
+              ${w.days.map((d, dIndex) => {
+                const taskId = `w${w.week}-d${dIndex}`;
+                const isDone = state.tasks[taskId];
+                return `
+                <tr id="tr-${taskId}" class="${isDone ? 'row-done' : ''}">
                   <td>
-                    <div class="day-label">${esc(d.label)}</div>
+                    <div class="day-label">
+                      <div id="btn-${taskId}" class="checkbox-btn ${isDone ? 'checked' : ''}" onclick="toggleTask('${taskId}')"></div>
+                      ${esc(d.label)}
+                    </div>
                     <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">
                       <span class="pill ${priColors[d.priority]||''}">${esc(d.priority)}</span>
                       <span class="pill ${catColors[d.category]||''}">${esc(d.category)}</span>
@@ -741,7 +759,7 @@ function renderWeekBlock(w) {
                   </td>
                   <td>${d.gate?`<span class="gate-chip">${esc(d.gate)}</span>`:'—'}</td>
                 </tr>
-              `).join('')}
+              `}).join('')}
             </tbody>
           </table>
         </div>
@@ -801,6 +819,12 @@ function switchTab(id, btn){
   window.scrollTo({top: 0, behavior: 'smooth'}); 
 }
 
+function updateStats() {
+  // Cập nhật số liệu đếm số lượng Task đã hoàn thành
+  const completedCount = Object.values(state.tasks || {}).filter(Boolean).length;
+  document.getElementById('ov-done').textContent = completedCount;
+}
+
 function updateTimer(){
   const start = getStartDate();
   const deadline = new Date(start); deadline.setDate(deadline.getDate() + 182);
@@ -819,7 +843,6 @@ function updateTimer(){
   document.getElementById('mc-elapsed').textContent = `ELAPSED CAPSTONE: ${pct.toFixed(1)}%`;
   const week = Math.max(1, Math.floor(elSec / (7 * 86400)) + 1);
   document.getElementById('ov-week').textContent = `W${Math.min(26, week)}`;
-  document.getElementById('ov-done').textContent = Math.min(182, Math.floor(elSec / 86400));
   document.getElementById('nav-date').textContent = now.toLocaleDateString('vi-VN',{weekday:'short',year:'numeric',month:'2-digit',day:'2-digit'}).toUpperCase() + ' ' + now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
@@ -832,6 +855,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderPhaseWeeks('P3','p3-weeks-container');
   renderPhaseWeeks('P4','p4-weeks-container');
   renderPlaybook();
+  updateStats(); // Khởi tạo đếm task đã tick
   if(state.notes) document.getElementById('notes-area').value = state.notes;
   updateTimer(); setInterval(updateTimer, 1000);
   document.addEventListener('keydown', e=>{ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotes(); } });
