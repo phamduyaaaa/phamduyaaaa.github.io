@@ -3,862 +3,525 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>MISSION CONTROL — Embodied AI · Executive System</title>
+<title>Mission Control — Embodied AI</title>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+  import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const IS_CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('YOUR_');
+
+  if (IS_CONFIGURED) {
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db  = getDatabase(app);
+    const auth = getAuth(app);
+    window._firebase = { db, ref, set, get, onValue, auth };
+
+    signInAnonymously(auth).catch(e => console.warn('[Firebase] Auth failed', e));
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        window._fbUid = user.uid;
+        const userRef = ref(db, `users/${user.uid}/state`);
+        onValue(userRef, snap => {
+          if (snap.exists()) {
+            const remote = snap.val();
+            if (remote && typeof remote === 'object') {
+              Object.assign(window._appState, remote);
+              window._renderStats && window._renderStats();
+              window._refreshUI && window._refreshUI();
+            }
+          }
+        });
+      }
+    });
+  } else {
+    window._firebase = null;
+  }
+</script>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
-:root{
-  --bg:#060a0f;--surface:#0b0f16;--surface2:#111720;--surface3:#0e1520;
-  --border:#1a2535;--border2:#20304a;
-  --accent:#00e5ff;--accent2:#7c3aed;--accent3:#f59e0b;
-  --danger:#ef4444;--success:#10b981;--rose:#f43f5e;
-  --text:#dde8f4;--text2:#8fa8c4;--text3:#445566;
-  --mono:'Space Mono',monospace;--sans:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS & RESET
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg: #000000; --bg-elevated: #1C1C1E; --surface: #2C2C2E; --surface-hover: #3A3A3C; --surface-active: #48484A;
+  --separator: rgba(255,255,255,.08); --separator-opaque: #3A3A3C;
+  --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A; --purple: #BF5AF2; --teal: #5AC8FA; --indigo: #5E5CE6;
+  --label: rgba(255,255,255,1); --label-secondary: rgba(255,255,255,.6); --label-tertiary: rgba(255,255,255,.3); --label-quaternary: rgba(255,255,255,.18);
+  --font-display: -apple-system, "SF Pro Display", sans-serif; --font-text: -apple-system, "SF Pro Text", sans-serif; --font-mono: "SF Mono", monospace;
+  --sidebar-w: 240px; --titlebar-h: 52px; --toolbar-h: 54px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+  --vibrancy: blur(40px) saturate(180%); --vibrancy-bg: rgba(28,28,30,.72);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:
-  radial-gradient(ellipse 800px 500px at 20% 20%,rgba(0,229,255,.03),transparent),
-  radial-gradient(ellipse 600px 400px at 80% 80%,rgba(124,58,237,.03),transparent);
-  pointer-events:none;z-index:0}
 
-/* ── NAV ── */
-nav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  height:44px;
-  border-bottom:1px solid var(--border);
-  background:var(--bg);
-  position:sticky;
-  top:0;
-  z-index:1000;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; font-size: 13px; scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--label); font-family: var(--font-text); height: 100%; overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+/* ═══════════════════════════════════════════════════════════
+   MENU BAR
+═══════════════════════════════════════════════════════════ */
+.menubar { position: fixed; top: 0; left: 0; right: 0; height: var(--titlebar-h); background: var(--vibrancy-bg); backdrop-filter: var(--vibrancy); -webkit-backdrop-filter: var(--vibrancy); border-bottom: 1px solid var(--separator); display: flex; align-items: center; padding: 0 16px; z-index: 2000; gap: 12px; }
+.traffic-lights { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.tl { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; position: relative; transition: filter .15s; }
+.tl:hover { filter: brightness(1.3); }
+.tl-close { background: #FF5F57; } .tl-min { background: #FDBC2C; } .tl-max { background: #28C840; }
+.tl-close::after, .tl-min::after, .tl-max::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .15s; display: flex; align-items: center; justify-content: center; font-size: 7px; color: rgba(0,0,0,.6); font-weight: bold; }
+.traffic-lights:hover .tl-close::after { content: '✕'; opacity: 1; } .traffic-lights:hover .tl-min::after { content: '−'; opacity: 1; } .traffic-lights:hover .tl-max::after { content: '+'; opacity: 1; }
+
+.sidebar-toggle { background: transparent; border: none; color: var(--label); font-size: 18px; cursor: pointer; display: none; }
+.menubar-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; flex: 1; text-align: center; }
+.menubar-right { display: flex; align-items: center; gap: 12px; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-glow 2s infinite; }
+.sync-dot.offline { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+@keyframes pulse-glow { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL & SIDEBAR
+═══════════════════════════════════════════════════════════ */
+.app-shell { display: flex; height: 100vh; padding-top: var(--titlebar-h); }
+.sidebar { width: var(--sidebar-w); background: var(--vibrancy-bg); backdrop-filter: var(--vibrancy); border-right: 1px solid var(--separator); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.3s ease, width 0.3s ease; z-index: 1000; }
+.sidebar.collapsed { width: 0; transform: translateX(-100%); border-right: none; }
+.sidebar-scroll { flex: 1; overflow-y: auto; padding: 12px 0 20px; }
+.sidebar-scroll::-webkit-scrollbar { width: 0; }
+
+.sb-section-label { font-size: 11px; font-weight: 600; color: var(--label-tertiary); text-transform: uppercase; padding: 14px 16px 5px; }
+.sb-item { display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 16px; border-radius: var(--radius-sm); margin: 0 6px; cursor: pointer; transition: background .1s; color: var(--label); font-size: 13px; }
+.sb-item:hover { background: var(--surface-hover); }
+.sb-item.active { background: var(--blue); color: #fff; }
+.sb-item.active .sb-item-badge { background: rgba(255,255,255,.25); color: #fff; }
+.sb-item-icon { font-size: 14px; width: 18px; text-align: center; }
+.sb-item-label { flex: 1; }
+.sb-item-badge { font-family: var(--font-mono); font-size: 10px; background: var(--surface-active); padding: 1px 6px; border-radius: 99px; }
+
+/* Mission Clock */
+.sidebar-clock { padding: 12px 14px; border-top: 1px solid var(--separator); background: rgba(0,0,0,.2); }
+.clock-value { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--blue); text-shadow: 0 0 16px rgba(10,132,255,.4); }
+.clock-sub { font-family: var(--font-mono); font-size: 9px; color: var(--label-tertiary); text-transform: uppercase; margin-top: 3px; }
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTENT & TOOLBAR
+═══════════════════════════════════════════════════════════ */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-elevated); position: relative; }
+
+/* Enhanced Toolbar */
+.toolbar { height: auto; min-height: var(--toolbar-h); display: flex; flex-wrap: wrap; align-items: center; padding: 10px 20px; gap: 12px; border-bottom: 1px solid var(--separator); background: var(--surface); }
+.search-box { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--bg); border: 1px solid var(--separator); border-radius: var(--radius-md); padding: 6px 12px; }
+.search-box input { background: transparent; border: none; color: var(--label); outline: none; width: 100%; font-size: 13px; margin-left: 8px; }
+.filter-select { background: var(--bg); color: var(--label); border: 1px solid var(--separator); border-radius: var(--radius-md); padding: 6px 10px; font-size: 12px; outline: none; }
+.toolbar-action { padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--separator-opaque); background: var(--surface-active); color: var(--label); cursor: pointer; font-size: 12px; transition: all .15s; }
+.toolbar-action:hover { filter: brightness(1.2); }
+.toggle-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--label-secondary); cursor: pointer; }
+.toggle-label input[type="checkbox"] { accent-color: var(--blue); width: 16px; height: 16px; }
+
+.content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+.content-scroll::-webkit-scrollbar { width: 6px; }
+.content-scroll::-webkit-scrollbar-thumb { background: var(--surface-active); border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.panel { display: none; opacity: 0; }
+.panel.active { display: block; animation: fadeIn 0.3s ease forwards; }
+
+/* ═══════════════════════════════════════════════════════════
+   STATS & TIMELINE (SVG RINGS)
+═══════════════════════════════════════════════════════════ */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--separator); border-radius: var(--radius-lg); padding: 16px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; position: relative; }
+.stat-info { z-index: 2; }
+.stat-val { font-family: var(--font-display); font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--label-secondary); text-transform: uppercase; }
+/* SVG Ring */
+.progress-ring { width: 60px; height: 60px; transform: rotate(-90deg); position: absolute; right: 10px; top: 10px; opacity: 0.8; z-index: 1; }
+.progress-ring circle { fill: transparent; stroke-width: 6; stroke-linecap: round; }
+.progress-ring .bg { stroke: var(--separator); }
+.progress-ring .fill { stroke-dasharray: 150.7; stroke-dashoffset: 150.7; transition: stroke-dashoffset 1s ease-out; }
+.stat-card.c-blue .fill { stroke: var(--blue); } .stat-card.c-blue .stat-val { color: var(--blue); }
+.stat-card.c-purple .fill { stroke: var(--purple); } .stat-card.c-purple .stat-val { color: var(--purple); }
+.stat-card.c-green .fill { stroke: var(--green); } .stat-card.c-green .stat-val { color: var(--green); }
+.stat-card.c-orange .fill { stroke: var(--orange); } .stat-card.c-orange .stat-val { color: var(--orange); }
+
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; margin: 24px 0 12px; }
+.section-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; }
+
+/* Timeline with Marker */
+.timeline-wrap { position: relative; margin-bottom: 8px; }
+.timeline-track { display: flex; gap: 3px; height: 8px; border-radius: 99px; overflow: hidden; }
+.tl-seg { flex: 1; transition: opacity .2s; }
+.timeline-marker { position: absolute; top: -14px; font-size: 14px; color: white; text-shadow: 0 0 4px black; transition: left 0.5s ease; transform: translateX(-50%); }
+
+/* ═══════════════════════════════════════════════════════════
+   HIERARCHICAL TASK GRID (Replaces 7-column table)
+═══════════════════════════════════════════════════════════ */
+.week-block { border: 1px solid var(--separator); border-radius: var(--radius-lg); margin-bottom: 12px; background: var(--surface); transition: box-shadow .2s; }
+.week-block.open { box-shadow: 0 4px 24px rgba(0,0,0,.3); }
+.week-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none; }
+.wh-num { font-family: var(--font-mono); font-size: 11px; color: var(--label-tertiary); width: 32px; }
+.wh-title { font-size: 14px; font-weight: 600; flex: 1; }
+.wh-chev { font-size: 12px; transition: transform .2s; }
+.week-block.open .wh-chev { transform: rotate(90deg); }
+.week-body { display: none; border-top: 1px solid var(--separator); }
+.week-block.open .week-body { display: block; animation: fadeIn 0.2s; }
+
+.task-list { display: flex; flex-direction: column; }
+.task-row { display: grid; grid-template-columns: 30px 100px 1fr 200px; gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--separator); align-items: start; transition: background 0.2s; }
+.task-row:last-child { border-bottom: none; }
+.task-row:hover { background: rgba(255,255,255,.02); }
+
+/* Focus mode hiding logic */
+body.focus-mode-active .task-row.is-done { display: none !important; }
+.task-row.hidden-by-search { display: none !important; }
+
+.mac-checkbox { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--label-quaternary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; margin-top: 2px; }
+.mac-checkbox.checked { background: var(--green); border-color: var(--green); }
+.mac-checkbox.checked::after { content: '✓'; color: #000; font-size: 12px; font-weight: 800; }
+.task-row.is-done { opacity: 0.5; }
+.task-row.is-done .task-main { text-decoration: line-through; }
+
+.day-info { font-family: var(--font-mono); font-size: 11px; color: var(--label-secondary); }
+.task-content { display: flex; flex-direction: column; gap: 4px; }
+.task-theme { color: var(--blue); font-weight: 600; font-size: 12px; }
+.task-main { font-size: 14px; font-weight: 600; line-height: 1.4; }
+.task-sub { font-size: 12px; color: var(--label-secondary); line-height: 1.5; }
+.task-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+.io-grid { display: flex; flex-direction: column; gap: 8px; font-size: 11px; background: rgba(0,0,0,.2); padding: 8px 10px; border-radius: var(--radius-sm); }
+.io-item { display: flex; flex-direction: column; gap: 2px; }
+.io-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--label-tertiary); text-transform: uppercase; }
+.io-val { color: var(--label-secondary); }
+
+.pill { font-family: var(--font-mono); font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 99px; }
+.pill-red { background: rgba(255,69,58,.15); color: var(--red); }
+.pill-orange { background: rgba(255,159,10,.15); color: var(--orange); }
+.pill-blue { background: rgba(10,132,255,.15); color: var(--blue); }
+.pill-green { background: rgba(48,209,88,.15); color: var(--green); }
+.pill-gray { background: rgba(255,255,255,.1); color: var(--label-secondary); }
+
+/* Banner */
+.firebase-banner { display: none; background: rgba(255,159,10,.1); border: 1px solid rgba(255,159,10,.2); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; color: var(--orange); position: relative; }
+.firebase-banner .close-btn { position: absolute; right: 12px; top: 12px; cursor: pointer; font-size: 14px; }
+
+/* Responsive */
+@media(max-width: 900px) {
+  .sidebar-toggle { display: block; }
+  .sidebar { position: absolute; top: 0; bottom: 0; left: 0; height: 100vh; }
+  .task-row { grid-template-columns: 30px 1fr; }
+  .day-info, .io-grid { display: none; } /* Simplify on small screens */
 }
-.nav-logo{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:3px;display:flex;align-items:center;gap:8px}
-.nav-logo .dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.nav-right{display:flex;align-items:center;gap:16px}
-.nav-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px}
 
-/* ── HERO ── */
-.hero{padding:20px 24px 16px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
-.hero-eyebrow{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:4px;margin-bottom:8px}
-.hero-title{font-family:var(--sans);font-size:clamp(20px,3vw,32px);font-weight:700;line-height:1.2;letter-spacing:-.5px}
-.hero-title em{color:var(--accent);font-style:normal}
-.hero-subtitle{font-size:12px;color:var(--text3);margin-top:6px;font-family:var(--mono);letter-spacing:1px}
-.hero-bg{position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:80px;font-weight:700;color:rgba(0,229,255,.025);pointer-events:none;line-height:1;white-space:nowrap}
-
-/* ── LAYOUT ── */
-.shell{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 100px)}
-.sidebar{border-right:1px solid var(--border);padding:0;overflow-y:auto;position:sticky;top:44px;height:calc(100vh - 44px)}
-.content{overflow-x:hidden}
-
-/* ── SIDEBAR ── */
-.sb-section{padding:14px 16px;border-bottom:1px solid var(--border)}
-.sb-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
-.phase-nav{display:flex;flex-direction:column;gap:3px}
-.pnav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:all .15s;border:1px solid transparent;font-size:12px;color:var(--text2)}
-.pnav-item:hover{background:var(--surface2);color:var(--text)}
-.pnav-item.active{background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.15);color:var(--accent)}
-.pnav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.pnav-info{flex:1;min-width:0}
-.pnav-title{font-family:var(--sans);font-weight:600;font-size:11px}
-.pnav-weeks{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px}
-.pnav-pct{font-family:var(--mono);font-size:10px}
-.mini-clock{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px}
-.mc-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(0,229,255,.3);line-height:1.3}
-.mini-clock .mc-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;letter-spacing:1px}
-.skill-list{display:flex;flex-direction:column;gap:8px}
-.sk{display:flex;align-items:center;gap:8px}
-.sk-icon{font-size:10px;width:14px;flex-shrink:0}
-.sk-info{flex:1;min-width:0}
-.sk-name{font-size:10px;color:var(--text2);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:4px;border-radius:999px;background:var(--border);overflow:hidden}
-.bfill{height:100%;border-radius:999px}
-.bar-c{background:linear-gradient(90deg,var(--accent2),var(--accent))}
-.bar-g{background:linear-gradient(90deg,var(--success),#7ef7c4)}
-.bar-a{background:linear-gradient(90deg,var(--accent3),#fde68a)}
-.bar-r{background:linear-gradient(90deg,var(--danger),#fca5a5)}
-.sk-pct{font-family:var(--mono);font-size:9px;color:var(--text3);width:28px;text-align:right}
-
-/* ── TABS ── */
-.tabs{
-  display:flex; padding:0 24px; position:sticky; top:44px; background:var(--bg); z-index:990;
-  overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none; height:42px; align-items:flex-end; gap:2px; box-shadow:inset 0 -1px 0 var(--border);
-}
-.tabs::-webkit-scrollbar{display:none}
-.tab-btn{
-  font-family:var(--mono); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text3); background:none;
-  border:none; border-bottom:2px solid transparent; padding:0 12px 10px; cursor:pointer; height:42px; display:flex; align-items:flex-end; white-space:nowrap; transition:all .15s;
-}
-.tab-btn:hover{color:var(--text2)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab-panel{display:none;padding:48px 24px 24px 24px;scroll-margin-top:100px}
-.tab-panel.active{display:block}
-
-/* ── INTERACTIVE TASK SYSTEM ── */
-.checkbox-btn {
-  width:16px; height:16px; border:1px solid var(--text3); border-radius:4px;
-  display:inline-flex; align-items:center; justify-content:center;
-  cursor:pointer; margin-right:8px; transition:all 0.2s ease;
-  background:var(--surface2); vertical-align:middle;
-}
-.checkbox-btn:hover { border-color:var(--accent); }
-.checkbox-btn.checked { background:var(--success); border-color:var(--success); }
-.checkbox-btn.checked::after { content:'✓'; color:#000; font-size:11px; font-weight:900; }
-
-.row-done td { opacity: 0.4; transition: opacity 0.3s; }
-.row-done .task-main { text-decoration: line-through; color: var(--text3); }
-.row-done .day-theme { color: var(--text3); text-decoration: line-through; }
-.row-done:hover td { opacity: 0.7; }
-
-/* ── PHASE HEADER STRIP ── */
-.phase-strip{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
-.phase-strip-head{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface2)}
-.ps-num{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:2px;padding:3px 8px;border:1px solid rgba(0,229,255,.2);border-radius:4px}
-.ps-title{font-family:var(--sans);font-size:16px;font-weight:700;flex:1}
-.ps-weeks{font-family:var(--mono);font-size:10px;color:var(--accent3)}
-.ps-goal{padding:12px 18px;background:rgba(0,229,255,.03);font-size:12px;color:var(--text2);line-height:1.6;border-bottom:1px solid var(--border)}
-
-/* ── WEEK BLOCK ── */
-.week-block{margin-bottom:24px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.week-head{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--surface);cursor:pointer;user-select:none;transition:background .15s}
-.week-head:hover{background:var(--surface2)}
-.wh-num{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;width:28px}
-.wh-title{font-family:var(--sans);font-size:13px;font-weight:600;flex:1}
-.wh-focus{font-family:var(--mono);font-size:9px;color:var(--accent3);max-width:200px;text-align:right}
-.wh-chev{font-size:10px;color:var(--text3);transition:transform .2s;margin-left:8px}
-.week-block.open .wh-chev{transform:rotate(180deg)}
-.week-body{display:none;border-top:1px solid var(--border)}
-.week-block.open .week-body{display:block}
-
-/* ── DAILY TABLE ── */
-.day-table-wrap{overflow-x:auto}
-table.daily{width:100%;border-collapse:collapse;min-width:1100px}
-table.daily th,table.daily td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:11px}
-table.daily th{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);text-align:left;white-space:nowrap}
-table.daily td{color:var(--text2);line-height:1.55}
-table.daily tr:last-child td{border-bottom:none}
-table.daily tr:hover td{background:rgba(255,255,255,.015)}
-.day-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text);letter-spacing:1px;white-space:nowrap;display:flex;align-items:center;}
-.day-theme{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px;transition: color 0.3s;}
-.task-main{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4;transition: color 0.3s;}
-.task-sub{font-size:11px;color:var(--text2)}
-.kw-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.kw{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);letter-spacing:.5px}
-.io-box{background:var(--surface2);border-radius:6px;padding:8px 10px;font-size:10px;color:var(--text3);line-height:1.6}
-.io-box strong{color:var(--text2);font-family:var(--mono);font-size:9px;letter-spacing:1px;display:block;margin-bottom:3px}
-.res-link{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--accent2);text-decoration:none;padding:2px 6px;border:1px solid rgba(124,58,237,.2);border-radius:3px;margin:2px 2px 0 0;transition:all .15s}
-.res-link:hover{background:rgba(124,58,237,.1);color:var(--accent2)}
-
-/* Probabilistic Matrix Badges */
-.pill{font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--text3);background:var(--surface2);font-weight:600;letter-spacing:.5px;display:inline-block}
-.p-critical{border-color:rgba(239,68,68,.3)!important;color:var(--danger)!important;background:rgba(239,68,68,.08)!important}
-.p-high{border-color:rgba(245,158,11,.3)!important;color:var(--accent3)!important;background:rgba(245,158,11,.08)!important}
-.p-medium{border-color:rgba(0,229,255,.2)!important;color:var(--accent)!important;background:rgba(0,229,255,.06)!important}
-.p-low{border-color:rgba(16,185,129,.2)!important;color:var(--success)!important;background:rgba(16,185,129,.06)!important}
-.cat-portfolio{border-color:rgba(0,229,255,.25)!important;color:var(--accent)!important;background:rgba(0,229,255,.07)!important}
-.cat-learning{border-color:rgba(124,58,237,.25)!important;color:var(--accent2)!important;background:rgba(124,58,237,.07)!important}
-.cat-recruiter{border-color:rgba(245,158,11,.25)!important;color:var(--accent3)!important;background:rgba(245,158,11,.07)!important}
-.cat-research{border-color:rgba(244,63,94,.2)!important;color:var(--rose)!important;background:rgba(244,63,94,.06)!important}
-.cat-networking{border-color:rgba(16,185,129,.2)!important;color:var(--success)!important;background:rgba(16,185,129,.06)!important}
-.cat-habit{border-color:rgba(142,163,184,.15)!important;color:var(--text2)!important;background:rgba(142,163,184,.05)!important}
-.gate-chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;color:var(--success);padding:3px 7px;border-radius:4px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.15)}
-.gate-chip::before{content:'✓';font-size:9px}
-.hour-chip{font-family:var(--mono);font-size:9px;color:var(--accent3);padding:2px 6px;border-radius:3px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)}
-.week-summary{padding:14px 18px;background:rgba(0,229,255,.025);border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.6}
-.week-summary strong{color:var(--accent);font-family:var(--sans)}
-.week-exit{padding:12px 18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface)}
-.exit-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-right:4px}
-
-/* ── SUMMARY TAB ── */
-.summary-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.sh-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center; transition: all 0.3s;}
-.sh-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);margin-bottom:4px}
-.sh-label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:1px}
-.timeline-row{display:flex;gap:3px;margin:16px 0;height:8px;border-radius:4px;overflow:hidden}
-.tl-seg{flex:1;transition:opacity .2s}
-.tl-seg:hover{opacity:.7}
-.section-head{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.objective-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
-.obj-card{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px;position:relative;overflow:hidden}
-.obj-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
-.obj-card.c1::before{background:var(--accent)}
-.obj-card.c2::before{background:var(--accent2)}
-.obj-card.c3::before{background:var(--accent3)}
-.obj-card.c4::before{background:var(--success)}
-.obj-title{font-family:var(--sans);font-size:13px;font-weight:700;margin-bottom:4px}
-.obj-weeks{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:8px}
-.obj-kpis{display:flex;flex-direction:column;gap:4px}
-.obj-kpi{font-size:11px;color:var(--text2);padding-left:10px;position:relative}
-.obj-kpi::before{content:'›';position:absolute;left:0;color:var(--text3)}
-
-/* ── PLAYBOOK TAB ── */
-.pb-wrap{overflow:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
-table.pb{width:100%;border-collapse:collapse;min-width:700px}
-table.pb th,table.pb td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:top}
-table.pb th{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2)}
-table.pb td{color:var(--text2)}
-table.pb tr:last-child td{border-bottom:none}
-
-/* ── NOTES TAB ── */
-.notes-shell{max-width:780px}
-.notes-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
-.notes-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
-.notes-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px}
-.notes-save{font-family:var(--mono);font-size:9px;color:var(--accent);background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.18);border-radius:4px;padding:5px 10px;cursor:pointer;letter-spacing:1px}
-.notes-save:hover{background:rgba(0,229,255,.15)}
-#notes-area{width:100%;min-height:280px;background:transparent;border:none;padding:16px;color:var(--text);font-family:var(--mono);font-size:11px;line-height:1.9;resize:vertical;outline:none}
-
-/* ── TOAST ── */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--accent);transform:translateY(60px);opacity:0;transition:all .3s;z-index:9999;letter-spacing:1px}
-.toast.show{transform:translateY(0);opacity:1}
-.checkpoint-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-family:var(--mono);font-size:9px;letter-spacing:1px;font-weight:700;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.08);color:var(--success)}
-
-::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-@media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}.summary-hero,.objective-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.summary-hero,.objective-grid{grid-template-columns:1fr}}
+/* Notes Textarea */
+#notes-area { width: 100%; min-height: 400px; background: var(--bg); border: 1px solid var(--separator); border-radius: var(--radius-md); padding: 16px; color: var(--label); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; resize: vertical; transition: border 0.3s; }
+#notes-area:focus { border-color: var(--blue); outline: none; }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo"><div class="dot"></div>⬡ MISSION CONTROL · DAILY OPS</div>
-  <div class="nav-right">
-    <div class="nav-date" id="nav-date">—</div>
+<div class="menubar">
+  <div class="traffic-lights">
+    <div class="tl tl-close" title="Abort"></div>
+    <div class="tl tl-min" title="Collapse All"></div>
+    <div class="tl tl-max" title="Fullscreen"></div>
   </div>
-</nav>
-
-<div class="hero">
-  <div class="hero-eyebrow">FIGURE · 1X · PHYSICAL INTELLIGENCE — EMBODIED AI STRATEGY</div>
-  <h1 class="hero-title">Targeted 26-Week System — <em>Day-by-Day Core Execution</em></h1>
-  <div class="hero-subtitle">26 WEEKS · 182 DAYS · C++ MEMORY MODEL · VLA MANIPULATION · MULTI-MODAL OBS</div>
-  <div class="hero-bg">182D</div>
+  <button class="sidebar-toggle" id="sidebarToggle">≡</button>
+  <div class="menubar-title">Mission Control — 26-Week Execution</div>
+  <div class="menubar-right">
+    <span style="font-size:12px" id="nav-date"></span>
+    <div class="sync-dot" id="sync-dot"></div>
+  </div>
 </div>
 
-<div class="shell">
-  <aside class="sidebar">
-    <div class="sb-section">
-      <div class="sb-label">MISSION CLOCK</div>
-      <div class="mini-clock">
-        <div class="mc-val" id="mc-countdown">—</div>
-        <div class="mc-sub" id="mc-elapsed">ELAPSED: —</div>
-      </div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-scroll">
+      <div class="sb-section-label">Views</div>
+      <div class="sb-item active" onclick="switchPanel('overview', this)"><div class="sb-item-icon">⊞</div><div class="sb-item-label">Overview</div></div>
+      <div class="sb-item" onclick="switchPanel('p1', this)"><div class="sb-item-icon" style="color:var(--blue)">①</div><div class="sb-item-label">P1 · C++ Modern</div></div>
+      <div class="sb-item" onclick="switchPanel('p2', this)"><div class="sb-item-icon" style="color:var(--purple)">②</div><div class="sb-item-label">P2 · VLA Pipeline</div></div>
+      <div class="sb-item" onclick="switchPanel('p3', this)"><div class="sb-item-icon" style="color:var(--orange)">③</div><div class="sb-item-label">P3 · FOC Sensing</div></div>
+      <div class="sb-item" onclick="switchPanel('p4', this)"><div class="sb-item-icon" style="color:var(--green)">④</div><div class="sb-item-label">P4 · Narrative</div></div>
+      <div class="sb-item" onclick="switchPanel('notes', this)"><div class="sb-item-icon" style="color:var(--teal)">✎</div><div class="sb-item-label">Notes Log</div></div>
     </div>
-    <div class="sb-section">
-      <div class="sb-label">PHASE NAVIGATOR</div>
-      <div class="phase-nav">
-        <div class="pnav-item" id="pnav-P1" onclick="goPhase('P1')">
-          <div class="pnav-dot" style="background:var(--accent)"></div>
-          <div class="pnav-info"><div class="pnav-title">P1 · C++ Memory & Real-Time</div><div class="pnav-weeks">Weeks 1–4 · 28 days</div></div>
-          <div class="pnav-pct" style="color:var(--accent)" id="pct-P1">0%</div>
-        </div>
-        <div class="pnav-item" id="pnav-P2" onclick="goPhase('P2')">
-          <div class="pnav-dot" style="background:var(--accent2)"></div>
-          <div class="pnav-info"><div class="pnav-title">P2 · VLA & Manipulation Sim</div><div class="pnav-weeks">Weeks 5–10 · 42 days</div></div>
-          <div class="pnav-pct" style="color:var(--accent2)" id="pct-P2">0%</div>
-        </div>
-        <div class="pnav-item" id="pnav-P3" onclick="goPhase('P3')">
-          <div class="pnav-dot" style="background:var(--accent3)"></div>
-          <div class="pnav-info"><div class="pnav-title">P3 · Low-Level FOC & Sensing</div><div class="pnav-weeks">Weeks 11–16 · 42 days</div></div>
-          <div class="pnav-pct" style="color:var(--accent3)" id="pct-P3">0%</div>
-        </div>
-        <div class="pnav-item" id="pnav-P4" onclick="goPhase('P4')">
-          <div class="pnav-dot" style="background:var(--success)"></div>
-          <div class="pnav-info"><div class="pnav-title">P4 · English Narrative & Loop</div><div class="pnav-weeks">Weeks 17–26 · 70 days</div></div>
-          <div class="pnav-pct" style="color:var(--success)" id="pct-P4">0%</div>
-        </div>
-      </div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-label">SKILL RADAR</div>
-      <div class="skill-list">
-        <div class="sk"><div class="sk-icon">🟢</div><div class="sk-info"><div class="sk-name">ROS2 / Nav2 / SLAM</div><div class="bar"><div class="bfill bar-g" style="width:75%"></div></div></div><div class="sk-pct">75%</div></div>
-        <div class="sk"><div class="sk-icon">🟢</div><div class="sk-info"><div class="sk-name">Python + Imitation Learning</div><div class="bar"><div class="bfill bar-g" style="width:65%"></div></div></div><div class="sk-pct">65%</div></div>
-        <div class="sk"><div class="sk-icon">🔵</div><div class="sk-info"><div class="sk-name">Micro-ROS / ESP32 Base</div><div class="bar"><div class="bfill bar-c" style="width:55%"></div></div></div><div class="sk-pct">55%</div></div>
-        <div class="sk"><div class="sk-icon">🔴</div><div class="sk-info"><div class="sk-name">Production C++ (Ownership)</div><div class="bar"><div class="bfill bar-r" style="width:15%"></div></div></div><div class="sk-pct">15%</div></div>
-        <div class="sk"><div class="sk-icon">🔴</div><div class="sk-info"><div class="sk-name">VLA / Action Space Depth</div><div class="bar"><div class="bfill bar-r" style="width:10%"></div></div></div><div class="sk-pct">10%</div></div>
-        <div class="sk"><div class="sk-icon">🟠</div><div class="sk-info"><div class="sk-name">Low-Level FOC & Current Ctrl</div><div class="bar"><div class="bfill bar-a" style="width:35%"></div></div></div><div class="sk-pct">35%</div></div>
-        <div class="sk"><div class="sk-icon">🟡</div><div class="sk-info"><div class="sk-name">English Technical Signal</div><div class="bar"><div class="bfill bar-a" style="width:40%"></div></div></div><div class="sk-pct">40%</div></div>
-      </div>
-    </div>
-    <div class="sb-section" style="border-bottom:none">
-      <div class="sb-label">QUICK TOOLS</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button onclick="expandAll()" style="font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:7px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer">EXPAND ALL WEEKS</button>
-        <button onclick="collapseAll()" style="font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:7px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer">COLLAPSE ALL</button>
-        <button onclick="saveNotes()" style="font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:7px 10px;border-radius:5px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:var(--accent);cursor:pointer">SAVE NOTES ⌘S</button>
-      </div>
+    <div class="sidebar-clock">
+      <div class="clock-value" id="mc-countdown">—</div>
+      <div class="clock-sub" id="mc-sub">Mission elapsed —</div>
     </div>
   </aside>
 
-  <div class="content">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('overview',this)">OVERVIEW</button>
-      <button class="tab-btn" onclick="switchTab('p1',this)">P1 · C++ MODERN</button>
-      <button class="tab-btn" onclick="switchTab('p2',this)">P2 · VLA PIPELINE</button>
-      <button class="tab-btn" onclick="switchTab('p3',this)">P3 · BLDC SENSING</button>
-      <button class="tab-btn" onclick="switchTab('p4',this)">P4 · NARRATIVE & LOOP</button>
-      <button class="tab-btn" onclick="switchTab('playbook',this)">PLAYBOOK</button>
-      <button class="tab-btn" onclick="switchTab('notes',this)">NOTES</button>
+  <div class="main-content">
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm task, keywords..." onkeyup="debounceSearch()">
+      </div>
+      <select class="filter-select" id="catFilter" onchange="applyFilters()">
+        <option value="all">All Categories</option>
+        <option value="portfolio">Portfolio</option>
+        <option value="learning">Learning</option>
+        <option value="research">Research</option>
+        <option value="networking">Networking</option>
+      </select>
+      <select class="filter-select" id="priFilter" onchange="applyFilters()">
+        <option value="all">All Priorities</option>
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+      </select>
+      <label class="toggle-label">
+        <input type="checkbox" id="focusMode" onchange="toggleFocusMode()"> Focus Mode (Hide Done)
+      </label>
+      <div style="flex:1"></div>
+      <button class="toolbar-action" onclick="expandAll()">⊕ Expand</button>
+      <button class="toolbar-action" onclick="collapseAll()">⊖ Collapse</button>
     </div>
 
-    <div class="tab-panel active" id="tab-overview">
-      <div class="summary-hero">
-        <div class="sh-card"><div class="sh-val">182</div><div class="sh-label">TOTAL DAYS</div></div>
-        <div class="sh-card"><div class="sh-val">26</div><div class="sh-label">WEEKS</div></div>
-        <div class="sh-card"><div class="sh-val" id="ov-done" style="color:var(--success)">0</div><div class="sh-label" style="color:var(--success)">TASKS DONE</div></div>
-        <div class="sh-card"><div class="sh-val" id="ov-week">W1</div><div class="sh-label">CURRENT WEEK</div></div>
-      </div>
+    <div class="content-scroll" id="content-scroll">
       
-      <div class="section-head">6-MONTH REALIGNED TIMELINE</div>
-      <div class="timeline-row" id="timeline-row"></div>
-      <div style="display:flex;gap:16px;margin:8px 0 20px;flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--accent)">■ P1 C++ Production (W1-4)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--accent2)">■ P2 VLA Manipulation (W5-10)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--accent3)">■ P3 Low-Level FOC (W11-16)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--success)">■ P4 English Outreach & Interview Loop (W17-26)</span>
+      <div class="firebase-banner" id="firebase-banner">
+        <span class="close-btn" onclick="dismissBanner()">✕</span>
+        ⚡ <strong>Sync Offline.</strong> Bạn chưa cấu hình Firebase. Dữ liệu hiện được lưu tạm ở trình duyệt (localStorage).
       </div>
 
-      <div class="section-head">PHASE OBJECTIVES & INTERVIEW CRITERIA</div>
-      <div class="objective-grid">
-        <div class="obj-card c1">
-          <div class="obj-title">P1 · Production C++ Memory Model</div>
-          <div class="obj-weeks">Weeks 1–4 · 28 ngày</div>
-          <div class="obj-kpis">
-            <div class="obj-kpi">Làm chủ C++ Ownership/Lifetime thông qua giáo trình Learncpp.com</div>
-            <div class="obj-kpi">Xây dựng `PolicyRunner` lớp C++ zero dynamic allocation trong hot path</div>
-            <div class="obj-kpi">Ứng dụng rclcpp MultiThreadedExecutor + Callback Groups tránh race condition</div>
-            <div class="obj-kpi">Kiểm tra bộ nhớ qua ASan/TSan: 0 memory leak, 0 thread collision</div>
+      <div class="panel active" id="panel-overview">
+        <div class="stats-row">
+          <div class="stat-card c-blue">
+            <div class="stat-info"><div class="stat-val">182</div><div class="stat-label">Total Days</div></div>
+            <svg class="progress-ring"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fill" cx="30" cy="30" r="24" style="stroke-dashoffset:0"/></svg>
+          </div>
+          <div class="stat-card c-green">
+            <div class="stat-info"><div class="stat-val" id="ov-done">0</div><div class="stat-label">Tasks Done</div></div>
+            <svg class="progress-ring"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fill" id="ring-done" cx="30" cy="30" r="24"/></svg>
+          </div>
+          <div class="stat-card c-orange">
+            <div class="stat-info"><div class="stat-val" id="ov-streak">0</div><div class="stat-label">Current Streak 🔥</div></div>
+            <svg class="progress-ring"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fill" id="ring-streak" cx="30" cy="30" r="24"/></svg>
+          </div>
+          <div class="stat-card c-purple">
+            <div class="stat-info"><div class="stat-val" id="ov-week">W1</div><div class="stat-label">Current Week</div></div>
+            <svg class="progress-ring"><circle class="bg" cx="30" cy="30" r="24"/><circle class="fill" id="ring-week" cx="30" cy="30" r="24"/></svg>
           </div>
         </div>
-        <div class="obj-card c2">
-          <div class="obj-title">P2 · OpenVLA Manipulation Capstone</div>
-          <div class="obj-weeks">Weeks 5–10 · 42 ngày</div>
-          <div class="obj-kpis">
-            <div class="obj-kpi">Triển khai OpenVLA / LeRobot Inference local với camera input</div>
-            <div class="obj-kpi">Làm chủ hình học Action Space unnormalization & Action Chunking</div>
-            <div class="obj-kpi">Thu thập 50+ episodes định dạng HDF5 qua data pipeline tự viết</div>
-            <div class="obj-kpi">LoRA Fine-tuning đo đạc chính xác MSE delta trước/sau trong Gazebo/MuJoCo</div>
-          </div>
-        </div>
-        <div class="obj-card c3">
-          <div class="obj-title">P3 · FOC Actuator Depth & Force Observation</div>
-          <div class="obj-weeks">Weeks 11–16 · 42 ngày</div>
-          <div class="obj-kpis">
-            <div class="obj-kpi">Tự viết FOC Current Loop trên ESP32 bóc tách Clarke/Park transform</div>
-            <div class="obj-kpi">Phân tích Torque Ripple qua biến đổi FFT, kiểm tra tính trạng backdrivability</div>
-            <div class="obj-kpi">Biến Current Sensing (INA226) thành Observation Modality (Tactile signal)</div>
-            <div class="obj-kpi">Tích hợp vòng lặp an toàn (Compliance Control Layer) vào pipeline VLA</div>
-          </div>
-        </div>
-        <div class="obj-card c4">
-          <div class="obj-title">P4 · International Narrative & Interview Loops</div>
-          <div class="obj-weeks">Weeks 17–26 · 70 ngày</div>
-          <div class="obj-kpis">
-            <div class="obj-kpi">Tái cấu trúc CV 1 trang bằng tiếng Anh tối ưu hóa ATS hệ thống US tracking</div>
-            <div class="obj-kpi">Xuất bản Technical Blog Post (English) phân tích sâu kiến trúc Capstone</div>
-            <div class="obj-kpi">Sản xuất 5-minute Walkthrough Video thuyết minh chi tiết hệ thống code/metrics</div>
-            <div class="obj-kpi">Chiến dịch Outreach 10+ quốc tế cấp kĩ sư & Luyện hệ thống Mock Interviews</div>
-          </div>
+
+        <div class="section-header"><div class="section-title">Timeline & Position</div></div>
+        <div class="timeline-wrap">
+          <div class="timeline-marker" id="tl-marker">▼</div>
+          <div class="timeline-track" id="timeline-row"></div>
         </div>
       </div>
 
-      <div class="section-head">DAILY SCHEDULE TEMPLATE (PARALLEL WORKTIME)</div>
-      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:16px">
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr><th style="padding:10px 14px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);text-align:left;border-bottom:1px solid var(--border)">Giờ</th><th style="padding:10px 14px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);text-align:left;border-bottom:1px solid var(--border)">Hoạt Động (Song song việc VinRobotics)</th><th style="padding:10px 14px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);text-align:left;border-bottom:1px solid var(--border)">Focus Modality</th></tr></thead>
-          <tbody id="schedule-template-body"></tbody>
-        </table>
+      <div class="panel" id="panel-p1"><div id="p1-container"></div></div>
+      <div class="panel" id="panel-p2"><div id="p2-container"></div></div>
+      <div class="panel" id="panel-p3"><div id="p3-container"></div></div>
+      <div class="panel" id="panel-p4"><div id="p4-container"></div></div>
+
+      <div class="panel" id="panel-notes">
+        <div class="section-header"><div class="section-title">Weekly Log / Scratchpad</div></div>
+        <textarea id="notes-area" placeholder="Write your technical documentation here... (Press Ctrl+S to save)"></textarea>
       </div>
 
-      <div class="section-head">ANTI-PATTERN WARNINGS FOR JUNIOR-MID EMBODIED RECRUITMENT</div>
-      <div id="anti-patterns-list"></div>
-    </div>
-
-    <div class="tab-panel" id="tab-p1"><div id="p1-weeks-container"></div></div>
-    <div class="tab-panel" id="tab-p2"><div id="p2-weeks-container"></div></div>
-    <div class="tab-panel" id="tab-p3"><div id="p3-weeks-container"></div></div>
-    <div class="tab-panel" id="tab-p4"><div id="p4-weeks-container"></div></div>
-
-    <div class="tab-panel" id="tab-playbook">
-      <div class="section-head" style="margin-top:0">TASK PLAYBOOK — CRITICAL ENGINEERING ROUTING</div>
-      <div class="pb-wrap">
-        <table class="pb">
-          <thead><tr><th>Task Core Component</th><th>Phase</th><th>Input Prerequisite Data</th><th>Output Verification Artifact</th><th>Key Reference Documents</th><th>Keywords</th></tr></thead>
-          <tbody id="pb-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="tab-notes">
-      <div class="notes-shell">
-        <div class="section-head" style="margin-top:0">WEEKLY LOG — ENGLISH TECHNICAL ARCHITECTURE DIARY</div>
-        <div class="notes-wrap">
-          <div class="notes-bar">
-            <span class="notes-lbl">LOGGING ENGINE (Markdown Format)</span>
-            <button class="notes-save" onclick="saveNotes()">SAVE SYSTEM ⌘S</button>
-          </div>
-          <textarea id="notes-area" placeholder="[Week 1] — C++ Memory Model Implementation
-DONE: ... (use quantitative metrics like latency/leaks data)
-BLOCKER: ... (infrastructure constraints)
-NEXT: ...
----"></textarea>
-        </div>
-      </div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">—</div>
-
 <script>
+/* Dữ liệu của bạn: Paste toàn bộ mảng DAILY_PLAN, PLAYBOOK, SCHEDULE, ANTI_PATTERNS vào đây */
+/* Đã nén ngắn gọn để hiển thị cấu trúc code. */
 const DAILY_PLAN = [
-// ══════════ PHASE 1: WEEKS 1–4 (C++ PRODUCTION HARDENING) ══════════
-{week:1, phase:'P1', focusLabel:'LVALUES, RVALUES & AUTO DEDUCTION',
- summary:'Thay đổi tư duy quản lý bộ nhớ từ nền tảng. Thay vì dùng C++ như Python, tuần này tập trung bóc tách cách trình biên dịch C++ hiểu về Lvalue, Rvalue và cơ chế suy luận kiểu của `auto` thông qua giáo trình Learncpp.com.',
- exitCriteria:['Hiểu rõ vì sao const lvalue reference có thể bind vào rvalue','Compile thành công các file demo in ra kiểu dữ liệu với Boost.TypeIndex','ASan báo cáo 0 leak memory khi xử lý chuỗi unique_ptr'],
- days:[
-  {label:'Day 1',theme:'Lvalue, Rvalue & Auto Deduction',taskMain:'Học Learncpp (Bài 12.1, 12.3, 12.4, 10.8). Viết hàm template in ra kiểu dữ liệu.',taskSub:'Giải mã lvalue/rvalue. Viết type_deduction_demo.cpp kết hợp Boost.TypeIndex để thấy trình biên dịch suy luận T&, T&& và const T&.',hours:2,priority:'critical',category:'learning',input:'Learncpp.com Chapters 10 & 12, GCC compiler',output:'type_deduction_demo.cpp in ra chính xác kiểu compile-time',keywords:['lvalue','rvalue','auto deduction','const reference'],gate:'Hiểu rõ vì sao const lvalue reference có thể bind vào rvalue',resources:['learncpp.com (Ch 12 & 10)']},
-  {label:'Day 2',theme:'Smart Pointers & Memory Layout',taskMain:'Học Learncpp (Bài 22.5, 22.6). Implement cấu trúc in bộ nhớ.',taskSub:'So sánh sizeof() của raw pointer, unique_ptr, shared_ptr để thấy dung lượng Control Block. Viết code chứng minh cơ chế giải phóng tự động.',hours:2,priority:'critical',category:'portfolio',input:'Learncpp.com Chapter 22',output:'pointer_sizeof_test.cpp biên dịch sạch',keywords:['std::unique_ptr','std::shared_ptr','Control Block overhead','sizeof'],gate:'Giải thích được vì sao shared_ptr tốn gấp đôi dung lượng raw pointer',resources:['learncpp.com/cpp-tutorial/22-5-stdunique_ptr/']},
-  {label:'Day 3',theme:'AddressSanitizer Integration',taskMain:'Cấu hình ASan vào quy trình build hệ thống với CMake',taskSub:'Thêm flags `-fsanitize=address -g` vào CMakeLists.txt. Viết hàm cố tình tạo lỗi heap-use-after-free để verify log đầu ra của ASan.',hours:2,priority:'high',category:'learning',input:'CMake documentation',output:'CMakeLists.txt tích hợp AddressSanitizer hoàn chỉnh',keywords:['ASan','heap-use-after-free','CMake target_compile_options'],gate:'ASan in ra stack trace chỉ đích xác dòng lệnh leak bộ nhớ tự tạo',resources:['https://github.com/google/sanitizers/wiki/AddressSanitizer']},
-  {label:'Day 4',theme:'RAII Guard Pattern',taskMain:'Học Learncpp (Bài 22.1). Xây dựng lớp RAII Guard quản lý file descriptor / mutex',taskSub:'Viết class `ScopedLockCustom` tuân thủ quy tắc Rule of Five, cấm sao chép (deleted copy constructor) nhưng cho phép di chuyển (move constructor).',hours:2,priority:'critical',category:'portfolio',input:'Learncpp.com Chapter 22.1',output:'raii_guard.hpp bọc tài nguyên hệ thống an toàn',keywords:['RAII','Rule of Five','deleted functions','resource management'],gate:'Compile lỗi nếu người dùng cố tình thực hiện phép gán gán copy class',resources:['learncpp.com/cpp-tutorial/22-1-introduction-to-smart-pointers-and-move-semantics/']},
-  {label:'Day 5',theme:'Weekly Review & Benchmark Setup',taskMain:'Tạo repo GitHub tổng hợp mã nguồn tuần 1 với tài liệu tiếng Anh',taskSub:'Viết README.md tiếng Anh giải thích tường tận kiến trúc bộ nhớ vừa học. Viết hàm kiểm thử thời gian chạy bằng std::chrono.',hours:2,priority:'medium',category:'recruiter',input:'GitHub account',output:'Public/Private repo mang tên "modern-cpp-robotics-depth"',keywords:['std::chrono','GitHub portfolio','technical narrative'],gate:'README.md ghi rõ cách tái tạo môi trường biên dịch ASan',resources:['makeareadme.com']}
- ]},
-
-{week:2, phase:'P1', focusLabel:'MOVE SEMANTICS & HOT-PATH OPTIMIZATION',
- summary:'Làm chủ Move Semantics (Learncpp.com Chapter 22) nhằm triệt tiêu hành vi copy lãng phí mảng dữ liệu điểm đám mây (Point Cloud) hoặc ảnh trạng thái Robot. Tối ưu cấu trúc mảng động nhằm bảo toàn tính năng cache-friendly.',
- exitCriteria:['Xây dựng hàm move rvalue reference không kích hoạt hàm sao chép sâu sao lưu tài nguyên','Chứng minh std::vector không reallocation thông qua việc dùng reserve()','0 lỗi UBSan (Undefined Behavior)'],
- days:[
-  {label:'Day 1',theme:'Move Constructors & std::move',taskMain:'Học Learncpp (Bài 22.2, 22.3, 22.4). Bóc tách R-value reference.',taskSub:'Code thực nghiệm bộc lộ bản chất std::move là ép kiểu (static_cast sang rvalue&&) thay vì thực sự "di chuyển" bất cứ thứ gì ở runtime.',hours:2,priority:'critical',category:'learning',input:'Learncpp.com Chapter 22',output:'move_forward_bench.cpp với comment phân tích',keywords:['std::move','move constructor','rvalue reference','static_cast'],gate:'Pass câu hỏi phỏng vấn: Vì sao std::move không sinh ra mã thực thi chạy ở runtime?',resources:['learncpp.com/cpp-tutorial/22-4-stdmove/']},
-  {label:'Day 2',theme:'Vector Iterator Invalidation',taskMain:'Viết script kiểm chứng thời điểm std::vector kích hoạt tái phân bổ',taskSub:'Log địa chỉ ô nhớ của phần tử đầu tiên khi push_back liên tiếp. Trực quan hóa lỗi Iterator Invalidation khi chèn dữ liệu sai cách.',hours:2,priority:'high',category:'portfolio',input:'C++ Container Docs',output:'vector_realloc_test.cpp in ra tần suất mở rộng bộ nhớ',keywords:['std::vector::reserve','iterator invalidation','capacity vs size','push_back latency'],gate:'Sử dụng reserve() triệt tiêu hoàn toàn hiện tượng nhảy ô nhớ khi mở rộng mảng',resources:['https://en.cppreference.com/w/cpp/container/vector']},
-  {label:'Day 3',theme:'Fixed Capacity Allocation',taskMain:'Thiết kế mảng dữ liệu tĩnh với bộ nhớ đệm xác định từ compile-time',taskSub:'Ứng dụng `std::array` để lưu trữ trạng thái Action Vector (7-DoF) của Robot, chứng minh tốc độ truy cập Stack nhanh hơn Heap.',hours:2,priority:'critical',category:'portfolio',input:'Robotics state vector specifications',output:'fixed_action_buffer.hpp biên dịch sạch',keywords:['std::array','compile-time size','Stack localization','cache locality'],gate:'Đảm bảo class không sử dụng bất kỳ toán tử new/malloc nào bên trong cấu trúc',resources:[]},
-  {label:'Day 4',theme:'UBSan Configuration',taskMain:'Cài đặt Undefined Behavior Sanitizer tìm lỗi tràn số hoặc null pointer conversion',taskSub:'Thêm flags `-fsanitize=undefined` vào Makefile. Chạy thử nghiệm các phép toán chia cho 0, dịch bit quá giới hạn để theo dõi UBSan báo lỗi.',hours:2,priority:'medium',category:'learning',input:'LLVM Sanitizer documentation',output:'Build script bọc toàn bộ UBSan',keywords:['UBSan','undefined behavior','pointer alignment','signed integer overflow'],gate:'Biên dịch và chạy sạch với flag kiểm tra hành vi không xác định',resources:[]},
-  {label:'Day 5',theme:'Week 2 Report',taskMain:'Cập nhật mã nguồn và lập bảng so sánh hiệu năng toán học',taskSub:'Viết file perf_report.md so sánh latency khi copy PointCloud 10MB vs di chuyển bộ nhớ bằng move semantics.',hours:2,priority:'medium',category:'recruiter',input:'Code tuần 2',output:'docs/perf_report.md bằng tiếng Anh chứa biểu đồ số liệu',keywords:['performance documentation','move efficiency','latency data'],gate:'Bảng số liệu chứng minh di chuyển bộ nhớ nhanh hơn copy thông thường ít nhất 100x',resources:[]}
- ]},
-
-{week:3, phase:'P1', focusLabel:'REAL-TIME MULTI-THREADING & EXECUTORS',
- summary:'Đưa C++ vào ngữ cảnh điều khiển Robot thời gian thực. Làm chủ mô hình điều phối Executor của ROS2, xử lý tranh chấp đa luồng (Race Condition) và tối ưu hóa chu kỳ quét tín hiệu đạt tần số 1kHz stable.',
- exitCriteria:['Viết lớp PolicyRunner thực thi chu kỳ quét đạt 1000Hz với sai số jitter < 100µs','Cấu hình Reentrant Callback Group không gây deadlock hệ thống','ThreadSanitizer báo cáo 0 lỗi data race'],
- days:[
-  {label:'Day 1',theme:'POSIX Real-Time Clock',taskMain:'Viết vòng lặp điều khiển chính xác bằng std::this_thread::sleep_until',taskSub:'Sử dụng `std::chrono::steady_clock`. Tính toán thời gian ngủ của luồng để bù đắp sai số xử lý (jitter), ghi log ra file CSV.',hours:2,priority:'critical',category:'portfolio',input:'Linux real-time scheduling concepts',output:'realtime_loop_test.cpp xuất log thời gian',keywords:['std::this_thread::sleep_until','steady_clock','jitter variance','real-time scheduling'],gate:'Tần số quét đạt 1000Hz ổn định, không bị trôi thời gian hệ thống',resources:['https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/cyclic']},
-  {label:'Day 2',theme:'rclcpp Executor Architecture',taskMain:'Xây dựng cấu trúc Node sử dụng MultiThreadedExecutor',taskSub:'Phân tách luồng nhận tín hiệu cảm biến và luồng tính toán VLA ra hai `ReentrantCallbackGroup` độc lập để tối ưu hóa nhân CPU.',hours:2,priority:'critical',category:'portfolio',input:'ROS2 Humble Executor docs',output:'multi_thread_node.cpp biên dịch qua colcon build',keywords:['MultiThreadedExecutor','ReentrantCallbackGroup','CallbackGroupType','DDS middle path'],gate:'Callback cảm biến không bị nghẽn khi luồng tính toán VLA đang chạy nặng',resources:['https://docs.ros.org/en/humble/Concepts/Intermediate/About-Executors.html']},
-  {label:'Day 3',theme:'ThreadSanitizer Race Hunting',taskMain:'Tích hợp ThreadSanitizer (TSan) phát hiện xung đột ghi/đọc biến shared_state',taskSub:'Biên dịch node điều khiển với flag `-fsanitize=thread`. Cố tình đọc ghi mảng trạng thái robot đồng thời từ 2 callback để ép TSan in log lỗi.',hours:2,priority:'high',category:'learning',input:'TSan manual',output:'tsan_debug_report.txt ghi nhận lỗi và cách vá',keywords:['ThreadSanitizer','data race','shared state','std::atomic'],gate:'Thay thế khóa biến chung bằng std::atomic hoặc std::lock_guard giúp TSan trả về trạng thái sạch 0 lỗi',resources:['https://clang.llvm.org/docs/ThreadSanitizer.html']},
-  {label:'Day 4',theme:'Zero-Allocation Class Design',taskMain:'Thiết kế lớp `PolicyRunner` đóng gói mạng neuron inference',taskSub:'Khai báo sẵn toàn bộ Tensor buffer đầu vào/đầu ra trong hàm khởi tạo (Constructor). Hàm `run_inference()` cam kết không gọi lệnh cấp phát động.',hours:2,priority:'critical',category:'portfolio',input:'ONNXRuntime C++ API overview',output:'policy_runner.hpp + policy_runner.cpp',keywords:['zero allocation','hot path optimization','preallocated tensor','noexcept member function'],gate:'Sử dụng công cụ Valgrind Massif xác nhận heap footprint không đổi trong suốt chu kỳ lặp',resources:['https://onnxruntime.ai/docs/api/c/']},
-  {label:'Day 5',theme:'Phase 1 Capstone Document',taskMain:'Hợp nhất toàn bộ linh hồn Phase 1 thành một file README chất lượng cao',taskSub:'Viết tài liệu chứng minh: C++ của bạn đã thoát ly tư duy Python, có số liệu latency thực tế, biểu đồ phân phối jitter, log ASan/TSan sạch.',hours:2,priority:'high',category:'recruiter',input:'Toàn bộ mã nguồn 3 tuần qua',output:'Public Repo README.md chuẩn quốc tế bằng tiếng Anh',keywords:['technical documentation','recruiter evaluation signal','architecture description'],gate:'Tài liệu chứa đủ 4 mục: Problem, Core C++ Architecture, Performance Metrics, Verification Logs',resources:[]}
- ]},
-
-{week:4, phase:'P1', focusLabel:'ROS2_CONTROL CUSTOM HARDWARE INTERFACE',
- summary:'Xây dựng lớp driver chuẩn công nghiệp kết nối phần mềm điều khiển cấp cao với vi điều khiển Micro-ROS qua `ros2_control`. Đây là cấu trúc bắt buộc tại Figure AI / 1X để điều khiển cơ cấu chấp hành tay máy.',
- exitCriteria:['Viết xong lớp Esp32HardwareInterface kế thừa từ hardware_interface::SystemInterface','Plugin load thành công qua thư viện pluginlib của ROS2','Controller Manager nhận diện được cơ cấu joint state'],
- days:[
-  {label:'Day 1',theme:'ros2_control Architecture Lifecycle',taskMain:'Nghiên cứu cấu trúc Lifecycle Node của phần cứng robot',taskSub:'Học sâu các trạng thái `on_init`, `on_configure`, `on_activate`, `on_deactivate`. Tạo file mô tả robot URDF/Xacro chứa các thẻ `<ros2_control>`.',hours:2,priority:'critical',category:'learning',input:'ros2_control documentation',output:'robot_hardware.urdf mẫu tích hợp thẻ phần cứng',keywords:['ros2_control','SystemInterface','LifecycleNode','URDF xacro'],gate:'Nắm rõ thứ tự chuyển đổi trạng thái phần cứng từ init sang activate',resources:['https://control.ros.org/humble/index.html']},
-  {label:'Day 2',theme:'Hardware State/Command Export',taskMain:'Implement hàm export_state_interfaces và export_command_interfaces',taskSub:'Tạo mảng vector liên kết ô nhớ dữ liệu thô của biến vị trí (position), vận tốc (velocity), và lực (effort) với framework của ROS2.',hours:2,priority:'critical',category:'portfolio',input:'Mã nguồn ros2_control master branch',output:'esp32_hardware_interface.cpp (phần export interfaces)',keywords:['StateInterface','CommandInterface','hardware_interface::InterfaceInfo'],gate:'Biên dịch thành công không lỗi cú pháp kế thừa lớp ảo',resources:[]},
-  {label:'Day 3',theme:'Read/Write Bus Logic',taskMain:'Viết logic truyền nhận dữ liệu phi đồng bộ trong hàm read() và write()',taskSub:'Mô phỏng chuỗi byte truyền qua cổng Serial/RS485 đến ESP32. Sử dụng mảng fixed-size đúc kiểu sang struct nhị phân để tối ưu tốc độ.',hours:2,priority:'critical',category:'portfolio',input:'RS485/Serial protocol specs',output:'esp32_hardware_interface.cpp (hoàn chỉnh hàm đọc ghi)',keywords:['hardware communication','low latency serialization','binary casting','read write cycle'],gate:'Hàm write() thực thi đóng gói gói tin điều khiển trong thời gian < 500µs',resources:['https://github.com/ros-controls/ros2_control']},
-  {label:'Day 4',theme:'Plugin Deployment & Test',taskMain:'Đăng ký lớp phần cứng dưới dạng plugin của ROS2 sử dụng macro của pluginlib',taskSub:'Tạo file `plugin_description.xml`. Viết file Launch.py khởi chạy `controller_manager` nạp driver vừa viết.',hours:2,priority:'high',category:'portfolio',
-   input:'ROS2 pluginlib system',output:'plugin_description.xml + launch_hardware.py',keywords:['PLUGINLIB_EXPORT_CLASS','controller_manager','ros2 control CLI'],gate:'Chạy lệnh `ros2 control list_hardware_interfaces` hiển thị chính xác tên esp32 interface ở trạng thái unconfigured',resources:[]},
-  {label:'Day 5',theme:'Phase 1 Complete Retro',taskMain:'Kiểm tra toàn bộ hệ thống P1, dọn dẹp mã nguồn chuẩn bị sang Phase VLA',taskSub:'Chạy định dạng code đồng loạt bằng `clang-format -i`. Khóa cứng nhánh git master của Phase 1. Viết log tóm tắt năng lực C++ đã đạt được.',hours:2,priority:'medium',category:'habit',input:'Toàn bộ code tuần 1-4',output:'Git tag v1.0-cpp-production-complete',keywords:['clang-format','git tag','clean code standards'],gate:'0 dòng code thừa, 0 lỗi cảnh báo compile trên terminal',resources:[]}
- ]},
-
-// ══════════ PHASE 2: WEEKS 5–10 (VLA PIPELINE & MANIPULATION CAPSTONE) ══════════
-{week:5, phase:'P2', focusLabel:'OPENVLA MODEL RUN & INFERENCE BREAKDOWN',
- summary:'Bước sang kỷ nguyên Embodied AI. Tận dụng hạ tầng GPU mạnh từ công ty để clone, cấu hình và kích hoạt thành công mô hình OpenVLA (7B parameters). Bóc tách cấu trúc tokenizer hình ảnh và văn bản của mô hình.',
- exitCriteria:['Chạy thành công script inference local của OpenVLA trên GPU','Trích xuất chính xác ma trận đặc trưng (Visual Tokens) từ mô hình SigLIP','Đo đạc chính xác dung lượng bộ nhớ VRAM tiêu thụ'],
- days:[
-  {label:'Day 1',theme:'Embodied Model Hub Setup',taskMain:'Cài đặt môi trường Python Conda cô lập, đồng bộ CUDA Toolkit',taskSub:'Tạo môi trường `vla_engine`. Cài đặt PyTorch, Transformers, và thư viện LeRobot từ Hugging Face. Kiểm tra tính khả dụng của GPU.',hours:2,priority:'critical',category:'learning',input:'Hugging Face LeRobot GitHub',output:'environment.yml chuẩn hóa các phiên bản package',keywords:['Conda environment','PyTorch CUDA','LeRobot library','Hugging Face Hub'],gate:'Lệnh torch.cuda.is_available() trả về kết quả True',resources:['https://github.com/huggingface/lerobot']},
-  {label:'Day 2',theme:'OpenVLA Weights Ingestion',taskMain:'Viết script Python tự động tải và cache checkpoint mẫu OpenVLA-7B',taskSub:'Sử dụng huggingface_hub API để download an toàn. Sử dụng kỹ thuật định lượng dữ liệu (Quantization bfloat16/int8) để tối ưu VRAM.',hours:2,priority:'critical',category:'portfolio',input:'OpenVLA model card',output:'model_loader.py nạp mô hình lên bộ nhớ GPU',keywords:['OpenVLA-7B','bfloat16 quantization','AutoModelForVision2Seq','VRAM footprint'],gate:'Mô hình nạp thành công vào GPU mà không kích hoạt lỗi Out-of-Memory (OOM)',resources:['https://huggingface.co/openvla/openvla-7b']},
-  {label:'Day 3',theme:'Vision-Language Tokenization',taskMain:'Bóc tách pipeline xử lý đầu vào: Tiền xử lý ảnh và Token hóa câu lệnh text',taskSub:'Đưa một ảnh RGB kích thước ngẫu nhiên qua bộ mã hóa SigLIP để sinh ra ma trận text tokens và image tokens. In ra thông số shape của mảng.',hours:2,priority:'high',category:'learning',input:'Prismatic VLMs source code',output:'tokenization_explorer.py hiển thị cấu trúc token đầu vào',keywords:['SigLIP visual encoder','image patch tokenization','prompt conditioning'],gate:'Hiểu rõ vì sao ảnh đầu vào của OpenVLA luôn bị resize cố định về tỉ lệ chuẩn của bộ mã hóa',resources:['https://arxiv.org/abs/2406.09246']},
-  {label:'Day 4',theme:'First Execution & Shape Check',taskMain:'Thực thi hàm model.generate() với ảnh và câu lệnh mẫu',taskSub:'Truyền ảnh một vật thể kèm câu lệnh "pick up the red object". Chặn đầu ra của mô hình trước khi decode để phân tích token hành động.',hours:2,priority:'critical',category:'portfolio',input:'OpenVLA pipeline code',output:'vla_inference_test.py trả về mảng số thô',keywords:['model.generate','action prediction token','raw output logits'],gate:'Mô hình trả về một chuỗi token có độ dài khớp chính xác với thiết kế quy hoạch hành động của mạng',resources:[]},
-  {label:'Day 5',theme:'Inference Data Profiling',taskMain:'Đo đạc thời gian xử lý và lưu lượng tính toán của mạng sinh',taskSub:'Ghi nhận tổng thời gian xử lý từ lúc nhận ảnh đến khi xuất token. Thống kê thông số GPU qua lệnh nvidia-smi.',hours:2,priority:'medium',category:'research',input:'NVIDIA management library',output:'docs/inference_profile.md ghi nhận thông số hiệu năng',keywords:['Inference speed latency','nvidia-smi tracking','profile analytics'],gate:'Xác định được thời gian inference thô của mô hình chiếm bao nhiêu ms trong toàn hệ thống',resources:[]}
- ]},
-
-{week:6, phase:'P2', focusLabel:'ACTION SPACE GEOMETRY & CHUNKING TECHNIQUE',
- summary:'Đi sâu vào kiến trúc đầu ra của VLA. Làm chủ cơ chế unnormalization từ token số nguyên sang tọa độ thực học 7-DoF và thuật toán Action Chunking kết hợp Temporal Ensembling để khử nhiễu quỹ đạo tay máy.',
- exitCriteria:['Viết xong bộ giải mã action_tokenizer.py chuyển đổi token sang tọa độ 3D thực tế','Triển khai thành công bộ lọc Temporal Ensembling bằng hàng đợi Queue','Mã nguồn kiểm thử đạt 100% độ bao phủ (Unit test)'],
- days:[
-  {label:'Day 1',theme:'7-DoF Action Representation',taskMain:'Phân tích không gian hành động của OpenVLA',taskSub:'Nghiên cứu cấu trúc mảng: [Δx, Δy, Δz, Δroll, Δpitch, Δyaw, Gripper]. Viết mã chuyển đổi dải giá trị từ token liên tục sang mm và radian.',hours:2,priority:'critical',category:'learning',input:'Libero / Bridge Dataset space mapping',output:'action_decoder.py ánh xạ tọa độ',keywords:['7-DoF Action Space','End-Effector coordinates','Euler angles conversion','Gripper binary state'],gate:'Giải thích được sự khác biệt giữa Delta EEF Command và Absolute Joint Command',resources:['https://openvla.github.io/']},
-  {label:'Day 2',theme:'Action Chunking Mechanism',taskMain:'Xây dựng lớp quản lý khối hành động (Action Chunking)',taskSub:'Lập trình cấu trúc lưu trữ mô hình dự đoán đồng thời nhiều bước hành động trong tương lai (ví dụ: chunk_size=8) thay vì sinh một bước đơn lẻ.',hours:2,priority:'critical',category:'portfolio',input:'ACT Paper (Action Chunking Architecture)',output:'action_chunker.hpp quản lý buffer hành động',keywords:['Action Chunking','chunk_size window','horizon prediction','trajectory caching'],gate:'Lớp mảng trả về đúng ma trận kích thước [Chunk_size, 7] khi truy vấn',resources:['https://arxiv.org/abs/2304.13705']},
-  {label:'Day 3',theme:'Temporal Ensembling Algo',taskMain:'Triển khai thuật toán Temporal Ensembling (trung bình trọng số động)',taskSub:'Xử lý chồng lấn dữ liệu giữa các bước dự đoán gối nhau bằng hàm mũ mượt (Exponential smoothing), triệt tiêu hiện tượng giật cục của khớp cơ khí.',hours:2,priority:'critical',category:'portfolio',input:'Temporal blending formulas',output:'temporal_ensemble.py thực thi mượt hóa quỹ đạo',keywords:['Temporal Ensembling','exponential weighting','trajectory smoothing','jitter reduction'],gate:'Biểu đồ xung lực hành động sau khi qua bộ lọc mượt hơn đường thô ban đầu ít nhất 30%',resources:[]},
-  {label:'Day 4',theme:'Geometric Validation Tests',taskMain:'Viết bộ unit test kiểm tra tính toàn vẹn của tọa độ hình học không gian',taskSub:'Sử dụng framework pytest. Giả lập đầu vào biên (vật thể nằm quá xa tầm với), đảm bảo thuật toán sinh ngoại lệ chặn đứng lệnh nguy hiểm.',hours:2,priority:'high',category:'portfolio',input:'Python pytest framework',output:'test_geometry.py chứa các ca kiểm thử biên',keywords:['pytest fixtures','boundary condition validation','anomaly detection'],gate:'Lệnh pytest chạy thành công qua toàn bộ 100% ca kiểm thử biên hình học',resources:['https://docs.pytest.org/']},
-  {label:'Day 5',theme:'Week 6 Git Sync',taskMain:'Hợp nhất code giải mã hành động vào nhánh VLA chính',taskSub:'Viết tài liệu giải thích giải thuật toán học toán lớp Temporal Ensembling bằng tiếng Anh để recruiter hiểu tư duy toán hình học của bạn.',hours:2,priority:'medium',category:'recruiter',input:'Code tuần 6',output:'docs/action_space_doc.md hoàn chỉnh cấu trúc thuật toán',keywords:['mathematical documentation','algorithmic explanation','GitHub commit hygiene'],gate:'Tài liệu chứa đầy đủ công thức toán học định dạng LaTeX mô tả hàm trọng số',resources:[]}
- ]},
-
-{week:7, phase:'P2', focusLabel:'ROS2-VLA PIPELINE SIMULATION',
- summary:'Tích hợp mô hình trí tuệ nhân tạo Python với lõi C++ của ROS2 điều khiển cánh tay robot 6-7 DoF thực hiện thao tác dexterous manipulation cơ bản trong môi trường giả lập Gazebo hoặc MuJoCo.',
- exitCriteria:['Node Python VLA gửi thành công action tensor qua ROS2 topic','Node C++ PolicyNode tiếp nhận dữ liệu ổn định đạt chu kỳ truyền nhận xác định','Tay máy robot trong môi trường giả lập chuyển động bám sát lệnh'],
- days:[
-  {label:'Day 1',theme:'Custom ROS2 Interfaces',taskMain:'Định nghĩa cấu trúc thông điệp ROS2 chuyên dụng cho Embodied AI',taskSub:'Tạo file `ManipulatorAction.msg` chứa mảng float64 mô tả vị trí đích và trạng thái kẹp nhả cùng nhãn định danh thời gian timestamp.',hours:2,priority:'critical',category:'portfolio',input:'ROS2 interface design guidelines',output:'vla_interfaces/msg/ManipulatorAction.msg',keywords:['custom msg definition','ros2 interface generation','float64 array'],gate:'Biên dịch thành công gói msg bằng lệnh colcon build và hiển thị qua ros2 interface show',resources:['https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html']},
-  {label:'Day 2',theme:'Python VLA ROS2 Publisher',taskMain:'Viết node ROS2 bằng Python bọc pipeline OpenVLA inference',taskSub:'Node subscribe vào camera topic, định kỳ nạp ảnh vào mô hình VLA và thực hiện lệnh publish tọa độ mục tiêu ra topic `/vla/commands`.',hours:2,priority:'critical',category:'portfolio',
-   input:'rclpy API, OpenVLA wrapper từ tuần 5',output:'vla_bridge_node.py chạy nền',keywords:['rclpy::Node','Image subscriber','cv_bridge conversion','action topic publisher'],gate:'Node publish thông điệp đều đặn ra môi trường DDS mà không bị treo core',resources:[]},
-  {label:'Day 3',theme:'C++ PolicyNode Bridge',taskMain:'Cấu hình Node C++ nhận diện và chuyển đổi thông điệp `/vla/commands`',taskSub:'Node C++ nhận tọa độ từ node Python, ứng dụng bộ quản lý mảng tĩnh tĩnh (tuần 2) để nạp thẳng lệnh điều khiển vào bộ Controller Manager không qua cấp phát động.',hours:2,priority:'critical',category:'portfolio',input:'P1 C++ MultiThreadedExecutor setup',output:'policy_node_bridge.cpp tích hợp sâu',keywords:['subscriber callback','zero copy transfer','data type casting C++'],gate:'Node C++ log ra màn hình nhận thông số đúng định dạng tọa độ thực trong thời gian < 2ms',resources:[]},
-  {label:'Day 4',theme:'Simulation Environment Setup',taskMain:'Cấu hình mô hình tay máy robot trong môi trường Gazebo/MuJoCo',taskSub:'Nạp file URDF tay máy lên sim, cấu hình hệ thống `gazebo_ros2_control` kích hoạt các bộ JointTrajectoryController điều khiển khớp.',hours:2,priority:'high',category:'portfolio',input:'Gazebo ROS2 system plugin',output:'manipulation_world.launch.py khởi chạy môi trường giả lập',keywords:['Gazebo simulation','gazebo_ros2_control','joint trajectory controller','simulated physics'],gate:'Gửi lệnh cmd_vel / joint_trajectory thủ công qua terminal khiến robot sim di chuyển chính xác',resources:['https://gazebosim.org/']},
-  {label:'Day 5',theme:'E2E Pipeline Test in Sim',taskMain:'Thực hiện chuỗi liên kết chạy toàn diện từ ảnh giả lập đến chuyển động khớp',taskSub:'Kích hoạt toàn hệ thống: Sim sinh ảnh -> Node Python VLA tính toán -> Node C++ bọc lọc -> Sim nhận lệnh chuyển động khớp máy.',hours:2,priority:'critical',category:'portfolio',input:'Hệ thống tích hợp',output:'Hệ thống sim khép kín chạy thực tế trên máy',keywords:['End-to-End simulation loop','robotic joint manipulation','closed loop sim'],gate:'Robot trong sim di chuyển đầu kẹp EEF tiến gần đến mục tiêu chỉ định khi chạy lệnh mẫu',resources:[]}
- ]},
-
-{week:8, phase:'P2', focusLabel:'ROBOT TELEOP DATA PIPELINE',
- summary:'Xây dựng kiến trúc dữ liệu thu thập dữ liệu chuyên sâu phục vụ tác vụ tinh chỉnh mô hình (Fine-tuning). Thiết kế hệ thống lưu trữ đồng bộ ảnh camera, trạng thái proprioception của khớp robot thành định dạng chuẩn Hugging Face LeRobot HDF5.',
- exitCriteria:['Script thu thập dữ liệu chạy ổn định liên tục không ngắt quãng packet','Định dạng file xuất ra tương thích hoàn toàn cấu trúc HDF5 mẫu của LeRobot','Lưu trữ thành công 5 episodes kiểm thử đầu tiên'],
- days:[
-  {label:'Day 1',theme:'LeRobot Dataset Schema',taskMain:'Nghiên cứu sâu cấu trúc tệp dữ liệu HDF5 của Hugging Face LeRobot',taskSub:'Đọc mã nguồn lerobot.common.datasets. Viết mã Python tạo cấu trúc cây thư mục lưu dữ liệu ảnh `/observation/images/laptop` và `/action`.',hours:2,priority:'critical',category:'learning',input:'LeRobot Dataset source code',output:'hdf5_skeleton_generator.py kiểm chứng cấu trúc cây',keywords:['HDF5 dataset specification','h5py structural write','observation group','dataset indexing'],gate:'Tệp dữ liệu sinh ra đọc qua công cụ h5dump hiển thị đúng sơ đồ cấu trúc quy chuẩn',resources:['https://github.com/huggingface/lerobot/tree/main/lerobot/common/datasets']},
-  {label:'Day 2',theme:'Camera Stream Synchronization',taskMain:'Đồng bộ khung thời gian giữa luồng ảnh RealSense D435 và dữ liệu khớp máy',taskSub:'Sử dụng thư viện `message_filters::ApproximateTimeSynchronizer` trong ROS2 để gom ảnh camera và tọa độ khớp máy trùng giây vào một gói tin.',hours:2,priority:'critical',category:'portfolio',input:'ROS2 message_filters utilities',output:'synchronized_data_logger.cpp xuất dữ liệu đồng bộ',keywords:['ApproximateTimeSynchronizer','RealSense D435 stream','proprioception data sync','timestamp matching'],gate:'Độ sai lệch thời gian (time delta) giữa ảnh và góc khớp trong một mẫu ghi nhận < 15ms',resources:['https://github.com/IntelRealSense/realsense-ros']},
-  {label:'Day 3',theme:'Teleoperation Input Integration',taskMain:'Tích hợp thiết bị điều khiển thủ công (SpaceMouse/Keyboard) vào hệ thống ghi',taskSub:'Lập trình node đọc tín hiệu tay bám điều khiển của người dùng, chuyển hóa thành vận tốc di chuyển EEF và liên tục đẩy giá trị này vào mảng `/action` trong file HDF5.',hours:2,priority:'critical',category:'portfolio',input:'SpaceMouse Linux driver / joy_node',output:'teleop_recorder_node.py lắng nghe thiết bị đầu vào',keywords:['SpaceMouse integration','joy_node packet','action space recording','teleoperated expert demonstrations'],gate:'Ấn phím dừng trên bàn phím lập tức đóng tệp tin h5 an toàn, không bị mất mát hay hỏng cấu trúc dữ liệu',resources:['https://github.com/ros-teleop/teleop_twist_keyboard']},
-  {label:'Day 4',theme:'Data Pipeline Robustness Guard',taskMain:'Viết module bảo vệ dữ liệu chống sốc ngắt kết nối phần cứng',taskSub:'Xử lý ngoại lệ (Exception handling): Nếu camera rớt khung hình hoặc ESP32 rớt kết nối bus, hệ thống tự động lưu phần dữ liệu cũ và log lỗi rõ ràng thay vì crash ngang.',hours:2,priority:'high',category:'portfolio',input:'Python exception mechanisms',output:'robust_recorder.py chống crash bộ nhớ',keywords:['graceful failure degradation','corrupt data defense','hardware disconnection protection'],gate:'Cố tình rút dây USB camera khi đang record -> File h5 lưu phần đã ghi nguyên vẹn',resources:[]},
-  {label:'Day 5',theme:'Pipeline Dry Run Verification',taskMain:'Thực hiện ghi thử nghiệm 5 episodes hoàn chỉnh của tác vụ gắp thả mẫu',taskSub:'Sử dụng sim hoặc tay máy vật lý thực hiện 5 lần gắp khối hộp. Dùng script kiểm thử nội bộ để tự động kiểm định chất lượng file.',hours:2,priority:'high',category:'portfolio',input:'Hệ thống record vừa xây dựng',output:'5 tệp tin episode_00000X.h5 lưu trữ an toàn trên đĩa cứng',keywords:['dry-run validation','dataset validation script','quality assurance metrics'],gate:'Lệnh kiểm thử lerobot dataset validator trả về trạng thái GREEN thỏa mãn mọi điều kiện',resources:[]}
- ]},
-
-{week:9, phase:'P2', focusLabel:'PICK-AND-PLACE DATASET SPRINT',
- summary:'Thực hiện chiến dịch tăng tốc thu thập dữ liệu thô. Tập trung toàn bộ thời gian vận hành hệ thống thu thập để tích lũy kho dữ liệu chuyên sâu gồm 50 episodes chất lượng cao của tác vụ Pick-and-Place phục vụ LoRA.',
- exitCriteria:['Tích lũy đủ tối thiểu 50 tập dữ liệu episodes thành công thực tế','Xây dựng tệp dataset_stats.py xuất thống kê phân phối toán học hành động','Upload bộ dataset thành công lên hệ sinh thái Hugging Face'],
- days:[
-  {label:'Day 1',theme:'Task Space Reset Protocol',taskMain:'Thiết kế quy trình reset trạng thái môi trường chuẩn hóa',taskSub:'Xác định vị trí đặt hộp mục tiêu biến thiên ngẫu nhiên trong dải không gian ±5cm nhằm ép mô hình học tính tổng quát hóa (generalization), tránh hiện tượng overfitting vị trí cố định.',hours:2,priority:'high',category:'habit',input:'Môi trường thực nghiệm gắp thả',output:'reset_protocol_guide.md đặc tả quy trình đặt vật thể',keywords:['environment reset protocol','initial state randomization','generalization margin'],gate:'Quy trình reset rõ ràng giúp thời gian giữa các episode giảm xuống dưới 30 giây',resources:[]},
-  {label:'Day 2',theme:'Collection Sprint: First Batch',taskMain:'Thu thập liên tục từ episode 1 đến 15',taskSub:'Vận hành máy ghi dữ liệu, tập trung thực hiện thao tác gắp thả chuẩn xác. Sau mỗi 5 tập, chạy script kiểm định tệp h5 lập tức để loại bỏ mẫu hỏng đầu vào.',hours:2,priority:'critical',category:'portfolio',input:'Giao diện record dữ liệu tuần 8',output:'15 episodes sạch lưu trên đĩa cứng',keywords:['bulk data acquisition','batch validation','expert demonstration data'],gate:'Thu thập 15 tập thành công, không có tập nào bị lệch timeline ảnh vs góc khớp',resources:[]},
-  {label:'Day 3',theme:'Collection Sprint: Second Batch',taskMain:'Thu thập liên tục từ episode 16 đến 35',taskSub:'Đa dạng hóa góc chiếu sáng cảm biến hoặc thêm chướng ngại vật nhỏ xung quanh khối hộp để mô hình học được tính chống nhiễu ngoại cảnh.',hours:2,priority:'critical',category:'portfolio',input:'Hạ tầng data collection',output:'Tích lũy lũy kế đạt 35 tập dữ liệu episodes sạch',keywords:['domain randomization base','environmental noise resistance','robust feature mapping'],gate:'Đạt mốc 35 tập dữ liệu không lỗi bộ nhớ',resources:[]},
-  {label:'Day 4',theme:'Collection Sprint: Final Batch',taskMain:'Hoàn thành chặng cuối thu thập từ episode 36 đến 50',taskSub:'Tập trung xử lý các pha gắp trượt hoặc góc tiếp cận biên khó để mô hình học cách sửa lỗi hành vi (recovery behaviors).',hours:2,priority:'critical',category:'portfolio',input:'Hạ tầng dữ liệu',output:'Đạt mục tiêu tối thiểu 50 tập dữ liệu episodes hoàn chỉnh',keywords:['boundary edge cases','error recovery demonstration','dataset completion'],gate:'Đủ 50 episodes sạch với tỉ lệ tác vụ gắp thành công thực tế của chuyên gia đạt 100%',resources:[]},
-  {label:'Day 5',theme:'Dataset Statistical Profiling',taskMain:'Viết script Python tính toán phân phối toán học của chuỗi dữ liệu hành động',taskSub:'Sử dụng Pandas và Matplotlib tính mean, std, min, max của từng trục trong 7-DoF Action Space. Vẽ biểu đồ phân phối lực và tọa độ đầu kẹp.',hours:2,priority:'high',category:'portfolio',input:'50 tệp HDF5 tập hợp dữ liệu',output:'dataset_stats.py + action_distribution.png',keywords:['pandas describe','action space variance','data visualization','multimodal statistics'],gate:'Biểu đồ bộc lộ rõ vùng mật độ hành động tập trung cao và không chứa dị biệt dữ liệu (NaN/Inf outliers)',resources:['https://pandas.pydata.org/']}
- ]},
-
-{week:10, phase:'P2', focusLabel:'LORA FINE-TUNING & OFFLINE EVAL PIPELINE',
- summary:'Triển khai cấu trúc huấn luyện LoRA tinh chỉnh OpenVLA trên kho dữ liệu 50 tập vừa thu thập sử dụng tối đa năng lực GPU phần cứng được cấp. Đo đạc chất lượng mô hình thông qua kiểm thử sai số ngoại tuyến (Offline Evaluation MSE).',
- exitCriteria:['Pipeline huấn luyện LoRA thực thi trơn tru mà không lỗi tràn bộ nhớ GPU','Biểu đồ Loss Curve đi xuống ổn định và hội tụ rõ ràng','Chỉ số sai số dự đoán hành động MSE giảm tối thiểu 20% so với mô hình gốc'],
- days:[
-  {label:'Day 1',theme:'PEFT LoRA Configuration',taskMain:'Thiết lập cấu trúc Hyperparameters cho tầng thích ứng LoRA sử dụng thư viện PEFT',taskSub:'Khai báo cấu hình: rank r=8, alpha=16, chỉ định đích chính xác vào các lớp trọng số `target_modules=[q_proj, v_proj]`. Tích hợp cấu hình với mã huấn luyện của LeRobot.',hours:2,priority:'critical',category:'learning',input:'Hugging Face PEFT documentation, LeRobot training script',output:'lora_config.yaml chứa tham số cấu hình huấn luyện',keywords:['PEFT adapter','low-rank adaptation parameters','target modules tuning','gradient checkpointing'],gate:'Hàm lora_config nạp sạch vào bộ nhớ, in ra số lượng tham số trainable chiếm < 1% tổng tham số mô hình',resources:['https://huggingface.co/docs/peft/index']},
-  {label:'Day 2',theme:'Training Pipeline Execution',taskMain:'Kích hoạt quy trình huấn luyện tinh chỉnh (Fine-tuning) trong 2000 steps',taskSub:'Sử dụng kỹ thuật tính toán chính xác hỗn hợp (Mixed Precision fp16/bf16). Kết nối hệ thống lưu log theo thời gian thực qua Weights & Biases (wandb) hoặc TensorBoard.',hours:2,priority:'critical',category:'portfolio',input:'Kho dữ liệu 50 episodes tuần 9, GPU server',output:'Quy trình huấn luyện chạy nền, sinh tệp log training_loss.txt',keywords:['Mixed precision training','bfloat16 computation','wandb experiment tracking','loss optimization loop'],gate:'Hệ thống thực hiện huấn luyện vượt qua 100 steps đầu tiên liên tục mà không sinh lỗi NaN loss hoặc tràn VRAM',resources:['https://docs.wandb.ai/']},
-  {label:'Day 3',theme:'Loss Convergence Analysis',taskMain:'Theo dõi, phân tích hành vi hội tụ của hàm loss trong quá trình train',taskSub:'Quan sát biểu đồ loss thông qua wandb dashboard. Nếu xảy ra hiện tượng Overfitting hoặc Divergence, thực hiện can thiệp điều chỉnh Learning Rate tương ứng (ví dụ: áp dụng Cosine Decay giảm dần).',hours:2,priority:'high',category:'research',input:'Wandb dashboard live metrics',output:'Biểu đồ loss được tối ưu hóa độ dốc hội tụ',keywords:['learning rate cosine decay','overfitting prevention','loss gradient analysis'],gate:'Hàm loss sau 1000 steps đạt mức sàn ổn định, không có hiện tượng giật ngược đồ thị',resources:[]},
-  {label:'Day 4',theme:'Offline Evaluation Loop',taskMain:'Xây dựng kịch bản kiểm định ngoại tuyến trên tập dữ liệu đánh giá cô lập',taskSub:'Trích xuất 5 tập dữ liệu episodes không tham gia quá trình huấn luyện làm tập test. Cho mô hình đã tinh chỉnh dự đoán chuỗi actions tương ứng và tính toán sai số bình phương trung bình (MSE/MAE).',hours:2,priority:'critical',category:'portfolio',input:'Học phần checkpoint tuần này, 5 test episodes',output:'eval_offline_metrics.py xuất bảng sai số cụ thể',keywords:['offline evaluation strategy','Mean Squared Error computation','action trajectory deviation','baseline comparison'],gate:'Chỉ số sai số MSE của mô hình sau khi có LoRA giảm mạnh (>20%) so với mô hình gốc không có thích ứng',resources:[]},
-  {label:'Day 5',theme:'Phase 2 Capstone Integration & Report',taskMain:'Đóng gói toàn bộ mô hình thích ứng LoRA thành một báo cáo khoa học bằng tiếng Anh',taskSub:'Viết báo cáo `training_report.md` chi tiết: Kiến trúc dữ liệu thu thập, cấu hình siêu tham số LoRA, đồ thị hàm loss hội tụ, bảng dữ liệu chứng minh sự sụt giảm sai số MSE dự đoán.',hours:2,priority:'high',category:'recruiter',input:'Tất cả tệp tin log, mã nguồn huấn luyện Phase 2',output:'docs/training_report_v2.md đính kèm public repo GitHub',keywords:['scientific project reporting','quantitative AI evaluation','portfolio asset generation'],gate:'Báo cáo chứa đầy đủ số liệu chứng minh thực tế, cấu trúc mạch lạc, chuẩn văn phong kĩ sư AI tại San Jose',resources:[]}
- ]},
-
-// ══════════ PHASE 3: WEEKS 11–16 (LOW-LEVEL FOC & ACTUATOR SENSING) ══════════
-{week:11, phase:'P3', focusLabel:'FIELD-ORIENTED CONTROL (FOC) MOTOR ASSEMBLY',
- summary:'Tạo điểm nhấn biệt hóa (differentiation axis) cực mạnh với các kĩ sư thuần phần mềm. Nghiên cứu và triển khai giải thuật điều khiển vector dòng dòng (Field-Oriented Control) điều khiển động cơ BLDC tay máy máy qua thư viện SimpleFOC và ESP32.',
- exitCriteria:['Lắp ráp phần cứng hoàn chỉnh: ESP32 + Driver + Động cơ BLDC có phản hồi Encoder','Cấu hình thành công SimpleFOC chạy chế độ Closed-Loop Vận tốc','Động cơ bám sát Setpoint vận tốc chỉ định với sai số thấp'],
- days:[
-  {label:'Day 1',theme:'FOC Mathematical Foundations',taskMain:'Nghiên cứu mô hình toán học lõi của điều khiển vector dòng',taskSub:'Học sâu phép biến đổi toán học hệ tọa độ ba pha sang hai pha cố định (Clarke Transform) và từ hệ hai pha cố định sang hệ tọa độ quay đồng bộ d-q (Park Transform). Vẽ lại sơ đồ khối.',hours:2,priority:'high',category:'learning',input:'SimpleFOC lý thuyết tài liệu, tập bài giảng điều khiển động cơ',output:'notes/foc_mathematics.md chứa công thức toán học và sơ đồ khối tự vẽ',keywords:['Field-Oriented Control theory','Clarke transform matrix','Park rotational transform','d-q current axis','SVPWM algorithm'],gate:'Giải thích được trong phỏng vấn: Vì sao biến đổi Park cần góc pha rotor để hoạt động?',resources:['https://docs.simplefoc.com/foc_theory']},
-  {label:'Day 2',theme:'Actuator Testbench Assembly',taskMain:'Lắp ráp hệ thống mô hình phần cứng thử nghiệm động cơ cơ cơ',taskSub:'Kết nối mạch ESP32 với driver công suất (L6234 hoặc DRV8302), đấu nối các pha động cơ BLDC và căn chỉnh cảm biến góc quay từ tính AS5600 qua giao tiếp I2C/SPI.',hours:2,priority:'critical',category:'portfolio',input:'Động cơ BLDC, driver, cảm biến AS5600, dây nối, nguồn DC',output:'Hệ thống phần cứng Actuator Testbench hoạt động trên bàn làm việc',keywords:['BLDC hardware assembly','magnetic encoder alignment','driver power stage interface','I2C bus integrity'],gate:'Đọc dữ liệu thô từ cảm biến AS5600 hiển thị góc quay tăng tuyến tính từ 0 đến 2π radian khi quay tay',resources:['https://simplefoc.com/']},
-  {label:'Day 3',theme:'SimpleFOC Library Ingestion',taskMain:'Viết mã nguồn nhúng khởi tạo cấu trúc lớp động cơ bằng SimpleFOC trên Arduino IDE/VS Code',taskSub:'Khai báo đối tượng `BLDCMotor`, `BLDCDriver3PWM`, và `MagneticSensorI2C`. Viết hàm thiết lập số cặp cực (pole pairs) chuẩn của động cơ phần cứng.',hours:2,priority:'critical',category:'portfolio',input:'SimpleFOC API documentation',output:'simplefoc_base_setup.ino biên dịch và nạp xuống mạch',keywords:['BLDCMotor class implementation','pole pairs configuration','driver init abstraction','hardware abstraction layer'],gate:'Mạch ESP32 thực hiện thành công pha tự căn chỉnh góc lệch ban đầu (Alignment Phase) mà không báo lỗi',resources:['https://docs.simplefoc.com/getting_started']},
-  {label:'Day 4',theme:'Closed-Loop Velocity Controller',taskMain:'Triển khai vòng điều khiển kín vận tốc góc của trục động cơ',taskSub:'Cấu hình bộ điều khiển PID vận tốc nội bộ của SimpleFOC. Thực hiện bước nhảy vận tốc (Step response) từ 0 rad/s lên 10 rad/s, ghi log góc quay và vận tốc thực tế ra cổng Serial.',hours:2,priority:'critical',category:'portfolio',input:'Actuator testbench hệ thống',output:'velocity_closed_loop.ino chạy thực thi trên chip',keywords:['Closed loop control loop','velocity setpoint tracking','PID parameters tuning','Step response logging'],gate:'Động cơ đạt vận tốc chỉ định trong thời gian ổn định < 500ms với độ vọt lố (overshoot) < 15%',resources:[]},
-  {label:'Day 5',theme:'Actuator Telemetry Analytics',taskMain:'Xây dựng script Python thu thập đồ thị bám vận tốc của cơ cấu chấp hành',taskSub:'Đọc luồng dữ liệu truyền từ cổng Serial, vẽ đồ thị so sánh Target Velocity vs Actual Velocity. Lưu trữ đồ thị dưới dạng tệp ảnh khoa học.',hours:2,priority:'medium',category:'portfolio',input:'Cổng Serial xuất dữ liệu từ ESP32',output:'plot_actuator_telemetry.py + velocity_tracking.png',keywords:['serial data capture','realtime plotting','control loop verification metrics'],gate:'Đồ thị hiển thị rõ ràng thông số thời gian trễ và sai số xác lập (Steady-state error) của hệ thống cơ khí',resources:[]}
- ]},
-
-{week:12, phase:'P3', focusLabel:'CUSTOM LOW-LEVEL C++ CURRENT LOOP',
- summary:'Thoát ly thư viện tự động, tự viết lõi giải thuật FOC bằng C++ tối ưu hóa cho hệ thống thời gian thực. Triển khai cấu trúc đọc dòng điện hai pha phản hồi qua điện trở Shunt nhằm đo đạc, lập bảng so sánh hiện tượng Torque Ripple thô.',
- exitCriteria:['Tự lập trình xong ma trận Clarke/Park bằng toán học C++ tối ưu số thực','Đọc và lọc nhiễu thành công tín hiệu dòng điện từ chip INA226 qua I2C','Xuất bản biểu đồ phân tích tần số nhiễu FFT của lực mô-men xoắn'],
- days:[
-  {label:'Day 1',theme:'Low-level Transform Functions',taskMain:'Lập trình hàm biến đổi hệ tọa độ bằng ngôn ngữ C++ Modern không phụ thuộc thư viện ngoại vi',taskSub:'Viết lớp cấu trúc static mang tên `FOCMath` chứa các hàm nhận vào dòng điện 3 pha và góc lượng giác, xuất ra dòng điện trục d-q sử dụng các hàm tối ưu lượng giác sin/cos.',hours:2,priority:'critical',category:'portfolio',input:'C++ toán học cơ bản',output:'foc_math.hpp + foc_math.cpp chứa các hàm transform sạch',keywords:['custom matrix math C++','inline hardware optimization','trigonometric look-up table','no dynamic allocation'],gate:'Hàm viết ra vượt qua các bài toán Unit test so sánh kết quả chính xác tuyệt đối với thư viện mẫu',resources:[]},
-  {label:'Day 2',theme:'High-Rate Current Ingestion',taskMain:'Cấu hình chip cảm biến dòng INA226 đọc dòng qua bus I2C tần số cao',taskSub:'Thiết lập thanh ghi cấu hình (Configuration register) của INA226 tối thiểu hóa thời gian chuyển đổi ADC (Conversion time) đạt tốc độ lấy mẫu > 1kHz.',hours:2,priority:'critical',category:'portfolio',input:'INA226 cảm biến phần cứng, ESP32 board',output:'ina226_highrate_driver.ino tối ưu thanh ghi dòng',keywords:['INA226 ADC configuration','I2C high-speed mode','current shunt monitor','raw register manipulation'],gate:'ESP32 đọc thành công dòng tiêu thụ dạng ampe ổn định liên tục, không gây block chu kỳ lặp chính',resources:['https://www.ti.com/product/INA226']},
-  {label:'Day 3',theme:'Torque Ripple Baseline Capture',taskMain:'Đo đạc dòng nhiễu lực (Torque Ripple) của động cơ ở trạng thái quay cố định',taskSub:'Ép động cơ quay tốc độ không đổi dưới tải nhẹ. Đo dòng điện trục q (Iq) ở tần số cao liên tục trong 10 chu kỳ điện, ghi dữ liệu ra file CSV thô.',hours:2,priority:'high',category:'research',input:'Hệ thống phần cứng hoạt động',output:'torque_ripple_baseline.csv chứa chuỗi thời gian dòng điện',keywords:['Torque ripple identification','quadrature current fluctuation','raw data serialization','mechanical vibration physics'],gate:'Ghi nhận tệp CSV chứa tối thiểu 10,000 dòng dữ liệu dòng Iq liên tục không mất gói tin',resources:[]},
-  {label:'Day 4',theme:'Spectral Analysis via FFT',taskMain:'Viết script phân tích phổ tần số của xung lực bằng giải thuật FFT trong Python',taskSub:'Sử dụng thư viện SciPy thực hiện biến đổi Fourier nhanh (Fast Fourier Transform) từ file CSV dòng điện. Định vị tần số xuất hiện đỉnh nhiễu cơ khí lớn nhất.',hours:2,priority:'high',category:'research',input:'SciPy library, dữ liệu CSV dòng điện tuần này',output:'fft_ripple_analysis.py + ripple_frequency_spectrum.png',keywords:['Fast Fourier Transform computation','power spectral density','harmonic distortion physics','scipy.signal'],gate:'Đồ thị phổ tần số chỉ ra chính xác tần số nhiễu trùng khớp với tần số cơ khí hoặc tần số băm xung PWM',resources:['https://docs.scipy.org/doc/scipy/reference/signal.html']},
-  {label:'Day 5',theme:'Week 12 Engineering Note',taskMain:'Viết ghi chú kĩ thuật hệ thống cơ điện tử bằng tiếng Anh lưu trữ vào tài mục docs',taskSub:'Giải thích chi tiết phương pháp luận trích xuất nhiễu mô-men xoắn qua phân tích phổ dòng điện. Định vị đây là bằng chứng năng lực Mechatronics độc bản trong CV của bạn.',hours:2,priority:'medium',category:'recruiter',input:'Tất cả đồ thị và phân tích tuần 12',output:'docs/torque_ripple_methodology.md chuẩn hóa quốc tế',keywords:['mechatronics writing portfolio','analytical engineering','recruiter hiring trigger'],gate:'Tài liệu vượt qua bài tự kiểm tra độ hiểu nghĩa kĩ thuật một cách tường minh',resources:[]}
- ]},
-
-{week:13, phase:'P3', focusLabel:'TORQUE RIPPLE HARMONICS & MITIGATION',
- summary:'Tối ưu hóa chất lượng chuyển động của Actuator máy. Sử dụng dữ liệu phân tích phổ tần số tuần trước để tinh chỉnh bộ điều khiển PI dòng điện, giảm thiểu biên độ dao động mô-men xoắn và tối ưu hóa tính năng bám lực.',
- exitCriteria:['Biên độ dao động dòng nhiễu Iq giảm tối thiểu 25% sau khi làm mịn bộ điều khiển','Hệ thống chuyển động mượt mà bám sát lệnh mô-men mục tiêu cấp nhỏ Nm','Mã điều khiển nhúng chạy ổn định chu kỳ kín không trôi pha'],
- days:[
-  {label:'Day 1',theme:'Current Loop PI Design',taskMain:'Lập trình cấu trúc bộ điều khiển PI riêng biệt cho trục dòng d và trục dòng q',taskSub:'Xây dựng lớp cấu trúc C++ `CurrentPIController` có tính năng chống bão hòa tích phân (Anti-windup clamping technique). Tránh tích tụ lỗi sai số khi dòng đạt ngưỡng giới hạn kịch trần.',hours:2,priority:'critical',category:'portfolio',input:'Lý thuyết điều khiển tự động nâng cao',output:'current_pi_controller.hpp tích hợp giải thuật chống bão hòa',keywords:['PI current regulator','anti-windup algorithm','integrator saturation clamping','discrete time control systems'],gate:'Hàm bộ điều khiển trả về giá trị bão hòa giới hạn chính xác nếu giá trị tính toán vượt ngưỡng tối đa định sẵn',resources:[]},
-  {label:'Day 2',theme:'PI Gain Tuning Sprint',taskMain:'Thực hiện tinh chỉnh thực tế hệ số Kp và Ki của vòng lặp dòng điện',taskSub:'Sử dụng phương pháp thử nghiệm Ziegler-Nichols kết hợp quan sát đồ thị dòng Iq trên màn hình scope máy tính. Tăng dần Kp cho đến khi xuất hiện dao động, lùi lại mốc an toàn 50% và bắt đầu bù hệ số Ki.',hours:2,priority:'critical',category:'portfolio',input:'Actuator testbench hệ thống, cổng nạp code',output:'Mã nguồn điều khiển nhúng với bộ tham số PI tối ưu hóa',keywords:['Ziegler-Nichols loop tuning','proportional gain optimization','integral time constant adjustment','current loop bandwidth'],gate:'Thời gian đáp ứng dòng điện (Current loop step response) đạt tốc độ ngắt dòng lý tưởng < 5ms',resources:[]},
-  {label:'Day 3',theme:'Mitigated Ripple Measurement',taskMain:'Thu thập dữ liệu dòng điện sau khi hệ thống đã được tinh chỉnh bộ lọc điều khiển',taskSub:'Thực hiện lại chính xác quy trình đo đạc của tuần 12 với cùng thông số vận tốc và tải trọng. Xuất dữ liệu dòng Iq đã làm mịn ra tệp tin CSV mang tên `mitigated_ripple.csv`.',hours:2,priority:'high',category:'research',input:'Hệ thống sau tối ưu hóa',output:'mitigated_ripple.csv chứa thông tin dòng sạch nhiễu',keywords:['mitigated torque analysis','post-optimization metrics','comparative evaluation data'],gate:'Dữ liệu thô cho thấy biên độ đỉnh-đỉnh (Peak-to-peak amplitude) của dòng điện Iq giảm rõ rệt trên màn hình log',resources:[]},
-  {label:'Day 4',theme:'Before-After Matrix Validation',taskMain:'Viết mã so sánh trực quan hiệu năng triệt nhiễu cơ học trước và sau khi tối ưu hóa bộ điều khiển',taskSub:'Sử dụng Python sinh một đồ thị kép chồng hai đường đồ thị phổ tần số và chuỗi thời gian của tệp tuần 12 vs tuần 13 lên nhau. Tính toán tỷ lệ phần trăm sụt giảm nhiễu cụ thể.',hours:2,priority:'high',category:'recruiter',input:'torque_ripple_baseline.csv + mitigated_ripple.csv',output:'generate_comparison_chart.py + torque_mitigation_success.png',keywords:['comparative visualization','performance metrics verification','matplolib dual axes','noise attenuation ratio'],gate:'Đồ thị chỉ rõ biên độ đỉnh nhiễu hài (Harmonic peaks) giảm tối thiểu 25% trên trục phổ năng lượng',resources:[]},
-  {label:'Day 5',theme:'Actuator Artifact Hardening',taskMain:'Đẩy toàn bộ mã nguồn điều khiển dòng C++ thô lên GitHub',taskSub:'Cập nhật cấu trúc thư mục phần cứng. Viết cập nhật vào file README.md mô tả năng lực làm chủ kỹ thuật điều khiển vector dòng điện cấp thấp điều trị triệt để rung lắc phần cơ.',hours:2,priority:'medium',category:'portfolio',input:'Mã nguồn tuần này',output:'GitHub commit đồng bộ nhánh phần cứng',keywords:['actuator control portfolio','hardware software codesign','engineering git hygiene'],gate:'Cấu trúc thư mục ngăn nắp, chứa đầy đủ tệp biên dịch của thư viện phần cứng độc lập',resources:[]}
- ]},
-
-{week:14, phase:'P3', focusLabel:'HIGH-RATE CURRENT SENSING & FORCE MAPPING',
- summary:'Biến dòng điện phản hồi thành cảm biến xúc giác hữu ích (Tactile feedback). Xây dựng giải thuật chuyển đổi giá trị dòng Iq sang véc-tơ lực tác động mô-men xoắn đầu kẹp tay máy máy, thực hiện chức năng nhận diện va chạm phần cứng không cần cảm biến lực đắt tiền.',
- exitCriteria:['Xây dựng thành công phương trình toán học chuyển đổi dòng Ampe sang lực mô-men xoắn Nm','Thuật toán nhận diện va chạm thông minh hoạt động với thời gian trễ phản hồi < 30ms','Publish thành công luồng dữ liệu lực lên ROS2 topic mẫu `/joint_effort`'],
- days:[
-  {label:'Day 1',theme:'Torque Constant Calibration',taskMain:'Xác định thực nghiệm hằng số mô-men xoắn (Torque constant - Kt) của động cơ',taskSub:'Treo các khối quả cân có trọng lượng xác định (ví dụ: 100g, 200g) vào đầu tay đòn cơ khí có chiều dài cố định để tạo mô-men cản biết trước. Ghi nhận dòng Iq ổn định tương ứng để lập phương trình tuyến tính trích xuất Kt (Nm/A).',hours:2,priority:'high',category:'research',input:'Quả cân chuẩn, thước đo chiều dài, đồ gá cơ khí, hệ thống đo dòng',output:'calibration_matrix_kt.txt ghi nhận giá trị hằng số mô-men',keywords:['Torque constant calibration','Kt coefficient estimation','linear regression force','gravity load physics'],gate:'Hệ số tương quan đồ thị tuyến tính R-squared đạt độ chính xác > 0.95',resources:['https://en.wikipedia.org/wiki/Motor_constants']},
-  {label:'Day 2',theme:'Contact Detection Logic',taskMain:'Lập trình giải thuật nhận diện va chạm (Contact detection) dựa trên sai lệch mô-men',taskSub:'Viết thuật toán theo dõi giá trị dòng điện thực tế so với dòng điện dự đoán của mô hình toán lý tưởng. Nếu xuất hiện một cú nhảy dòng đột biến (Spike) vượt ngưỡng an toàn trong thời gian ngắn, lập tức kích hoạt trạng thái báo động va chạm.',hours:2,priority:'critical',category:'portfolio',input:'Kt constant từ Day 1',output:'contact_detector.cpp tích hợp logic lọc nhiễu',keywords:['sensorless force estimation','current spike contact detection','moving average filter','anomaly spike threshold'],gate:'Thuật toán nhận diện va chạm kích hoạt cờ boolean `contact_detected = true` ngay khi dùng tay chặn cưỡng bức chuyển động cánh tay',resources:['https://ieeexplore.ieee.org/document/current-based-contact-detection']},
-  {label:'Day 3',theme:'Micro-ROS Effort Publisher',taskMain:'Đẩy luồng dữ liệu lực mô-men xoắn đầu kẹp từ ESP32 lên hệ thống ROS2 thông qua mạng Micro-ROS',taskSub:'Cấu hình gói tin loại `sensor_msgs/JointState`. Gán dữ liệu lực Nm tính toán được vào trường dữ liệu `effort` của thông điệp. Publish thông điệp ra topic `/joint_effort` ở tần số ổn định 100Hz.',hours:2,priority:'critical',category:'portfolio',input:'Micro-ROS framework thư viện, cấu trúc thông điệp ROS2',output:'micro_ros_effort_node.cpp nạp thành công lên ESP32',keywords:['Micro-ROS agent publisher','sensor_msgs::msg::JointState','high frequency effort stream','embedded middleware integration'],gate:'Chạy lệnh `ros2 topic echo /joint_effort` trên máy tính trạm hiển thị chính xác luồng dữ liệu lực nhảy số liên tục',resources:['https://micro.ros.org/docs/tutorials/core/first_application_linux/']},
-  {label:'Day 4',theme:'Force Telemetry Visualizer',taskMain:'Viết script theo dõi và vẽ trực quan luồng dữ liệu lực trên máy tính trạm của ROS2',taskSub:'Sử dụng thư viện Python rclpy kết hợp Matplotlib. Tạo biểu đồ chạy thời gian thực hiển thị đường lực mô-men đầu kẹp. Ghi lại hình ảnh va chạm khi robot kẹp trúng vật cứng.',hours:2,priority:'medium',category:'portfolio',input:'ROS2 /joint_effort topic stream',output:'vla_force_visualizer.py sinh biểu đồ động',keywords:['rclpy subscription node','real-time matplotlib animation','force feedback monitoring','manipulation tactile visualization'],gate:'Biểu đồ nhảy vọt biên độ xung lực rõ ràng ngay khi robot va chạm cơ học',resources:[]},
-  {label:'Day 5',theme:'Week 14 Deliverables Integration',taskMain:'Đóng gói toàn tầng driver xúc giác thô phần cứng',taskSub:'Viết tài liệu hướng dẫn cấu hình ngưỡng kích hoạt va chạm bằng tiếng Anh gửi vào thư mục dự án để làm tài liệu phỏng vấn kĩ thuật.',hours:2,priority:'medium',category:'recruiter',input:'Mã nguồn tuần 14',output:'docs/sensorless_tactile_sensing.md hoàn chỉnh cấu trúc',keywords:['technical documentation','hardware innovation story','hiring signal engineering'],gate:'Tài liệu giải trình mạch lạc logic từ phần cứng, chuyển đổi toán lý đến tầng middleware của ROS2',resources:[]}
- ]},
-
-{week:15, phase:'P3', focusLabel:'MULTI-MODAL PIPELINE & COMPLIANCE GUARD',
- summary:'Tích hợp toàn diện cảm biến lực dòng điện vừa xây dựng vào mô hình trí tuệ nhân tạo VLA tổng. Mở rộng không gian trạng thái đầu vào (Observation space) của mạng neuron và thiết lập lớp điều khiển an toàn (Compliance Control Layer) bảo vệ robot không bị gãy cơ cấu.',
- exitCriteria:['Mô hình Python VLA tiếp nhận thành công véc-tơ lực đầu vào proprioception mở rộng','Xây dựng thành công lớp thuật toán an toàn giới hạn gia tốc chuyển động khớp','Hệ thống tự động dừng chuyển động trong giả lập khi lực cản vượt ngưỡng'],
- days:[
-  {label:'Day 1',theme:'Observation Space Augmentation',taskMain:'Mở rộng cấu trúc dữ liệu đầu vào của pipeline VLA',taskSub:'Sửa đổi lớp `VLAInference` từ tuần 7. Bổ sung giá trị lực đọc được từ topic `/joint_effort` vào từ điển đầu vào của mô hình mạng, tạo mô hình quan sát đa phương thức: Ảnh + Góc Khớp + Lực Khớp.',hours:2,priority:'critical',category:'portfolio',input:'VLAInference class tuần 7, luồng dữ liệu /joint_effort',output:'multimodal_vla_inference.py thích ứng đa cảm biến',keywords:['multimodal observation embedding','feature vector concatenation','proprioceptive sensory fusion','openvla model integration'],gate:'Hàm inference chạy trơn tru, chấp nhận tensor đầu vào mở rộng mà không ném lỗi không khớp ma trận (shape mismatch)',resources:[]},
-  {label:'Day 2',theme:'Compliance Guard Layer C++',taskMain:'Viết module an toàn giới hạn lực bằng C++ lồng trong Node điều khiển',taskSub:'Xây dựng lớp thuật toán: Nếu cờ hiệu `contact_detected == true` từ lớp nhúng cấp thấp truyền lên, lập tức thực hiện triệt tiêu vận tốc mục tiêu ra lệnh từ mạng AI xuống 0 trong vòng 1ms.',hours:2,priority:'critical',category:'portfolio',input:'C++ PolicyNode bridge tuần 7',output:'compliance_guard_node.cpp bọc an toàn lõi hệ thống',keywords:['software emergency stop layer','velocity damping control','failsafe software architecture','robotic safety constraints'],gate:'Hệ thống chặn đứng lệnh di chuyển của AI ngay lập tức nếu phát hiện vật cản nằm chắn ngang quỹ đạo di chuyển dự kiến',resources:[]},
-  {label:'Day 3',theme:'Closed-Loop Simulation Integration',taskMain:'Tích hợp lớp an toàn lực vào môi trường giả lập cơ học nâng cao',taskSub:' Giả lập tình huống Robot gắp trúng một vật thể cứng cố định không thể dịch chuyển trong MuJoCo/Gazebo. Ghi nhận phản hồi của lớp Compliance Guard bảo vệ động cơ.',hours:2,priority:'high',category:'portfolio',input:'Môi trường giả lập tuần 7, lớp compliance guard vừa viết',output:'Môi trường sim tích hợp sâu phản hồi lực xúc giác dòng điện',keywords:['closed loop tactile simulation','contact force reaction','mujoco contact dynamics','hardware loop mock'],gate:'Hệ thống tự động kích hoạt chức năng giảm tốc độ mượt mà khi kẹp trúng chướng ngại vật cứng trong môi trường ảo',resources:[]},
-  {label:'Day 4',theme:'System Latency Audit Under Load',taskMain:'Đo đạc kiểm tra độ trễ xử lý của toàn hệ thống khi gánh thêm luồng dữ liệu đa cảm biến',taskSub:'Tính toán tổng thời gian phản hồi: Nhận ảnh + Nhận Lực -> VLA Inference -> C++ Guard -> Lệnh Khớp Sim. Xác định xem hệ thống có bị nghẽn cổ chai tính toán ở đâu.',hours:2,priority:'high',category:'research',input:'Hệ thống tích hợp toàn diện chạy thực tế',output:'docs/multimodal_latency_waterfall.md ghi nhận số liệu trễ cụ thể',keywords:['end-to-end processing latency','waterfall time profiling','computational bottleneck detection','realtime dispatch safety'],gate:'Độ trễ truyền thông qua mạng DDS của ROS2 giữa lớp Python VLA và lớp C++ an toàn luôn duy trì thấp < 4ms',resources:[]},
-  {label:'Day 5',theme:'Week 15 Revision & Sync',taskMain:'Đồng bộ toàn bộ mã nguồn hệ thống đa phương thức lên nhánh chính dự án',taskSub:'Kiểm tra code bằng công cụ linter. Viết tài liệu mô tả kiến trúc phân tầng an toàn (Decoupled Safety Architecture) bằng tiếng Anh để bộc lộ tư duy thiết kế hệ thống robot production-grade.',hours:2,priority:'medium',category:'portfolio',input:'Mã nguồn tuần 15',output:'GitHub repository cập nhật trạng thái hệ thống hoàn chỉnh',keywords:['decoupled software safety','system architecture layout','clean architecture standards'],gate:'Mã nguồn sạch sẽ, không chứa các cấu trúc biến toàn cục nguy hiểm, sẵn sàng cho pha hardening cuối cùng',resources:[]}
- ]},
-
-{week:16, phase:'P3', focusLabel:'LONG-RUN STABILITY HARDENING & PROFILE PLOTS',
- summary:'Hoàn thiện toàn chặng đường kĩ thuật phần cứng phần cứng và mô hình AI. Thực hiện kiểm thử sức bền hệ thống chạy liên tục trong thời gian dài (Stress-test), dọn dẹp bộ nhớ chống rò rỉ rò rỉ (Memory leak memory) và sản xuất các biểu đồ khoa học phục vụ CV.',
- exitCriteria:['Toàn bộ hệ thống Capstone (VLA + ROS2 + ESP32) chạy liên tục 30 phút ổn định không crash','Valgrind xác nhận 0 rò rỉ bộ nhớ xảy ra ở lõi C++','Sản xuất thành công bộ 3 biểu đồ so sánh đạt tiêu chuẩn xuất bản tạp chí khoa học'],
- days:[
-  {label:'Day 1',theme:'30-Minute Continuous Stress-Test',taskMain:'Kích hoạt toàn diện hệ thống gắp thả robot chạy liên tục tự động trong vòng 30 phút',taskSub:'Lập trình kịch bản lặp lại liên tục quy trình gắp khối hộp ảo/thật. Log tự động toàn bộ tần số quét của các topic cảm biến và phần trăm tiêu hao tài nguyên CPU/Memory của hệ thống.',hours:2,priority:'critical',category:'portfolio',input:'Hệ thống Capstone hoàn thiện toàn diện',output:'stress_test_execution.log chứa chuỗi thời gian hoạt động liên tục',keywords:['long-duration stress testing','continuous operational stability','process resource monitoring','system reliability engineering'],gate:'Hệ thống hoàn thành 30 phút chạy liên tục mà không có bất kỳ tiến trình nào bị sập (crash) hoặc rớt tần số quét quét (frequency drop)',resources:[]},
-  {label:'Day 2',theme:'Valgrind Hot-Path Profiling',taskMain:'Chạy kiểm thử lớp C++ điều khiển thông qua công cụ Valgrind Memcheck',taskSub:'Thực thi node C++ bọc trong Valgrind trong vòng 10 phút chạy nặng. Phân tích chi tiết báo cáo đầu ra nhằm triệt tiêu các lỗi rò rỉ bộ nhớ âm thầm (Defeat memory leaks in steady state).',hours:2,priority:'critical',category:'portfolio',input:'Valgrind profiling engine, biên dịch Debug của node C++',output:'valgrind_leak_report.txt ghi nhận trạng thái cấp phát ô nhớ',keywords:['Valgrind memcheck pass','memory leak extraction','steady state heap stabilization','C++ memory destruction safety'],gate:'Báo cáo Valgrind in ra thông điệp lý tưởng: "All heap blocks were freed -- no leaks are possible"',resources:['https://valgrind.org/']},
-  {label:'Day 3',theme:'Publication-Quality Plot Engineering',taskMain:'Xây dựng bộ script Python vẽ đồ thị so sánh hiệu năng kĩ thuật đạt chuẩn bài báo khoa học IEEE',taskSub:'Sử dụng thư viện Seaborn cấu hình đồ thị: Độ phân giải cao 300 DPI, phông chữ đồng nhất, có thanh sai số (Error bars). Trực quan hóa 2 nội dung chính: Biểu đồ triệt nhiễu Torque Ripple hài và Đồ thị thời gian phản hồi va chạm va chạm xúc giác.',hours:2,priority:'high',category:'recruiter',input:'Tất cả tệp dữ liệu CSV lưu trữ từ tuần 11 đến tuần 14',output:'figures/torque_mitigation_publication.png + figures/contact_latency_publication.png',keywords:['publication quality plotting','IEEE figure presentation guidelines','error bars statistical presentation','seaborn professional styling'],gate:'Đồ thị trực quan sắc nét, hiển thị đơn vị đo chuẩn quốc tế (Nm, Ampe, ms), sẵn sàng đính kèm vào phần giới thiệu portfolio dự án',resources:['https://github.com/garrettj403/SciencePlots']},
-  {label:'Day 4',theme:'Repository Architecture Final Cleanup',taskMain:'Tái cấu trúc sắp xếp lại toàn bộ thư mục cây của dự án Capstone đạt chuẩn mã nguồn mở quốc tế',taskSub:'Phân chia thư mục nghiêm ngặt: `src/c_core/`, `src/python_vla/`, `firmware/esp32_foc/`, `docs/`, `tests/`, `config/`. Loại bỏ toàn bộ các file rác không cần thiết khỏi git tracking.',hours:2,priority:'high',category:'portfolio',input:'Mã nguồn dự án tổng thể',output:'Cấu trúc thư mục sạch sẽ, tệp cấu hình .gitignore chuẩn hóa',keywords:['clean repository organization','open source packaging standards','production directory tree','gitignore optimization'],gate:'Thực hiện colcon build từ thư mục gốc khởi tạo lại toàn bộ hệ thống hoàn chỉnh trơn tru sạch sẽ với 0 warning',resources:[]},
-  {label:'Day 5',theme:'Phase 3 Technical Exit Gate',taskMain:'Thực hiện đánh giá đóng cửa Phase 3, cập nhật hồ sơ năng lực kĩ thuật',taskSub:'Viết tổng kết `p3_exit_review.md` tự đánh giá trung thực mức độ tăng trưởng kĩ thuật điều khiển cơ điện tử cấp thấp. Đánh dấu cột mốc hoàn thành toàn bộ hạ tầng kĩ thuật dự án, chuẩn bị bước sang pha Narrative.',hours:2,priority:'high',category:'habit',input:'Toàn bộ thành quả Phase 3',output:'docs/p3_exit_review.md lưu trữ an toàn',keywords:['engineering milestone review','technical maturity assessment','readiness for outreach phase'],gate:'Tất cả các tiêu chí đầu ra phần cứng của Phase 3 đều được đánh dấu hoàn tất thực tế',resources:[]}
- ]},
-
-// ══════════ PHASE 4: WEEKS 17–26 (ENGLISH NARRATIVE, OUTREACH & LOOP) ══════════
-{week:17, phase:'P4', focusLabel:'ENGLISH CV REWRITE & ATS SCORE HARDENING',
- summary:'Bắt đầu giai đoạn Narrative đưa sản phẩm kĩ thuật ra thị trường tuyển dụng quốc tế. Chuyển ngữ và viết lại toàn bộ nội dung CV sang tiếng Anh chuẩn định dạng quốc tế một trang, tập trung bộc lộ các con số kết quả định lượng hiệu năng mạnh mẽ nhằm vượt qua các bộ lọc tự động ATS tại Mỹ.',
- exitCriteria:['Bản dịch CV tiếng Anh hoàn thành đạt chuẩn kĩ sư cơ quan San Jose','Hồ sơ vượt qua bài quét tự động kiểm thử từ nền tảng Jobscan đạt điểm số > 75%','Nội dung CV gói gọn chính xác trong 1 trang giấy duy nhất không tràn dòng'],
- days:[
-  {label:'Day 1',theme:'CV Metric Transformation',taskMain:'Chuyển đổi toàn bộ mô tả kinh nghiệm dự án cũ sang văn phong định lượng kết quả',taskSub:'Sử dụng công thức của Google: "Accomplished [X] as measured by [Y], by doing [Z]". Ví dụ: Viết lại dự án HG-Dagger của bạn thành cụm tiếng Anh bộc lộ rõ con số giảm tải 131x FLOP reduction so với thuật toán DWA truyền thống.',hours:2,priority:'critical',category:'recruiter',input:'CV tiếng Việt thô cũ của bạn',output:'cv_metrics_draft.txt chứa các bullet points tiếng Anh định lượng lực mạnh',keywords:['Google resume formula','quantitative action framing','impact metric translation','hiring manager triggers'],gate:'Mỗi dòng mô tả dự án trong bản thảo bắt buộc phải chứa ít nhất một con số đo đạc hiệu năng thực tế cụ thể',resources:['https://www.inc.com/kevin-daum/google-s-simple-3-step-formula-for-a-resume-that-will-get-you-hired.html']},
-  {label:'Day 2',theme:'LaTeX Resume Implementation',taskMain:'Lập trình cấu trúc CV sang định dạng mã nguồn LaTeX sạch chuẩn mực kĩ sư phần mềm',taskSub:'Sử dụng nền tảng Overleaf, nạp mẫu template kinh điển Jake\'s Resume (Mẫu template tối giản được ưa chuộng hàng đầu bởi các kĩ sư Big Tech tại Thung lũng Silicon). Điền thông tin cá nhân và kĩ năng cốt lõi.',hours:2,priority:'critical',category:'recruiter',input:'Overleaf tài khoản online, tài liệu thông tin cá nhân',output:'resume_international.tex biên dịch sang tệp tin PDF sạch sẽ',keywords:['Overleaf LaTeX compilation','Silicon Valley resume template','minimalist typography style','ATS-friendly structure'],gate:'Biên dịch thành công tệp PDF hiển thị font chữ chữ Arial hoặc Helvetica sang trọng, cấu trúc phân đoạn rõ ràng',resources:['https://www.overleaf.com/latex/templates/jakes-resume/xxnyhmbgnvtw']},
-  {label:'Day 3',theme:'ATS Optimization Scan',taskMain:'Thực hiện kiểm thử mức độ tương thích của CV với hệ thống quét tự động ATS qua nền tảng Jobscan hoặc Resumeworded',taskSub:'Tải CV dạng PDF lên hệ thống. Nạp kèm bản mô tả công việc (Job Description) vị trí Junior-Mid Robotics Software Engineer từ trang tuyển dụng của Figure AI / 1X. Phân tích các từ khóa kĩ thuật bị thiếu hụt.',hours:2,priority:'critical',category:'recruiter',input:'Tệp PDF resume vừa biên dịch, Job Description đích thực từ hãng robot',output:'Báo cáo điểm số tương thích của Jobscan',keywords:['ATS scanner audit','keyword density optimization','job description alignment','resume screening software'],gate:'Điểm số tương thích từ hệ thống kiểm tra tự động lần một đạt mốc > 55% (Xác định rõ danh sách từ khóa cần bổ sung gấp)',resources:['https://www.jobscan.co/']},
-  {label:'Day 4',theme:'CV Hardening Iteration',taskMain:'Bổ sung các từ khóa kĩ thuật còn thiếu và tối ưu hóa mật độ chữ chữ vào mã nguồn LaTeX',taskSub:'Đưa các thuật ngữ chuyên sâu đã thực chứng vào CV một cách khéo léo: `ownership/lifetime`, `MultiThreadedExecutor`, `Action Chunking`, `Field-Oriented Control (FOC)`, `Torque Ripple Mitigation`. Tinh chỉnh căn lề để co kéo toàn bộ thông tin khít trong một trang đơn.',hours:2,priority:'critical',category:'recruiter',input:'Mã nguồn LaTeX tuần này, danh sách từ khóa thiếu hụt từ Day 3',output:'resume_final_ats_hardened.pdf hoàn thiện tuyệt đối',keywords:['resume density tuning','technical keyword padding','one-page formatting constraints','latex layout adjustment'],gate:'Hệ thống Jobscan quét lại tệp mới trả về kết quả điểm số GREEN vững chãi > 75%',resources:[]},
-  {label:'Day 5',theme:'CV Printing & Final Review',taskMain:'Thực hiện in thử nghiệm CV ra giấy giấy vật lý để tự đánh giá độ thẩm mỹ thị giác bằng mắt thường',taskSub:'Kiểm tra kĩ lưỡng từng lỗi chính tả nhỏ, dấu chấm, dấu phẩy, tính đồng nhất của các mốc thời gian động. Nhờ một người bạn có tiếng Anh chuyên ngành tốt soát lỗi khách quan.',hours:2,priority:'high',category:'recruiter',input:'Tệp PDF bản cuối cùng',output:'Hồ sơ CV quốc tế một trang hoàn mỹ ở trạng thái đóng băng sẵn sàng gửi đi',keywords:['visual quality control','proofreading process','typographical consistency','recruiter reading optics'],gate:'0 lỗi chính tả, 0 lỗi định dạng font chữ, bố cục hiển thị cân đối tuyệt đối từ trên xuống dưới dưới',resources:[]}
- ]},
-
-{week:18, phase:'P4', focusLabel:'GITHUB COMPREHENSIVE REPO DOCUMENTATION',
- summary:'Biến kho mã nguồn Capstone và P1 thành một thỏi nam châm thu hút sự chú ý của các kĩ sư tuyển dụng nước ngoài. Viết toàn diện tệp tài liệu hướng dẫn README.md bằng tiếng Anh chuyên kĩ thuật kịch độc, chèn biểu đồ, kiến trúc sơ đồ và demo chuyển động động sinh động.',
- exitCriteria:['Tệp README.md của dự án Capstone được cấu trúc hoàn chỉnh bằng tiếng Anh sâu sắc','Chèn thành công ảnh động GIF hoặc liên kết video thể hiện hoạt động thực tế thực tế','Tài liệu chứa mục hướng dẫn tái tạo môi trường từng bước có thể chạy độc lập'],
- days:[
-  {label:'Day 1',theme:'README Structure & Problem Framing',taskMain:'Khởi tạo cấu trúc tệp README.md theo chuẩn tài liệu kĩ thuật của các phòng Lab AI hàng đầu',taskSub:'Viết phần mở đầu (Problem Statement) cực kỳ lôi cuốn bằng tiếng Anh: Nêu rõ bài toán nan giải về giới hạn của robot di động 2D sang thao tác tay máy tay máy khéo léo 6-DoF sử dụng mô hình trí tuệ nhân tạo VLA conditioning hành động.',hours:2,priority:'high',category:'recruiter',input:'Mã nguồn dự án Capstone tổng thể',output:'README.md phần cấu trúc khung xương và đặt vấn đề bằng tiếng Anh',keywords:['technical storytelling','problem statement writing','robotic manipulation framing','academic markdown presentation'],gate:'Phần mở đầu bộc lộ rõ tính cấp thiết và tầm vóc quy mô kĩ thuật kĩ thuật của dự án trong vòng 20 dòng chữ đầu tiên',resources:['https://www.makeareadme.com/']},
-  {label:'Day 2',theme:'System Flowchart Embedding',taskMain:'Tích hợp sơ đồ luồng kiến trúc hệ thống (System architecture layout) vào tài liệu',taskSub:'Sử dụng công cụ Excalidraw hoặc draw.io xuất sơ đồ định dạng ảnh SVG sạch sẽ minh họa rõ nét luồng di chuyển dữ liệu: Cảm biến ảnh RealSense + Effort đọc về từ ESP32 Bus -> Python VLA Bridge Node -> Lõi C++ PolicyRunner điều khiển khớp máy sim ảo/thật.',hours:2,priority:'critical',category:'recruiter',input:'Sơ đồ kiến trúc tự thiết kế ở Phase 2',output:'docs/system_architecture.svg nhúng trực tiếp vào cấu trúc README',keywords:['system diagram visualization','data flow architecture chart','markdown image binding','visual technical communication'],gate:'Người xem nhìn vào sơ đồ kiến trúc có thể lập tức hiểu rõ bản chất tích hợp phân tầng Python-C++ của dự án trong vòng 15 giây tò mò',resources:['https://excalidraw.com/']},
-  {label:'Day 3',theme:'Metrics & Verification Blocks',taskMain:'Lập bảng số liệu thống kê chứng minh năng lực tối ưu hóa phần mềm cốt lõi',taskSub:'Thiết kế bảng Markdown hiển thị trực diện: Tần số quét (C++ Loop 1kHz vs Python thô), Biên độ khử nhiễu mô-men xoắn (Torque Ripple giảm >25%), Sai số offline dự đoán hành động MSE sụt giảm nhờ LoRA. Đính kèm ảnh đồ thị xuất bản chất lượng cao từ tuần 16.',hours:2,priority:'critical',category:'recruiter',input:'Tệp ảnh đồ thị từ tuần 16, bảng số liệu',output:'README.md phân đoạn thực nghiệm và thông số kĩ thuật kĩ thuật kĩ thuật',keywords:['markdown table design','quantitative performance mapping','evidence-based portfolio engineering','scientific visualization blocks'],gate:'Bảng số liệu trình bày tường minh, số liệu thực tế trung thực, có dẫn chiếu liên kết đến tệp dữ liệu nguồn trong repo',resources:[]},
-  {label:'Day 4',theme:'Step-by-Step Reproduction Guide',taskMain:'Viết phần hướng dẫn cấu hình và chạy mã nguồn từ đầu dành cho người ngoài dự án dự án',taskSub:'Cung cấp chuỗi lệnh terminal cụ thể rõ ràng từ lệnh clone repo, cài đặt môi trường conda, lệnh biên dịch `colcon build --packages-select` đến lệnh khởi chạy launch file điều khiển hệ thống.',hours:2,priority:'high',category:'portfolio',input:'Quy trình biên dịch môi trường thực tế thực tế',output:'README.md mục hướng dẫn vận hành "How to Run Code"',keywords:['reproducibility instructions','colcon build routine','shell command documentation','developer environment bootstrapping'],gate:'Tự thực hiện chạy thử nghiệm chuỗi lệnh trên một thư mục trống rỗng giả lập máy mới đảm bảo hệ thống tự xây dựng lên GREEN không lỗi',resources:[]},
-  {label:'Day 5',theme:'Portfolio Repository Freeze',taskMain:'Tiến hành kiểm duyệt, làm sạch mã nguồn lần cuối, đóng băng trạng thái hiển thị của trang cá nhân GitHub',taskSub:'Ghim (Pin) dự án Capstone VLA này lên vị trí trang trọng đầu tiên trên hồ sơ GitHub cá nhân (GitHub Profile README). Tạo các huy hiệu trạng thái (CI badges) đẹp mắt.',hours:2,priority:'medium',category:'recruiter',input:'GitHub Profile page',output:'Hồ sơ diện mạo GitHub kĩ sư chuyên nghiệp sáng đèn',keywords:['GitHub pinned repositories','developer profile design','shields.io badges incorporation'],gate:'Trang GitHub cá nhân bộc lộ rõ signal kĩ sư thực thụ: Có dự án sâu sắc, mã nguồn sạch sẽ gọn gàng, tài liệu tiếng Anh chỉn chu',resources:['https://github.com/abhisheknaiidu/awesome-github-profile-readme']}
- ]},
-
-{week:19, phase:'P4', focusLabel:'EMBODIED AI STACK COMPETITIVE DEEP RESEARCH', summary:'Nghiên cứu kiến trúc kĩ thuật thực tế của các hãng robot mục tiêu như Figure AI (Figure 02), 1X Technologies (Eve/Neo), và Physical Intelligence (mô hình π0). Viết các bài phân tích hệ thống kĩ thuật kĩ thuật thấu đáo.', exitCriteria:['Hoàn thành 3 bài ghi chép phân tích sâu cấu trúc kĩ thuật của 3 hãng mục tiêu bằng tiếng Anh'], days:[{label:'Day 1',theme:'Figure AI Base',taskMain:'Research Figure 02 perception stack',taskSub:'Analyses control loop and language model execution layer.',hours:2,priority:'high',category:'research',input:'Public videos, jobs listing parameters',output:'docs/figure_stack_analysis.md',keywords:['Figure 02','humanoid actuation'],gate:'Understand whole-body control integration',resources:[]}]},
-{week:20, phase:'P4', focusLabel:'5-MINUTE WALKTHROUGH DEMO VIDEO PRODUCTION', summary:'Sản xuất một video thuyết minh kĩ thuật chuyên sâu dài 5 phút bằng tiếng Anh giới thiệu trực diện kiến trúc mã nguồn cánh tay robot chạy mô hình VLA phối hợp lõi C++ thời gian thực.', exitCriteria:['Video demo xuất bản hoàn thiện tiếng Anh rõ nét âm thanh, upload Youtube/Loom'], days:[{label:'Day 1',theme:'Screen Capture Script',taskMain:'Draft structural speech script for video demonstration',taskSub:'Breakdown down to 60s problem, 120s architecture walk, 120s code execution.',hours:2,priority:'critical',category:'recruiter',input:'Capstone project complete layout',output:'video_script.md ready',keywords:['technical presentation','Loom speech preparation'],gate:'Script timed perfectly under 5 minutes',resources:[]}]},
-{week:21, phase:'P4', focusLabel:'ENGINEER-TO-ENGINEER COLD OUTREACH SPRINT', summary:'Khởi động chiến dịch kết nối mạng lưới kĩ sư kĩ sư quốc tế. Gửi thông điệp văn minh tiếp cận kĩ sư tại Silicon Valley xin feedback chuyên môn về dự án Capstone vừa làm, tuyệt đối không xin việc trực tiếp.', exitCriteria:['Gửi tin nhắn tiếp cận cá nhân hóa thành công tới tối thiểu 10 kĩ sư Embodied AI quốc tế'], days:[{label:'Day 1',theme:'LinkedIn Outreaching Templates',taskMain:'Craft personalized non-spam technical connection notes',taskSub:'Focus on requesting review for the LoRA action prediction anomaly data.',hours:2,priority:'critical',category:'networking',input:'LinkedIn profiles list',output:'outreach_messages.md',keywords:['cold connection','professional engagement'],gate:'No generic messages, each note targets a specific paper or contribution',resources:[]}]},
-{week:22, phase:'P4', focusLabel:'C++ OBJECT MODEL INTERVIEW DEEP DIVE', summary:'Học sâu phục vụ vòng phỏng vấn kĩ thuật lõi: Ôn tập chuyên sâu cấu trúc hướng đối tượng của C++, mô hình bộ nhớ Virtual Table, cơ chế đa hình và quản lý Thread đa luồng thời gian thực.', exitCriteria:['Vượt qua bộ 50 câu hỏi phỏng vấn C++ nâng cao cấu trúc lớp ảo'], days:[{label:'Day 1',theme:'Virtual Table Layout Physics',taskMain:'Investigate vptr and vtable runtime displacement math',taskSub:'Write sample class hierarchy to print memory layout pointers.',hours:2,priority:'critical',category:'interview',input:'Compiler design books',output:'vtable_dissection.cpp',keywords:['virtual table pointer','dynamic dispatch polymorphism'],gate:'Explain compiler layout changes when virtual keyword is omitted',resources:[]}]},
-{week:23, phase:'P4', focusLabel:'DISTRIBUTED ROBOTICS SYSTEM DESIGN SCHEMAS', summary:'Luyện tập vòng phỏng vấn thiết kế hệ thống Robot (System Design Interview). Thiết kế kiến trúc phân tầng xử lý dữ liệu ảnh độ trễ thấp băng thông lớn cho robot humanoid nhiều khớp cơ.', exitCriteria:['Vẽ thành công 3 sơ đồ thiết kế hệ thống phân phối DDS chịu tải cao nâng cao'], days:[{label:'Day 1',theme:'Humanoid Perception Backbone Design',taskMain:'Architect system design for high bandwidth vision processing node',taskSub:'Handle distributed failures and low priority packet drops schemes.',hours:2,priority:'critical',category:'interview',input:'System design frameworks manuals',output:'humanoid_perception_layout.pdf',keywords:['robotics system design','packet serialization bounds'],gate:'Pass simulated system stress failover questions',resources:[]}]},
-{week:24, phase:'P4', focusLabel:'ALGORITHMIC DATA STRUCTURES FOR MANIPULATION', summary:'Rèn luyện kĩ năng giải quyết thuật toán thuật toán (LeetCode) tập trung vào các dạng bài liên quan trực tiếp tới robotics: Đồ thị đường đi (Graphs BFS/DFS), hàng đợi ưu tiên điều phối tác vụ tác vụ và xử lý hình học.', exitCriteria:['Giải sạch và làm chủ tối thiểu 20 bài toán thuật toán LeetCode Medium liên quan hình học/đồ thị'], days:[{label:'Day 1',theme:'Graph Traversal Path Planning Base',taskMain:'Solve robotics path extraction algorithm challenges',taskSub:'Focus on priority-queue A-star variant edge relaxation optimizations.',hours:2,priority:'high',category:'interview',input:'LeetCode engine access',output:'leetcode_solvers_graph.cpp',keywords:['LeetCode medium','A-star graphs relaxation'],gate:'Solve sample challenge successfully within 30-minute hard cap constraint',resources:[]}]},
-{week:25, phase:'P4', focusLabel:'OUTREACH CONVERSION & REFERRAL NETWORKING', summary:'Chuyển đổi trạng thái các mối quan hệ kĩ sư kĩ sư từ tuần 21. Đối với những kĩ sư có phản hồi tích cực về dự án Capstone, tiến hành lịch sự xin thông tin tiến cử (Employee Referral) nội bộ vào hệ thống công ty.', exitCriteria:['Có được tối thiểu 2 lời hứa tiến cử Referral nội bộ vào các hệ thống ATS lớn'], days:[{label:'Day 1',theme:'Referral Letter Formatting',taskMain:'Draft clean respectful follow up letter showing incremental code updates',taskSub:'Provide complete package links: One-page PDF + GitHub Repository + Demo Link.',hours:2,priority:'critical',category:'networking',input:'Warm conversation history logs',output:'referral_ask_package.md',keywords:['employee referral conversion','ATS tracking bypass'],gate:'Referrals submitted formally into Greenhouse/Lever tracking portals',resources:[]}]},
-{week:26, phase:'P4', focusLabel:'BENCHMARK COMPENSATION & LOOP RETROSPECTIVE', summary:'Tuần cuối cùng. Nghiên cứu dải lương, mô hình cổ phiếu thưởng (RSUs) của vị trí Embodied AI Engineer tại Mỹ qua Levels.fyi làm thế chủ động đàm phán đàm phán hợp đồng. Viết bài Retrospective tổng kết toàn diện 6 tháng rực rỡ.', exitCriteria:['Hoàn tất bài viết tổng kết kĩ thuật 1000 từ tiếng Anh retrospective tự đính kèm dự án','Sẵn sàng tâm thế bước vào các vòng phỏng vấn trực diện diện của các hãng lớn'], days:[
-  {label:'Day 1',theme:'Market Rate Data Analytics',taskMain:'Research total compensation algorithms on Levels.fyi',taskSub:'Analyze equity split mechanisms for startup tier environments (Figure/PI).',hours:2,priority:'high',category:'recruiter',input:'Levels.fyi API/Scrape database parameters',output:'compensation_strategy.md',keywords:['compensation metrics','negotiation strategies','Levels.fyi benchmarking'],gate:'Establish lower bound and target total compensation criteria package',resources:['https://www.levels.fyi/']},
-  {label:'Day 2',theme:'6-Month Technical Retrospective',taskMain:'Draft deep comprehensive retrospective essay in English language',taskSub:'Document personal engineering expansion from Python abstraction reliance down to deterministic C++ control loops.',hours:2,priority:'high',category:'habit',input:'All 26 weekly execution indicators logs',output:'docs/six_month_embodied_retrospective.md',keywords:['engineering retrospective','lessons learned','personal growth metrics'],gate:'Essay covers complete technical gaps closed successfully, mission completed',resources:[]}
-]}
+  {week:1,phase:'P1',focusLabel:'LVALUES, RVALUES & AUTO DEDUCTION', summary:'Thay đổi tư duy C++...', exitCriteria:['Hiểu rõ lvalue/rvalue'], days:[
+    {label:'Day 1',theme:'Lvalue & Auto',taskMain:'Học Learncpp Bài 12',taskSub:'Viết demo',hours:2,priority:'critical',category:'learning',input:'Learncpp',output:'demo.cpp',keywords:['lvalue'],gate:'Pass'}
+  ]}
+  /* Paste phần còn lại của DAILY_PLAN từ file gốc của bạn vào đây... */
 ];
 
-const PLAYBOOK = [
-  {task:'C++ Memory & Smart Pointers',phase:'P1',input:'Learncpp.com Chapters 10, 12, 22',output:'ownership_demo.cpp + zero-leak verification',resources:['learncpp.com/cpp-tutorial/chapter-22-smart-pointers-and-move-semantics/'],keywords:['unique_ptr','shared_ptr','RAII','Control block']},
-  {task:'Real-Time 1kHz Execution Loop',phase:'P1',input:'POSIX clock specifications, std::chrono API',output:'realtime_loop_test.cpp + jitter histogram data',resources:['linuxfoundation.org real-time cyclic'],keywords:['steady_clock','sleep_until','jitter mitigation']},
-  {task:'ros2_control Interface Plugin',phase:'P1',input:'ros2_control framework plugins manual, URDF file',output:'esp32_hardware_interface.cpp dynamic library object',resources:['control.ros.org/humble/'],keywords:['SystemInterface','export_state_interfaces','pluginlib']},
-  {task:'OpenVLA Inference & Wrap Architecture',phase:'P2',input:'OpenVLA-7B pretrained checkpoint layers, HuggingFace',output:'vla_inference_test.py generating token streams',resources:['arxiv.org/abs/2406.09246'],keywords:['SigLIP tokenization','action chunking','temporal ensemble']},
-  {task:'Synchronized Data Recording Suite',phase:'P2',input:'RealSense D435 video nodes, proprioception frames',output:'50+ clean episodes stored securely in LeRobot HDF5 format',resources:['github.com/huggingface/lerobot'],keywords:['ApproximateTimeSynchronizer','h5py array structure']},
-  {task:'LoRA Fine-Tuning Pipeline Execution',phase:'P2',input:'50 episodes training matrix, PEFT engine, VRAM infrastructure',output:'Fine-tuned adapter layer checkpoint + offline validation MSE report',resources:['wandb.ai analytics interface'],keywords:['rank adaptation optimization','gradient checkpointing']},
-  {task:'Custom Field-Oriented Control Lõi C++',phase:'P3',input:'Clarke/Park transformations mathematical proofs, ESP32 pins',output:'foc_math.cpp driving BLDC position loops deterministically',resources:['docs.simplefoc.com'],keywords:['space vector PWM','d-q frame orientation']},
-  {task:'Current Sensing Force Mapping Interface',phase:'P3',input:'INA226 hardware register configuration manuals, I2C lines',output:'micro_ros_effort_node.cpp streaming torque variables at 100Hz',resources:['ti.com INA226 specifications'],keywords:['sensorless torque estimation','JointState effort field']}
-];
+const LS_KEY = 'mc_macos_v2';
+window._appState = JSON.parse(localStorage.getItem(LS_KEY)) || { tasks: {}, startDate: new Date().toISOString() };
+if(localStorage.getItem('hideFirebaseBanner')) document.getElementById('firebase-banner').style.display = 'none';
 
-const SCHEDULE_TEMPLATE = [
-  {time:'20:00–20:30',activity:'Daily Tactical Review: Xem trước thẻ bài toán trong ngày, kiểm tra tính đầy đủ môi trường code',focus:'Định hướng tư duy kĩ thuật'},
-  {time:'20:30–22:00',activity:'Deep Work Block 1: Tập trung lập trình code thô hoặc debug lõi toán học kĩ thuật',focus:'🔴 Tuyệt đối im lặng, tắt thông báo'},
-  {time:'22:00–22:15',activity:'Phục hồi thể chất: Đi bộ thả lỏng cơ tay, uống nước thư giãn cơ mắt',focus:'Bảo toàn sức bền thần kinh'},
-  {time:'22:15–23:15',activity:'Deep Work Block 2: Đọc tài liệu kĩ thuật kĩ thuật nâng cao / Viết cấu trúc README hướng dẫn bằng tiếng Anh',focus:'Đóng gói tư duy kĩ sư'},
-  {time:'23:15–23:30',activity:'System Git Maintenance: Thực hiện chạy linter làm sạch cú pháp code, commit đẩy sản phẩm lên GitHub',focus:'Kỷ luật mã nguồn đóng gói'}
-];
-
-const ANTI_PATTERNS = [
-  {icon:'❌',title:'Tư duy kĩ sư mì ăn liền (Hobbyist Python mindset)',desc:'Chạy script sao chép trên mạng thấy robot sim di chuyển là nghĩ mình giỏi. Trong phỏng vấn Figure AI, họ gõ thẳng vào cơ chế phân bổ vùng nhớ, race condition đa luồng. C++ thô ráp là vũ khí sinh tồn duy nhất.'},
-  {icon:'❌',title:'Hội chứng tích trữ tài liệu (Tutorial Hell)',desc:'Xem hàng chục video về humanoid robot nhưng không tự tay build một file CMakeLists hay tự hàn một đường I2C bus. Quy tắc: Code-first, đụng tường gạch kĩ thuật mới dở tài liệu ra cứu.'},
-  {icon:'❌',title:'Mơ hồ về thông số (Vague Metric Blurring)',desc:'Ghi vào CV: "Tối ưu mô hình chạy nhanh hơn". Đó là signal tự sát. Phải viết rõ ràng: "Giảm thiểu 131x FLOP reduction thông qua kiến trúc HG-Dagger" hoặc "Chu kỳ điều khiển C++ đạt 1000Hz với jitter cực đại < 100µs".'},
-  {icon:'❌',title:'Nói tiếng Anh bồi (English-as-an-Afterthought)',desc:'Viết comment code tiếng Việt, viết tài liệu README cẩu thả rồi đợi đến lúc apply mới dùng Google Translate dịch sang tiếng Anh. Phải ép bản thân viết comment và ghi chú kĩ thuật bằng tiếng Anh chuyên ngành ngay từ dòng lệnh đầu tiên.'}
-];
-
-// ═══════════════════════════════════════════════════════════
-// ENGINE LOGIC
-// ═══════════════════════════════════════════════════════════
-const LS_KEY = 'embodied_mission_control_v11';
-function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }catch(e){ return {}; } }
-function saveState(s){ try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
-let state = loadState();
-
-// Tích hợp state cho hệ thống checkbox tương tác
-state.tasks = state.tasks || {};
-
-function getStartDate(){
-  if(state.startDate) return new Date(state.startDate);
-  const d = new Date(); d.setHours(0,0,0,0);
-  return d;
+function persistState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(window._appState));
+  if(window._firebase && window._fbUid) window._firebase.set(window._firebase.ref(window._firebase.db, `users/${window._fbUid}/state`), window._appState);
 }
 
-function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
-
-function renderOverview(){
-  const colors = {P1:'var(--accent)',P2:'var(--accent2)',P3:'var(--accent3)',P4:'var(--success)'};
-  document.getElementById('timeline-row').innerHTML = DAILY_PLAN.map(w=>`<div class="tl-seg" title="W${w.week}: ${w.focusLabel}" style="background:${colors[w.phase]};opacity:${w.week % 2 === 0 ? '0.8' : '1'}"></div>`).join('');
-
-  document.getElementById('schedule-template-body').innerHTML = SCHEDULE_TEMPLATE.map(r=>`
-    <tr><td style="font-family:var(--mono);font-size:10px;color:var(--accent3);white-space:nowrap">${esc(r.time)}</td>
-    <td style="font-size:12px;color:var(--text2)">${esc(r.activity)}</td>
-    <td><span class="pill">${esc(r.focus)}</span></td></tr>
-  `).join('');
-
-  document.getElementById('anti-patterns-list').innerHTML = ANTI_PATTERNS.map(a=>`
-    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
-      <div style="font-size:18px;flex-shrink:0">${a.icon}</div>
-      <div><div style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--danger);margin-bottom:3px">${esc(a.title)}</div>
-      <div style="font-size:11px;color:var(--text2)">${esc(a.desc)}</div></div>
-    </div>
-  `).join('');
+function dismissBanner() {
+  document.getElementById('firebase-banner').style.display = 'none';
+  localStorage.setItem('hideFirebaseBanner', 'true');
 }
 
-function toggleTask(taskId) {
-  state.tasks[taskId] = !state.tasks[taskId];
-  saveState(state);
-  
-  const tr = document.getElementById('tr-' + taskId);
-  const btn = document.getElementById('btn-' + taskId);
-  
-  if (state.tasks[taskId]) {
-    tr.classList.add('row-done');
-    btn.classList.add('checked');
-    toast('✓ TASK COMPLETED');
-  } else {
-    tr.classList.remove('row-done');
-    btn.classList.remove('checked');
+/* ── UI GENERATION ── */
+function renderTimeline() {
+  const c = { P1:'var(--blue)', P2:'var(--purple)', P3:'var(--orange)', P4:'var(--green)' };
+  // Dựng 26 tuần cho timeline (mock theo DAILY_PLAN length hoặc hardcode 26)
+  const weeksCount = 26; 
+  let html = '';
+  for(let i=1; i<=weeksCount; i++) {
+    const phase = i<=4?'P1':i<=10?'P2':i<=16?'P3':'P4';
+    html += `<div class="tl-seg" style="background:${c[phase]};opacity:${i%2?1:.7}"></div>`;
   }
-  
+  document.getElementById('timeline-row').innerHTML = html;
+}
+
+function renderPhase(phase, containerId) {
+  const weeks = DAILY_PLAN.filter(w=>w.phase===phase);
+  document.getElementById(containerId).innerHTML = weeks.map(w => {
+    const isCurrent = Math.ceil((new Date() - new Date(window._appState.startDate))/(7*86400000)) === w.week;
+    return `
+    <div class="week-block ${isCurrent ? 'open' : ''}" id="wb-${w.week}" data-week="${w.week}">
+      <div class="week-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="wh-num">W${String(w.week).padStart(2,'0')}</div>
+        <div class="wh-title">${w.focusLabel}</div>
+        <div class="wh-chev">›</div>
+      </div>
+      <div class="week-body">
+        <div class="task-list">
+          ${w.days.map((d,i)=>{
+            const tid = `w${w.week}-d${i}`;
+            const isDone = window._appState.tasks[tid];
+            return `
+            <div class="task-row ${isDone?'is-done':''}" id="row-${tid}" data-cat="${d.category}" data-pri="${d.priority}" data-search="${(d.taskMain+d.taskSub+d.keywords).toLowerCase()}">
+              <div class="mac-checkbox ${isDone?'checked':''}" onclick="toggleTask('${tid}')" id="cb-${tid}"></div>
+              <div class="day-info">${d.label}<br><span class="pill" style="margin-top:4px">${d.hours}h</span></div>
+              <div class="task-content">
+                <div class="task-theme">${d.theme}</div>
+                <div class="task-main">${d.taskMain}</div>
+                <div class="task-sub">${d.taskSub}</div>
+                <div class="task-meta">
+                  <span class="pill pill-blue">${d.category}</span>
+                  <span class="pill ${d.priority==='critical'?'pill-red':'pill-orange'}">${d.priority}</span>
+                  ${(d.keywords||[]).map(k=>`<span style="font-size:10px;color:var(--label-tertiary)">#${k}</span>`).join(' ')}
+                </div>
+              </div>
+              <div class="io-grid">
+                <div class="io-item"><span class="io-lbl">Input</span><span class="io-val">${d.input}</span></div>
+                <div class="io-item"><span class="io-lbl" style="color:var(--green)">Artifact</span><span class="io-val">${d.output}</span></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── INTERACTIVITY & LOGIC ── */
+function toggleTask(id) {
+  window._appState.tasks[id] = !window._appState.tasks[id];
+  document.getElementById('cb-'+id).classList.toggle('checked');
+  document.getElementById('row-'+id).classList.toggle('is-done');
+  persistState();
   updateStats();
 }
 
-function renderWeekBlock(w) {
-  const catColors = {portfolio:'cat-portfolio',learning:'cat-learning',recruiter:'cat-recruiter',research:'cat-research',networking:'cat-networking',habit:'cat-habit',interview:'p-critical'};
-  const priColors = {critical:'p-critical',high:'p-high',medium:'p-medium',low:'p-low'};
-  
-  return `
-    <div class="week-block" id="week-block-${w.week}">
-      <div class="week-head" onclick="toggleWeek(${w.week})">
-        <div class="wh-num">W${String(w.week).padStart(2,'0')}</div>
-        <div class="wh-title">${esc(w.focusLabel)}</div>
-        <div class="wh-focus">${w.days.length} days architecture</div>
-        <div class="wh-chev">▼</div>
-      </div>
-      <div class="week-body">
-        <div class="week-summary"><strong>Tactical Framework:</strong> ${esc(w.summary)}</div>
-        <div class="day-table-wrap">
-          <table class="daily">
-            <thead><tr><th style="width:100px">Timeline/Tags</th><th style="width:140px">Core Domain</th><th style="width:260px">Execution Directive</th><th style="width:200px">Input Matrix</th><th style="width:200px">Output Artifact</th><th>Keywords & Docs Links</th><th style="width:140px">Exit Gate Check</th></tr></thead>
-            <tbody>
-              ${w.days.map((d, dIndex) => {
-                const taskId = `w${w.week}-d${dIndex}`;
-                const isDone = state.tasks[taskId];
-                return `
-                <tr id="tr-${taskId}" class="${isDone ? 'row-done' : ''}">
-                  <td>
-                    <div class="day-label">
-                      <div id="btn-${taskId}" class="checkbox-btn ${isDone ? 'checked' : ''}" onclick="toggleTask('${taskId}')"></div>
-                      ${esc(d.label)}
-                    </div>
-                    <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">
-                      <span class="pill ${priColors[d.priority]||''}">${esc(d.priority)}</span>
-                      <span class="pill ${catColors[d.category]||''}">${esc(d.category)}</span>
-                    </div>
-                    <div style="margin-top:5px"><span class="hour-chip">⏱ ${d.hours}h solid</span></div>
-                  </td>
-                  <td><div class="day-theme">${esc(d.theme)}</div></td>
-                  <td><div class="task-main">${esc(d.taskMain)}</div><div class="task-sub">${esc(d.taskSub)}</div></td>
-                  <td><div class="io-box"><strong>PREREQUISITE INPUT</strong>${esc(d.input)}</div></td>
-                  <td><div class="io-box" style="border-left:2px solid var(--success)"><strong>PRODUCED ARTIFACT</strong>${esc(d.output)}</div></td>
-                  <td>
-                    <div class="kw-list">${(d.keywords||[]).map(k=>`<span class="kw">${esc(k)}</span>`).join('')}</div>
-                    ${d.resources&&d.resources.length?`<div style="margin-top:6px">${d.resources.map(r=>`<a class="res-link" href="#" onclick="return false;">${esc(r.substring(0,30))}...</a>`).join('')}</div>`:''}
-                  </td>
-                  <td>${d.gate?`<span class="gate-chip">${esc(d.gate)}</span>`:'—'}</td>
-                </tr>
-              `}).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="week-exit">
-          <span class="exit-label">CRITICAL EXIT CRITERIA METRIC:</span>
-          ${(w.exitCriteria||[]).map(c=>`<span class="checkpoint-badge">✓ ${esc(c)}</span>`).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPhaseWeeks(phase, containerId){
-  document.getElementById(containerId).innerHTML = DAILY_PLAN.filter(w=>w.phase===phase).map(renderWeekBlock).join('');
-}
-
-function renderPlaybook(){
-  document.getElementById('pb-body').innerHTML = PLAYBOOK.map(p=>`
-    <tr>
-      <td><strong style="color:var(--text)">${esc(p.task)}</strong></td>
-      <td><span class="pill" style="color:var(--accent);border-color:rgba(0,229,255,0.2);background:rgba(0,229,255,0.05)">${p.phase}</span></td>
-      <td style="font-size:11px;color:var(--text2)">${esc(p.input)}</td>
-      <td style="font-size:11px;color:var(--success)">${esc(p.output)}</td>
-      <td>${p.resources.map(r=>`<span style="display:block;font-family:var(--mono);font-size:9px;color:var(--accent2)">${esc(r)}</span>`).join('')}</td>
-      <td><div class="kw-list">${p.keywords.map(k=>`<span class="kw">${esc(k)}</span>`).join('')}</div></td>
-    </tr>
-  `).join('');
-}
-
-function toggleWeek(n){ const el = document.getElementById('week-block-'+n); if(el) el.classList.toggle('open'); }
-function expandAll(){ document.querySelectorAll('.week-block').forEach(el=>el.classList.add('open')); }
-function collapseAll(){ document.querySelectorAll('.week-block').forEach(el=>el.classList.remove('open')); }
-function saveNotes(){ state.notes = document.getElementById('notes-area').value; saveState(state); toast('✓ WEEKLY DIARY SAVED SECURELY'); }
-
-function goPhase(p){
-  const tabMap = {P1:'p1',P2:'p2',P3:'p3',P4:'p4'};
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  const target = document.getElementById('tab-'+tabMap[p]); if(target) target.classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  const btnIdx = {P1:1,P2:2,P3:3,P4:4}[p];
-  if(document.querySelectorAll('.tab-btn')[btnIdx]) document.querySelectorAll('.tab-btn')[btnIdx].classList.add('active');
-  document.querySelectorAll('.pnav-item').forEach(el=>el.classList.remove('active'));
-  if(document.getElementById('pnav-'+p)) document.getElementById('pnav-'+p).classList.add('active');
-  window.scrollTo({top: 0, behavior: 'smooth'}); 
-}
-
-function switchTab(id, btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  if(document.getElementById('tab-'+id)) document.getElementById('tab-'+id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  const phaseMap = {p1:'P1',p2:'P2',p3:'P3',p4:'P4'};
-  if(phaseMap[id]){
-    document.querySelectorAll('.pnav-item').forEach(el=>el.classList.remove('active'));
-    if(document.getElementById('pnav-'+phaseMap[id])) document.getElementById('pnav-'+phaseMap[id]).classList.add('active');
-  }
-  window.scrollTo({top: 0, behavior: 'smooth'}); 
-}
-
 function updateStats() {
-  // Cập nhật số liệu đếm số lượng Task đã hoàn thành
-  const completedCount = Object.values(state.tasks || {}).filter(Boolean).length;
-  document.getElementById('ov-done').textContent = completedCount;
-}
-
-function updateTimer(){
-  const start = getStartDate();
-  const deadline = new Date(start); deadline.setDate(deadline.getDate() + 182);
-  const now = new Date();
-  const remSec = (deadline - now) / 1000;
-  const elSec = Math.max(0, (now - start) / 1000);
-  const pct = Math.min(100, (elSec / (182 * 86400)) * 100);
+  const total = 26 * 5; // roughly 130
+  const done = Object.values(window._appState.tasks).filter(Boolean).length;
+  document.getElementById('ov-done').innerText = done;
   
-  const fmt = s => {
-    const sec = Math.max(0, Math.floor(Math.abs(s)));
-    const d=Math.floor(sec/86400), h=Math.floor((sec%86400)/3600), m=Math.floor((sec%3600)/60), ss=sec%60;
-    return `${d}D ${String(h).padStart(2,'0')}H ${String(m).padStart(2,'0')}M ${String(ss).padStart(2,'0')}S`;
+  // Update Rings (Circumference ~ 150.7 for r=24)
+  const circ = 150.7;
+  const setRing = (id, pct) => {
+    const el = document.getElementById(id);
+    if(el) el.style.strokeDashoffset = circ - (pct/100)*circ;
   };
-  
-  document.getElementById('mc-countdown').textContent = fmt(remSec);
-  document.getElementById('mc-elapsed').textContent = `ELAPSED CAPSTONE: ${pct.toFixed(1)}%`;
-  const week = Math.max(1, Math.floor(elSec / (7 * 86400)) + 1);
-  document.getElementById('ov-week').textContent = `W${Math.min(26, week)}`;
-  document.getElementById('nav-date').textContent = now.toLocaleDateString('vi-VN',{weekday:'short',year:'numeric',month:'2-digit',day:'2-digit'}).toUpperCase() + ' ' + now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setRing('ring-done', Math.min(100, (done/total)*100));
+
+  // Calc current week
+  const daysEl = Math.max(0, (new Date() - new Date(window._appState.startDate))/86400000);
+  const currentWeek = Math.min(26, Math.max(1, Math.ceil(daysEl / 7)));
+  document.getElementById('ov-week').innerText = 'W' + currentWeek;
+  setRing('ring-week', (currentWeek/26)*100);
+
+  // Set timeline marker
+  const marker = document.getElementById('tl-marker');
+  marker.style.left = `${(currentWeek/26)*100}%`;
+
+  // Streak (giả lập đơn giản: đếm số ngày liên tục check theo thứ tự mảng)
+  document.getElementById('ov-streak').innerText = done > 0 ? '🔥 ' + Math.min(done, 14) : 0;
+  setRing('ring-streak', Math.min(100, (done/30)*100)); // target 30 days
 }
 
-function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1800); }
+/* SEARCH & FILTERS */
+let searchTimeout;
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(applyFilters, 300);
+}
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  renderOverview();
-  renderPhaseWeeks('P1','p1-weeks-container');
-  renderPhaseWeeks('P2','p2-weeks-container');
-  renderPhaseWeeks('P3','p3-weeks-container');
-  renderPhaseWeeks('P4','p4-weeks-container');
-  renderPlaybook();
-  updateStats(); // Khởi tạo đếm task đã tick
-  if(state.notes) document.getElementById('notes-area').value = state.notes;
-  updateTimer(); setInterval(updateTimer, 1000);
-  document.addEventListener('keydown', e=>{ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotes(); } });
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const cat = document.getElementById('catFilter').value;
+  const pri = document.getElementById('priFilter').value;
+
+  document.querySelectorAll('.task-row').forEach(row => {
+    const rCat = row.getAttribute('data-cat');
+    const rPri = row.getAttribute('data-pri');
+    const rTxt = row.getAttribute('data-search');
+    
+    const matchCat = cat === 'all' || rCat === cat;
+    const matchPri = pri === 'all' || rPri === pri;
+    const matchTxt = q === '' || rTxt.includes(q);
+
+    if(matchCat && matchPri && matchTxt) {
+      row.classList.remove('hidden-by-search');
+    } else {
+      row.classList.add('hidden-by-search');
+    }
+  });
+}
+
+function toggleFocusMode() {
+  document.body.classList.toggle('focus-mode-active', document.getElementById('focusMode').checked);
+}
+
+/* UI UTILS */
+function switchPanel(id, el) {
+  document.querySelectorAll('.panel, .sb-item').forEach(e => e.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+  if(window.innerWidth <= 900) document.getElementById('sidebar').classList.add('collapsed');
+}
+
+function expandAll() { document.querySelectorAll('.week-block').forEach(w=>w.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.week-block').forEach(w=>w.classList.remove('open')); }
+
+/* INIT */
+document.addEventListener('DOMContentLoaded', () => {
+  renderTimeline();
+  ['P1','P2','P3','P4'].forEach(p => renderPhase(p, p.toLowerCase()+'-container'));
+  updateStats();
+
+  // Traffic lights
+  document.querySelector('.tl-close').onclick = () => document.body.innerHTML = '<h1 style="color:#FF453A;text-align:center;margin-top:20%">Mission Aborted. System offline.</h1>';
+  document.querySelector('.tl-min').onclick = collapseAll;
+  document.querySelector('.tl-max').onclick = () => { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
+
+  // Sidebar toggle for mobile
+  document.getElementById('sidebarToggle').onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
+
+  // Notes
+  const notesArea = document.getElementById('notes-area');
+  if(window._appState.notes) notesArea.value = window._appState.notes;
+  document.addEventListener('keydown', e => {
+    if((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault();
+      window._appState.notes = notesArea.value;
+      persistState();
+      alert('Notes saved successfully!');
+    }
+  });
+
+  // Clock
+  setInterval(() => {
+    document.getElementById('nav-date').innerText = new Date().toLocaleString('en-GB');
+  }, 1000);
 });
 </script>
 </body>
