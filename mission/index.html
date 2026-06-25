@@ -33,7 +33,7 @@
     onAuthStateChanged(auth, user => {
       if (user) {
         window._fbUid = user.uid;
-        const userRef = ref(db, `users/${user.uid}/state`);
+        const userRef = ref(db, `users/duypham_mission_control/state`);
         onValue(userRef, snap => {
           if (snap.exists()) {
             const remote = snap.val();
@@ -702,7 +702,7 @@ if(localStorage.getItem('hideFirebaseBanner')) document.getElementById('firebase
 
 function persistState() {
   localStorage.setItem(LS_KEY, JSON.stringify(window._appState));
-  if(window._firebase && window._fbUid) window._firebase.set(window._firebase.ref(window._firebase.db, `users/${window._fbUid}/state`), window._appState);
+  if(window._firebase) window._firebase.set(window._firebase.ref(window._firebase.db, `users/duypham_mission_control/state`), window._appState);
 }
 
 function dismissBanner() {
