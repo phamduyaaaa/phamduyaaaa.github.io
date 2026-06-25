@@ -32,15 +32,21 @@
     signInAnonymously(auth).catch(e => console.warn('[Firebase] Auth failed', e));
     onAuthStateChanged(auth, user => {
       if (user) {
-        window._fbUid = user.uid;
+        // Luôn trỏ về 1 database cố định thay vì UID ẩn danh để các máy thấy nhau
         const userRef = ref(db, `users/duypham_mission_control/state`);
+        
+        // Lắng nghe dữ liệu realtime từ Firebase
         onValue(userRef, snap => {
           if (snap.exists()) {
             const remote = snap.val();
             if (remote && typeof remote === 'object') {
-              Object.assign(window._appState, remote);
-              window._renderStats && window._renderStats();
-              window._refreshUI && window._refreshUI();
+              // Ghi đè state hiện tại bằng state trên mây
+              window._appState = remote;
+              if (!window._appState.tasks) window._appState.tasks = {};
+              
+              // Cập nhật lại UI nếu các hàm đã được load
+              if (window._updateStats) window._updateStats();
+              if (window._refreshUI) window._refreshUI();
             }
           }
         });
@@ -962,6 +968,30 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Notes saved successfully!');
     }
   });
+
+  window._updateStats = updateStats;
+  window._refreshUI = function() {
+    document.querySelectorAll('.task-row').forEach(row => {
+      const tid = row.id.replace('row-', '');
+      const isDone = !!window._appState.tasks[tid];
+      const cb = document.getElementById('cb-' + tid);
+      
+      if (isDone) {
+        row.classList.add('is-done');
+        if (cb) cb.classList.add('checked');
+      } else {
+        row.classList.remove('is-done');
+        if (cb) cb.classList.remove('checked');
+      }
+    });
+
+    const notesArea = document.getElementById('notes-area');
+    if (notesArea && document.activeElement !== notesArea) {
+      notesArea.value = window._appState.notes || '';
+    }
+  };
+  
+  window._refreshUI();
 
   // Clock
   setInterval(() => {
