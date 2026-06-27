@@ -3,140 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Pham Duc Duy - Embodied AI & Robotics Software Engineer. Building autonomous systems that operate in the real world.">
-<meta property="og:title" content="Phạm Đức Duy · Embodied AI Engineer">
-<meta property="og:description" content="Robotics Software Engineer specializing in ROS 2, Embodied AI, and commercializing end-to-end robotics systems.">
+<meta name="description" content="Phạm Đức Duy — Robotics Software Engineer specializing in ROS 2, Embodied AI, and autonomous mobile robots.">
+<meta property="og:title" content="Phạm Đức Duy · Robotics Engineer">
+<meta property="og:description" content="Building autonomous systems that operate in the real world — ROS 2, Nav2, SLAM, Embodied AI.">
 <meta property="og:type" content="website">
-<title>Phạm Đức Duy · Embodied AI Engineer</title>
+<title>Phạm Đức Duy · Robotics Engineer</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-
-/* =============================================
-   macOS DESIGN TOKENS
-============================================= */
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — Robotics-native palette
+   Cyan = LiDAR scans, sensor data, SLAM maps
+   Not macOS blue — this is sensor-tech blue
+═══════════════════════════════════════════ */
 :root {
-  /* macOS Sequoia dark palette */
-  --bg:              #1C1C1E;
-  --bg-secondary:    #2C2C2E;
-  --bg-tertiary:     #3A3A3C;
-  --surface:         rgba(44, 44, 46, 0.8);
-  --surface-hover:   rgba(58, 58, 60, 0.9);
-  --glass:           rgba(255, 255, 255, 0.06);
-  --glass-border:    rgba(255, 255, 255, 0.10);
-  --glass-hover:     rgba(255, 255, 255, 0.10);
+  --bg:          #090B12;
+  --bg-2:        #101420;
+  --bg-3:        #181D2C;
+  --bg-4:        #1E2435;
 
-  /* macOS accent — system blue */
-  --accent:          #0A84FF;
-  --accent-soft:     rgba(10, 132, 255, 0.15);
-  --accent-dim:      rgba(10, 132, 255, 0.08);
+  --border:       rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --border-strong:rgba(255,255,255,0.18);
 
-  /* Secondary accent — system purple */
-  --purple:          #BF5AF2;
-  --purple-soft:     rgba(191, 90, 242, 0.15);
+  /* Cyan = LiDAR / sensor color — the heart of this palette */
+  --cyan:        #00D4FF;
+  --cyan-dim:    rgba(0,212,255,0.08);
+  --cyan-soft:   rgba(0,212,255,0.15);
+  --cyan-glow:   rgba(0,212,255,0.30);
 
-  /* macOS green */
-  --green:           #30D158;
-  --yellow:          #FFD60A;
-  --red:             #FF453A;
-  --orange:          #FF9F0A;
+  /* Indigo = secondary — depth data, embeddings */
+  --indigo:      #818CF8;
+  --indigo-dim:  rgba(129,140,248,0.10);
+
+  /* Status colors */
+  --green:       #00FF88;
+  --green-dim:   rgba(0,255,136,0.10);
+  --orange:      #FF8C3D;
+  --red:         #FF4D4D;
 
   /* Typography */
-  --text-primary:    rgba(255,255,255,0.92);
-  --text-secondary:  rgba(255,255,255,0.60);
-  --text-tertiary:   rgba(255,255,255,0.36);
-  --text-label:      rgba(255,255,255,0.50);
+  --text:        #EDF0F8;
+  --text-2:      #7B8599;
+  --text-3:      #3A4259;
 
-  /* Fonts */
-  --font-display:    'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  --font-body:       'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:       'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  /* Fonts — Space Grotesk has personality without screaming */
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-body:    'Inter', -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Shape */
-  --radius-sm:       8px;
-  --radius:          12px;
-  --radius-lg:       16px;
-  --radius-xl:       20px;
+  --r-xs: 4px;
+  --r-sm: 7px;
+  --r:    11px;
+  --r-lg: 15px;
+  --r-xl: 20px;
 
-  /* Shadows — macOS layered */
-  --shadow-sm:       0 1px 3px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
-  --shadow:          0 4px 16px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-lg:       0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
-  --shadow-xl:       0 24px 60px rgba(0,0,0,0.6);
-
-  /* Motion */
-  --ease-out:        cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition:      0.2s var(--ease-out);
+  --ease:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t:      0.2s var(--ease);
 }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    RESET & BASE
-============================================= */
+═══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
-  color: var(--text-secondary);
+  color: var(--text-2);
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  letter-spacing: 0.01em; /* gentle positive — keeps characters readable */
 }
 
-/* macOS wallpaper-style gradient background */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(10,132,255,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(191,90,242,0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 60% 30%, rgba(48,209,88,0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
+a { color: var(--cyan); text-decoration: none; transition: color var(--t); }
+a:hover { color: var(--text); }
+a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: var(--r-xs); }
+strong { color: var(--text); font-weight: 600; }
 
-a { color: var(--accent); text-decoration: none; transition: color var(--transition); }
-a:hover { color: #fff; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-
-strong { color: var(--text-primary); font-weight: 600; }
-
-/* =============================================
+/* ═══════════════════════════════════════════
    LAYOUT
-============================================= */
-.layout {
-  position: relative;
-  z-index: 1;
-  max-width: 1080px;
+═══════════════════════════════════════════ */
+.container {
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 28px;
 }
 
-/* =============================================
-   macOS WINDOW CHROME — NAV
-============================================= */
+/* ═══════════════════════════════════════════
+   NAV — clean, professional, no OS chrome
+═══════════════════════════════════════════ */
 nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   z-index: 100;
-  height: 48px;
-  background: rgba(28,28,30,0.88);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  height: 54px;
+  background: rgba(9,11,18,0.92);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid var(--border);
 }
 
 .nav-inner {
-  max-width: 1080px;
+  max-width: 1100px;
   margin: 0 auto;
   height: 100%;
   padding: 0 28px;
@@ -146,160 +121,187 @@ nav {
   gap: 16px;
 }
 
-/* macOS traffic lights */
-.nav-traffic {
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 9px;
+}
+
+.nav-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: live-pulse 2.4s ease infinite;
   flex-shrink: 0;
 }
 
-.traffic-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: filter var(--transition);
+@keyframes live-pulse {
+  0%,100% { box-shadow: 0 0 5px var(--green); opacity: 1; }
+  50%      { box-shadow: 0 0 14px var(--green); opacity: 0.75; }
 }
-
-.traffic-dot:hover { filter: brightness(1.2); }
-.traffic-red    { background: #FF5F57; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.3); }
-.traffic-yellow { background: #FEBC2E; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.3); }
-.traffic-green  { background: #28C840; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.3); }
-
-/* Remove overlapping centered title — nav is too narrow for 3 columns */
-.nav-title { display: none; }
 
 .nav-links {
   display: flex;
   gap: 2px;
   list-style: none;
-  flex-shrink: 0;
+  align-items: center;
 }
 
 .nav-links a {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
-  padding: 5px 12px;
-  border-radius: 6px;
+  color: var(--text-2);
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  transition: all var(--t);
+}
+
+.nav-links a:hover { color: var(--text); background: var(--bg-3); }
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--cyan);
+  padding: 7px 16px;
+  border-radius: var(--r-sm);
+  letter-spacing: -0.01em;
+  transition: all 0.15s var(--spring);
   white-space: nowrap;
-  transition: background var(--transition), color var(--transition);
 }
 
-.nav-links a:hover {
-  background: var(--glass);
-  color: var(--text-primary);
+.nav-cta:hover {
+  color: var(--bg);
+  background: #2DDBFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--cyan-glow);
 }
 
-/* =============================================
-   macOS GLASS CARD UTILITY
-============================================= */
-.glass-card {
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition), transform 0.15s var(--ease-spring);
-}
-
-.glass-card:hover {
-  background: var(--glass-hover);
-  border-color: rgba(255,255,255,0.15);
-  box-shadow: var(--shadow);
-}
-
-/* =============================================
-   HERO
-============================================= */
+/* ═══════════════════════════════════════════
+   HERO — coord grid + Nav2 map visualization
+═══════════════════════════════════════════ */
 .hero {
+  position: relative;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-top: 72px;
-  padding-bottom: 60px;
+  align-items: center;
+  padding-top: 54px;
+  overflow: hidden;
 }
 
-.hero-top {
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 56px;
-  align-items: center;
+/* Occupancy-grid background — only on right side */
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.032) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(90deg, transparent 35%, rgba(0,0,0,0.8) 60%, black 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 35%, rgba(0,0,0,0.8) 60%, black 100%);
+  pointer-events: none;
+}
+
+/* Major grid lines */
+.hero-grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.07) 1px, transparent 1px);
+  background-size: 260px 260px;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
   width: 100%;
 }
 
-/* Keep old .hero-inner alias working */
-.hero-inner {
-  display: contents;
+.hero-layout {
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 48px;
+  align-items: center;
+  padding: 80px 0 60px;
 }
+
+.hero-text {}
 
 .hero-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--accent);
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: var(--cyan);
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.hero-eyebrow-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse-dot 2s ease infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
-  50% { opacity: 0.7; box-shadow: 0 0 16px var(--green); }
+.hero-eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--cyan);
+  opacity: 0.7;
 }
 
 h1 {
   font-family: var(--font-display);
-  font-size: clamp(40px, 5.5vw, 64px);
+  font-size: clamp(46px, 6vw, 76px);
   font-weight: 700;
-  line-height: 1.10;
-  letter-spacing: -0.02em; /* readable tight, not squished */
-  color: var(--text-primary);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--text);
   margin-bottom: 10px;
+}
+
+/* Outlined name — signature typographic treatment */
+h1 .name-outlined {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(0,212,255,0.55);
+  letter-spacing: -0.035em;
 }
 
 .hero-role {
   font-family: var(--font-display);
   font-size: clamp(16px, 2vw, 20px);
   font-weight: 400;
-  color: var(--text-secondary);
+  color: var(--text-2);
   margin-bottom: 28px;
-  letter-spacing: 0em; /* neutral — was -0.02em, was cramping */
-  line-height: 1.6;
+  letter-spacing: -0.01em;
+  line-height: 1.55;
 }
 
-.hero-role em {
-  font-style: normal;
-  color: var(--purple);
-  font-weight: 500;
-}
+.hero-role strong { color: var(--cyan); font-weight: 500; }
 
 .hero-bio {
   font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.80;
-  margin-bottom: 36px;
-  max-width: 460px;
-  letter-spacing: 0.01em;
+  line-height: 1.82;
+  color: var(--text-2);
+  margin-bottom: 40px;
+  max-width: 500px;
 }
 
-/* =============================================
-   macOS-STYLE BUTTONS
-============================================= */
-.btn-row {
+/* ═══════════════════════════════════════════
+   BUTTON SYSTEM
+═══════════════════════════════════════════ */
+.btn-group {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
@@ -308,481 +310,396 @@ h1 {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  border-radius: 8px;
+  gap: 7px;
+  padding: 11px 22px;
+  border-radius: var(--r);
   font-family: var(--font-display);
-  font-size: 13.5px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  transition: all 0.15s var(--ease-spring);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: all 0.15s var(--spring);
   cursor: pointer;
   border: none;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .btn:active { transform: scale(0.97); }
 
-.btn-filled {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+.btn-primary {
+  background: var(--cyan);
+  color: var(--bg);
+  box-shadow: 0 2px 8px rgba(0,212,255,0.22);
 }
 
-.btn-filled:hover {
-  background: #3A9BFF;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(10,132,255,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+.btn-primary:hover {
+  background: #2DDBFF;
+  color: var(--bg);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--cyan-glow);
+}
+
+.btn-ghost {
+  background: var(--bg-3);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-4);
+  border-color: var(--border-hover);
+  color: var(--text);
   transform: translateY(-1px);
 }
 
-.btn-outline {
-  background: var(--glass);
-  color: var(--text-primary);
-  border: 0.5px solid var(--glass-border);
-  box-shadow: var(--shadow-sm);
+.btn-indigo {
+  background: var(--indigo-dim);
+  color: var(--indigo);
+  border: 1px solid rgba(129,140,248,0.20);
 }
 
-.btn-outline:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
-}
-
-.btn-purple {
-  background: rgba(191,90,242,0.15);
-  color: var(--purple);
-  border: 0.5px solid rgba(191,90,242,0.25);
-}
-
-.btn-purple:hover {
-  background: rgba(191,90,242,0.22);
-  color: #fff;
+.btn-indigo:hover {
+  background: rgba(129,140,248,0.18);
+  color: var(--text);
   transform: translateY(-1px);
 }
 
-/* =============================================
-   macOS TERMINAL WINDOW
-============================================= */
-.terminal-window {
-  background: rgba(22,22,24,0.97);
-  border: 0.5px solid rgba(255,255,255,0.10);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-xl), 0 0 0 0.5px rgba(0,0,0,0.5);
+/* ═══════════════════════════════════════════
+   HERO MAP — Nav2 path planning visualization
+   THE SIGNATURE ELEMENT
+═══════════════════════════════════════════ */
+.hero-map-container {
+  position: relative;
   width: 100%;
+  aspect-ratio: 1;
+  max-width: 480px;
 }
 
-.window-titlebar {
-  background: rgba(38,38,40,0.99);
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 0.5px solid rgba(255,255,255,0.07);
+.hero-map-svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
 }
 
-.window-titlebar-title {
-  margin-left: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-tertiary);
-}
-
-.wdot { width: 12px; height: 12px; border-radius: 50%; cursor: default; flex-shrink: 0; }
-.wdot-r { background: #FF5F57; }
-.wdot-y { background: #FEBC2E; }
-.wdot-g { background: #28C840; }
-
-.terminal-body {
-  padding: 16px 18px 20px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.95;
-  overflow-x: auto;
-}
-
-.t-line {
-  display: block;
-  white-space: nowrap; /* prevent mid-value wrapping */
-  opacity: 0;
-  animation: slideIn 0.25s var(--ease-out) forwards;
-}
-
-.t-line:nth-child(1) { animation-delay: 0.3s; }
-.t-line:nth-child(2) { animation-delay: 0.7s; }
-.t-line:nth-child(3) { animation-delay: 1.1s; }
-.t-line:nth-child(4) { animation-delay: 1.5s; }
-.t-line:nth-child(5) { animation-delay: 1.9s; }
-.t-line:nth-child(6) { animation-delay: 2.3s; }
-.t-line:nth-child(7) { animation-delay: 2.7s; }
-.t-line:nth-child(8) { animation-delay: 3.1s; }
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-8px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.t-prompt { color: var(--green); margin-right: 8px; user-select: none; }
-.t-comment { color: var(--text-tertiary); }
-.t-key { color: #BF5AF2; }
-.t-colon { color: var(--text-tertiary); margin-right: 8px; }
-.t-string { color: #FF9F0A; }
-.t-array { color: #30D158; }
-.t-path { color: var(--accent); }
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-.t-cursor { color: var(--accent); animation: blink 1s step-end infinite; }
-
-/* =============================================
-   STATS — macOS Widgets (full-width row below hero)
-============================================= */
-.stats-widgets {
+/* ═══════════════════════════════════════════
+   METRICS BAR — beneath hero, connected cells
+   Replaces 4 floating widgets
+═══════════════════════════════════════════ */
+.metrics-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 48px;
-  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-2);
+  margin-top: 56px;
 }
 
-.stat-widget {
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  text-align: center;
-  backdrop-filter: blur(20px);
-  transition: all var(--transition);
+.metric-cell {
+  padding: 22px 24px;
+  transition: background var(--t);
+  position: relative;
 }
 
-.stat-widget:hover {
-  background: var(--glass-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+.metric-cell + .metric-cell {
+  border-left: 1px solid var(--border);
 }
 
-.widget-icon {
-  font-size: 22px;
-  margin-bottom: 8px;
-  display: block;
-}
+.metric-cell:hover { background: var(--bg-3); }
 
-.widget-number {
+.metric-value {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   letter-spacing: -0.04em;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
 }
 
-.widget-number sup {
-  font-size: 16px;
-  color: var(--accent);
+.metric-value sup {
+  font-size: 17px;
+  color: var(--cyan);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
-.widget-label {
-  font-size: 11px;
-  color: var(--text-tertiary);
+.metric-label {
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  line-height: 1.4;
 }
 
-/* =============================================
-   SECTIONS
-============================================= */
-section {
-  padding: 96px 0;
-}
+/* ═══════════════════════════════════════════
+   SECTION SHARED
+═══════════════════════════════════════════ */
+section { padding: 96px 0; }
+section + section { border-top: 1px solid var(--border); }
 
-section + section {
-  border-top: 0.5px solid rgba(255,255,255,0.06);
-}
-
-.section-eyebrow {
+.section-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.10em;
+  font-weight: 500;
+  color: var(--cyan);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.section-eyebrow::before {
+.section-label::before {
   content: '';
-  width: 16px;
+  width: 18px;
   height: 1px;
-  background: var(--accent);
+  background: var(--cyan);
   opacity: 0.6;
 }
 
 h2 {
   font-family: var(--font-display);
-  font-size: clamp(26px, 3.5vw, 38px);
+  font-size: clamp(28px, 4vw, 44px);
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.015em; /* subtle tightening for display size only */
-  line-height: 1.2;
-  margin-bottom: 48px;
+  color: var(--text);
+  letter-spacing: -0.025em;
+  line-height: 1.14;
+  margin-bottom: 52px;
 }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    ABOUT
-============================================= */
+═══════════════════════════════════════════ */
 .about-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
-  gap: 56px;
+  gap: 64px;
   align-items: start;
 }
 
 .about-text p {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   font-size: 15px;
-  line-height: 1.80;
-  letter-spacing: 0.01em;
+  line-height: 1.82;
 }
 
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .tag {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 11px;
   padding: 4px 11px;
   border-radius: 999px;
-  border: 0.5px solid var(--glass-border);
-  color: var(--text-secondary);
-  background: var(--glass);
-  transition: all var(--transition);
-  letter-spacing: -0.01em;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  transition: all var(--t);
+  line-height: 1.6;
 }
 
 .tag:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--cyan-dim);
 }
 
-.stack-sidebar h3 {
+.stack-panel h3 {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 22px;
-  letter-spacing: 0em;
+  letter-spacing: -0.01em;
 }
 
-.stack-group {
-  margin-bottom: 24px;
-}
+.stack-group { margin-bottom: 24px; }
 
-.stack-label {
+.stack-group-label {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
+  font-weight: 500;
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-3);
   margin-bottom: 8px;
-  opacity: 0.8;
 }
 
-/* =============================================
-   EXPERIENCE — macOS List style
-============================================= */
-.xp-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* ═══════════════════════════════════════════
+   EXPERIENCE — horizontal date-left layout
+   Looks like a real CV, not a card stack
+═══════════════════════════════════════════ */
+.xp-list { display: flex; flex-direction: column; }
 
-.xp-card {
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  transition: all var(--transition);
+.xp-item {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 36px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
   position: relative;
-  overflow: hidden;
 }
 
-.xp-card::before {
+.xp-item:last-child { border-bottom: none; }
+
+/* Hover highlight — full row, subtle */
+.xp-item::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2.5px;
-  background: transparent;
-  border-radius: 2px;
-  transition: background var(--transition);
+  left: -28px; right: -28px;
+  top: 0; bottom: 0;
+  background: var(--bg-2);
+  border-radius: var(--r);
+  opacity: 0;
+  transition: opacity var(--t);
+  z-index: -1;
 }
 
-.xp-card:hover {
-  background: var(--glass-hover);
-  border-color: rgba(255,255,255,0.12);
-  transform: translateX(4px);
+.xp-item:hover::before { opacity: 1; }
+
+.xp-left { padding-top: 3px; }
+
+.xp-date {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.5;
 }
 
-.xp-card:hover::before { background: var(--accent); }
-.xp-card.current::before { background: var(--green); }
+.xp-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--green);
+  margin-top: 8px;
+}
 
-.xp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-  gap: 8px;
+.xp-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: live-pulse 2.4s ease infinite;
+  flex-shrink: 0;
 }
 
 .xp-company {
   font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 0em;
-}
-
-.xp-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.xp-date {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-tertiary);
-}
-
-.xp-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-weight: 500;
-}
-
-.badge-current {
-  background: rgba(48,209,88,0.15);
-  color: var(--green);
-  border: 0.5px solid rgba(48,209,88,0.3);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
 }
 
 .xp-role {
   font-size: 13.5px;
-  color: var(--purple);
+  color: var(--indigo);
   font-weight: 500;
   margin-bottom: 16px;
-  letter-spacing: 0em;
 }
 
-.xp-desc ul {
+.xp-bullets {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-.xp-desc li {
+.xp-bullets li {
   position: relative;
-  padding-left: 18px;
+  padding-left: 16px;
   font-size: 14px;
-  line-height: 1.70;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
+  line-height: 1.72;
+  color: var(--text-2);
 }
 
-.xp-desc li::before {
-  content: "›";
+.xp-bullets li::before {
+  content: "–";
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 1.4;
+  color: var(--text-3);
 }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    PROJECTS
-============================================= */
+═══════════════════════════════════════════ */
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .project-card {
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.18s var(--ease-spring);
+  transition: all 0.18s var(--spring);
 }
 
 .project-card:hover {
-  background: var(--glass-hover);
-  border-color: rgba(255,255,255,0.14);
+  border-color: var(--border-hover);
   transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.06);
 }
-
-.project-card:active { transform: translateY(-3px) scale(0.99); }
 
 .project-card.featured {
   grid-column: 1 / -1;
   flex-direction: row;
-}
-
-.project-card.featured .project-thumb {
-  width: 42%;
-  min-width: 42%;
-  aspect-ratio: unset;
-  min-height: 240px;
+  background: linear-gradient(120deg, var(--bg-2) 0%, rgba(0,212,255,0.025) 100%);
 }
 
 .project-thumb {
-  aspect-ratio: 16/9;
-  background: var(--bg-secondary);
+  background: var(--bg-3);
   display: flex;
   align-items: center;
   justify-content: center;
+  aspect-ratio: 16/9;
   overflow: hidden;
   position: relative;
 }
 
-.project-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
+.project-card.featured .project-thumb {
+  width: 44%;
+  flex-shrink: 0;
+  aspect-ratio: unset;
+  min-height: 268px;
 }
 
-.project-card:hover .project-thumb img { transform: scale(1.05); }
+.project-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
 
-.project-thumb-placeholder {
-  opacity: 0.15;
-  width: 40px;
+.project-card:hover .project-thumb img { transform: scale(1.06); }
+
+.project-thumb-ph {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-align: center;
+  padding: 24px;
+  line-height: 1.8;
 }
 
 .project-body {
-  padding: 20px 22px;
+  padding: 22px 24px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -793,135 +710,149 @@ h2 {
   font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--purple);
-  margin-bottom: 7px;
+  color: var(--indigo);
+  margin-bottom: 8px;
 }
 
 .project-title {
   font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 9px;
-  letter-spacing: 0em;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: -0.015em;
   line-height: 1.35;
 }
 
 .project-desc {
   font-size: 13.5px;
   line-height: 1.70;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   flex: 1;
-  letter-spacing: 0.01em;
+  color: var(--text-2);
 }
 
 .project-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .pill {
   font-family: var(--font-mono);
   font-size: 10.5px;
   padding: 3px 9px;
-  background: rgba(255,255,255,0.05);
-  border: 0.5px solid rgba(255,255,255,0.08);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  color: var(--text-tertiary);
+  color: var(--text-3);
 }
 
 .project-link {
   font-size: 12.5px;
-  font-weight: 500;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--cyan);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  transition: gap var(--transition);
+  gap: 5px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  transition: gap var(--t), color var(--t);
 }
 
-.project-link:hover { gap: 8px; color: #fff; }
+.project-link:hover { gap: 10px; color: var(--text); }
 
-/* =============================================
-   PUBLICATIONS
-============================================= */
+/* ═══════════════════════════════════════════
+   PUBLICATIONS — simplified, no fake indices
+═══════════════════════════════════════════ */
 .pub-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .pub-card {
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 20px;
-  transition: all var(--transition);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 28px 32px;
+  transition: all var(--t);
 }
 
 .pub-card:hover {
-  background: var(--glass-hover);
-  border-color: rgba(255,255,255,0.12);
+  border-color: var(--border-hover);
+  background: var(--bg-3);
 }
 
-.pub-index {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.08);
-  line-height: 1;
-  padding-top: 4px;
-  text-align: center;
+.pub-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .pub-badge {
-  display: inline-flex;
-  align-items: center;
   font-family: var(--font-mono);
   font-size: 10.5px;
+  font-weight: 500;
   padding: 3px 10px;
   border-radius: 999px;
-  margin-bottom: 10px;
-  font-weight: 500;
 }
 
-.badge-q2 {
-  background: rgba(10,132,255,0.12);
-  color: var(--accent);
-  border: 0.5px solid rgba(10,132,255,0.25);
+.badge-journal {
+  background: var(--cyan-dim);
+  color: var(--cyan);
+  border: 1px solid rgba(0,212,255,0.2);
 }
 
 .badge-award {
-  background: rgba(255,159,10,0.12);
+  background: rgba(255,140,61,0.10);
   color: var(--orange);
-  border: 0.5px solid rgba(255,159,10,0.25);
+  border: 1px solid rgba(255,140,61,0.22);
+}
+
+.pub-venue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
 }
 
 .pub-title {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 10px;
-  line-height: 1.5;
-  letter-spacing: 0em;
+  line-height: 1.50;
+  letter-spacing: -0.01em;
 }
 
 .pub-desc {
   font-size: 13.5px;
-  line-height: 1.72;
-  letter-spacing: 0.01em;
+  line-height: 1.74;
+  color: var(--text-2);
 }
 
-/* =============================================
+.pub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  transition: gap var(--t), color var(--t);
+}
+
+.pub-link:hover { gap: 8px; color: var(--text); }
+
+/* ═══════════════════════════════════════════
    CONTACT
-============================================= */
-.contact-wrap {
+═══════════════════════════════════════════ */
+.contact-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 64px;
@@ -929,11 +860,19 @@ h2 {
 }
 
 .contact-intro {
-  font-size: 16px;
-  line-height: 1.80;
+  font-size: 15.5px;
+  line-height: 1.82;
+  color: var(--text-2);
   margin-bottom: 32px;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
+}
+
+.contact-note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  line-height: 1.6;
 }
 
 .contact-links {
@@ -946,73 +885,77 @@ h2 {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 18px;
-  background: var(--glass);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius);
-  transition: all var(--transition);
-  color: var(--text-secondary);
+  padding: 16px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  transition: all var(--t);
+  color: var(--text-2);
 }
 
 .contact-link:hover {
-  background: var(--glass-hover);
-  border-color: rgba(255,255,255,0.14);
-  transform: translateX(6px);
-  color: var(--text-primary);
+  background: var(--bg-3);
+  border-color: var(--border-hover);
+  transform: translateX(5px);
+  color: var(--text);
 }
 
 .contact-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.06);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: var(--bg-3);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .contact-text strong {
   display: block;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 0em;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .contact-text span {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--text-tertiary);
+  color: var(--text-3);
 }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    FOOTER
-============================================= */
+═══════════════════════════════════════════ */
 footer {
-  border-top: 0.5px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--border);
   padding: 28px 0;
+}
+
+.footer-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .footer-copy, .footer-built {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--text-tertiary);
+  color: var(--text-3);
 }
 
-.footer-built span { color: var(--accent); }
+.footer-built span { color: var(--cyan); }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    SCROLL REVEAL
-============================================= */
+═══════════════════════════════════════════ */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  transform: translateY(18px);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
 }
 
 .reveal.visible {
@@ -1020,434 +963,561 @@ footer {
   transform: translateY(0);
 }
 
-/* =============================================
+/* ═══════════════════════════════════════════
    RESPONSIVE
-============================================= */
-@media (max-width: 900px) {
-  .hero-top { grid-template-columns: 1fr; gap: 36px; }
-  .about-grid { grid-template-columns: 1fr; gap: 32px; }
+═══════════════════════════════════════════ */
+@media (max-width: 960px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-map-container { max-width: 340px; margin: 0 auto; }
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .xp-item { grid-template-columns: 1fr; gap: 10px; }
   .projects-grid { grid-template-columns: 1fr 1fr; }
   .project-card.featured { flex-direction: column; }
   .project-card.featured .project-thumb { width: 100%; min-height: 200px; }
-  .contact-wrap { grid-template-columns: 1fr; gap: 40px; }
-  .stats-widgets { grid-template-columns: repeat(2, 1fr); }
+  .contact-layout { grid-template-columns: 1fr; gap: 40px; }
+  .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+  .metric-cell:nth-child(3) { border-left: none; border-top: 1px solid var(--border); }
+  .metric-cell:nth-child(4) { border-top: 1px solid var(--border); }
 }
 
 @media (max-width: 640px) {
   .nav-links { display: none; }
   .projects-grid { grid-template-columns: 1fr; }
-  .btn-row { flex-direction: column; }
-  footer { flex-direction: column; gap: 10px; text-align: center; }
-  .stats-widgets { grid-template-columns: repeat(2, 1fr); }
+  .btn-group { flex-direction: column; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  h1 { letter-spacing: -0.025em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
-  .t-line { animation: none; opacity: 1; }
-  .hero-eyebrow-dot { animation: none; }
+  .nav-live-dot, .xp-live-dot { animation: none; }
+  .hero-robot { animation: none; }
+  .hero-scan-ring { animation: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ====================== NAV ====================== -->
+<!-- ═══════════════ NAV ═══════════════ -->
 <nav>
   <div class="nav-inner">
-    <div class="nav-traffic">
-      <div class="traffic-dot wdot-r traffic-red"></div>
-      <div class="traffic-dot wdot-y traffic-yellow"></div>
-      <div class="traffic-dot wdot-g traffic-green"></div>
+    <div class="nav-logo">
+      <span class="nav-live-dot"></span>
+      Phạm Đức Duy
     </div>
-    <span class="nav-title">duy_pham — Robotics Engineer</span>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#publications">Research</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="/mission/" target="_blank" rel="noopener noreferrer" style="color: var(--purple);">Mission ↗</a></li>
     </ul>
+    <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
   </div>
 </nav>
 
-<div class="layout">
+<div class="container">
 
-  <!-- ====================== HERO ====================== -->
-  <section class="hero" id="top">
-    <div class="hero-top">
-      <!-- Left: text content -->
-      <div>
-        <div class="hero-eyebrow">
-          <span class="hero-eyebrow-dot"></span>
-          Open to senior / international roles
-        </div>
-        <h1>Phạm<br>Đức Duy</h1>
-        <p class="hero-role">Building <em>robots</em> that work in the real world.</p>
-        <p class="hero-bio">
-          Robotics Software Engineer with 2 years deploying <strong>ROS 2</strong> mobile robots into production.
-          Currently in the Source Engineer Program at <strong>VinRobotics</strong>, leading <strong>Embodied AI</strong> research at HalBotLab,
-          and previously Tech Lead at ByteHome Robotics.
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="top">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-layout">
+
+      <!-- Left: content -->
+      <div class="hero-text">
+        <div class="hero-eyebrow">Robotics Software Engineer</div>
+        <h1>
+          Phạm Đức
+          <span class="name-outlined">Duy</span>
+        </h1>
+        <p class="hero-role">
+          Building <strong>autonomous robots</strong> that navigate,<br>
+          perceive, and act in the real world.
         </p>
-        <div class="btn-row">
-          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-filled">Get in touch ↗</a>
-          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-outline" target="_blank" rel="noopener noreferrer">📄 CV</a>
-          <a href="https://github.com/phamduyaaaa" class="btn btn-outline" target="_blank" rel="noopener noreferrer">
+        <p class="hero-bio">
+          2 years deploying <strong>ROS 2</strong> mobile robots into production.
+          Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong> for
+          Embodied AI research, formerly Tech Lead at ByteHome Robotics —
+          where I commercialized service robots for 30+ B2B clients.
+        </p>
+        <div class="btn-group">
+          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
+          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">📄 CV</a>
+          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             GitHub
           </a>
-          <a href="/mission/" class="btn btn-purple" target="_blank" rel="noopener noreferrer">🚀 Mission</a>
+          <a href="/mission/" class="btn btn-indigo" target="_blank" rel="noopener noreferrer">🚀 Mission</a>
+        </div>
+
+        <!-- Metrics bar — 4 key numbers, connected layout -->
+        <div class="metrics-bar reveal">
+          <div class="metric-cell">
+            <div class="metric-value">2<sup>+</sup></div>
+            <div class="metric-label">Years in<br>production robotics</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">30<sup>+</sup></div>
+            <div class="metric-label">B2B clients<br>trained</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">1</div>
+            <div class="metric-label">Q2 international<br>journal</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">5</div>
+            <div class="metric-label">Academic<br>awards</div>
+          </div>
         </div>
       </div>
 
-      <!-- Right: macOS Terminal Window -->
-      <div class="terminal-window">
-        <div class="window-titlebar">
-          <div class="wdot wdot-r"></div>
-          <div class="wdot wdot-y"></div>
-          <div class="wdot wdot-g"></div>
-          <span class="window-titlebar-title">ros2 — bash</span>
-        </div>
-        <div class="terminal-body">
-          <div class="t-line"><span class="t-prompt">~$</span> <span class="t-path">ros2 param dump /agent</span></div>
-          <div class="t-line"><span class="t-key">role</span><span class="t-colon">:</span>     <span class="t-string">"Embodied AI Engineer"</span></div>
-          <div class="t-line"><span class="t-key">focus</span><span class="t-colon">:</span>    <span class="t-array">["Nav2", "SLAM", "RL"]</span></div>
-          <div class="t-line"><span class="t-key">papers</span><span class="t-colon">:</span>   <span class="t-array">["MethodsX Q2"]</span></div>
-          <div class="t-line"><span class="t-key">stack</span><span class="t-colon">:</span>    <span class="t-array">["ROS 2", "C++", "Python", "Rust"]</span></div>
-          <div class="t-line"><span class="t-key">location</span><span class="t-colon">:</span> <span class="t-string">"Hanoi, Vietnam"</span></div>
-          <div class="t-line"><span class="t-key">status</span><span class="t-colon">:</span>   <span class="t-string">"Open to intl. roles"</span></div>
-          <div class="t-line"><span class="t-prompt">~$</span> <span class="t-cursor">▌</span></div>
-        </div>
+      <!-- Right: Nav2 map visualization — THE SIGNATURE ELEMENT -->
+      <div class="hero-map-container reveal">
+        <svg class="hero-map-svg" viewBox="0 0 460 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Obstacle hatching pattern -->
+            <pattern id="obs-hatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="6" x2="6" y2="0" stroke="rgba(0,212,255,0.18)" stroke-width="0.8"/>
+            </pattern>
+            <!-- Fade mask: left edge transparent so grid blends into text -->
+            <linearGradient id="fade-left" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#090B12" stop-opacity="1"/>
+              <stop offset="30%" stop-color="#090B12" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Background occupancy-grid dots -->
+          <g opacity="0.4">
+            <pattern id="dot-grid" x="0" y="0" width="23" height="23" patternUnits="userSpaceOnUse">
+              <circle cx="11.5" cy="11.5" r="1" fill="rgba(0,212,255,0.25)"/>
+            </pattern>
+            <rect width="460" height="460" fill="url(#dot-grid)"/>
+          </g>
+
+          <!-- Obstacle blocks — with hatching for solidity -->
+          <rect x="40" y="44" width="80" height="44" rx="3" fill="url(#obs-hatch)" stroke="rgba(0,212,255,0.20)" stroke-width="1"/>
+          <rect x="300" y="60" width="110" height="56" rx="3" fill="url(#obs-hatch)" stroke="rgba(0,212,255,0.20)" stroke-width="1"/>
+          <rect x="170" y="290" width="68" height="96" rx="3" fill="url(#obs-hatch)" stroke="rgba(0,212,255,0.20)" stroke-width="1"/>
+          <rect x="360" y="295" width="84" height="70" rx="3" fill="url(#obs-hatch)" stroke="rgba(0,212,255,0.20)" stroke-width="1"/>
+          <rect x="50" y="310" width="64" height="48" rx="3" fill="url(#obs-hatch)" stroke="rgba(0,212,255,0.20)" stroke-width="1"/>
+
+          <!-- Planned path (dashed cyan line) -->
+          <path
+            d="M 76 406
+               C 76 360, 76 320, 110 280
+               C 140 246, 165 230, 200 210
+               C 236 190, 268 176, 310 164
+               C 345 154, 380 152, 408 180"
+            stroke="rgba(0,212,255,0.45)"
+            stroke-width="1.8"
+            stroke-dasharray="7 5"
+            fill="none"/>
+
+          <!-- Start marker -->
+          <circle cx="76" cy="406" r="10" fill="rgba(0,255,136,0.12)" stroke="var(--green)" stroke-width="1.5"/>
+          <circle cx="76" cy="406" r="4" fill="var(--green)"/>
+          <text x="94" y="410" fill="rgba(0,255,136,0.65)" font-size="9" font-family="monospace" letter-spacing="0.08em">START</text>
+
+          <!-- Intermediate waypoints -->
+          <circle cx="200" cy="210" r="7" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.55)" stroke-width="1.5"/>
+          <circle cx="200" cy="210" r="3" fill="rgba(0,212,255,0.8)"/>
+          <text x="212" y="214" fill="rgba(0,212,255,0.5)" font-size="8.5" font-family="monospace">WP1</text>
+
+          <circle cx="310" cy="164" r="7" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.55)" stroke-width="1.5"/>
+          <circle cx="310" cy="164" r="3" fill="rgba(0,212,255,0.8)"/>
+          <text x="322" y="168" fill="rgba(0,212,255,0.5)" font-size="8.5" font-family="monospace">WP2</text>
+
+          <!-- Goal pose marker — pulses -->
+          <circle cx="408" cy="180" r="13" fill="rgba(129,140,248,0.10)" stroke="rgba(129,140,248,0.55)" stroke-width="1.5">
+            <animate attributeName="r" values="13;20;13" dur="2.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="408" cy="180" r="5" fill="rgba(129,140,248,0.9)"/>
+          <text x="426" y="183" fill="rgba(129,140,248,0.7)" font-size="9" font-family="monospace" letter-spacing="0.06em">GOAL</text>
+
+          <!-- Robot with LiDAR scan animation -->
+          <g>
+            <animateMotion
+              dur="7s"
+              repeatCount="indefinite"
+              rotate="auto"
+              calcMode="spline"
+              keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+              keyTimes="0;0.5;1"
+              path="M 76 406
+                    C 76 360, 76 320, 110 280
+                    C 140 246, 165 230, 200 210
+                    C 236 190, 268 176, 310 164
+                    C 345 154, 380 152, 408 180"/>
+            <!-- LiDAR scan ring (outer) -->
+            <circle r="52" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1" class="hero-scan-ring">
+              <animate attributeName="r" values="46;64;46" dur="1.6s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.7;0.15;0.7" dur="1.6s" repeatCount="indefinite"/>
+            </circle>
+            <!-- LiDAR scan ring (inner) -->
+            <circle r="28" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1">
+              <animate attributeName="r" values="24;36;24" dur="1.6s" repeatCount="indefinite" begin="0.3s"/>
+              <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.6s" repeatCount="indefinite" begin="0.3s"/>
+            </circle>
+            <!-- Robot body -->
+            <circle r="11" fill="rgba(9,11,18,0.9)" stroke="rgba(0,212,255,0.9)" stroke-width="1.5" class="hero-robot"/>
+            <!-- Robot orientation indicator -->
+            <circle r="4" fill="var(--cyan)" cx="0" cy="0"/>
+            <line x1="4" y1="0" x2="14" y2="0" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Coordinate axes (subtle) -->
+          <line x1="22" y1="440" x2="440" y2="440" stroke="rgba(0,212,255,0.10)" stroke-width="0.8"/>
+          <line x1="22" y1="22" x2="22" y2="440" stroke="rgba(0,212,255,0.10)" stroke-width="0.8"/>
+          <text x="445" y="444" fill="rgba(0,212,255,0.25)" font-size="9" font-family="monospace">X</text>
+          <text x="18" y="18" fill="rgba(0,212,255,0.25)" font-size="9" font-family="monospace">Y</text>
+
+          <!-- Coordinate ticks -->
+          <g stroke="rgba(0,212,255,0.08)" stroke-width="0.6">
+            <line x1="115" y1="438" x2="115" y2="442"/>
+            <line x1="207" y1="438" x2="207" y2="442"/>
+            <line x1="299" y1="438" x2="299" y2="442"/>
+            <line x1="391" y1="438" x2="391" y2="442"/>
+            <line x1="20" y1="115" x2="24" y2="115"/>
+            <line x1="20" y1="207" x2="24" y2="207"/>
+            <line x1="20" y1="299" x2="24" y2="299"/>
+            <line x1="20" y1="391" x2="24" y2="391"/>
+          </g>
+
+          <!-- Corner label -->
+          <text x="24" y="456" fill="rgba(0,212,255,0.18)" font-size="8" font-family="monospace">nav2 / costmap</text>
+
+          <!-- Left fade mask — blends map into page background -->
+          <rect width="100" height="460" fill="url(#fade-left)"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section id="about">
+  <div class="reveal">
+    <div class="section-label">About</div>
+    <h2>Engineer. Researcher. Builder.</h2>
+  </div>
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <p>
+        I build software that lets robots navigate, perceive, and act in unstructured real-world environments.
+        My work spans the full stack — from tuning <strong>DDS and QoS on ROS 2</strong> to deploying <strong>Navigation2</strong>
+        in hospitals and restaurants, and commercializing products end-to-end.
+      </p>
+      <p>
+        As Tech Lead at <strong>ByteHome Robotics</strong>, I led a 5-person team that shipped and commercialized service
+        robots, then directly trained <strong>30+ B2B clients</strong> on ROS 2 operations. Today I'm part of the
+        Talent Program at <strong>VinRobotics</strong> and lead <strong>HalBotLab</strong> researching Embodied AI.
+      </p>
+      <p>
+        On the research side: a <strong>Q2 international journal publication</strong> in MethodsX on distributional
+        reinforcement learning for mobile robot path planning, and multiple university-level scientific research awards.
+      </p>
+      <div class="tag-cloud">
+        <span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer SLAM</span>
+        <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">C++</span>
+        <span class="tag">Python</span><span class="tag">Rust</span><span class="tag">GoLang</span>
+        <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span><span class="tag">MuJoCo</span>
+        <span class="tag">Gazebo</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
       </div>
     </div>
 
-    <!-- Stats widgets — full width below the hero grid -->
-    <div class="stats-widgets reveal">
-      <div class="stat-widget">
-        <span class="widget-icon">🤖</span>
-        <div class="widget-number">2</div>
-        <div class="widget-label">Years Experience</div>
-      </div>
-      <div class="stat-widget">
-        <span class="widget-icon">📄</span>
-        <div class="widget-number">1</div>
-        <div class="widget-label">Q2 Publication</div>
-      </div>
-      <div class="stat-widget">
-        <span class="widget-icon">🏆</span>
-        <div class="widget-number">5</div>
-        <div class="widget-label">Awards Won</div>
-      </div>
-      <div class="stat-widget">
-        <span class="widget-icon">🚀</span>
-        <div class="widget-number">3<sup>+</sup></div>
-        <div class="widget-label">Deployed Robots</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====================== ABOUT ====================== -->
-  <section id="about">
-    <div class="reveal">
-      <div class="section-eyebrow">About me</div>
-      <h2>Engineer. Researcher. Builder.</h2>
-    </div>
-    <div class="about-grid reveal">
-      <div class="about-text">
-        <p>
-          I build software that lets robots navigate, perceive, and act in unstructured real-world environments.
-          My work spans the full stack — from deep customizing <strong>DDS and QoS on ROS 2</strong> to deploying <strong>Navigation2</strong> in physical environments and commercializing products end-to-end.
-        </p>
-        <p>
-          As Tech Lead at <strong>ByteHome Robotics</strong>, I directed a team to build and commercialize service robots for restaurants and hospitals. Currently, I'm part of the Talent Program at <strong>VinRobotics</strong> and lead <strong>HalBotLab</strong> researching Embodied AI.
-        </p>
-        <p>
-          On the research side, I have a <strong>Q2 international journal publication</strong> on distributional reinforcement learning, alongside multiple university-level scientific research awards.
-        </p>
+    <div class="stack-panel">
+      <h3>Core Stack</h3>
+      <div class="stack-group">
+        <div class="stack-group-label">Robotics</div>
         <div class="tag-cloud">
-          <span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer SLAM</span>
-          <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">C++</span>
-          <span class="tag">Python</span><span class="tag">Rust</span><span class="tag">GoLang</span>
-          <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span><span class="tag">Gazebo</span>
+          <span class="tag">ROS & ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer</span>
+          <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">Gazebo</span><span class="tag">MuJoCo</span>
         </div>
       </div>
-      <div class="stack-sidebar">
-        <h3>Core Stack</h3>
-        <div class="stack-group">
-          <div class="stack-label">Robotics</div>
-          <div class="tag-cloud">
-            <span class="tag">ROS & ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer</span>
-            <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">Gazebo</span><span class="tag">MuJoCo</span>
-          </div>
+      <div class="stack-group">
+        <div class="stack-group-label">AI / Perception</div>
+        <div class="tag-cloud">
+          <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
+          <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
         </div>
-        <div class="stack-group">
-          <div class="stack-label">AI / Vision</div>
-          <div class="tag-cloud">
-            <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
-            <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
-          </div>
+      </div>
+      <div class="stack-group">
+        <div class="stack-group-label">Systems</div>
+        <div class="tag-cloud">
+          <span class="tag">C++</span><span class="tag">Python</span><span class="tag">Rust</span>
+          <span class="tag">GoLang</span><span class="tag">Linux</span><span class="tag">Docker</span><span class="tag">AWS</span>
         </div>
-        <div class="stack-group">
-          <div class="stack-label">Systems & Tools</div>
-          <div class="tag-cloud">
-            <span class="tag">C++</span><span class="tag">Python</span><span class="tag">Rust</span>
-            <span class="tag">GoLang</span><span class="tag">Linux</span><span class="tag">Docker</span><span class="tag">AWS</span>
-          </div>
-        </div>
-        <div class="stack-group">
-          <div class="stack-label">Hardware</div>
-          <div class="tag-cloud">
-            <span class="tag">Visionary-T</span><span class="tag">D435</span>
-            <span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Raspberry Pi</span>
-          </div>
+      </div>
+      <div class="stack-group">
+        <div class="stack-group-label">Hardware</div>
+        <div class="tag-cloud">
+          <span class="tag">Visionary-T</span><span class="tag">Intel D435</span>
+          <span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Raspberry Pi</span>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ====================== EXPERIENCE ====================== -->
-  <section id="experience">
-    <div class="reveal">
-      <div class="section-eyebrow">Work</div>
-      <h2>Where I've built things.</h2>
-    </div>
-    <div class="xp-list reveal">
+<!-- ═══════════════ EXPERIENCE ═══════════════ -->
+<section id="experience">
+  <div class="reveal">
+    <div class="section-label">Work</div>
+    <h2>Where I've built things.</h2>
+  </div>
 
-      <div class="xp-card current">
-        <div class="xp-header">
-          <div class="xp-company">VinRobotics</div>
-          <div class="xp-meta">
-            <div class="xp-date">Mar 2026 — Present</div>
-            <span class="xp-badge badge-current">Current</span>
-          </div>
-        </div>
-        <div class="xp-role">Internship · VinRobotics Talent Program</div>
-        <div class="xp-desc">
-          <ul>
-            <li>Designed and architected the <strong>License system</strong> for robotic deployments.</li>
-            <li>Supported factory operations by deploying automation solutions and streamlining <strong>Quality Control (QC)</strong> processes.</li>
-          </ul>
-        </div>
+  <div class="xp-list reveal">
+
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Mar 2026 — Present</div>
+        <div class="xp-live"><span class="xp-live-dot"></span> Active</div>
       </div>
+      <div>
+        <div class="xp-company">VinRobotics</div>
+        <div class="xp-role">Internship · VinRobotics Source Engineer Program</div>
+        <ul class="xp-bullets">
+          <li>Designed and architected the <strong>License system</strong> for robotic deployments at scale.</li>
+          <li>Supported factory operations by deploying automation solutions and streamlining <strong>QC processes</strong>.</li>
+        </ul>
+      </div>
+    </div>
 
-      <div class="xp-card">
-        <div class="xp-header">
-          <div class="xp-company">ByteHome Robotics</div>
-          <div class="xp-meta">
-            <div class="xp-date">Oct 2025 — Mar 2026</div>
-          </div>
-        </div>
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Oct 2025 —<br>Mar 2026</div>
+      </div>
+      <div>
+        <div class="xp-company">ByteHome Robotics</div>
         <div class="xp-role">Tech Lead · Robotics Software Engineer</div>
-        <div class="xp-desc">
-          <ul>
-            <li>Led a 5-member engineering team to design and deploy <strong>end-to-end service robots</strong> integrating ROS 2, Lidar/Camera/IMU, and multilingual AI Voice.</li>
-            <li>Successfully <strong>commercialized</strong> the product for real-world operations in restaurant and hospital environments.</li>
-            <li>Directly trained and transferred technology to <strong>over 30 B2B customers</strong> on ROS 2 operation.</li>
-          </ul>
-        </div>
+        <ul class="xp-bullets">
+          <li>Led a 5-member team to design and ship <strong>end-to-end service robots</strong> — ROS 2, Lidar/Camera/IMU, multilingual AI Voice.</li>
+          <li>Successfully <strong>commercialized</strong> the product for restaurant and hospital environments.</li>
+          <li>Directly trained and transferred technology to <strong>30+ B2B customers</strong> on ROS 2 operation.</li>
+        </ul>
       </div>
+    </div>
 
-      <div class="xp-card">
-        <div class="xp-header">
-          <div class="xp-company">HalBotLab</div>
-          <div class="xp-meta">
-            <div class="xp-date">Jun 2024 — Present</div>
-          </div>
-        </div>
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Jun 2024 — Present</div>
+        <div class="xp-live"><span class="xp-live-dot"></span> Active</div>
+      </div>
+      <div>
+        <div class="xp-company">HalBotLab</div>
         <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
-        <div class="xp-desc">
-          <ul>
-            <li>Led lab members in advancing <strong>Embodied AI</strong> applications and resolving core research bottlenecks.</li>
-            <li>Optimized perception by processing complex <strong>Point Cloud & depth image</strong> data pipelines.</li>
-            <li>Developed embedded programming and real-time communication modules using <strong>ESP32 (micro-ROS, RTOS)</strong>.</li>
-          </ul>
-        </div>
+        <ul class="xp-bullets">
+          <li>Lead lab research advancing <strong>Embodied AI</strong> applications and resolving core perception bottlenecks.</li>
+          <li>Built complex <strong>Point Cloud & depth image</strong> data pipelines for real-time object perception.</li>
+          <li>Developed embedded modules using <strong>ESP32 (Micro-ROS, RTOS)</strong> for real-time robot communication.</li>
+        </ul>
       </div>
+    </div>
 
-      <div class="xp-card">
-        <div class="xp-header">
-          <div class="xp-company">Hanoi University of Industry</div>
-          <div class="xp-meta">
-            <div class="xp-date">Expected 2026</div>
-          </div>
-        </div>
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Expected 2026</div>
+      </div>
+      <div>
+        <div class="xp-company">Hanoi University of Industry</div>
         <div class="xp-role">B.Eng. Robotics and Artificial Intelligence</div>
-        <div class="xp-desc">
-          <ul>
-            <li><strong>2nd Prize</strong> in University Scientific Research (2026) for satellite map recognition.</li>
-            <li><strong>2nd Prize</strong> in Informatics Olympiad (2025).</li>
-            <li><strong>3rd Prize</strong> in Scientific Research (2025) for depth-data object detection, along with Student Math awards.</li>
-          </ul>
-        </div>
+        <ul class="xp-bullets">
+          <li><strong>2nd Prize</strong> in University Scientific Research (2026) — satellite map recognition with deep learning.</li>
+          <li><strong>2nd Prize</strong> in Informatics Olympiad (2025).</li>
+          <li><strong>3rd Prize</strong> in Scientific Research (2025) — depth-data object detection. Student Math award.</li>
+        </ul>
       </div>
-
     </div>
-  </section>
 
-  <!-- ====================== PROJECTS ====================== -->
-  <section id="projects">
+  </div>
+</section>
+
+<!-- ═══════════════ PROJECTS ═══════════════ -->
+<section id="projects">
+  <div class="reveal">
+    <div class="section-label">Work samples</div>
+    <h2>Projects I've shipped.</h2>
+  </div>
+
+  <div class="projects-grid">
+
+    <div class="project-card featured reveal">
+      <div class="project-thumb">
+        <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot1.gif<br><span style=\'font-size:9px;opacity:0.5\'>Hospital Navigation Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Autonomous Navigation · Commercialized</div>
+        <div class="project-title">Service Robot for Hospitals & Restaurants</div>
+        <div class="project-desc">
+          Designed, manufactured, and integrated software for service robots deployed in unstructured environments.
+          Full ROS 2 stack — SLAM, Nav2, LiDAR fusion, camera perception, and multilingual AI Voice.
+          <strong style="color: var(--text);">Commercialized and running in live production environments.</strong>
+        </div>
+        <div class="project-pills">
+          <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
+          <span class="pill">Nav2</span><span class="pill">SLAM</span><span class="pill">Cython</span>
+        </div>
+        <a href="#" class="project-link">View video demo →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance robot"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot2.gif<br><span style=\'font-size:9px;opacity:0.5\'>Imitation Learning Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Imitation Learning</div>
+        <div class="project-title">HG-Dagger Obstacle Avoidance</div>
+        <div class="project-desc">
+          Obstacle avoidance via imitation learning — reduces FLOP cost by
+          <strong style="color: var(--cyan);">131×</strong> versus traditional DWA planners.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">ROS 2</span>
+          <span class="pill">C++</span><span class="pill">Python</span>
+        </div>
+        <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot3.gif" alt="Skid-steer outdoor robot"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot3.gif<br><span style=\'font-size:9px;opacity:0.5\'>Outdoor Navigation Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Outdoor Navigation</div>
+        <div class="project-title">Skid-Steer Outdoor Robot</div>
+        <div class="project-desc">
+          Multi-sensor outdoor mobile robot. 60 kg payload, RC + autonomous ROS 2 control via RS-485.
+          University project — accepted.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">RS485</span>
+          <span class="pill">ROS 2</span><span class="pill">C</span>
+        </div>
+        <a href="#" class="project-link">View video demo →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ PUBLICATIONS ═══════════════ -->
+<section id="publications">
+  <div class="reveal">
+    <div class="section-label">Research</div>
+    <h2>Published work & awards.</h2>
+  </div>
+  <div class="pub-list reveal">
+
+    <div class="pub-card">
+      <div class="pub-meta">
+        <span class="pub-badge badge-journal">Q2 Journal</span>
+        <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
+      </div>
+      <div class="pub-title">
+        Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning
+      </div>
+      <div class="pub-desc">
+        Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data
+        and multiple obstacle configurations in unstructured environments.
+      </div>
+      <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
+        DOI: 10.1016/j.mex.2025.103554 →
+      </a>
+    </div>
+
+    <div class="pub-card">
+      <div class="pub-meta">
+        <span class="pub-badge badge-award">2nd Prize · University Research 2026</span>
+      </div>
+      <div class="pub-title">
+        Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
+      </div>
+      <div class="pub-desc">
+        Researched and developed advanced map recognition on satellite imagery using image processing pipelines
+        and deep learning models. Awarded 2nd Prize in University Scientific Research (2026).
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ CONTACT ═══════════════ -->
+<section id="contact">
+  <div class="reveal">
+    <div class="section-label">Get in touch</div>
+    <h2>Let's work together.</h2>
+  </div>
+  <div class="contact-layout">
+
     <div class="reveal">
-      <div class="section-eyebrow">Work Samples</div>
-      <h2>Projects I've shipped.</h2>
+      <p class="contact-intro">
+        I'm open to full-time roles, research collaborations, and projects — especially at the
+        intersection of Embodied AI, ROS 2 autonomous navigation, and edge computing.
+        <br><br>
+        Whether you're building the next generation of service robots or working on complex
+        path-planning systems, I'd be glad to hear from you.
+      </p>
+      <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Send me an email ↗</a>
+      <p class="contact-note" style="margin-top: 24px;">
+        Currently based in Hanoi, Vietnam.<br>
+        Open to international roles — remote-first or relocation.
+      </p>
     </div>
-    <div class="projects-grid">
 
-      <div class="project-card featured reveal">
-        <div class="project-thumb">
-          <img src="assets/robot1.gif" alt="Hospital Autonomous Mobile Robot"
-               onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'project-thumb-placeholder\' viewBox=\'0 0 48 48\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'><rect x=\'8\' y=\'20\' width=\'32\' height=\'20\' rx=\'3\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/><rect x=\'16\' y=\'8\' width=\'16\' height=\'12\' rx=\'2\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/><circle cx=\'15\' cy=\'42\' r=\'4\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/><circle cx=\'33\' cy=\'42\' r=\'4\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/></svg>'">
+    <div class="contact-links reveal">
+      <a href="mailto:duypham.robotics@gmail.com" class="contact-link">
+        <div class="contact-icon">✉</div>
+        <div class="contact-text">
+          <strong>Email</strong>
+          <span>duypham.robotics@gmail.com</span>
         </div>
-        <div class="project-body">
-          <div class="project-type">Autonomous Navigation · Commercialized</div>
-          <div class="project-title">Service Robot for Hospitals & Restaurants</div>
-          <div class="project-desc">
-            Designed, manufactured, and integrated software for service robots in unstructured environments. 
-            Features smooth ROS 2 integration, image processing, and AI Voice. Successfully commercialized and deployed at scale.
-          </div>
-          <div class="project-pills">
-            <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
-            <span class="pill">Nav2</span><span class="pill">SLAM</span><span class="pill">Cython</span>
-          </div>
-          <a href="#" class="project-link">View Video Demo →</a>
+      </a>
+      <a href="tel:0945577244" class="contact-link">
+        <div class="contact-icon">📞</div>
+        <div class="contact-text">
+          <strong>Phone</strong>
+          <span>0945 577 244</span>
         </div>
-      </div>
-
-      <div class="project-card reveal">
-        <div class="project-thumb">
-          <img src="assets/robot2.gif" alt="Obstacle Avoidance Mobile Robot"
-               onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'project-thumb-placeholder\' viewBox=\'0 0 48 48\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'><rect x=\'6\' y=\'14\' width=\'36\' height=\'24\' rx=\'2\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/><path d=\'M6 20h36M20 14v24M6 26h36\' stroke=\'#5A7A96\' stroke-width=\'1.2\'/></svg>'">
+      </a>
+      <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
+        <div class="contact-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="color: var(--text-2);">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
         </div>
-        <div class="project-body">
-          <div class="project-type">Imitation Learning</div>
-          <div class="project-title">HG-Dagger Obstacle Avoidance</div>
-          <div class="project-desc">
-            Obstacle avoidance using imitation learning, reducing FLOP cost by <strong style="color: var(--accent);">131×</strong> vs traditional DWA.
-          </div>
-          <div class="project-pills">
-            <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">ROS 2</span>
-            <span class="pill">C++</span><span class="pill">Python</span>
-          </div>
-          <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+        <div class="contact-text">
+          <strong>GitHub</strong>
+          <span>github.com/phamduyaaaa</span>
         </div>
-      </div>
-
-      <div class="project-card reveal">
-        <div class="project-thumb">
-          <img src="assets/robot3.gif" alt="Skid-Steer Robot"
-               onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'project-thumb-placeholder\' viewBox=\'0 0 48 48\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'><circle cx=\'24\' cy=\'18\' r=\'10\' stroke=\'#5A7A96\' stroke-width=\'1.5\'/><path d=\'M14 38c0-5.523 4.477-10 10-10s10 4.477 10 10\' stroke=\'#5A7A96\' stroke-width=\'1.5\' stroke-linecap=\'round\'/></svg>'">
-        </div>
-        <div class="project-body">
-          <div class="project-type">Outdoor Navigation</div>
-          <div class="project-title">Skid-Steer Outdoor Robot</div>
-          <div class="project-desc">
-            Multi-sensor outdoor mobile robot. 60kg payload, RC + autonomous ROS 2 control. University project accepted.
-          </div>
-          <div class="project-pills">
-            <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">RS485</span>
-            <span class="pill">ROS 2</span><span class="pill">C</span>
-          </div>
-          <a href="#" class="project-link">View Video Demo →</a>
-        </div>
-      </div>
-
+      </a>
     </div>
-  </section>
 
-  <!-- ====================== PUBLICATIONS ====================== -->
-  <section id="publications">
-    <div class="reveal">
-      <div class="section-eyebrow">Research</div>
-      <h2>Published work & Awards.</h2>
-    </div>
-    <div class="pub-list reveal">
+  </div>
+</section>
 
-      <div class="pub-card">
-        <div class="pub-index">01</div>
-        <div>
-          <span class="pub-badge badge-q2">Q2 Journal</span>
-          <div class="pub-title">Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning</div>
-          <div class="pub-desc">
-            Published in MethodsX, vol. 15, 103554, Dec 2025. Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data and multiple obstacles.
-            <br><br>
-            <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" style="color: var(--accent); font-weight: 500; font-size: 13px;">
-              DOI: 10.1016/j.mex.2025.103554 ↗
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="pub-card">
-        <div class="pub-index">02</div>
-        <div>
-          <span class="pub-badge badge-award">Research Award</span>
-          <div class="pub-title">Satellite Image Map Recognition Technology based on Image Processing and Deep Learning</div>
-          <div class="pub-desc">
-            Awarded 2nd Prize in University Scientific Research (2026). Researched and developed advanced map recognition on satellite imagery utilizing image processing pipelines and deep learning models.
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ====================== CONTACT ====================== -->
-  <section id="contact">
-    <div class="reveal">
-      <div class="section-eyebrow">Get in touch</div>
-      <h2>Let's work together.</h2>
-    </div>
-    <div class="contact-wrap">
-      <div class="reveal">
-        <p class="contact-intro">
-          I'm open to full-time roles, research collaborations, and projects — especially anything at the intersection of Embodied AI, ROS 2 autonomous navigation, and edge computing.
-          <br><br>
-          Whether you're building the next service robot or working on complex path-planning systems, I'd be glad to hear from you.
-        </p>
-        <a href="mailto:duypham.robotics@gmail.com" class="btn btn-filled">Send me an email ↗</a>
-      </div>
-      <div class="contact-links reveal">
-        <a href="mailto:duypham.robotics@gmail.com" class="contact-link">
-          <div class="contact-icon">✉</div>
-          <div class="contact-text">
-            <strong>Email</strong>
-            <span>duypham.robotics@gmail.com</span>
-          </div>
-        </a>
-        <a href="tel:0945577244" class="contact-link">
-          <div class="contact-icon">📞</div>
-          <div class="contact-text">
-            <strong>Phone</strong>
-            <span>0945 577 244</span>
-          </div>
-        </a>
-        <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
-          <div class="contact-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-secondary);">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-          </div>
-          <div class="contact-text">
-            <strong>GitHub</strong>
-            <span>github.com/phamduyaaaa</span>
-          </div>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <footer class="reveal">
+<footer class="reveal">
+  <div class="footer-inner">
     <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + CSS</span> · No frameworks.</div>
-  </footer>
-</div>
+  </div>
+</footer>
+
+</div><!-- /container -->
 
 <script>
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.07, rootMargin: '0px 0px -24px 0px' });
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 </body>
 </html>
