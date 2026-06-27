@@ -15,17 +15,21 @@
 
 <style>
 /* ==========================================================================
-   🎨 CẤU HÌNH MÀU SẮC & FONT CHỮ (THEME CONFIG)
+   🎨 1. CẤU HÌNH MÀU SẮC & BIẾN CSS (THEME CONFIG)
+   Sử dụng CSS Variables để dễ dàng thay đổi theme toàn cục
 ========================================================================== */
 :root {
+  /* Bảng màu nền (Backgrounds) */
   --bg:          #090B12; 
   --bg-2:        #101420; 
   --bg-3:        #181D2C; 
   --bg-4:        #1E2435;
 
+  /* Viền (Borders) */
   --border:        rgba(255,255,255,0.07);
   --border-hover:  rgba(255,255,255,0.14);
 
+  /* Màu nhấn (Accent Colors) */
   --cyan:        #00D4FF; 
   --cyan-dim:    rgba(0,212,255,0.08); 
   --cyan-soft:   rgba(0,212,255,0.15);
@@ -37,20 +41,24 @@
   --orange:      #FF8C3D; 
   --red:         #FF4D4D;
 
+  /* Màu chữ (Typography Colors) */
   --text:        #EDF0F8; 
   --text-2:      #7B8599; 
   --text-3:      #3A4259; 
 
+  /* Font chữ */
   --font-display: 'Space Grotesk', -apple-system, sans-serif; 
   --font-body:    'Inter', -apple-system, sans-serif;         
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;   
 
+  /* Bo góc (Border Radius) & Hiệu ứng (Transitions) */
   --r-xs: 4px; --r-sm: 7px; --r: 11px; --r-lg: 15px;
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --t: 0.2s var(--ease);
 }
 
+/* Reset CSS cơ bản */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body { background: var(--bg); color: var(--text-2); font-family: var(--font-body); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
@@ -59,7 +67,9 @@ a:hover { color: var(--text); }
 strong { color: var(--text); font-weight: 600; }
 .container { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
 
-/* NAV */
+/* ==========================================================================
+   🧭 2. NAVIGATION BAR (THANH ĐIỀU HƯỚNG)
+========================================================================== */
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; background: rgba(9,11,18,0.92); backdrop-filter: blur(20px) saturate(150%); border-bottom: 1px solid var(--border); }
 .nav-inner { max-width: 1100px; margin: 0 auto; height: 100%; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .nav-logo { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 9px; }
@@ -71,8 +81,11 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; ba
 .nav-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--bg); background: var(--cyan); padding: 7px 16px; border-radius: var(--r-sm); transition: all 0.15s var(--spring); }
 .nav-cta:hover { background: #2DDBFF; transform: translateY(-1px); box-shadow: 0 4px 16px var(--cyan-glow); }
 
-/* HERO */
+/* ==========================================================================
+   🚀 3. HERO SECTION (PHẦN GIỚI THIỆU TRÊN CÙNG)
+========================================================================== */
 .hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 54px; overflow: hidden; }
+/* Nền lưới Grid mờ phía sau */
 .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.032) 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(90deg, transparent 35%, rgba(0,0,0,0.8) 60%, black 100%); pointer-events: none; }
 .hero-inner { position: relative; z-index: 2; width: 100%; }
 .hero-layout { display: grid; grid-template-columns: 1fr 480px; gap: 48px; align-items: center; padding: 80px 0 60px; }
@@ -84,7 +97,7 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .hero-role strong { color: var(--cyan); font-weight: 500; }
 .hero-bio { font-size: 15px; line-height: 1.82; color: var(--text-2); margin-bottom: 40px; max-width: 500px; }
 
-/* BUTTONS */
+/* Các nút bấm (Buttons) */
 .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; border-radius: var(--r); font-family: var(--font-display); font-size: 14px; font-weight: 600; transition: all 0.15s var(--spring); cursor: pointer; border: none; line-height: 1; }
 .btn:active { transform: scale(0.97); }
@@ -95,7 +108,7 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .btn-indigo { background: var(--indigo-dim); color: var(--indigo); border: 1px solid rgba(129,140,248,0.20); }
 .btn-indigo:hover { background: rgba(129,140,248,0.18); color: var(--text); transform: translateY(-1px); }
 
-/* METRICS */
+/* Chỉ số hiển thị (Metrics Bar) */
 .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: var(--bg-2); margin-top: 56px; }
 .metric-cell { padding: 22px 24px; transition: background var(--t); position: relative; border-left: 1px solid var(--border); }
 .metric-cell:first-child { border-left: none; }
@@ -103,15 +116,16 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .metric-value sup { font-size: 17px; color: var(--cyan); }
 .metric-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; line-height: 1.4; }
 
+/* Cấu trúc các Section chung */
 section { padding: 96px 0; }
 section + section { border-top: 1px solid var(--border); }
 .section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--cyan); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
 .section-label::before { content: ''; width: 18px; height: 1px; background: var(--cyan); opacity: 0.6; }
 h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 700; color: var(--text); line-height: 1.14; margin-bottom: 52px; }
 
-/* ==========================================
-   🧠 REINFORCEMENT LEARNING UI
-========================================== */
+/* ==========================================================================
+   🤖 4. GIAO DIỆN GAME REINFORCEMENT LEARNING (RL UI)
+========================================================================== */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1px solid var(--border); background: var(--bg-2); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
@@ -128,7 +142,11 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .rl-btn { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: rgba(9,11,18,0.85); color: var(--text-2); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; backdrop-filter: blur(4px); transition: all var(--t); }
 .rl-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.05); }
 
-/* CONTENT STYLES */
+/* ==========================================================================
+   📄 5. CÁC THÀNH PHẦN NỘI DUNG (ABOUT, EXP, PROJECTS, PUBLICATIONS)
+========================================================================== */
+
+/* About Section */
 .about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: start; }
 .about-text p { margin-bottom: 20px; font-size: 15px; line-height: 1.82; }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
@@ -138,6 +156,7 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .stack-group { margin-bottom: 24px; }
 .stack-group-label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
 
+/* Experience Section */
 .xp-list { display: flex; flex-direction: column; }
 .xp-item { display: grid; grid-template-columns: 168px 1fr; gap: 36px; padding: 28px 0; border-bottom: 1px solid var(--border); position: relative; }
 .xp-item:last-child { border-bottom: none; }
@@ -151,6 +170,7 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .xp-bullets li { position: relative; padding-left: 16px; font-size: 14px; color: var(--text-2); }
 .xp-bullets li::before { content: "–"; position: absolute; left: 0; color: var(--text-3); }
 
+/* Projects Section */
 .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .project-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.18s var(--spring); }
 .project-card:hover { border-color: var(--border-hover); transform: translateY(-5px); box-shadow: 0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.06); }
@@ -168,6 +188,15 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .project-link { font-size: 12.5px; font-weight: 600; color: var(--cyan); display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); transition: gap var(--t), color var(--t); }
 .project-link:hover { gap: 10px; color: var(--text); }
 
+/* ==========================================================================
+   🏆 6. CSS MỚI CHO TIMELINE RESEARCH & AWARDS (CHIA THEO NĂM)
+========================================================================== */
+.year-group { margin-bottom: 48px; }
+.year-group:last-child { margin-bottom: 0; }
+.year-heading { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+.year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border); }
+.year-heading span { color: var(--cyan); }
+
 .pub-list { display: flex; flex-direction: column; gap: 10px; }
 .pub-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px 32px; transition: all var(--t); }
 .pub-card:hover { border-color: var(--border-hover); background: var(--bg-3); }
@@ -181,6 +210,7 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .pub-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-mono); color: var(--cyan); transition: gap var(--t), color var(--t); }
 .pub-link:hover { gap: 8px; color: var(--text); }
 
+/* Contact Section */
 .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
 .contact-intro { font-size: 15.5px; color: var(--text-2); margin-bottom: 32px; line-height: 1.82; }
 .contact-note { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); border-top: 1px solid var(--border); padding-top: 18px; }
@@ -191,14 +221,19 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .contact-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
 .contact-text span { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 
+/* Footer */
 footer { border-top: 1px solid var(--border); padding: 28px 0; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .footer-copy, .footer-built { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 .footer-built span { color: var(--cyan); }
 
+/* Hiệu ứng Reveal (Fade-in khi cuộn chuột) */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
+/* ==========================================================================
+   📱 7. RESPONSIVE DESIGN (CHO MOBILE & TABLET)
+========================================================================== */
 @media (max-width: 960px) {
   .hero-layout, .about-grid, .contact-layout { grid-template-columns: 1fr; }
   .projects-grid, .metrics-bar { grid-template-columns: repeat(2, 1fr); }
@@ -350,7 +385,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 
   <div class="xp-list reveal">
-
     <div class="xp-item">
       <div class="xp-left">
         <div class="xp-date">Mar 2026 — Present</div>
@@ -411,7 +445,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         </ul>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -422,7 +455,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 
   <div class="projects-grid">
-
     <div class="project-card featured reveal">
       <div class="project-thumb">
         <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor"
@@ -483,48 +515,99 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         <a href="#" class="project-link">View video demo →</a>
       </div>
     </div>
-
   </div>
 </section>
 
 <section id="publications">
   <div class="reveal">
-    <div class="section-label">Research</div>
-    <h2>Published work & awards.</h2>
+    <div class="section-label">Research & Awards</div>
+    <h2>Published work & achievements.</h2>
   </div>
-  <div class="pub-list reveal">
 
-    <div class="pub-card">
-      <div class="pub-meta">
-        <span class="pub-badge badge-journal">Q2 Journal</span>
-        <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
-      </div>
-      <div class="pub-title">
-        Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning
-      </div>
-      <div class="pub-desc">
-        Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data
-        and multiple obstacle configurations in unstructured environments.
-      </div>
-      <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
-        DOI: 10.1016/j.mex.2025.103554 →
-      </a>
-    </div>
-
-    <div class="pub-card">
-      <div class="pub-meta">
-        <span class="pub-badge badge-award">2nd Prize · University Research 2026</span>
-      </div>
-      <div class="pub-title">
-        Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
-      </div>
-      <div class="pub-desc">
-        Researched and developed advanced map recognition on satellite imagery using image processing pipelines
-        and deep learning models. Awarded 2nd Prize in University Scientific Research (2026).
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2026</span></div>
+    <div class="pub-list">
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">2nd Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
+        </div>
+        <div class="pub-desc">
+          Nghiên cứu, thiết kế và phát triển công nghệ nhận diện bản đồ trên ảnh vệ tinh dựa trên xử lí ảnh và học sâu[cite: 10].
+        </div>
       </div>
     </div>
-
   </div>
+
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2025</span></div>
+    <div class="pub-list">
+      
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-journal">Q2 Journal</span>
+          <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554 [cite: 8]</span>
+        </div>
+        <div class="pub-title">
+          Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning [cite: 9]
+        </div>
+        <div class="pub-desc">
+          Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data and multiple obstacle configurations in unstructured environments.
+        </div>
+        <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
+          DOI: 10.1016/j.mex.2025.103554 →
+        </a>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">2nd Prize · Informatics Olympiad</span>
+        </div>
+        <div class="pub-title">Giải Nhì Olympic Tin học cấp trường 2025 [cite: 11]</div>
+      </div>
+
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">3rd Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Nghiên cứu xây dựng mô hình xác định vật thể dựa trên dữ liệu ảnh chiều sâu [cite: 12]
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2024</span></div>
+    <div class="pub-list">
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">Consolation Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Nghiên cứu thiết kế và tối ưu hóa quỹ đạo chuyển động của robot gắp trên máy đúc áp lực TOSHIBA - DC650B [cite: 13]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2023</span></div>
+    <div class="pub-list">
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">3rd Prize · Student Mathematics</span>
+        </div>
+        <div class="pub-title">
+          Giải Ba – Toán Sinh Viên cấp trường 2023 (Đại số tuyến tính) [cite: 14]
+        </div>
+      </div>
+    </div>
+  </div>
+
 </section>
 
 <section id="contact">
@@ -587,52 +670,61 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 </footer>
 
-</div><script>
-/* 🧠 REINFORCEMENT LEARNING ENGINE (BELLMAN VALUE ITERATION) */
+</div> <script>
+/* ==========================================================================
+   🧠 REINFORCEMENT LEARNING ENGINE (BELLMAN VALUE ITERATION)
+   Logic tính toán đường đi tránh vật cản tự động (Markov Decision Process)
+========================================================================== */
 const rlEngine = (() => {
   const canvas = document.getElementById('rlCanvas');
   const ctx = canvas.getContext('2d');
   const scoreUI = document.getElementById('rlScore');
   const hintUI = document.getElementById('rlHint');
   
-  const G = 26; 
-  const CELL = canvas.width / G;
-  const GAMMA = 0.94; 
+  const G = 26;  // Số lượng ô lưới (Grid size)
+  const CELL = canvas.width / G; // Kích thước mỗi ô
+  const GAMMA = 0.94; // Hệ số chiết khấu (Discount factor) trong RL
 
-  let V = Array(G).fill().map(() => Array(G).fill(0));
-  let obs = Array(G).fill().map(() => Array(G).fill(false));
-  let goal = { x: 22, y: 22 };
-  let robot = { x: 3.5, y: 3.5, angle: 0 };
+  // Khởi tạo các mảng dữ liệu cho thuật toán
+  let V = Array(G).fill().map(() => Array(G).fill(0)); // Bảng giá trị V(s)
+  let obs = Array(G).fill().map(() => Array(G).fill(false)); // Mảng vật cản
+  let goal = { x: 22, y: 22 }; // Vị trí đích
+  let robot = { x: 3.5, y: 3.5, angle: 0 }; // Trạng thái của Robot
   let score = 0;
   let isMouseDown = false;
   let hasInteracted = false;
 
-  // Initial walls
+  // Khởi tạo một số bức tường mặc định
   [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y]) => obs[x][y] = true);
 
+  // Hàm tính toán Value Iteration (Phương trình Bellman)
   function solveBellman() {
     let nextV = V.map(arr => [...arr]);
     for(let x=0; x<G; x++) {
       for(let y=0; y<G; y++) {
-        if (x === goal.x && y === goal.y) { nextV[x][y] = 100; continue; }
-        if (obs[x][y]) { nextV[x][y] = -100; continue; }
+        if (x === goal.x && y === goal.y) { nextV[x][y] = 100; continue; } // Thưởng tại đích
+        if (obs[x][y]) { nextV[x][y] = -100; continue; } // Phạt khi đụng tường
 
         let maxN = -999;
+        // Duyệt qua 4 hành động (Lên, Xuống, Trái, Phải)
         [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dx, dy]) => {
           let nx = x+dx, ny = y+dy;
           if(nx>=0 && nx<G && ny>=0 && ny<G && !obs[nx][ny]) {
             maxN = Math.max(maxN, V[nx][ny]);
           }
         });
+        // Cập nhật giá trị dựa trên hành động tốt nhất
         if (maxN !== -999) nextV[x][y] = -1 + GAMMA * maxN;
       }
     }
     V = nextV;
   }
 
+  // Cập nhật vị trí của Robot dựa trên mảng giá trị V(s)
   function stepRobot() {
     let cx = Math.floor(robot.x), cy = Math.floor(robot.y);
     
+    // Nếu chạm đích -> Tính điểm và Reset
     if (cx === goal.x && cy === goal.y) {
       score++;
       scoreUI.innerText = score;
@@ -641,6 +733,7 @@ const rlEngine = (() => {
     }
 
     let bestVal = -9999, targetX = robot.x, targetY = robot.y;
+    // Chọn hướng đi có Value cao nhất
     [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx, dy]) => {
       let nx = cx+dx, ny = cy+dy;
       if (nx>=0 && nx<G && ny>=0 && ny<G && !obs[nx][ny]) {
@@ -651,14 +744,16 @@ const rlEngine = (() => {
       }
     });
 
-    if (bestVal <= -50) return;
+    if (bestVal <= -50) return; // Nếu bị kẹt thì đứng im
 
+    // Tính toán di chuyển mượt mà tới mục tiêu
     let dx = targetX - robot.x, dy = targetY - robot.y;
     let dist = Math.hypot(dx, dy);
     if (dist > 0.02) {
       robot.x += (dx/dist) * 0.035; 
       robot.y += (dy/dist) * 0.035;
       
+      // Xoay Robot hướng về phía di chuyển
       let targetAngle = Math.atan2(dy, dx);
       let diff = targetAngle - robot.angle;
       while (diff < -Math.PI) diff += Math.PI*2;
@@ -667,17 +762,21 @@ const rlEngine = (() => {
     }
   }
 
+  // Vẽ giao diện Canvas
   function draw() {
     ctx.fillStyle = '#090B12';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Vẽ lưới, vật cản và Heatmap của Value
     for(let x=0; x<G; x++) {
       for(let y=0; y<G; y++) {
         let px = x*CELL, py = y*CELL;
         if (obs[x][y]) {
+          // Tường
           ctx.fillStyle = '#1E2435'; ctx.fillRect(px+1, py+1, CELL-2, CELL-2);
           ctx.strokeStyle = '#FF4D4D'; ctx.lineWidth = 1; ctx.strokeRect(px+3, py+3, CELL-6, CELL-6);
         } else {
+          // Heatmap dựa trên mảng giá trị V(s)
           let alpha = Math.max(0, V[x][y]) / 100 * 0.45;
           ctx.fillStyle = `rgba(0, 212, 255, ${alpha})`;
           ctx.fillRect(px, py, CELL, CELL);
@@ -686,11 +785,13 @@ const rlEngine = (() => {
       }
     }
 
+    // Vẽ Đích (Goal)
     let gx = goal.x*CELL + CELL/2, gy = goal.y*CELL + CELL/2;
     let pulse = Math.sin(Date.now()*0.006) * 3;
     ctx.fillStyle = '#818CF8'; ctx.beginPath(); ctx.arc(gx, gy, CELL/3.5 + pulse/2, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(129,140,248,0.5)'; ctx.beginPath(); ctx.arc(gx, gy, CELL/2 + pulse, 0, Math.PI*2); ctx.stroke();
 
+    // Vẽ Robot
     ctx.save();
     ctx.translate(robot.x*CELL, robot.y*CELL);
     ctx.rotate(robot.angle);
@@ -707,6 +808,7 @@ const rlEngine = (() => {
     ctx.fillStyle = '#090B12';
     ctx.beginPath(); ctx.arc(CELL/8, 0, CELL/8, 0, Math.PI*2); ctx.fill();
     
+    // Tia quét Radar (Lidar) của Robot
     let scanPulse = Math.sin(Date.now()*0.01) * 0.1;
     ctx.fillStyle = 'rgba(0, 255, 136, 0.15)';
     ctx.beginPath();
@@ -717,10 +819,11 @@ const rlEngine = (() => {
     ctx.restore();
   }
 
+  // Xử lý sự kiện click & kéo để vẽ tường
   function handleMouse(e) {
     if (!hasInteracted) {
       hasInteracted = true;
-      hintUI.classList.add('hidden');
+      hintUI.classList.add('hidden'); // Ẩn hint khi user bắt đầu tương tác
     }
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width) / CELL);
@@ -730,14 +833,17 @@ const rlEngine = (() => {
     }
   }
 
+  // Lắng nghe sự kiện chuột
   canvas.addEventListener('mousedown', e => { isMouseDown = true; handleMouse(e); });
   canvas.addEventListener('mousemove', e => { if(isMouseDown) handleMouse(e); });
   window.addEventListener('mouseup', () => isMouseDown = false);
   
+  // Lắng nghe sự kiện chạm (Mobile/Tablet)
   canvas.addEventListener('touchstart', e => { isMouseDown = true; handleMouse(e.touches[0]); e.preventDefault(); }, {passive: false});
   canvas.addEventListener('touchmove', e => { if(isMouseDown) handleMouse(e.touches[0]); e.preventDefault(); }, {passive: false});
   window.addEventListener('touchend', () => isMouseDown = false);
 
+  // Sinh ngẫu nhiên bản đồ mới khi ăn xong đích
   function respawn(randomizeWalls = false) {
     if (randomizeWalls) {
       obs = Array(G).fill().map(() => Array(G).fill(false));
@@ -753,34 +859,44 @@ const rlEngine = (() => {
       }
     }
 
+    // Đặt ngẫu nhiên điểm Đích mới
     do {
       goal.x = Math.floor(Math.random()*(G-2))+1;
       goal.y = Math.floor(Math.random()*(G-2))+1;
     } while(obs[goal.x][goal.y] || (goal.x === Math.floor(robot.x) && goal.y === Math.floor(robot.y)));
     
+    // Reset lại bảng Value
     V = Array(G).fill().map(() => Array(G).fill(0));
   }
 
+  // Vòng lặp Game chính (Game Loop)
   function loop() {
-    solveBellman(); solveBellman(); 
-    stepRobot();
-    draw();
+    solveBellman(); solveBellman(); // Tính toán toán học trước
+    stepRobot(); // Cập nhật logic vật lý của robot
+    draw(); // Vẽ lại frame
     requestAnimationFrame(loop);
   }
-  loop();
+  loop(); // Khởi chạy
 
+  // Expose API ra ngoài
   return {
     clearWalls: () => { 
-      obs = Array(G).fill().map(() => Array(G).fill(false));
+      obs = Array(G).fill().map(() => Array(G).fill(false)); // Dọn sạch mảng vật cản
       if(!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
     }
   };
 })();
 
-/* Scroll Reveal */
+/* ==========================================================================
+   🎬 SCROLL REVEAL (HIỆU ỨNG TRƯỢT LÊN KHI CUỘN)
+   Sử dụng Intersection Observer để tối ưu hiệu năng
+========================================================================== */
 const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  entries.forEach(e => { 
+    if (e.isIntersecting) e.target.classList.add('visible'); // Thêm class hiển thị khi phần tử lọt vào màn hình
+  });
 }, { threshold: 0.07, rootMargin: '0px 0px -24px 0px' });
+// Gắn quan sát viên cho tất cả các thẻ chứa class .reveal
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 </body>
