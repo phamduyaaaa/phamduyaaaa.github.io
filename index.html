@@ -42,10 +42,9 @@
 
   --r-sm: 6px; --r: 10px; --r-lg: 16px;
   
-  /* Easing curves Apple/Awwwards style */
-  --expo: cubic-bezier(0.16, 1, 0.3, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --t: 0.25s var(--expo);
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --t: 0.2s var(--ease);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -113,7 +112,7 @@ nav {
 }
 .nav-mobile-btn span {
   display: block; width: 22px; height: 2px; background: currentColor;
-  border-radius: 2px; transition: all 0.25s var(--expo);
+  border-radius: 2px; transition: all 0.25s var(--ease);
 }
 .nav-mobile-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .nav-mobile-btn.open span:nth-child(2) { opacity: 0; }
@@ -129,7 +128,7 @@ nav {
   display: flex; position: fixed; top: 60px; left: 0; right: 0;
   background: var(--cream); border-bottom: 1px solid var(--border-2);
   padding: 16px 32px 24px; z-index: 99; flex-direction: column;
-  transform: translateY(-100%); transition: transform 0.4s var(--expo);
+  transform: translateY(-100%); transition: transform 0.4s var(--ease);
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 .mobile-menu.open { transform: translateY(0); }
@@ -181,7 +180,7 @@ h1 .name-accent { color: var(--amber); }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
 /* ============================================================
-   RL CANVAS (100% Nguyên bản thuật toán)
+   RL CANVAS
    ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1.5px solid var(--border-2); background: var(--cream-2); overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
@@ -196,7 +195,7 @@ h1 .name-accent { color: var(--amber); }
   font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--amber-a11y);
   background: rgba(247,245,240,0.95); border: 1.5px solid var(--amber-soft);
   padding: 12px 24px; border-radius: var(--r); pointer-events: none; z-index: 10;
-  animation: pulse-hint 1.7s ease-in-out infinite; transition: opacity 0.4s var(--expo);
+  animation: pulse-hint 1.7s ease-in-out infinite; transition: opacity 0.4s var(--ease);
   box-shadow: 0 8px 24px rgba(184,146,74,0.15); text-align: center; white-space: nowrap;
 }
 @keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.96); box-shadow: 0 0 0 6px transparent; } }
@@ -250,13 +249,13 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
    PROJECTS
    ============================================================ */
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; }
-.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease), border-color var(--t); }
 .project-card:hover { border-color: var(--ink-4); transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,0,0,0.08); }
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
 
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
-.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--expo); }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
 .project-card:hover .project-thumb img { transform: scale(1.06); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
 
@@ -281,7 +280,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border-2); }
 
 .pub-list { display: flex; flex-direction: column; gap: 16px; }
-.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease), border-color var(--t); }
 .pub-card:hover { border-color: var(--ink-4); box-shadow: 0 12px 32px rgba(0,0,0,0.06); transform: translateY(-4px); }
 .pub-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .pub-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 4px; }
@@ -292,7 +291,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .pub-desc { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
 
 .cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease), border-color var(--t); }
 .cert-card:hover { border-color: var(--ink-4); transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.06); }
 .cert-issuer { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-a11y); }
 .cert-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
@@ -316,44 +315,15 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-built span { color: var(--amber-a11y); }
 
 /* ============================================================
-   2-WAY AWWWARDS STYLE ANIMATIONS (Blur & Fast Exit)
+   JS SCRUBBING CLASSES (KHÔNG sử dụng CSS Transition)
    ============================================================ */
-/* Trạng thái mặc định (Ẩn, chưa kích hoạt hoặc cuộn ra ngoài) */
-.reveal-slide {
+/* Lớp này đóng vai trò làm mốc ban đầu, JS sẽ overwrite các thuộc tính này 60 lần/giây */
+.scrub-item {
   opacity: 0;
-  transform: translateY(35px);
-  filter: blur(5px);
-  /* Khi cuộn đi qua (rời màn hình): Ẩn đi cực nhanh để dọn đường */
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out, filter 0.4s ease-out;
+  transform: translateY(60px);
+  filter: blur(8px);
   will-change: opacity, transform, filter;
-}
-
-/* Trạng thái hiện (Cuộn vào màn hình) */
-.reveal-slide.visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-  /* Trượt vào rất êm, có độ ghì (Apple style) */
-  transition: opacity 1.2s var(--expo), transform 1.2s var(--expo), filter 1.2s var(--expo);
-}
-
-.stagger-group {}
-
-/* Tương tự cho các phần tử con trong list */
-.stagger-item {
-  opacity: 0;
-  transform: translateY(30px);
-  filter: blur(4px);
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out, filter 0.3s ease-out;
-  will-change: opacity, transform, filter;
-}
-
-.stagger-item.visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-  /* Trượt vào chậm, sang trọng, Delay được tính toán qua JS */
-  transition: opacity 1s var(--expo), transform 1s var(--expo), filter 1s var(--expo);
+  /* TUYỆT ĐỐI KHÔNG DÙNG CSS TRANSITION Ở ĐÂY ĐỂ TRÁNH LAG */
 }
 
 /* ============================================================
@@ -376,10 +346,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .xp-item { grid-template-columns: 1fr; gap: 8px; margin: 0; padding-left: 0; padding-right: 0; }
   .xp-item:hover { background: transparent; }
   .container { padding: 0 24px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 </style>
 </head>
@@ -420,7 +386,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
     <div class="hero-layout">
-      <div class="hero-text reveal-slide">
+      <div class="hero-text scrub-item" data-scrub-speed="1.2">
         <div class="hero-eyebrow">Robotics Software Engineer · Hanoi, Vietnam</div>
         <h1>
           <span class="name-first">Phạm Đức </span><span class="name-last">Duy<span class="name-accent">.</span></span>
@@ -437,14 +403,14 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           Two years shipping <strong>ROS 2</strong> mobile robots into production — hospitals, restaurants, factory floors. Currently Source Engineer at <strong>VinRobotics</strong> and Lab Leader at <strong>HalBotLab</strong>, researching Embodied AI and Nav2 systems. Published in <em>MethodsX</em> (Q2) on distributional RL for path planning under sensor noise.
         </p>
 
-        <div class="btn-group stagger-group">
-          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary stagger-item">Get in touch ↗</a>
-          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">CV</a>
-          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="/mission/" class="btn btn-amber stagger-item" target="_blank" rel="noopener noreferrer">Mission</a>
+        <div class="btn-group stagger-grid">
+          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary scrub-item">Get in touch ↗</a>
+          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost scrub-item" target="_blank" rel="noopener noreferrer">CV</a>
+          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost scrub-item" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="/mission/" class="btn btn-amber scrub-item" target="_blank" rel="noopener noreferrer">Mission</a>
         </div>
 
-        <div class="metrics-bar reveal-slide" style="transition-delay: 0.15s;">
+        <div class="metrics-bar scrub-item" data-scrub-speed="0.8">
           <div class="metric-cell">
             <div class="metric-value">2<sup>+</sup></div>
             <div class="metric-label">Years shipping<br>production robots</div>
@@ -464,7 +430,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
 
-      <div class="rl-container reveal-slide" style="transition-delay: 0.3s;">
+      <div class="rl-container scrub-item" data-scrub-speed="0.9">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
@@ -480,11 +446,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="about">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">About</div>
     <h2>What I actually do.</h2>
   </div>
-  <div class="about-grid reveal-slide">
+  <div class="about-grid scrub-item">
     <div class="about-text">
       <p>
         Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.
@@ -495,19 +461,19 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       <p>
         At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.
       </p>
-      <div class="tag-cloud stagger-group">
-        <span class="tag tag-dark stagger-item">ROS 2</span><span class="tag tag-dark stagger-item">Nav2</span>
-        <span class="tag tag-dark stagger-item">Cartographer SLAM</span><span class="tag tag-dark stagger-item">Micro-ROS</span>
-        <span class="tag tag-dark stagger-item">RTOS</span><span class="tag tag-dark stagger-item">C++</span>
-        <span class="tag tag-dark stagger-item">Python</span><span class="tag tag-dark stagger-item">Rust</span>
-        <span class="tag stagger-item">Embodied AI</span><span class="tag stagger-item">Reinforcement Learning</span>
-        <span class="tag stagger-item">MuJoCo</span><span class="tag stagger-item">Point Cloud</span><span class="tag stagger-item">Depth Images</span>
+      <div class="tag-cloud stagger-grid">
+        <span class="tag tag-dark scrub-item">ROS 2</span><span class="tag tag-dark scrub-item">Nav2</span>
+        <span class="tag tag-dark scrub-item">Cartographer SLAM</span><span class="tag tag-dark scrub-item">Micro-ROS</span>
+        <span class="tag tag-dark scrub-item">RTOS</span><span class="tag tag-dark scrub-item">C++</span>
+        <span class="tag tag-dark scrub-item">Python</span><span class="tag tag-dark scrub-item">Rust</span>
+        <span class="tag scrub-item">Embodied AI</span><span class="tag scrub-item">Reinforcement Learning</span>
+        <span class="tag scrub-item">MuJoCo</span><span class="tag scrub-item">Point Cloud</span><span class="tag scrub-item">Depth Images</span>
       </div>
     </div>
 
-    <div class="stack-panel stagger-group">
+    <div class="stack-panel stagger-grid">
       <h3>Core Stack</h3>
-      <div class="stack-group stagger-item">
+      <div class="stack-group scrub-item">
         <div class="stack-group-label">Robotics</div>
         <div class="tag-cloud">
           <span class="tag tag-dark">ROS &amp; ROS 2</span><span class="tag tag-dark">Nav2</span>
@@ -515,14 +481,14 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <span class="tag tag-dark">Gazebo</span><span class="tag tag-dark">MuJoCo</span>
         </div>
       </div>
-      <div class="stack-group stagger-item">
+      <div class="stack-group scrub-item">
         <div class="stack-group-label">AI / Perception</div>
         <div class="tag-cloud">
           <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
           <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span>
         </div>
       </div>
-      <div class="stack-group stagger-item">
+      <div class="stack-group scrub-item">
         <div class="stack-group-label">Systems</div>
         <div class="tag-cloud">
           <span class="tag tag-dark">C++</span><span class="tag tag-dark">Python</span>
@@ -530,7 +496,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <span class="tag tag-dark">Linux</span><span class="tag tag-dark">Docker</span>
         </div>
       </div>
-      <div class="stack-group stagger-item">
+      <div class="stack-group scrub-item">
         <div class="stack-group-label">Hardware</div>
         <div class="tag-cloud">
           <span class="tag">Visionary-T</span><span class="tag">Intel D435</span>
@@ -542,13 +508,13 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="experience">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">Work</div>
     <h2>Where I've built things.</h2>
   </div>
 
-  <div class="xp-list stagger-group">
-    <div class="xp-item stagger-item">
+  <div class="xp-list stagger-grid">
+    <div class="xp-item scrub-item">
       <div>
         <div class="xp-date">Mar 2026 — Present</div>
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
@@ -563,7 +529,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item stagger-item">
+    <div class="xp-item scrub-item">
       <div>
         <div class="xp-date">Oct 2025 — Mar 2026</div>
       </div>
@@ -578,7 +544,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item stagger-item">
+    <div class="xp-item scrub-item">
       <div>
         <div class="xp-date">Jun 2024 — Present</div>
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
@@ -594,7 +560,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item stagger-item">
+    <div class="xp-item scrub-item">
       <div>
         <div class="xp-date">Expected 2026</div>
       </div>
@@ -613,13 +579,13 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="projects">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">Work samples</div>
     <h2>Projects I've shipped.</h2>
   </div>
 
-  <div class="projects-grid stagger-group">
-    <div class="project-card featured stagger-item">
+  <div class="projects-grid stagger-grid">
+    <div class="project-card featured scrub-item">
       <div class="project-thumb">
         <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
@@ -642,7 +608,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card stagger-item">
+    <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
@@ -666,7 +632,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card stagger-item">
+    <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
@@ -690,7 +656,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card stagger-item">
+    <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot4.gif" alt="Distributional RL path planning" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
@@ -713,7 +679,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card stagger-item">
+    <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot5.gif" alt="Atari Double DQN" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Atari · Double DQN</div>
@@ -738,15 +704,15 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="publications">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">Research &amp; Awards</div>
     <h2>Published work &amp; recognition.</h2>
   </div>
 
-  <div class="year-group stagger-group">
-    <div class="year-heading stagger-item"><span>2026</span></div>
+  <div class="year-group stagger-grid">
+    <div class="year-heading scrub-item"><span>2026</span></div>
     <div class="pub-list">
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta"><span class="pub-badge badge-award">2nd Prize · University Scientific Research</span></div>
         <div class="pub-title">Satellite Image Map Recognition Based on Image Processing and Deep Learning</div>
         <div class="pub-desc">Recognition pipeline for satellite map imagery using classical image processing for region segmentation combined with a CNN-based classification backbone.</div>
@@ -754,10 +720,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-group">
-    <div class="year-heading stagger-item"><span>2025</span></div>
+  <div class="year-group stagger-grid">
+    <div class="year-heading scrub-item"><span>2025</span></div>
     <div class="pub-list">
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta">
           <span class="pub-badge badge-journal">Q2 Journal</span>
           <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
@@ -768,12 +734,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
         <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="project-link" style="margin-top:12px;">DOI Reference</a>
       </div>
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta"><span class="pub-badge badge-award">2nd Prize · Informatics Olympiad</span></div>
         <div class="pub-title">University Informatics Olympiad 2025</div>
         <div class="pub-desc">Placed 2nd in the competitive programming track.</div>
       </div>
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta"><span class="pub-badge badge-award">3rd Prize · University Scientific Research</span></div>
         <div class="pub-title">Object Detection from Depth Image Data</div>
         <div class="pub-desc">Detection architectures trained on depth images, targeting robustness in low-light and texture-poor environments typical of indoor robot operation.</div>
@@ -781,10 +747,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-group">
-    <div class="year-heading stagger-item"><span>2024</span></div>
+  <div class="year-group stagger-grid">
+    <div class="year-heading scrub-item"><span>2024</span></div>
     <div class="pub-list">
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta"><span class="pub-badge badge-award">Consolation Prize · Univ. Scientific Research</span></div>
         <div class="pub-title">Motion Trajectory Design and Optimization for a Pick-and-Place Robot on the TOSHIBA DC650B Die-Casting Machine</div>
         <div class="pub-desc">Designed and optimized end-effector trajectories for an industrial pick-and-place arm integrated into a die-casting production cell, focusing on cycle time reduction and collision-free path generation.</div>
@@ -792,10 +758,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-group">
-    <div class="year-heading stagger-item"><span>2023</span></div>
+  <div class="year-group stagger-grid">
+    <div class="year-heading scrub-item"><span>2023</span></div>
     <div class="pub-list">
-      <div class="pub-card stagger-item">
+      <div class="pub-card scrub-item">
         <div class="pub-meta"><span class="pub-badge badge-award">3rd Prize · Student Mathematics Competition</span></div>
         <div class="pub-title">University Student Mathematics Competition 2023 — Linear Algebra</div>
         <div class="pub-desc">Placed 3rd in the Linear Algebra category of the university-wide student mathematics competition.</div>
@@ -805,34 +771,34 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="certifications">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">Learning</div>
     <h2>Certifications.</h2>
   </div>
 
-  <div class="cert-grid stagger-group">
-    <div class="cert-card stagger-item">
+  <div class="cert-grid stagger-grid">
+    <div class="cert-card scrub-item">
       <div>
         <div class="cert-issuer">Coursera · DeepLearning.AI</div>
         <div class="cert-name">Deep Learning Specialization <span style="color:var(--ink-4);font-weight:400;font-size:13px;">(4/5 courses)</span></div>
       </div>
       <span class="cert-link-na">In progress</span>
     </div>
-    <div class="cert-card stagger-item">
+    <div class="cert-card scrub-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">3D Point Cloud Masterclass — LiDAR &amp; CloudCompare</div>
       </div>
       <a href="https://www.udemy.com/certificate/UC-5fe0ec66-0d8b-4cf2-a4f9-d572887823f5" class="project-link" style="font-size:12.5px;min-height:auto" target="_blank" rel="noopener noreferrer">View certificate</a>
     </div>
-    <div class="cert-card stagger-item">
+    <div class="cert-card scrub-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">Master Git and GitHub from A to Z</div>
       </div>
       <a href="https://www.udemy.com/certificate/UC-36ff825a-ea23-4532-8acd-30bb57c6ee65" class="project-link" style="font-size:12.5px;min-height:auto" target="_blank" rel="noopener noreferrer">View certificate</a>
     </div>
-    <div class="cert-card stagger-item">
+    <div class="cert-card scrub-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">Introduction to Amazon Web Services</div>
@@ -843,12 +809,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="contact">
-  <div class="reveal-slide">
+  <div class="scrub-item">
     <div class="section-label">Get in touch</div>
     <h2>Let's work on something real.</h2>
   </div>
   <div class="contact-layout">
-    <div class="reveal-slide">
+    <div class="scrub-item">
       <p class="contact-intro">
         Looking for roles where the robots actually ship — not just simulate. Particularly interested in teams working on <strong>autonomous mobile robots, Embodied AI, or edge-compute robotics stacks</strong> where the distance between a ROS 2 node and a physical actuator is short.<br><br>
         Research collaborations welcome: sim-to-real transfer, distributional RL, or perception for navigation. If you're training operators on ROS 2 and need someone who's done it before — that too.
@@ -860,16 +826,16 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </p>
     </div>
 
-    <div class="contact-links stagger-group">
-      <a href="mailto:duypham.robotics@gmail.com" class="contact-link stagger-item">
+    <div class="contact-links stagger-grid">
+      <a href="mailto:duypham.robotics@gmail.com" class="contact-link scrub-item">
         <div class="contact-label">Email</div>
         <div class="contact-value">duypham.robotics@gmail.com</div>
       </a>
-      <a href="tel:0945577244" class="contact-link stagger-item">
+      <a href="tel:0945577244" class="contact-link scrub-item">
         <div class="contact-label">Phone</div>
         <div class="contact-value">0945 577 244</div>
       </a>
-      <a href="https://github.com/phamduyaaaa" class="contact-link stagger-item" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/phamduyaaaa" class="contact-link scrub-item" target="_blank" rel="noopener noreferrer">
         <div class="contact-label">GitHub</div>
         <div class="contact-value">github.com/phamduyaaaa</div>
       </a>
@@ -877,7 +843,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<footer class="reveal-slide">
+<footer class="scrub-item">
   <div class="footer-inner">
     <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
@@ -886,11 +852,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 </div><script>
 /* ============================================================
-   UI LOGIC & 2-WAY AWWWARDS ANIMATIONS
+   UI LOGIC & MENU
    ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-// 1. Menu Mobile
 const menu = document.getElementById('mobileMenu');
 const backdrop = document.getElementById('mobileBackdrop');
 const hamBtn = document.getElementById('hamburgerBtn');
@@ -903,71 +868,104 @@ function toggleMenu(force) {
   hamBtn.setAttribute('aria-expanded', String(isOpen));
 }
 
-// 2. Nav Active State
 (function initNavActiveState() {
   const sections = ['about', 'experience', 'projects', 'publications', 'certifications', 'contact'];
   const navLinks = {};
-
   sections.forEach(id => {
     const link = document.querySelector(`.nav-links a[data-section="${id}"]`);
     if (link) navLinks[id] = link;
   });
-
   const sectionObs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const id = entry.target.id;
-      if (navLinks[id]) {
-        navLinks[id].classList.toggle('active', entry.isIntersecting);
+      if (navLinks[entry.target.id]) {
+        navLinks[entry.target.id].classList.toggle('active', entry.isIntersecting);
       }
     });
   }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
-
   sections.forEach(id => {
     const el = document.getElementById(id);
     if (el) sectionObs.observe(el);
   });
 })();
 
-// 3. Hệ thống Reveal 2 Chiều (Apple/Awwwards style)
-// Thay vì unobserve, ta giữ lại observer để add/remove class liên tục
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) {
-      // Khi scroll vào: Hiển thị mượt mà
-      e.target.classList.add('visible');
-      
-      if (e.target.classList.contains('stagger-group')) {
-        const items = e.target.querySelectorAll('.stagger-item');
-        items.forEach((item, index) => {
-          // Bơm delay tăng dần khi xuất hiện (để tạo hiệu ứng bậc thang)
-          item.style.transitionDelay = `${index * 0.12}s`;
-          requestAnimationFrame(() => item.classList.add('visible'));
-        });
-      }
-    } else {
-      // Khi scroll ra ngoài: Ẩn đi nhanh chóng để re-trigger cho lần sau
-      e.target.classList.remove('visible');
-      
-      if (e.target.classList.contains('stagger-group')) {
-        const items = e.target.querySelectorAll('.stagger-item');
-        items.forEach((item) => {
-          // Xóa delay để chúng biến mất cùng lúc ngay lập tức
-          item.style.transitionDelay = '0s';
-          item.classList.remove('visible');
-        });
-      }
+/* ============================================================
+   SCROLL SCRUBBING ENGINE (Awwwards Style - Vanilla JS)
+   ============================================================ */
+// Kỹ thuật này trói chặt Animation vào Tọa độ cuộn (không dùng CSS Transition)
+(function initScrollScrubbing() {
+  // Tôn trọng cài đặt hệ điều hành của người dùng về tiền đình
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.scrub-item').forEach(el => {
+      el.style.opacity = 1;
+      el.style.transform = 'translateY(0)';
+      el.style.filter = 'blur(0)';
+    });
+    return;
+  }
+
+  const elements = document.querySelectorAll('.scrub-item');
+  const scrubData = Array.from(elements).map(el => {
+    let delayOffset = 0;
+    // Giả lập Stagger: Thêm khoảng bù (offset) cho các phần tử anh em trong cùng 1 Grid
+    if (el.parentElement && el.parentElement.classList.contains('stagger-grid')) {
+      const siblings = Array.from(el.parentElement.children).filter(child => child.classList.contains('scrub-item'));
+      const index = siblings.indexOf(el);
+      delayOffset = index * 40; // Mỗi element trễ hơn 40px không gian cuộn
     }
+    
+    // Đọc speed tùy chỉnh từ data attribute (nếu có)
+    const speedStr = el.getAttribute('data-scrub-speed');
+    const speed = speedStr ? parseFloat(speedStr) : 1;
+
+    return { 
+      el, 
+      current: 0, 
+      target: 0, 
+      offset: delayOffset,
+      speed: speed
+    };
   });
-}, { 
-  threshold: 0.05, // Đợi 5% phần tử vào màn hình
-  rootMargin: '0px 0px -50px 0px' // Bắt đầu tính toán sớm hơn 50px từ đáy
-});
 
-document.querySelectorAll('.reveal-slide, .stagger-group').forEach(el => revealObs.observe(el));
+  function updateScrub() {
+    const wh = window.innerHeight;
 
+    scrubData.forEach(item => {
+      const rect = item.el.getBoundingClientRect();
+      const effectiveTop = rect.top + item.offset;
+      
+      // Bắt đầu lộ diện khi mép trên cách đáy màn hình 1 chút
+      const start = wh + 50; 
+      // Rõ hoàn toàn khi đi vào sâu được 18% chiều cao màn hình
+      const end = wh * 0.82; 
+      
+      // Tính toán phần trăm (Progress từ 0 đến 1)
+      let progress = (start - effectiveTop) / (start - end);
+      progress = Math.max(0, Math.min(1, progress));
+      
+      item.target = progress;
+
+      // Nội suy tuyến tính (Lerp) - Bí quyết làm mượt thao tác cuộn 2 chiều
+      item.current += (item.target - item.current) * 0.08;
+
+      // Chỉ cập nhật DOM nếu độ lệch đủ lớn để tiết kiệm GPU
+      if (Math.abs(item.target - item.current) > 0.001) {
+        item.el.style.opacity = item.current;
+        const yOffset = (1 - item.current) * 50 * item.speed;
+        const blurVal = (1 - item.current) * 6;
+        item.el.style.transform = `translateY(${yOffset}px)`;
+        item.el.style.filter = `blur(${blurVal}px)`;
+      }
+    });
+
+    requestAnimationFrame(updateScrub);
+  }
+
+  // Khởi động vòng lặp 60FPS
+  requestAnimationFrame(updateScrub);
+})();
 
 /* ============================================================
-   RL CANVAS ENGINE (100% Khôi phục thuật toán tương tác nguyên bản)
+   RL CANVAS ENGINE (100% Khôi phục thuật toán nguyên bản)
    ============================================================ */
 const rlEngine = (() => {
   const canvas  = document.getElementById('rlCanvas');
