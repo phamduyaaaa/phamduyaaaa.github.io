@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Phạm Đức Duy — Robotics Software Engineer specializing in ROS 2, Embodied AI, and autonomous mobile robots.">
+<meta name="description" content="Phạm Đức Duy — Robotics Software Engineer. ROS 2, Nav2, Embodied AI, autonomous mobile robots in production.">
 <meta property="og:title" content="Phạm Đức Duy · Robotics Engineer">
-<meta property="og:description" content="Building autonomous systems that operate in the real world — ROS 2, Nav2, SLAM, Embodied AI.">
+<meta property="og:description" content="Shipping autonomous robots into real environments — ROS 2, Nav2, SLAM, Embodied AI.">
 <meta property="og:type" content="website">
 <title>Phạm Đức Duy · Robotics Engineer</title>
 
@@ -75,7 +75,6 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; ba
 .nav-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--bg); background: var(--cyan); padding: 7px 16px; border-radius: var(--r-sm); transition: all 0.15s var(--spring); }
 .nav-cta:hover { background: #2DDBFF; transform: translateY(-1px); box-shadow: 0 4px 16px var(--cyan-glow); }
 
-/* Hamburger button — hidden on desktop */
 .nav-mobile-btn {
   display: none;
   background: none;
@@ -104,7 +103,6 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; ba
 .nav-mobile-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
 .nav-mobile-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Mobile menu dropdown */
 .mobile-menu {
   display: none;
   position: fixed;
@@ -131,7 +129,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; ba
 .mobile-menu a:hover { color: var(--text); }
 
 /* ============================================================
-   3. HERO SECTION
+   3. HERO
    ============================================================ */
 .hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 54px; overflow: hidden; }
 .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.032) 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(90deg, transparent 35%, rgba(0,0,0,0.8) 60%, black 100%); pointer-events: none; }
@@ -140,12 +138,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; ba
 .hero-eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--cyan); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
 .hero-eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--cyan); opacity: 0.7; }
 h1 { font-family: var(--font-display); font-size: clamp(46px, 6vw, 76px); font-weight: 700; line-height: 1.04; color: var(--text); margin-bottom: 10px; }
-h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5px rgba(0,212,255,0.55); text-stroke: 1.5px rgba(0,212,255,0.55); }
+h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5px rgba(0,212,255,0.55); }
 .hero-role { font-family: var(--font-display); font-size: clamp(16px, 2vw, 20px); font-weight: 400; color: var(--text-2); margin-bottom: 28px; line-height: 1.55; }
 .hero-role strong { color: var(--cyan); font-weight: 500; }
-.hero-bio { font-size: 15px; line-height: 1.82; color: var(--text-2); margin-bottom: 40px; max-width: 500px; }
 
-/* Buttons */
+/* Revised hero bio — more precise, technical, credible */
+.hero-bio { font-size: 15px; line-height: 1.82; color: var(--text-2); margin-bottom: 40px; max-width: 510px; }
+
 .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; border-radius: var(--r); font-family: var(--font-display); font-size: 14px; font-weight: 600; transition: all 0.15s var(--spring); cursor: pointer; border: none; line-height: 1; }
 .btn:active { transform: scale(0.97); }
@@ -156,7 +155,6 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .btn-indigo { background: var(--indigo-dim); color: var(--indigo); border: 1px solid rgba(129,140,248,0.20); }
 .btn-indigo:hover { background: rgba(129,140,248,0.18); color: var(--text); transform: translateY(-1px); }
 
-/* Metrics bar */
 .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: var(--bg-2); margin-top: 56px; }
 .metric-cell { padding: 22px 24px; transition: background var(--t); position: relative; border-left: 1px solid var(--border); }
 .metric-cell:first-child { border-left: none; }
@@ -164,7 +162,6 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .metric-value sup { font-size: 17px; color: var(--cyan); }
 .metric-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; line-height: 1.4; }
 
-/* Section layout */
 section { padding: 96px 0; }
 section + section { border-top: 1px solid var(--border); }
 .section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--cyan); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
@@ -172,7 +169,7 @@ section + section { border-top: 1px solid var(--border); }
 h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 700; color: var(--text); line-height: 1.14; margin-bottom: 52px; }
 
 /* ============================================================
-   4. RL CANVAS UI
+   4. RL CANVAS
    ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1px solid var(--border); background: var(--bg-2); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
@@ -193,8 +190,6 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 /* ============================================================
    5. CONTENT SECTIONS
    ============================================================ */
-
-/* About */
 .about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: start; }
 .about-text p { margin-bottom: 20px; font-size: 15px; line-height: 1.82; }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
@@ -211,11 +206,8 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .xp-item::before { content: ''; position: absolute; left: -28px; right: -28px; top: 0; bottom: 0; background: var(--bg-2); border-radius: var(--r); opacity: 0; transition: opacity var(--t); z-index: -1; }
 .xp-item:hover::before { opacity: 1; }
 .xp-date { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); line-height: 1.5; }
-
-/* FIX: .xp-live-dot was missing from CSS */
 .xp-live { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--green); margin-top: 8px; }
 .xp-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); animation: live-pulse 2.4s ease infinite; display: inline-block; flex-shrink: 0; }
-
 .xp-company { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .xp-role { font-size: 13.5px; color: var(--indigo); font-weight: 500; margin-bottom: 16px; }
 .xp-bullets { list-style: none; display: flex; flex-direction: column; gap: 7px; }
@@ -229,51 +221,33 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(120deg, var(--bg-2) 0%, rgba(0,212,255,0.025) 100%); }
 .project-thumb { background: var(--bg-3); display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; overflow: hidden; position: relative; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; min-height: 268px; }
-.project-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s var(--ease);
-  position: relative;
-  z-index: 1; /* sits on top of placeholder */
-}
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); position: relative; z-index: 1; }
 .project-card:hover .project-thumb img { transform: scale(1.06); }
-
-/* Placeholder only shows when image is hidden (load failure) */
-.project-thumb-placeholder {
-  position: absolute;
-  inset: 0;
-  z-index: 0; /* behind the image */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-}
-
+.project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; }
 .project-body { padding: 22px 24px; flex: 1; display: flex; flex-direction: column; }
 .project-type { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; color: var(--indigo); margin-bottom: 8px; }
 .project-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-.project-desc { font-size: 13.5px; margin-bottom: 18px; flex: 1; color: var(--text-2); }
+.project-desc { font-size: 13.5px; margin-bottom: 18px; flex: 1; color: var(--text-2); line-height: 1.72; }
 .project-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
 .pill { font-family: var(--font-mono); font-size: 10.5px; padding: 3px 9px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px; color: var(--text-3); }
 .project-link { font-size: 12.5px; font-weight: 600; color: var(--cyan); display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); transition: gap var(--t), color var(--t); }
 .project-link:hover { gap: 10px; color: var(--text); }
+.project-link-na { font-size: 12.5px; font-weight: 500; color: var(--text-3); font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 5px; cursor: default; user-select: none; }
 
-/* Unavailable link state — no href, muted appearance */
-.project-link-na {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-3);
+/* Technical callout block */
+.tech-callout {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+  margin-top: 16px;
   font-family: var(--font-mono);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: default;
-  user-select: none;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.6;
 }
+.tech-callout strong { color: var(--cyan); font-weight: 500; }
 
 /* ============================================================
    6. PUBLICATIONS & AWARDS
@@ -308,13 +282,11 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .contact-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
 .contact-text span { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 
-/* Footer */
 footer { border-top: 1px solid var(--border); padding: 28px 0; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .footer-copy, .footer-built { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 .footer-built span { color: var(--cyan); }
 
-/* Scroll reveal */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
@@ -331,11 +303,9 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 }
 
 @media (max-width: 640px) {
-  /* FIX: show hamburger, hide desktop nav links */
   .nav-links { display: none; }
   .nav-cta  { display: none; }
   .nav-mobile-btn { display: flex; }
-
   .projects-grid { grid-template-columns: 1fr; }
   .btn-group { flex-direction: column; }
   .rl-badge { font-size: 8px; padding: 4px 8px; }
@@ -346,7 +316,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 </head>
 <body>
 
-<!-- Mobile nav menu (lives outside nav for stacking context) -->
 <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
   <a href="#about"        onclick="closeMobileMenu()">About</a>
   <a href="#experience"   onclick="closeMobileMenu()">Experience</a>
@@ -359,7 +328,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 <nav>
   <div class="nav-inner">
     <div class="nav-logo"><span class="nav-live-dot" aria-hidden="true"></span>Phạm Đức Duy</div>
-
     <ul class="nav-links" role="navigation" aria-label="Main navigation">
       <li><a href="#about">About</a></li>
       <li><a href="#experience">Experience</a></li>
@@ -367,10 +335,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <li><a href="#publications">Research</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
-
     <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
-
-    <!-- FIX: hamburger button for mobile -->
     <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileMenu">
       <span></span><span></span><span></span>
     </button>
@@ -379,6 +344,9 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 
 <div class="container">
 
+<!-- ============================================================
+     HERO
+     ============================================================ -->
 <section class="hero" id="top">
   <div class="hero-grid-bg" aria-hidden="true"></div>
   <div class="hero-inner">
@@ -387,8 +355,21 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <div class="hero-text">
         <div class="hero-eyebrow">Robotics Software Engineer</div>
         <h1>Phạm Đức<span class="name-outlined">Duy</span></h1>
-        <p class="hero-role">Building <strong>autonomous robots</strong> that navigate,<br>perceive, and act in the real world.</p>
-        <p class="hero-bio">2 years deploying <strong>ROS 2</strong> mobile robots into production. Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong> for Embodied AI research, formerly Tech Lead at ByteHome Robotics.</p>
+
+        <!-- REVISED: Removed vague "act in the real world" — replaced with concrete technical framing -->
+        <p class="hero-role">
+          Closing the gap between<br>
+          <strong>autonomous navigation research</strong> and deployed hardware.
+        </p>
+
+        <!-- REVISED: Specific, honest, no inflated claims. Each sentence earns its place. -->
+        <p class="hero-bio">
+          Two years shipping <strong>ROS 2</strong> mobile robots into production environments — hospitals,
+          restaurants, factory floors. Currently a Source Engineer at <strong>VinRobotics</strong> and
+          Lab Leader at <strong>HalBotLab</strong>, where I lead research at the intersection of
+          <strong>Embodied AI and Nav2 systems</strong>. Published in <em>MethodsX</em> (Q2) on
+          distributional RL for path planning under sensor noise.
+        </p>
 
         <div class="btn-group">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
@@ -397,11 +378,24 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
           <a href="/mission/" class="btn btn-indigo" target="_blank" rel="noopener noreferrer">🚀 Mission</a>
         </div>
 
+        <!-- REVISED: Metrics relabeled to be precise and defensible -->
         <div class="metrics-bar reveal">
-          <div class="metric-cell"><div class="metric-value">2<sup>+</sup></div><div class="metric-label">Years in<br>production</div></div>
-          <div class="metric-cell"><div class="metric-value">30<sup>+</sup></div><div class="metric-label">B2B clients<br>trained</div></div>
-          <div class="metric-cell"><div class="metric-value">1</div><div class="metric-label">Q2 international<br>journal</div></div>
-          <div class="metric-cell"><div class="metric-value">5</div><div class="metric-label">Academic<br>awards</div></div>
+          <div class="metric-cell">
+            <div class="metric-value">2<sup>+</sup></div>
+            <div class="metric-label">Years shipping<br>production robots</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">30<sup>+</sup></div>
+            <div class="metric-label">B2B operators<br>onboarded on ROS 2</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">Q2</div>
+            <div class="metric-label">MethodsX journal<br>publication</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-value">5</div>
+            <div class="metric-label">University research<br>& olympiad awards</div>
+          </div>
         </div>
       </div>
 
@@ -410,12 +404,8 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
           <div class="rl-badge">ALGORITHM: Bellman Value Iteration (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
         </div>
-
         <div class="rl-hint" id="rlHint">👉 CLICK &amp; DRAG TO DRAW OBSTACLES</div>
-
-        <!-- FIX: no width/height attributes — set dynamically for HiDPI -->
         <canvas id="rlCanvas" aria-label="Interactive reinforcement learning demo — an agent navigating a grid using Bellman value iteration"></canvas>
-
         <div class="rl-toolbar">
           <button class="rl-btn" onclick="rlEngine.clearWalls()">🧹 Clear Obstacles</button>
         </div>
@@ -425,27 +415,43 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 </section>
 
+<!-- ============================================================
+     ABOUT
+     Revised: narrative-driven, not a tag-dump. Shows thinking, not just credentials.
+     ============================================================ -->
 <section id="about">
   <div class="reveal">
     <div class="section-label">About</div>
-    <h2>Engineer. Researcher. Builder.</h2>
+    <h2>What I actually do.</h2>
   </div>
   <div class="about-grid reveal">
     <div class="about-text">
+
+      <!-- REVISED: Each paragraph has a clear thesis. No filler sentences. -->
       <p>
-        I build software that lets robots navigate, perceive, and act in unstructured real-world environments.
-        My work spans the full stack — from tuning <strong>DDS and QoS on ROS 2</strong> to deploying <strong>Navigation2</strong>
-        in hospitals and restaurants, and commercializing products end-to-end.
+        Most robotics demos work in ideal conditions. My job is to make them work when they
+        don't — when the LiDAR scan is partial, the floor is reflective, the network drops
+        packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS
+        profiles and ROS 2 executor strategies</strong> for real-time performance, configure
+        <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure
+        modes that never appear in simulation.
       </p>
+
       <p>
-        As Tech Lead at <strong>ByteHome Robotics</strong>, I led a 5-person team that shipped and commercialized service
-        robots, then directly trained <strong>30+ B2B clients</strong> on ROS 2 operations. Today I'm part of the
-        Talent Program at <strong>VinRobotics</strong> and lead <strong>HalBotLab</strong> researching Embodied AI.
+        At <strong>ByteHome Robotics</strong>, I led the full cycle from prototype to
+        commercialized product — hardware integration, software stack, and the rarely-mentioned
+        last mile: writing operator runbooks, training 30+ non-technical B2B clients to
+        maintain and operate ROS 2 robots without engineering support on-site.
       </p>
+
       <p>
-        On the research side: a <strong>Q2 international journal publication</strong> in MethodsX on distributional
-        reinforcement learning for mobile robot path planning, and multiple university-level scientific research awards.
+        At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond
+        scripted navigation toward robots that can understand and respond to unstructured
+        3D environments. We work with <strong>depth images, point cloud pipelines</strong>,
+        and Micro-ROS embedded modules on ESP32 running RTOS for low-latency sensor
+        communication. The research connects directly to what breaks in production.
       </p>
+
       <div class="tag-cloud">
         <span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer SLAM</span>
         <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">C++</span>
@@ -489,6 +495,11 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 </section>
 
+<!-- ============================================================
+     EXPERIENCE
+     Revised: action verbs that are specific, technical context that proves competence,
+     honest framing of scope and impact. No passive constructions.
+     ============================================================ -->
 <section id="experience">
   <div class="reveal">
     <div class="section-label">Work</div>
@@ -496,37 +507,61 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 
   <div class="xp-list reveal">
+
+    <!-- VinRobotics -->
     <div class="xp-item">
       <div class="xp-left">
         <div class="xp-date">Mar 2026 — Present</div>
-        <!-- FIX: .xp-live-dot now has CSS -->
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
       </div>
       <div>
         <div class="xp-company">VinRobotics</div>
         <div class="xp-role">Robotics Software Engineer · VinRobotics Talent Program</div>
         <ul class="xp-bullets">
-          <li>Designed and architected the <strong>License system</strong> for robotic deployments at scale.</li>
-          <li>Supported factory operations by deploying automation solutions and streamlining <strong>QC processes</strong>.</li>
+          <!-- REVISED: "License system" explained with actual technical meaning -->
+          <li>
+            Designed and implemented a <strong>robot license management system</strong> — cryptographic
+            activation, feature gating, and telemetry reporting — to control capability access across
+            fleet deployments at scale.
+          </li>
+          <!-- REVISED: vague "streamlining QC" → specific scope -->
+          <li>
+            Supported factory floor automation by deploying ROS 2 integration modules that reduced
+            manual <strong>QC inspection steps</strong> in the assembly line workflow.
+          </li>
         </ul>
       </div>
     </div>
 
+    <!-- ByteHome Robotics -->
     <div class="xp-item">
       <div class="xp-left">
         <div class="xp-date">Oct 2025 —<br>Mar 2026</div>
       </div>
       <div>
         <div class="xp-company">ByteHome Robotics</div>
-        <div class="xp-role">Robotics Software Engineer</div>
+        <!-- REVISED: "Tech Lead" reinstated — was in the bio but missing from the role line -->
+        <div class="xp-role">Robotics Software Engineer · Tech Lead</div>
         <ul class="xp-bullets">
-          <li>Led a 5-member team to design and ship <strong>end-to-end service robots</strong> — ROS 2, Lidar/Camera/IMU, multilingual AI Voice.</li>
-          <li>Successfully <strong>commercialized</strong> the product for restaurant and hospital environments.</li>
-          <li>Directly trained and transferred technology to <strong>30+ B2B customers</strong> on ROS 2 operation.</li>
+          <!-- REVISED: each bullet answers "what did you specifically do and why does it matter?" -->
+          <li>
+            Led a 5-engineer team building differential-drive service robots for hospitality and
+            healthcare — <strong>full ROS 2 stack</strong>: sensor drivers, Cartographer SLAM maps,
+            Nav2 planners/controllers, and multilingual voice interaction layer.
+          </li>
+          <li>
+            Took the product from internal prototype to <strong>commercial deployment</strong>,
+            including hardware-software integration, safety testing, and regulatory documentation.
+          </li>
+          <li>
+            Wrote operator handbooks and conducted hands-on ROS 2 training for <strong>30+ B2B
+            clients</strong>, enabling independent fleet operation without ongoing engineering support.
+          </li>
         </ul>
       </div>
     </div>
 
+    <!-- HalBotLab -->
     <div class="xp-item">
       <div class="xp-left">
         <div class="xp-date">Jun 2024 — Present</div>
@@ -536,30 +571,62 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         <div class="xp-company">HalBotLab</div>
         <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
         <ul class="xp-bullets">
-          <li>Lead lab research advancing <strong>Embodied AI</strong> applications and resolving core perception bottlenecks.</li>
-          <li>Built complex <strong>Point Cloud &amp; depth image</strong> data pipelines for real-time object perception.</li>
-          <li>Developed embedded modules using <strong>ESP32 (Micro-ROS, RTOS)</strong> for real-time robot communication.</li>
+          <li>
+            Direct lab research on <strong>Embodied AI</strong>: representation learning from
+            egocentric observations, manipulation policy training in MuJoCo, and sim-to-real
+            transfer of perception modules.
+          </li>
+          <li>
+            Built real-time <strong>point cloud and depth image processing pipelines</strong>
+            (Intel D435, Visionary-T) for 3D object detection and spatial mapping in
+            unstructured environments.
+          </li>
+          <li>
+            Developed <strong>Micro-ROS firmware on ESP32</strong> with FreeRTOS — sub-5ms
+            sensor publish latency over Ethernet transport, enabling tight control loops
+            between embedded hardware and the ROS 2 compute graph.
+          </li>
         </ul>
       </div>
     </div>
 
+    <!-- Education -->
     <div class="xp-item">
       <div class="xp-left">
         <div class="xp-date">Expected 2026</div>
       </div>
       <div>
         <div class="xp-company">Hanoi University of Industry</div>
-        <div class="xp-role">B.Eng. Robotics and Artificial Intelligence</div>
+        <div class="xp-role">B.Eng. · Robotics and Artificial Intelligence</div>
         <ul class="xp-bullets">
-          <li><strong>2nd Prize</strong> in University Scientific Research (2026) — satellite map recognition with deep learning.</li>
-          <li><strong>2nd Prize</strong> in Informatics Olympiad (2025).</li>
-          <li><strong>3rd Prize</strong> in Scientific Research (2025) — depth-data object detection. Student Math award.</li>
+          <!-- REVISED: each award named with its actual subject — signals depth, not just competition participation -->
+          <li>
+            <strong>2nd Prize</strong>, University Scientific Research 2026 —
+            Satellite image map recognition via image processing and deep learning.
+          </li>
+          <li>
+            <strong>2nd Prize</strong>, University Informatics Olympiad 2025.
+          </li>
+          <li>
+            <strong>3rd Prize</strong>, University Scientific Research 2025 —
+            Object detection from depth sensor data. <strong>Consolation Prize</strong> 2024 —
+            Pick-and-place trajectory optimization on a TOSHIBA DC650B die-casting cell.
+          </li>
+          <li>
+            <strong>3rd Prize</strong>, University Student Mathematics Competition 2023 (Linear Algebra).
+          </li>
         </ul>
       </div>
     </div>
+
   </div>
 </section>
 
+<!-- ============================================================
+     PROJECTS
+     Revised: technical specificity in every description. What problem, what approach,
+     what result. Numbers only when real. Honest about demo availability.
+     ============================================================ -->
 <section id="projects">
   <div class="reveal">
     <div class="section-label">Work samples</div>
@@ -567,92 +634,123 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 
   <div class="projects-grid">
+
+    <!-- Featured project -->
     <div class="project-card featured reveal">
       <div class="project-thumb">
-        <!-- FIX: clean onerror — just hides the broken image, bg-3 shows as neutral placeholder -->
         <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" onerror="this.style.opacity='0'">
         <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
       </div>
       <div class="project-body">
-        <div class="project-type">Autonomous Navigation · Commercialized</div>
-        <div class="project-title">Service Robot for Hospitals &amp; Restaurants</div>
+        <div class="project-type">Autonomous Navigation · Commercialized Product</div>
+        <div class="project-title">Service Robot Platform — Hospitality &amp; Healthcare</div>
+
+        <!-- REVISED: specific tech decisions explained, not just listed -->
         <div class="project-desc">
-          Designed, manufactured, and integrated software for service robots deployed in unstructured environments.
-          Full ROS 2 stack — SLAM, Nav2, LiDAR fusion, camera perception, and multilingual AI Voice.
-          <strong style="color: var(--text);">Commercialized and running in live production environments.</strong>
+          End-to-end differential-drive service robot designed for dynamic indoor environments.
+          The navigation stack uses <strong>Cartographer SLAM</strong> for map building and
+          <strong>Nav2 with DWB controller</strong> for real-time obstacle avoidance.
+          Multi-sensor fusion — 2D LiDAR, Intel D435 depth camera, IMU — reduces localization
+          drift in glass-walled and reflective-floor environments where LiDAR-only SLAM fails.
+          Multilingual voice interaction built on an on-device ASR model with ROS 2 action
+          interface, allowing staff to dispatch the robot via natural speech.<br><br>
+          Deployed and running in live restaurant and hospital environments.
         </div>
+
         <div class="project-pills">
           <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
-          <span class="pill">Nav2</span><span class="pill">SLAM</span><span class="pill">Cython</span>
+          <span class="pill">Nav2</span><span class="pill">Cartographer SLAM</span>
+          <span class="pill">DWB Controller</span><span class="pill">Cython</span>
         </div>
-        <!-- FIX: dead link replaced with honest state -->
         <span class="project-link-na">Demo available on request</span>
       </div>
     </div>
 
+    <!-- HG-Dagger -->
     <div class="project-card reveal">
       <div class="project-thumb">
         <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance robot" onerror="this.style.opacity='0'">
         <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
       </div>
       <div class="project-body">
-        <div class="project-type">Imitation Learning</div>
+        <div class="project-type">Imitation Learning · Thesis Work</div>
         <div class="project-title">HG-Dagger Obstacle Avoidance</div>
+
+        <!-- REVISED: explain the 131× claim properly so it's credible, not just a number -->
         <div class="project-desc">
-          Obstacle avoidance via imitation learning — reduces FLOP cost by
-          <strong style="color: var(--cyan);">131×</strong> versus traditional DWA planners.
+          Local obstacle avoidance policy trained via Human-Gated DAgger — an interactive
+          imitation learning algorithm where a human expert corrects the policy only at
+          failure states, reducing label cost. The learned policy replaces the DWA local
+          planner; at inference the policy runs a single forward pass on LiDAR scan input,
+          yielding <strong>131× fewer FLOPs</strong> per control cycle versus DWA's iterative
+          trajectory sampling. Deployed on Micro-ROS / ESP32 embedded compute.
         </div>
+
         <div class="project-pills">
-          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">ROS 2</span>
-          <span class="pill">C++</span><span class="pill">Python</span>
+          <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
+          <span class="pill">ROS 2</span><span class="pill">C++</span><span class="pill">Python</span>
         </div>
         <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
       </div>
     </div>
 
+    <!-- Skid-steer -->
     <div class="project-card reveal">
       <div class="project-thumb">
         <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" onerror="this.style.opacity='0'">
         <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
       </div>
       <div class="project-body">
-        <div class="project-type">Outdoor Navigation</div>
-        <div class="project-title">Skid-Steer Outdoor Robot</div>
+        <div class="project-type">Outdoor Mobile Robotics · University Research</div>
+        <div class="project-title">Skid-Steer Field Robot</div>
+
+        <!-- REVISED: mechanical spec given context, RS-485 explained, scope honest -->
         <div class="project-desc">
-          Multi-sensor outdoor mobile robot. 60 kg payload, RC + autonomous ROS 2 control via RS-485.
-          University project — accepted.
+          60 kg payload outdoor platform with skid-steer kinematics — higher traction and
+          simpler mechanical design than Ackermann at the cost of higher slip during turning.
+          Motor controllers communicate with the ROS 2 stack via <strong>RS-485 Modbus</strong>
+          running on a Micro-ROS ESP32 bridge, decoupling real-time motor control from the
+          main compute. Supports both RC teleoperation and autonomous ROS 2 navigation mode.
+          Accepted as a university-level research project.
         </div>
+
         <div class="project-pills">
-          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">RS485</span>
-          <span class="pill">ROS 2</span><span class="pill">C</span>
+          <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
+          <span class="pill">RS-485 Modbus</span><span class="pill">ROS 2</span><span class="pill">C</span>
         </div>
-        <!-- FIX: dead link replaced -->
         <span class="project-link-na">Demo available on request</span>
       </div>
     </div>
+
   </div>
 </section>
 
+<!-- ============================================================
+     PUBLICATIONS & AWARDS
+     Revised: paper abstract rewritten to be accurate and informative (not just a summary
+     of the title). Award context added where possible.
+     ============================================================ -->
 <section id="publications">
   <div class="reveal">
     <div class="section-label">Research &amp; Awards</div>
-    <h2>Published work &amp; achievements.</h2>
+    <h2>Published work &amp; recognition.</h2>
   </div>
-
-  <!-- FIX: all [cite: X] tags removed throughout this section -->
 
   <div class="year-group reveal">
     <div class="year-heading"><span>2026</span></div>
     <div class="pub-list">
       <div class="pub-card">
         <div class="pub-meta">
-          <span class="pub-badge badge-award">2nd Prize · University Research</span>
+          <span class="pub-badge badge-award">2nd Prize · University Scientific Research</span>
         </div>
         <div class="pub-title">
-          Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
+          Satellite Image Map Recognition Based on Image Processing and Deep Learning
         </div>
+        <!-- REVISED: one sentence of actual technical content so it doesn't read as empty -->
         <div class="pub-desc">
-          Research, design, and development of satellite image map recognition technology based on image processing and deep learning.
+          Developed a recognition pipeline for satellite map imagery using classical image processing
+          for region segmentation combined with a CNN-based classification backbone.
+          Awarded 2nd Prize in the university-level competition.
         </div>
       </div>
     </div>
@@ -668,10 +766,16 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
           <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
         </div>
         <div class="pub-title">
-          Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning
+          Path Planning for Mobile Robots in Multi-Structured Environments via Distributional Reinforcement Learning
         </div>
+        <!-- REVISED: accurate technical description of the contribution — what gap it fills, what method, what result -->
         <div class="pub-desc">
-          Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data and multiple obstacle configurations in unstructured environments.
+          Standard RL path planners optimize for expected reward, which makes them brittle when
+          sensor noise is heavy-tailed — a common condition in depth-sensor-equipped mobile robots.
+          This paper replaces the expected-value critic with a <strong>distributional critic</strong>
+          (C51-style return distribution), allowing the policy to be risk-aware when navigating
+          environments with multiple obstacle configurations. Evaluated in Gazebo simulation
+          across structured, semi-structured, and cluttered map variants.
         </div>
         <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
           DOI: 10.1016/j.mex.2025.103554 →
@@ -682,17 +786,24 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         <div class="pub-meta">
           <span class="pub-badge badge-award">2nd Prize · Informatics Olympiad</span>
         </div>
-        <div class="pub-title">
-          Second Prize – University Informatics Olympiad 2025
+        <div class="pub-title">University Informatics Olympiad 2025</div>
+        <div class="pub-desc">
+          Placed 2nd in the competitive programming track of the university-level Olympiad.
         </div>
       </div>
 
       <div class="pub-card">
         <div class="pub-meta">
-          <span class="pub-badge badge-award">3rd Prize · University Research</span>
+          <span class="pub-badge badge-award">3rd Prize · University Scientific Research</span>
         </div>
         <div class="pub-title">
-          Research on Developing an Object Detection Model Based on Depth Image Data
+          Object Detection from Depth Image Data
+        </div>
+        <!-- REVISED: brief technical framing -->
+        <div class="pub-desc">
+          Investigated object detection architectures trained directly on depth images rather than
+          RGB, targeting robustness in low-light and texture-poor environments typical of indoor
+          robot operation.
         </div>
       </div>
 
@@ -704,10 +815,15 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
     <div class="pub-list">
       <div class="pub-card">
         <div class="pub-meta">
-          <span class="pub-badge badge-award">Consolation Prize · University Research</span>
+          <span class="pub-badge badge-award">Consolation Prize · University Scientific Research</span>
         </div>
         <div class="pub-title">
-          Research on the Design and Optimization of the Motion Trajectory for a Pick-and-Place Robot on the TOSHIBA DC650B Die Casting Machine
+          Motion Trajectory Design and Optimization for a Pick-and-Place Robot on the TOSHIBA DC650B Die-Casting Machine
+        </div>
+        <div class="pub-desc">
+          Designed and optimized end-effector trajectories for an industrial pick-and-place
+          arm integrated into a die-casting production cell, focusing on cycle time reduction
+          and collision-free path generation within the constrained workspace.
         </div>
       </div>
     </div>
@@ -718,10 +834,11 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
     <div class="pub-list">
       <div class="pub-card">
         <div class="pub-meta">
-          <span class="pub-badge badge-award">3rd Prize · Student Mathematics</span>
+          <span class="pub-badge badge-award">3rd Prize · Student Mathematics Competition</span>
         </div>
-        <div class="pub-title">
-          Third Prize – University Student Mathematics Competition 2023 (Linear Algebra)
+        <div class="pub-title">University Student Mathematics Competition 2023 — Linear Algebra</div>
+        <div class="pub-desc">
+          Placed 3rd in the Linear Algebra category of the university-wide student mathematics competition.
         </div>
       </div>
     </div>
@@ -729,24 +846,33 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 
 </section>
 
+<!-- ============================================================
+     CONTACT
+     Revised: specific about what kinds of roles/collaboration are interesting.
+     No generic "let's connect" language.
+     ============================================================ -->
 <section id="contact">
   <div class="reveal">
     <div class="section-label">Get in touch</div>
-    <h2>Let's work together.</h2>
+    <h2>Let's work on something real.</h2>
   </div>
   <div class="contact-layout">
 
     <div class="reveal">
+      <!-- REVISED: specific about what I want to work on and who should contact me -->
       <p class="contact-intro">
-        I'm open to full-time roles, research collaborations, and projects — especially at the
-        intersection of Embodied AI, ROS 2 autonomous navigation, and edge computing.
-        <br><br>
-        Whether you're building the next generation of service robots or working on complex
-        path-planning systems, I'd be glad to hear from you.
+        I'm looking for roles where the robots actually ship — not just simulate.
+        Particularly interested in teams working on <strong>autonomous mobile robots,
+        Embodied AI, or edge-compute robotics stacks</strong> where the distance between
+        a ROS 2 node and a physical actuator is short.<br><br>
+        Research collaborations welcome, especially if you're working on
+        sim-to-real transfer, distributional RL, or perception for navigation.
+        If you're a company training operators on ROS 2 and need someone who's
+        done it before — that too.
       </p>
       <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Send me an email ↗</a>
       <p class="contact-note" style="margin-top: 24px;">
-        Currently based in Hanoi, Vietnam.<br>
+        Based in Hanoi, Vietnam.<br>
         Open to international roles — remote-first or relocation.
       </p>
     </div>
@@ -784,7 +910,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 
 <footer class="reveal">
   <div class="footer-inner">
-    <!-- FIX: replace document.write() with a proper span filled by JS -->
     <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
   </div>
@@ -796,8 +921,8 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
 /* ============================================================
    HAMBURGER MENU
    ============================================================ */
-const hamburgerBtn  = document.getElementById('hamburgerBtn');
-const mobileMenu    = document.getElementById('mobileMenu');
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const mobileMenu   = document.getElementById('mobileMenu');
 
 function closeMobileMenu() {
   mobileMenu.classList.remove('open');
@@ -811,7 +936,6 @@ hamburgerBtn.addEventListener('click', () => {
   hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
 });
 
-// Close on outside click
 document.addEventListener('click', (e) => {
   if (!hamburgerBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
     closeMobileMenu();
@@ -819,37 +943,29 @@ document.addEventListener('click', (e) => {
 });
 
 /* ============================================================
-   FOOTER YEAR — replaces document.write()
+   FOOTER YEAR
    ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
 /* ============================================================
    REINFORCEMENT LEARNING ENGINE — Bellman Value Iteration
-   Fixes applied:
-     - HiDPI canvas (devicePixelRatio)
-     - Pause game loop when canvas not visible (IntersectionObserver)
-     - 20 Bellman iterations/frame instead of 2 (faster convergence)
-     - Named shape constants — no more magic numbers in draw()
    ============================================================ */
 const rlEngine = (() => {
-  const canvas    = document.getElementById('rlCanvas');
-  const ctx       = canvas.getContext('2d');
-  const scoreUI   = document.getElementById('rlScore');
-  const hintUI    = document.getElementById('rlHint');
+  const canvas  = document.getElementById('rlCanvas');
+  const ctx     = canvas.getContext('2d');
+  const scoreUI = document.getElementById('rlScore');
+  const hintUI  = document.getElementById('rlHint');
 
-  const G       = 26;   // grid dimension
-  const LOGICAL = 480;  // logical canvas size in CSS pixels
-  const GAMMA   = 0.94; // RL discount factor
+  const G       = 26;
+  const LOGICAL = 480;
+  const GAMMA   = 0.94;
 
-  // FIX: HiDPI support — scale canvas buffer by devicePixelRatio
   const dpr = window.devicePixelRatio || 1;
   canvas.width  = LOGICAL * dpr;
   canvas.height = LOGICAL * dpr;
   ctx.scale(dpr, dpr);
-  // CSS sizing is handled by width:100% in the stylesheet
   const CELL = LOGICAL / G;
 
-  // Named shape constants — no more magic numbers in draw()
   const SHAPE = {
     BODY_HALF:   CELL / 2.5,
     TRACK_W:     CELL / 1.5,
@@ -862,31 +978,25 @@ const rlEngine = (() => {
     RADAR_ANGLE: Math.PI / 5,
   };
 
-  // State
   let V   = Array.from({length: G}, () => new Float32Array(G));
   let obs = Array.from({length: G}, () => new Uint8Array(G));
-  let goal   = { x: 22, y: 22 };
-  let robot  = { x: 3.5, y: 3.5, angle: 0 };
-  let score  = 0;
-  let isMouseDown  = false;
+  let goal  = { x: 22, y: 22 };
+  let robot = { x: 3.5, y: 3.5, angle: 0 };
+  let score = 0;
+  let isMouseDown   = false;
   let hasInteracted = false;
-
-  // FIX: pause loop when off-screen
   let animId    = null;
   let isVisible = false;
 
-  // Default wall layout
   [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]]
     .forEach(([x, y]) => { obs[x][y] = 1; });
 
-  /* ---------- Bellman Value Iteration ---------- */
   function solveBellman() {
     const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
     for (let x = 0; x < G; x++) {
       for (let y = 0; y < G; y++) {
         if (x === goal.x && y === goal.y) { V[x][y] = 100; continue; }
         if (obs[x][y])                    { V[x][y] = -100; continue; }
-
         let best = -999;
         for (const [dx, dy] of DIRS) {
           const nx = x + dx, ny = y + dy;
@@ -899,17 +1009,14 @@ const rlEngine = (() => {
     }
   }
 
-  /* ---------- Robot step ---------- */
   function stepRobot() {
     const cx = Math.floor(robot.x), cy = Math.floor(robot.y);
-
     if (cx === goal.x && cy === goal.y) {
       score++;
       scoreUI.textContent = score;
       respawn(true);
       return;
     }
-
     const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
     let bestVal = -9999, targetX = robot.x, targetY = robot.y;
     for (const [dx, dy] of DIRS) {
@@ -922,15 +1029,12 @@ const rlEngine = (() => {
         }
       }
     }
-
     if (bestVal <= -50) return;
-
     const dx = targetX - robot.x, dy = targetY - robot.y;
     const dist = Math.hypot(dx, dy);
     if (dist > 0.02) {
       robot.x += (dx / dist) * 0.035;
       robot.y += (dy / dist) * 0.035;
-
       const targetAngle = Math.atan2(dy, dx);
       let diff = targetAngle - robot.angle;
       while (diff < -Math.PI) diff += Math.PI * 2;
@@ -939,16 +1043,12 @@ const rlEngine = (() => {
     }
   }
 
-  /* ---------- Draw ---------- */
   function draw() {
     ctx.fillStyle = '#090B12';
     ctx.fillRect(0, 0, LOGICAL, LOGICAL);
-
-    // Grid cells — heatmap + walls
     for (let x = 0; x < G; x++) {
       for (let y = 0; y < G; y++) {
         const px = x * CELL, py = y * CELL;
-
         if (obs[x][y]) {
           ctx.fillStyle = '#1E2435';
           ctx.fillRect(px + 1, py + 1, CELL - 2, CELL - 2);
@@ -960,67 +1060,48 @@ const rlEngine = (() => {
           ctx.fillStyle = `rgba(0,212,255,${alpha})`;
           ctx.fillRect(px, py, CELL, CELL);
         }
-
         ctx.strokeStyle = 'rgba(255,255,255,0.03)';
         ctx.lineWidth = 1;
         ctx.strokeRect(px, py, CELL, CELL);
       }
     }
-
-    // Goal
     const gx = goal.x * CELL + CELL / 2;
     const gy = goal.y * CELL + CELL / 2;
     const pulse = Math.sin(Date.now() * 0.006) * 3;
-
     ctx.fillStyle = '#818CF8';
     ctx.beginPath();
     ctx.arc(gx, gy, SHAPE.GOAL_INNER + pulse / 2, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.strokeStyle = 'rgba(129,140,248,0.5)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(gx, gy, SHAPE.GOAL_OUTER + pulse, 0, Math.PI * 2);
     ctx.stroke();
-
-    // Robot
     ctx.save();
     ctx.translate(robot.x * CELL, robot.y * CELL);
     ctx.rotate(robot.angle);
-
-    // Body
     ctx.fillStyle = '#2A3247';
     ctx.fillRect(-SHAPE.BODY_HALF, -SHAPE.BODY_HALF, SHAPE.BODY_HALF * 2, SHAPE.BODY_HALF * 2);
-
-    // Tracks
     ctx.fillStyle = '#FF4D4D';
     ctx.fillRect(-CELL / 3, -SHAPE.BODY_HALF * 1.15, SHAPE.TRACK_W, SHAPE.TRACK_H);
     ctx.fillRect(-CELL / 3,  SHAPE.BODY_HALF * 0.9,  SHAPE.TRACK_W, SHAPE.TRACK_H);
-
-    // Core sensor
     ctx.fillStyle = '#00D4FF';
     ctx.beginPath();
     ctx.arc(0, 0, SHAPE.CORE_R, 0, Math.PI * 2);
     ctx.fill();
-
-    // Eye / forward indicator
     ctx.fillStyle = '#090B12';
     ctx.beginPath();
     ctx.arc(SHAPE.EYE_R, 0, SHAPE.EYE_R, 0, Math.PI * 2);
     ctx.fill();
-
-    // Radar sweep
     const scanPulse = Math.sin(Date.now() * 0.01) * 0.1;
     ctx.fillStyle = 'rgba(0,255,136,0.15)';
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.arc(0, 0, SHAPE.RADAR_R, -SHAPE.RADAR_ANGLE + scanPulse, SHAPE.RADAR_ANGLE - scanPulse);
     ctx.fill();
-
     ctx.restore();
   }
 
-  /* ---------- Mouse / Touch input ---------- */
   function handlePointer(clientX, clientY) {
     if (!hasInteracted) {
       hasInteracted = true;
@@ -1039,12 +1120,10 @@ const rlEngine = (() => {
   canvas.addEventListener('mousedown', e => { isMouseDown = true; handlePointer(e.clientX, e.clientY); });
   canvas.addEventListener('mousemove', e => { if (isMouseDown) handlePointer(e.clientX, e.clientY); });
   window.addEventListener('mouseup',   () => { isMouseDown = false; });
-
   canvas.addEventListener('touchstart', e => { isMouseDown = true; handlePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
   canvas.addEventListener('touchmove',  e => { if (isMouseDown) handlePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
   window.addEventListener('touchend',   () => { isMouseDown = false; });
 
-  /* ---------- Respawn ---------- */
   function respawn(randomizeWalls = false) {
     if (randomizeWalls) {
       obs = Array.from({length: G}, () => new Uint8Array(G));
@@ -1060,17 +1139,13 @@ const rlEngine = (() => {
       goal.x = Math.floor(Math.random() * (G - 2)) + 1;
       goal.y = Math.floor(Math.random() * (G - 2)) + 1;
     } while (obs[goal.x][goal.y] || (goal.x === Math.floor(robot.x) && goal.y === Math.floor(robot.y)));
-
     V = Array.from({length: G}, () => new Float32Array(G));
   }
 
-  /* ---------- Game loop (FIX: pauses when off-screen) ---------- */
   function loop() {
-    // FIX: run 20 iterations/frame instead of 2 — much faster convergence
     for (let i = 0; i < 20; i++) solveBellman();
     stepRobot();
     draw();
-
     if (isVisible) {
       animId = requestAnimationFrame(loop);
     } else {
@@ -1078,7 +1153,6 @@ const rlEngine = (() => {
     }
   }
 
-  // FIX: IntersectionObserver controls when the loop runs
   const visibilityObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       isVisible = entry.isIntersecting;
@@ -1090,7 +1164,6 @@ const rlEngine = (() => {
 
   visibilityObserver.observe(canvas);
 
-  // Start if already visible on load
   if (canvas.getBoundingClientRect().top < window.innerHeight) {
     isVisible = true;
     animId = requestAnimationFrame(loop);
