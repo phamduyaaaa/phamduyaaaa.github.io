@@ -41,9 +41,11 @@
   --font-mono:    'JetBrains Mono', monospace;
 
   --r-sm: 6px; --r: 10px; --r-lg: 16px;
-  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Easing curves chuyên nghiệp (Apple / Awwwards style) */
+  --expo: cubic-bezier(0.16, 1, 0.3, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --t: 0.2s var(--ease);
+  --t: 0.25s var(--expo);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,9 +102,9 @@ nav {
 .nav-cta {
   font-family: var(--font-body); font-size: 13.5px; font-weight: 600; background: var(--amber);
   padding: 10px 20px; border-radius: var(--r-sm); color: white;
-  transition: all 0.15s var(--spring); min-height: 40px; display: inline-flex; align-items: center;
+  transition: all 0.3s var(--spring); min-height: 40px; display: inline-flex; align-items: center;
 }
-.nav-cta:hover { background: var(--ink); transform: translateY(-1px); color: white; }
+.nav-cta:hover { background: var(--ink); transform: translateY(-2px); color: white; }
 
 .nav-mobile-btn {
   display: none; background: none; border: none; cursor: pointer;
@@ -111,7 +113,7 @@ nav {
 }
 .nav-mobile-btn span {
   display: block; width: 22px; height: 2px; background: currentColor;
-  border-radius: 2px; transition: all 0.25s var(--ease);
+  border-radius: 2px; transition: all 0.25s var(--expo);
 }
 .nav-mobile-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .nav-mobile-btn.open span:nth-child(2) { opacity: 0; }
@@ -127,7 +129,7 @@ nav {
   display: flex; position: fixed; top: 60px; left: 0; right: 0;
   background: var(--cream); border-bottom: 1px solid var(--border-2);
   padding: 16px 32px 24px; z-index: 99; flex-direction: column;
-  transform: translateY(-100%); transition: transform 0.3s var(--ease);
+  transform: translateY(-100%); transition: transform 0.4s var(--expo);
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 .mobile-menu.open { transform: translateY(0); }
@@ -162,14 +164,14 @@ h1 .name-accent { color: var(--amber); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 22px; border-radius: var(--r); font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  transition: all 0.15s var(--spring); cursor: pointer; border: none; min-height: 44px; line-height: 1;
+  transition: all 0.3s var(--spring); cursor: pointer; border: none; min-height: 44px; line-height: 1;
 }
 .btn-primary { background: var(--ink); color: var(--cream); }
-.btn-primary:hover { background: var(--amber-a11y); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.btn-primary:hover { background: var(--amber-a11y); color: white; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
 .btn-ghost { background: transparent; color: var(--ink-2); border: 1.5px solid var(--border-2); }
-.btn-ghost:hover { background: var(--cream-2); border-color: var(--ink); transform: translateY(-2px); }
+.btn-ghost:hover { background: var(--cream-2); border-color: var(--ink); transform: translateY(-3px); }
 .btn-amber { background: var(--amber-dim); color: var(--amber-a11y); border: 1.5px solid var(--amber-soft); }
-.btn-amber:hover { background: var(--amber-soft); transform: translateY(-2px); }
+.btn-amber:hover { background: var(--amber-soft); transform: translateY(-3px); }
 
 .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--border-2); border-radius: var(--r-lg); background: var(--cream-2); margin-top: 52px; overflow: hidden; }
 .metric-cell { padding: 20px 16px; border-left: 1.5px solid var(--border); }
@@ -179,25 +181,25 @@ h1 .name-accent { color: var(--amber); }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
 /* ============================================================
-   RL CANVAS (Fixed algorithm & interactions)
+   RL CANVAS (Khôi phục 100% thuật toán gốc)
    ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1.5px solid var(--border-2); background: var(--cream-2); overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
-#rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+#rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
 
 .rl-ui-top { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; pointer-events: none; z-index: 10; }
 .rl-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--ink-3); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(4px); }
 .rl-score { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: var(--r-sm); backdrop-filter: blur(4px); }
-.rl-score span { color: var(--amber-a11y); }
+.rl-score span { color: var(--amber-a11y); font-size: 14px; }
 
 .rl-hint {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--amber-a11y);
   background: rgba(247,245,240,0.95); border: 1.5px solid var(--amber-soft);
   padding: 12px 24px; border-radius: var(--r); pointer-events: none; z-index: 10;
-  animation: pulse-hint 1.8s ease-in-out infinite; transition: opacity 0.4s var(--ease);
+  animation: pulse-hint 1.7s ease-in-out infinite; transition: opacity 0.4s var(--expo);
   box-shadow: 0 8px 24px rgba(184,146,74,0.15); text-align: center; white-space: nowrap;
 }
-@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.97); } }
+@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.96); box-shadow: 0 0 0 6px transparent; } }
 .rl-hint.hidden { opacity: 0; pointer-events: none; animation: none; }
 
 .rl-toolbar { position: absolute; bottom: 14px; right: 14px; display: flex; gap: 8px; z-index: 10; }
@@ -207,7 +209,7 @@ h1 .name-accent { color: var(--amber); }
   border: 1.5px solid var(--border-2); padding: 8px 14px; border-radius: var(--r-sm);
   cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; gap: 6px; transition: all var(--t);
 }
-.rl-btn:hover { background: white; border-color: var(--ink); transform: translateY(-1px); }
+.rl-btn:hover { background: white; border-color: var(--ink); transform: translateY(-2px); }
 
 /* ============================================================
    SECTIONS & CONTENT
@@ -248,14 +250,14 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
    PROJECTS
    ============================================================ */
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; }
-.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease), border-color var(--t); }
-.project-card:hover { border-color: var(--ink-4); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.project-card:hover { border-color: var(--ink-4); transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,0,0,0.08); }
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
 
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
-.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
-.project-card:hover .project-thumb img { transform: scale(1.05); }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--expo); }
+.project-card:hover .project-thumb img { transform: scale(1.06); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
 
 .project-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
@@ -279,8 +281,8 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border-2); }
 
 .pub-list { display: flex; flex-direction: column; gap: 16px; }
-.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: all 0.3s var(--spring); }
-.pub-card:hover { border-color: var(--ink-4); box-shadow: 0 8px 24px rgba(0,0,0,0.06); transform: translateY(-3px); }
+.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.pub-card:hover { border-color: var(--ink-4); box-shadow: 0 12px 32px rgba(0,0,0,0.06); transform: translateY(-4px); }
 .pub-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .pub-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 4px; }
 .badge-journal { background: var(--amber-dim); color: var(--amber-a11y); border: 1px solid var(--amber-soft); }
@@ -290,8 +292,8 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .pub-desc { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
 
 .cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: all 0.3s var(--spring); }
-.cert-card:hover { border-color: var(--ink-4); transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
+.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--expo), border-color var(--t); }
+.cert-card:hover { border-color: var(--ink-4); transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.06); }
 .cert-issuer { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-a11y); }
 .cert-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
 .cert-link-na { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); margin-top: auto; padding-top: 10px; }
@@ -303,8 +305,8 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .contact-intro { font-size: 16px; color: var(--ink-2); margin-bottom: 32px; line-height: 1.75; }
 .contact-note { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; line-height: 1.6; }
 .contact-links { display: flex; flex-direction: column; gap: 12px; }
-.contact-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: white; border: 1.5px solid var(--border); border-radius: var(--r); color: var(--ink-3); transition: all var(--spring); min-height: 56px; }
-.contact-link:hover { background: var(--cream-2); border-color: var(--ink-4); transform: translateX(6px); color: var(--ink); box-shadow: -4px 8px 24px rgba(0,0,0,0.04); }
+.contact-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: white; border: 1.5px solid var(--border); border-radius: var(--r); color: var(--ink-3); transition: all 0.3s var(--spring); min-height: 56px; }
+.contact-link:hover { background: var(--cream-2); border-color: var(--ink-4); transform: translateX(8px); color: var(--ink); box-shadow: -4px 8px 24px rgba(0,0,0,0.04); }
 .contact-label { font-size: 14px; font-weight: 600; color: var(--ink); font-family: var(--font-display); }
 .contact-value { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--amber-a11y); }
 
@@ -314,15 +316,35 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-built span { color: var(--amber-a11y); }
 
 /* ============================================================
-   UPGRADED ANIMATIONS (Stagger Reveal)
+   AWWWARDS STYLE ANIMATIONS (Blur Reveal & Stagger)
    ============================================================ */
-.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
-.reveal-up.visible { opacity: 1; transform: translateY(0); }
+.reveal-slide {
+  opacity: 0;
+  transform: translateY(50px);
+  filter: blur(10px);
+  transition: opacity 1.2s var(--expo), transform 1.2s var(--expo), filter 1.2s var(--expo);
+  will-change: opacity, transform, filter;
+}
+.reveal-slide.visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
 
-/* Container để kiểm soát stagger */
-.stagger-container {}
-.stagger-item { opacity: 0; transform: translateY(24px) scale(0.98); transition: opacity 0.6s var(--ease), transform 0.6s var(--spring); }
-.stagger-item.visible { opacity: 1; transform: translateY(0) scale(1); }
+.stagger-group {}
+.stagger-item {
+  opacity: 0;
+  transform: translateY(40px);
+  filter: blur(8px);
+  /* Mặc định transition cho hiệu ứng; Delay sẽ được bơm bằng JS */
+  transition: opacity 1s var(--expo), transform 1s var(--expo), filter 1s var(--expo);
+  will-change: opacity, transform, filter;
+}
+.stagger-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
 
 /* ============================================================
    RESPONSIVE
@@ -388,7 +410,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
     <div class="hero-layout">
-      <div class="hero-text reveal-up">
+      <div class="hero-text reveal-slide">
         <div class="hero-eyebrow">Robotics Software Engineer · Hanoi, Vietnam</div>
         <h1>
           <span class="name-first">Phạm Đức </span><span class="name-last">Duy<span class="name-accent">.</span></span>
@@ -405,14 +427,14 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           Two years shipping <strong>ROS 2</strong> mobile robots into production — hospitals, restaurants, factory floors. Currently Source Engineer at <strong>VinRobotics</strong> and Lab Leader at <strong>HalBotLab</strong>, researching Embodied AI and Nav2 systems. Published in <em>MethodsX</em> (Q2) on distributional RL for path planning under sensor noise.
         </p>
 
-        <div class="btn-group stagger-container">
+        <div class="btn-group stagger-group">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary stagger-item">Get in touch ↗</a>
           <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">CV</a>
           <a href="https://github.com/phamduyaaaa" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a href="/mission/" class="btn btn-amber stagger-item" target="_blank" rel="noopener noreferrer">Mission</a>
         </div>
 
-        <div class="metrics-bar reveal-up" style="transition-delay: 0.2s;">
+        <div class="metrics-bar reveal-slide" style="transition-delay: 0.15s;">
           <div class="metric-cell">
             <div class="metric-value">2<sup>+</sup></div>
             <div class="metric-label">Years shipping<br>production robots</div>
@@ -432,7 +454,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
 
-      <div class="rl-container reveal-up" style="transition-delay: 0.3s;">
+      <div class="rl-container reveal-slide" style="transition-delay: 0.3s;">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
@@ -448,11 +470,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="about">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">About</div>
     <h2>What I actually do.</h2>
   </div>
-  <div class="about-grid reveal-up">
+  <div class="about-grid reveal-slide">
     <div class="about-text">
       <p>
         Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.
@@ -463,7 +485,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       <p>
         At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.
       </p>
-      <div class="tag-cloud stagger-container">
+      <div class="tag-cloud stagger-group">
         <span class="tag tag-dark stagger-item">ROS 2</span><span class="tag tag-dark stagger-item">Nav2</span>
         <span class="tag tag-dark stagger-item">Cartographer SLAM</span><span class="tag tag-dark stagger-item">Micro-ROS</span>
         <span class="tag tag-dark stagger-item">RTOS</span><span class="tag tag-dark stagger-item">C++</span>
@@ -473,7 +495,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="stack-panel stagger-container">
+    <div class="stack-panel stagger-group">
       <h3>Core Stack</h3>
       <div class="stack-group stagger-item">
         <div class="stack-group-label">Robotics</div>
@@ -510,12 +532,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="experience">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">Work</div>
     <h2>Where I've built things.</h2>
   </div>
 
-  <div class="xp-list stagger-container">
+  <div class="xp-list stagger-group">
     <div class="xp-item stagger-item">
       <div>
         <div class="xp-date">Mar 2026 — Present</div>
@@ -581,12 +603,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="projects">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">Work samples</div>
     <h2>Projects I've shipped.</h2>
   </div>
 
-  <div class="projects-grid stagger-container">
+  <div class="projects-grid stagger-group">
     <div class="project-card featured stagger-item">
       <div class="project-thumb">
         <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" loading="lazy" decoding="async">
@@ -706,12 +728,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="publications">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">Research &amp; Awards</div>
     <h2>Published work &amp; recognition.</h2>
   </div>
 
-  <div class="year-group stagger-container">
+  <div class="year-group stagger-group">
     <div class="year-heading stagger-item"><span>2026</span></div>
     <div class="pub-list">
       <div class="pub-card stagger-item">
@@ -722,7 +744,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-container">
+  <div class="year-group stagger-group">
     <div class="year-heading stagger-item"><span>2025</span></div>
     <div class="pub-list">
       <div class="pub-card stagger-item">
@@ -749,7 +771,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-container">
+  <div class="year-group stagger-group">
     <div class="year-heading stagger-item"><span>2024</span></div>
     <div class="pub-list">
       <div class="pub-card stagger-item">
@@ -760,7 +782,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group stagger-container">
+  <div class="year-group stagger-group">
     <div class="year-heading stagger-item"><span>2023</span></div>
     <div class="pub-list">
       <div class="pub-card stagger-item">
@@ -773,12 +795,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="certifications">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">Learning</div>
     <h2>Certifications.</h2>
   </div>
 
-  <div class="cert-grid stagger-container">
+  <div class="cert-grid stagger-group">
     <div class="cert-card stagger-item">
       <div>
         <div class="cert-issuer">Coursera · DeepLearning.AI</div>
@@ -811,12 +833,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="contact">
-  <div class="reveal-up">
+  <div class="reveal-slide">
     <div class="section-label">Get in touch</div>
     <h2>Let's work on something real.</h2>
   </div>
   <div class="contact-layout">
-    <div class="reveal-up">
+    <div class="reveal-slide">
       <p class="contact-intro">
         Looking for roles where the robots actually ship — not just simulate. Particularly interested in teams working on <strong>autonomous mobile robots, Embodied AI, or edge-compute robotics stacks</strong> where the distance between a ROS 2 node and a physical actuator is short.<br><br>
         Research collaborations welcome: sim-to-real transfer, distributional RL, or perception for navigation. If you're training operators on ROS 2 and need someone who's done it before — that too.
@@ -828,7 +850,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </p>
     </div>
 
-    <div class="contact-links stagger-container">
+    <div class="contact-links stagger-group">
       <a href="mailto:duypham.robotics@gmail.com" class="contact-link stagger-item">
         <div class="contact-label">Email</div>
         <div class="contact-value">duypham.robotics@gmail.com</div>
@@ -845,7 +867,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<footer class="reveal-up">
+<footer class="reveal-slide">
   <div class="footer-inner">
     <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
@@ -854,7 +876,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 </div><script>
 /* ============================================================
-   UI LOGIC & STAGGER ANIMATIONS
+   UI LOGIC & AWWWARDS-STYLE ANIMATIONS
    ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
@@ -896,58 +918,46 @@ function toggleMenu(force) {
   });
 })();
 
-// 3. Hệ thống Animation mới (Reveal & Stagger)
+// 3. Hệ thống Reveal đỉnh cao (Blur & Stagger Delay = JS)
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if(e.isIntersecting) {
-      // Hiện phần tử cha
+      // Kích hoạt animation cho block chính
       e.target.classList.add('visible');
       
-      // Nếu là Container chứa các thẻ con cần Stagger
-      if (e.target.classList.contains('stagger-container')) {
-        const children = e.target.querySelectorAll('.stagger-item');
-        children.forEach((child, index) => {
-          setTimeout(() => {
-            child.classList.add('visible');
-          }, index * 100); // Mỗi card xuất hiện cách nhau 100ms
+      // Kích hoạt stagger delay cho các con nếu là list
+      if (e.target.classList.contains('stagger-group')) {
+        const items = e.target.querySelectorAll('.stagger-item');
+        items.forEach((item, index) => {
+          // Bơm delay tăng dần (120ms/item)
+          item.style.transitionDelay = `${index * 0.12}s`;
+          // Đẩy vào queue để browser render đúng nhịp
+          requestAnimationFrame(() => item.classList.add('visible'));
         });
       }
-      
-      // Dừng observe sau khi đã hiện để tối ưu hiệu suất
       revealObs.unobserve(e.target);
     }
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.1, rootMargin: '0px 0px -10% 0px' });
 
-document.querySelectorAll('.reveal-up, .stagger-container').forEach(el => revealObs.observe(el));
+document.querySelectorAll('.reveal-slide, .stagger-group').forEach(el => revealObs.observe(el));
 
 
 /* ============================================================
-   RL CANVAS ENGINE (Khôi phục 100% Thuật toán tương tác gốc)
+   RL CANVAS ENGINE (100% Khôi phục thuật toán tương tác nguyên bản)
    ============================================================ */
 const rlEngine = (() => {
-  const canvas = document.getElementById('rlCanvas');
-  const ctx = canvas.getContext('2d');
+  const canvas  = document.getElementById('rlCanvas');
+  const ctx     = canvas.getContext('2d');
   const scoreUI = document.getElementById('rlScore');
-  const hintUI = document.getElementById('rlHint');
+  const hintUI  = document.getElementById('rlHint');
 
-  const G = 26; const LOGICAL = 480; const GAMMA = 0.94;
+  const G = 26, LOGICAL = 480, GAMMA = 0.94;
   const dpr = window.devicePixelRatio || 1;
-  let wallsDirty = true;
-  let score = 0;
-  let hasInteracted = false;
-  let isMouseDown = false;
-
-  let V = Array.from({length: G}, () => new Float32Array(G));
-  let obs = Array.from({length: G}, () => new Uint8Array(G));
-  let goal = {x: 22, y: 22};
-  let robot = {x: 3.5, y: 3.5, angle: 0};
-
-  // Khởi tạo map gốc
-  [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y]) => obs[x][y] = 1);
 
   function setupCanvas() {
-    canvas.width = LOGICAL * dpr; canvas.height = LOGICAL * dpr;
+    canvas.width  = LOGICAL * dpr;
+    canvas.height = LOGICAL * dpr;
     ctx.scale(dpr, dpr);
   }
   setupCanvas();
@@ -955,135 +965,194 @@ const rlEngine = (() => {
   const resizeObs = new ResizeObserver(() => { ctx.resetTransform(); setupCanvas(); });
   resizeObs.observe(canvas);
 
-  // Xử lý Click & Drag vẽ tường trực tiếp
-  function handleInput(clientX, clientY) {
-    if (!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.floor((clientX - rect.left) * (LOGICAL / rect.width) / (LOGICAL / G));
-    const y = Math.floor((clientY - rect.top) * (LOGICAL / rect.height) / (LOGICAL / G));
-    
-    if (x >= 0 && x < G && y >= 0 && y < G && !(x === goal.x && y === goal.y) && !(x === Math.floor(robot.x) && y === Math.floor(robot.y)) && !obs[x][y]) {
-      obs[x][y] = 1; wallsDirty = true;
+  const CELL = LOGICAL / G;
+
+  const SHAPE = {
+    BODY_HALF: CELL/2.5, TRACK_W: CELL/1.5, TRACK_H: CELL/5,
+    CORE_R: CELL/4, EYE_R: CELL/8,
+    GOAL_INNER: CELL/3.5, GOAL_OUTER: CELL/2, RADAR_R: CELL*2.5, RADAR_ANGLE: Math.PI/5,
+  };
+
+  let V   = Array.from({length:G}, ()=>new Float32Array(G));
+  let obs = Array.from({length:G}, ()=>new Uint8Array(G));
+  let goal  = {x:22, y:22};
+  let robot = {x:3.5, y:3.5, angle:0};
+  let score = 0;
+  let isMouseDown = false;
+  let hasInteracted = false;
+  let animId = null;
+  let isVisible = false;
+  
+  // Biến cờ này chỉ giữ lại để chống lag CPU, không ảnh hưởng logic vẽ
+  let wallsDirty = true;
+
+  [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y])=>{ obs[x][y]=1; });
+
+  function solveBellman() {
+    const DIRS=[[0,1],[0,-1],[1,0],[-1,0]];
+    for(let x=0;x<G;x++) for(let y=0;y<G;y++) {
+      if(x===goal.x&&y===goal.y){V[x][y]=100;continue;}
+      if(obs[x][y]){V[x][y]=-100;continue;}
+      let best=-999;
+      for(const[dx,dy] of DIRS){
+        const nx=x+dx,ny=y+dy;
+        if(nx>=0&&nx<G&&ny>=0&&ny<G&&!obs[nx][ny]){
+          if(V[nx][ny]>best) best=V[nx][ny];
+        }
+      }
+      if(best>-999) V[x][y]=-1+GAMMA*best;
     }
   }
 
-  // Khôi phục các Event Listener nguyên bản
-  canvas.addEventListener('mousedown', e => { isMouseDown = true; handleInput(e.clientX, e.clientY); });
-  canvas.addEventListener('mousemove', e => { if (isMouseDown) handleInput(e.clientX, e.clientY); });
-  window.addEventListener('mouseup', () => isMouseDown = false);
-  
-  canvas.addEventListener('touchstart', e => { isMouseDown = true; handleInput(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
-  canvas.addEventListener('touchmove',  e => { if (isMouseDown) handleInput(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
-  window.addEventListener('touchend',   () => isMouseDown = false);
-  
-  canvas.addEventListener('keydown', e => { if (e.key === 'c' || e.key === 'C') clearWalls(); });
+  function maybeResolveBellman() {
+    if (!wallsDirty) return;
+    for(let i=0;i<40;i++) solveBellman();
+    wallsDirty = false;
+  }
 
-  function solveBellman() {
-    const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
-    for(let x = 0; x < G; x++) for(let y = 0; y < G; y++) {
-      if(x === goal.x && y === goal.y) { V[x][y] = 100; continue; }
-      if(obs[x][y]) { V[x][y] = -100; continue; }
-      let best = -999;
-      for(const [dx,dy] of DIRS) {
-        const nx = x + dx, ny = y + dy;
-        if(nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
-          if (V[nx][ny] > best) best = V[nx][ny];
-        }
-      }
-      if(best > -999) V[x][y] = -1 + GAMMA * best;
+  function stepRobot() {
+    const cx=Math.floor(robot.x),cy=Math.floor(robot.y);
+    if(cx===goal.x&&cy===goal.y){
+      score++; scoreUI.textContent=score; respawn(); return;
     }
+    const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+    let bestVal=-9999,targetX=robot.x,targetY=robot.y;
+    for(const[dx,dy] of DIRS){
+      const nx=cx+dx,ny=cy+dy;
+      if(nx>=0&&nx<G&&ny>=0&&ny<G&&!obs[nx][ny]){
+        if(V[nx][ny]>bestVal){bestVal=V[nx][ny];targetX=nx+0.5;targetY=ny+0.5;}
+      }
+    }
+    if(bestVal<=-50) return;
+    const dx=targetX-robot.x,dy=targetY-robot.y,dist=Math.hypot(dx,dy);
+    if(dist>0.02){
+      robot.x+=(dx/dist)*0.035; robot.y+=(dy/dist)*0.035;
+      const ta=Math.atan2(dy,dx);
+      let diff=ta-robot.angle;
+      while(diff<-Math.PI)diff+=Math.PI*2;
+      while(diff>Math.PI)diff-=Math.PI*2;
+      robot.angle+=diff*0.15;
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = '#EFEBE4'; ctx.fillRect(0,0,LOGICAL,LOGICAL);
+
+    ctx.strokeStyle='rgba(30,28,24,0.055)';ctx.lineWidth=1;
+    for(let x=0;x<G;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,LOGICAL);ctx.stroke();}
+    for(let y=0;y<G;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(LOGICAL,y*CELL);ctx.stroke();}
+
+    for(let x=0;x<G;x++) for(let y=0;y<G;y++) {
+      const px=x*CELL,py=y*CELL;
+      if(obs[x][y]) {
+        ctx.fillStyle='#DDD7CC';
+        ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
+        ctx.strokeStyle='rgba(184,146,74,0.35)';ctx.lineWidth=1;
+        ctx.strokeRect(px+3,py+3,CELL-6,CELL-6);
+      } else {
+        const alpha=Math.max(0,V[x][y])/100*0.30;
+        ctx.fillStyle=`rgba(184,146,74,${alpha})`;
+        ctx.fillRect(px,py,CELL,CELL);
+      }
+    }
+
+    /* Goal */
+    const gx=goal.x*CELL+CELL/2,gy=goal.y*CELL+CELL/2;
+    const pulse=Math.sin(Date.now()*0.006)*2.5;
+    ctx.fillStyle='#B8924A';
+    ctx.beginPath();ctx.arc(gx,gy,SHAPE.GOAL_INNER+pulse/2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(184,146,74,0.45)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(gx,gy,SHAPE.GOAL_OUTER+pulse,0,Math.PI*2);ctx.stroke();
+
+    /* Robot */
+    ctx.save();
+    ctx.translate(robot.x*CELL,robot.y*CELL);ctx.rotate(robot.angle);
+    ctx.fillStyle='#DDD7CC';
+    ctx.beginPath();ctx.roundRect(-SHAPE.BODY_HALF,-SHAPE.BODY_HALF,SHAPE.BODY_HALF*2,SHAPE.BODY_HALF*2,3);ctx.fill();
+    ctx.strokeStyle='rgba(30,28,24,0.15)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(-SHAPE.BODY_HALF,-SHAPE.BODY_HALF,SHAPE.BODY_HALF*2,SHAPE.BODY_HALF*2,3);ctx.stroke();
+    ctx.fillStyle='#A8A89E';
+    ctx.fillRect(-CELL/3,-SHAPE.BODY_HALF*1.15,SHAPE.TRACK_W,SHAPE.TRACK_H);
+    ctx.fillRect(-CELL/3, SHAPE.BODY_HALF*0.9, SHAPE.TRACK_W,SHAPE.TRACK_H);
+    ctx.fillStyle='#B8924A';
+    ctx.beginPath();ctx.arc(0,0,SHAPE.CORE_R,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#EFEBE4';
+    ctx.beginPath();ctx.arc(SHAPE.EYE_R,0,SHAPE.EYE_R,0,Math.PI*2);ctx.fill();
+    const sp=Math.sin(Date.now()*0.01)*0.1;
+    ctx.fillStyle='rgba(184,146,74,0.12)';
+    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,SHAPE.RADAR_R,-SHAPE.RADAR_ANGLE+sp,SHAPE.RADAR_ANGLE-sp);ctx.fill();
+    ctx.restore();
+  }
+
+  function markInteracted() {
+    if(!hasInteracted){
+      hasInteracted=true;
+      hintUI.classList.add('hidden');
+    }
+  }
+
+  function handlePointer(clientX,clientY) {
+    markInteracted();
+    const rect=canvas.getBoundingClientRect();
+    const x=Math.floor((clientX-rect.left)*(LOGICAL/rect.width)/CELL);
+    const y=Math.floor((clientY-rect.top)*(LOGICAL/rect.height)/CELL);
+    if(x>=0&&x<G&&y>=0&&y<G
+      &&!(x===goal.x&&y===goal.y)
+      &&!(x===Math.floor(robot.x)&&y===Math.floor(robot.y))
+      &&!obs[x][y]) {
+      obs[x][y]=1;
+      wallsDirty=true;
+    }
+  }
+
+  /* Khôi phục nguyên bản listener tương tác và e.preventDefault() */
+  canvas.addEventListener('mousedown', e=>{isMouseDown=true;handlePointer(e.clientX,e.clientY);});
+  canvas.addEventListener('mousemove', e=>{if(isMouseDown)handlePointer(e.clientX,e.clientY);});
+  window.addEventListener('mouseup', ()=>{isMouseDown=false;});
+  
+  canvas.addEventListener('touchstart', e=>{isMouseDown=true;handlePointer(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
+  canvas.addEventListener('touchmove',  e=>{if(isMouseDown)handlePointer(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
+  window.addEventListener('touchend',   ()=>{isMouseDown=false;});
+
+  canvas.addEventListener('keydown', e=>{
+    if(e.key==='c'||e.key==='C'){clearWalls();}
+  });
+
+  function respawn() {
+    do {
+      goal.x=Math.floor(Math.random()*(G-2))+1;
+      goal.y=Math.floor(Math.random()*(G-2))+1;
+    } while(obs[goal.x][goal.y]||(goal.x===Math.floor(robot.x)&&goal.y===Math.floor(robot.y)));
+    V=Array.from({length:G},()=>new Float32Array(G));
+    wallsDirty=true;
   }
 
   function clearWalls() {
-    obs = Array.from({length:G}, () => new Uint8Array(G));
-    wallsDirty = true;
-    if (!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
+    obs=Array.from({length:G},()=>new Uint8Array(G));
+    wallsDirty=true;
+    markInteracted();
   }
 
   function loop() {
-    if (wallsDirty) { for(let i=0; i<40; i++) solveBellman(); wallsDirty = false; }
-    
-    // Thuật toán di chuyển nguyên bản (DWA style)
-    const cx = Math.floor(robot.x), cy = Math.floor(robot.y);
-    if(cx === goal.x && cy === goal.y) {
-      scoreUI.textContent = ++score;
-      do {
-        goal.x = Math.floor(Math.random()*(G-2))+1; goal.y = Math.floor(Math.random()*(G-2))+1;
-      } while(obs[goal.x][goal.y] || (goal.x === Math.floor(robot.x) && goal.y === Math.floor(robot.y)));
-      V = Array.from({length: G}, () => new Float32Array(G));
-      wallsDirty = true;
-    } else {
-      let bestVal = -9999, targetX = robot.x, targetY = robot.y;
-      [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy]) => {
-        const nx = cx + dx, ny = cy + dy;
-        if(nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
-          if(V[nx][ny] > bestVal) { bestVal = V[nx][ny]; targetX = nx + 0.5; targetY = ny + 0.5; }
-        }
-      });
-      
-      if(bestVal > -50) {
-        const dx = targetX - robot.x, dy = targetY - robot.y, dist = Math.hypot(dx, dy);
-        if(dist > 0.02) {
-          robot.x += (dx/dist) * 0.035; robot.y += (dy/dist) * 0.035;
-          const ta = Math.atan2(dy, dx);
-          let diff = ta - robot.angle;
-          while(diff < -Math.PI) diff += Math.PI*2;
-          while(diff > Math.PI) diff -= Math.PI*2;
-          robot.angle += diff * 0.15;
-        }
-      }
-    }
-
-    // Render Logic
-    ctx.fillStyle = '#EFEBE4'; ctx.fillRect(0,0,LOGICAL,LOGICAL);
-    const CELL = LOGICAL / G;
-    
-    ctx.strokeStyle='rgba(30,28,24,0.055)'; ctx.lineWidth=1;
-    for(let x=0; x<G; x++) { ctx.beginPath(); ctx.moveTo(x*CELL,0); ctx.lineTo(x*CELL,LOGICAL); ctx.stroke(); }
-    for(let y=0; y<G; y++) { ctx.beginPath(); ctx.moveTo(0,y*CELL); ctx.lineTo(LOGICAL,y*CELL); ctx.stroke(); }
-
-    for(let x=0; x<G; x++) for(let y=0; y<G; y++) {
-      const px = x*CELL, py = y*CELL;
-      if(obs[x][y]) { 
-        ctx.fillStyle = '#DDD7CC'; ctx.fillRect(px+1, py+1, CELL-2, CELL-2); 
-        ctx.strokeStyle = 'rgba(184,146,74,0.35)'; ctx.lineWidth=1; ctx.strokeRect(px+3, py+3, CELL-6, CELL-6);
-      }
-      else {
-        const alpha = Math.max(0, V[x][y]) / 100 * 0.30;
-        ctx.fillStyle = `rgba(184,146,74,${alpha})`; ctx.fillRect(px, py, CELL, CELL);
-      }
-    }
-
-    // Render Goal
-    const gx = goal.x*CELL+CELL/2, gy = goal.y*CELL+CELL/2;
-    const pulse = Math.sin(Date.now()*0.006)*2.5;
-    ctx.fillStyle = '#B8924A'; ctx.beginPath(); ctx.arc(gx, gy, CELL/3.5 + pulse/2, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = 'rgba(184,146,74,0.45)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(gx, gy, CELL/2 + pulse, 0, Math.PI*2); ctx.stroke();
-
-    // Render Robot
-    ctx.save();
-    ctx.translate(robot.x*CELL, robot.y*CELL); ctx.rotate(robot.angle);
-    ctx.fillStyle = '#DDD7CC'; ctx.beginPath(); ctx.roundRect(-CELL/2.5, -CELL/2.5, CELL/1.25, CELL/1.25, 3); ctx.fill();
-    ctx.strokeStyle = 'rgba(30,28,24,0.15)'; ctx.lineWidth=1; ctx.stroke();
-    ctx.fillStyle = '#A8A89E';
-    ctx.fillRect(-CELL/3, -CELL/2.5*1.15, CELL/1.5, CELL/5);
-    ctx.fillRect(-CELL/3, CELL/2.5*0.9, CELL/1.5, CELL/5);
-    ctx.fillStyle = '#B8924A'; ctx.beginPath(); ctx.arc(0, 0, CELL/4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#EFEBE4'; ctx.beginPath(); ctx.arc(CELL/8, 0, CELL/8, 0, Math.PI*2); ctx.fill();
-    
-    const sp = Math.sin(Date.now()*0.01)*0.1;
-    ctx.fillStyle = 'rgba(184,146,74,0.12)';
-    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0, 0, CELL*2.5, -Math.PI/5 + sp, Math.PI/5 - sp); ctx.fill();
-    ctx.restore();
-
-    requestAnimationFrame(loop);
+    maybeResolveBellman();
+    stepRobot();
+    draw();
+    if(isVisible) animId=requestAnimationFrame(loop);
+    else animId=null;
   }
 
-  // Tối ưu Performance: Chỉ vẽ khi Canvas xuất hiện trong màn hình
-  const visObs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) loop(); });
-  }, { threshold: 0.1 });
+  const visObs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      isVisible=e.isIntersecting;
+      if(isVisible&&animId===null) animId=requestAnimationFrame(loop);
+    });
+  },{threshold:0.1});
   visObs.observe(canvas);
+
+  if(canvas.getBoundingClientRect().top<window.innerHeight){
+    isVisible=true;
+    animId=requestAnimationFrame(loop);
+  }
 
   return { clearWalls };
 })();
