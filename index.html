@@ -11,645 +11,405 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-/* ═══════════════════════════════════════════════
-   TOKENS — phosphor-green lab aesthetic
-═══════════════════════════════════════════════ */
+/* ============================================================
+   1. CSS VARIABLES & RESET
+   ============================================================ */
 :root {
-  --bg:        #07090F;
-  --bg2:       #0C0F1A;
-  --bg3:       #141824;
-  --bg4:       #1A2030;
-  --border:    rgba(255,255,255,0.06);
-  --border2:   rgba(255,255,255,0.12);
+  --bg:          #090B12;
+  --bg-2:        #101420;
+  --bg-3:        #181D2C;
+  --bg-4:        #1E2435;
 
-  /* Phosphor green — oscilloscope / lab terminal */
-  --g:         #00E676;
-  --g-dim:     rgba(0,230,118,0.07);
-  --g-soft:    rgba(0,230,118,0.14);
-  --g-glow:    rgba(0,230,118,0.28);
+  --border:        rgba(255,255,255,0.07);
+  --border-hover:  rgba(255,255,255,0.14);
 
-  /* Amber — warning, highlight */
-  --a:         #FFB300;
-  --a-dim:     rgba(255,179,0,0.09);
+  --cyan:        #00D4FF;
+  --cyan-dim:    rgba(0,212,255,0.08);
+  --cyan-soft:   rgba(0,212,255,0.15);
+  --cyan-glow:   rgba(0,212,255,0.30);
 
-  /* Indigo — secondary accent */
-  --ind:       #7C83FD;
-  --ind-dim:   rgba(124,131,253,0.10);
+  --indigo:      #818CF8;
+  --indigo-dim:  rgba(129,140,248,0.10);
+  --green:       #00FF88;
+  --orange:      #FF8C3D;
+  --red:         #FF4D4D;
 
-  --text:      #E8EDF8;
-  --text2:     #6B7899;
-  --text3:     #313A52;
+  --text:        #EDF0F8;
+  --text-2:      #7B8599;
+  --text-3:      #3A4259;
 
-  --font-d:  'Space Grotesk', system-ui, sans-serif;
-  --font-m:  'JetBrains Mono', monospace;
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-body:    'Inter', -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
-  --r:   8px; --r-lg: 14px;
-  --ease: cubic-bezier(0.25,0.46,0.45,0.94);
-  --spring: cubic-bezier(0.34,1.56,0.64,1);
+  --r-xs: 4px; --r-sm: 7px; --r: 11px; --r-lg: 15px;
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --t: 0.2s var(--ease);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text2);
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 15px;
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-a { color: var(--g); text-decoration: none; transition: color var(--t); }
+body { background: var(--bg); color: var(--text-2); font-family: var(--font-body); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: var(--cyan); text-decoration: none; transition: color var(--t); }
 a:hover { color: var(--text); }
 strong { color: var(--text); font-weight: 600; }
-.c { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
 
-/* ── CURSOR ROBOT ─────────────────────────────── */
-#cursor-robot {
-  position: fixed;
-  width: 22px; height: 22px;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%,-50%);
-  transition: opacity .3s;
-  will-change: transform;
-}
-#cursor-robot svg { width: 100%; height: 100%; }
-/* Lidar sweep from cursor robot */
-#cursor-robot .sweep {
-  transform-origin: 11px 11px;
-  animation: sweep-rot 2s linear infinite;
-}
-@keyframes sweep-rot { to { transform: rotate(360deg); } }
+/* ============================================================
+   2. NAVIGATION
+   ============================================================ */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 54px; background: rgba(9,11,18,0.92); backdrop-filter: blur(20px) saturate(150%); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 1100px; margin: 0 auto; height: 100%; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.nav-logo { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 9px; }
+.nav-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: live-pulse 2.4s ease infinite; }
 
-/* ── NAV ─────────────────────────────────────── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: 52px;
-  background: rgba(7,9,15,0.90);
-  backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--border);
-}
-.nav-inner {
-  max-width: 1080px; margin: 0 auto; height: 100%; padding: 0 28px;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-}
-.nav-logo {
-  font-family: var(--font-d); font-size: 14px; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 9px; letter-spacing: -0.01em;
-}
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--g); box-shadow: 0 0 8px var(--g);
-  animation: blink 2.5s ease infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes live-pulse { 0%,100% { box-shadow: 0 0 5px var(--green); opacity: 1; } 50% { box-shadow: 0 0 14px var(--green); opacity: 0.75; } }
 
 .nav-links { display: flex; gap: 2px; list-style: none; align-items: center; }
-.nav-links a {
-  font-family: var(--font-m); font-size: 11px; font-weight: 500;
-  color: var(--text2); padding: 6px 11px; border-radius: var(--r);
-  transition: all var(--t); letter-spacing: .03em;
-}
-.nav-links a:hover { color: var(--g); background: var(--g-dim); }
-.nav-cta {
-  font-family: var(--font-m); font-size: 11px; font-weight: 700;
-  color: var(--bg); background: var(--g); padding: 7px 16px;
-  border-radius: var(--r); letter-spacing: .04em;
-  transition: all .15s var(--spring);
-}
-.nav-cta:hover { background: #2EFF88; color: var(--bg); transform: translateY(-1px); box-shadow: 0 4px 18px var(--g-glow); }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-2); padding: 6px 12px; border-radius: var(--r-sm); transition: all var(--t); }
+.nav-links a:hover { color: var(--text); background: var(--bg-3); }
+.nav-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--bg); background: var(--cyan); padding: 7px 16px; border-radius: var(--r-sm); transition: all 0.15s var(--spring); }
+.nav-cta:hover { background: #2DDBFF; transform: translateY(-1px); box-shadow: 0 4px 16px var(--cyan-glow); }
 
-/* Hamburger */
-.nav-burger {
-  display: none; flex-direction: column; gap: 5px; cursor: pointer;
-  background: none; border: none; padding: 4px;
+/* Hamburger button — hidden on desktop */
+.nav-mobile-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--text-2);
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  transition: background var(--t);
 }
-.nav-burger span {
-  display: block; width: 22px; height: 2px;
-  background: var(--text2); border-radius: 2px; transition: all .2s;
+.nav-mobile-btn:hover { background: var(--bg-3); }
+.nav-mobile-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: all 0.25s var(--ease);
+  transform-origin: center;
 }
-.nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.nav-burger.open span:nth-child(2) { opacity: 0; }
-.nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.nav-mobile-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-mobile-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-mobile-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
+/* Mobile menu dropdown */
 .mobile-menu {
-  display: none; position: fixed; top: 52px; left: 0; right: 0; z-index: 99;
-  background: rgba(7,9,15,0.97); border-bottom: 1px solid var(--border);
-  padding: 20px 28px; flex-direction: column; gap: 4px;
+  display: none;
+  position: fixed;
+  top: 54px;
+  left: 0;
+  right: 0;
+  background: rgba(9,11,18,0.97);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 28px 20px;
+  z-index: 99;
+  flex-direction: column;
 }
 .mobile-menu.open { display: flex; }
 .mobile-menu a {
-  font-family: var(--font-m); font-size: 13px; color: var(--text2);
-  padding: 10px 12px; border-radius: var(--r);
-  transition: all var(--t);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-2);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  transition: color var(--t);
 }
-.mobile-menu a:hover { color: var(--g); background: var(--g-dim); }
+.mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu a:hover { color: var(--text); }
 
-/* ── HERO ─────────────────────────────────────── */
-.hero {
-  position: relative; min-height: 100vh;
-  display: flex; align-items: center; padding-top: 52px; overflow: hidden;
-}
-
-/* Scanline overlay — oscilloscope feel */
-.hero::before {
-  content: '';
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,230,118,0.012) 2px,
-    rgba(0,230,118,0.012) 4px
-  );
-}
-
-/* Grid bg */
-.hero-grid {
-  position: absolute; inset: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(0,230,118,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,230,118,0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 70% 80% at 65% 50%, black 30%, transparent 100%);
-}
-
+/* ============================================================
+   3. HERO SECTION
+   ============================================================ */
+.hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 54px; overflow: hidden; }
+.hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.032) 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(90deg, transparent 35%, rgba(0,0,0,0.8) 60%, black 100%); pointer-events: none; }
 .hero-inner { position: relative; z-index: 2; width: 100%; }
-.hero-layout {
-  display: grid; grid-template-columns: 1fr 440px;
-  gap: 56px; align-items: center; padding: 80px 0 60px;
-}
-
-.hero-eyebrow {
-  font-family: var(--font-m); font-size: 10px; font-weight: 500;
-  color: var(--g); letter-spacing: .14em; text-transform: uppercase;
-  margin-bottom: 20px;
-  display: flex; align-items: center; gap: 10px;
-}
-.hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--g); opacity: .6; }
-
-h1 {
-  font-family: var(--font-d);
-  font-size: clamp(42px, 5.5vw, 72px);
-  font-weight: 700; line-height: 1.04;
-  color: var(--text); margin-bottom: 8px;
-  letter-spacing: -0.02em;
-}
-h1 .outlined {
-  display: block; color: transparent;
-  -webkit-text-stroke: 1.5px rgba(0,230,118,0.45);
-}
-
-.hero-role {
-  font-family: var(--font-d); font-size: clamp(15px, 1.8vw, 19px);
-  font-weight: 400; color: var(--text2); margin-bottom: 24px; line-height: 1.6;
-}
-.hero-role strong { color: var(--g); font-weight: 500; }
-
-.hero-bio {
-  font-size: 14.5px; line-height: 1.84;
-  color: var(--text2); margin-bottom: 36px; max-width: 480px;
-}
+.hero-layout { display: grid; grid-template-columns: 1fr 480px; gap: 48px; align-items: center; padding: 80px 0 60px; }
+.hero-eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--cyan); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+.hero-eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--cyan); opacity: 0.7; }
+h1 { font-family: var(--font-display); font-size: clamp(46px, 6vw, 76px); font-weight: 700; line-height: 1.04; color: var(--text); margin-bottom: 10px; }
+h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5px rgba(0,212,255,0.55); text-stroke: 1.5px rgba(0,212,255,0.55); }
+.hero-role { font-family: var(--font-display); font-size: clamp(16px, 2vw, 20px); font-weight: 400; color: var(--text-2); margin-bottom: 28px; line-height: 1.55; }
+.hero-role strong { color: var(--cyan); font-weight: 500; }
+.hero-bio { font-size: 15px; line-height: 1.82; color: var(--text-2); margin-bottom: 40px; max-width: 500px; }
 
 /* Buttons */
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 20px; border-radius: var(--r);
-  font-family: var(--font-d); font-size: 13.5px; font-weight: 600;
-  transition: all .15s var(--spring); cursor: pointer; border: none; line-height: 1;
-  text-decoration: none;
-}
-.btn:active { transform: scale(0.97) !important; }
-.btn-primary { background: var(--g); color: var(--bg); box-shadow: 0 2px 10px rgba(0,230,118,.2); }
-.btn-primary:hover { background: #2EFF88; color: var(--bg); transform: translateY(-2px); box-shadow: 0 6px 22px var(--g-glow); }
-.btn-ghost { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--bg4); border-color: var(--border2); transform: translateY(-1px); }
-.btn-amber { background: var(--a-dim); color: var(--a); border: 1px solid rgba(255,179,0,.2); }
-.btn-amber:hover { background: rgba(255,179,0,.16); transform: translateY(-1px); }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; border-radius: var(--r); font-family: var(--font-display); font-size: 14px; font-weight: 600; transition: all 0.15s var(--spring); cursor: pointer; border: none; line-height: 1; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--cyan); color: var(--bg); box-shadow: 0 2px 8px rgba(0,212,255,0.22); }
+.btn-primary:hover { background: #2DDBFF; transform: translateY(-2px); box-shadow: 0 6px 20px var(--cyan-glow); }
+.btn-ghost { background: var(--bg-3); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg-4); border-color: var(--border-hover); transform: translateY(-1px); }
+.btn-indigo { background: var(--indigo-dim); color: var(--indigo); border: 1px solid rgba(129,140,248,0.20); }
+.btn-indigo:hover { background: rgba(129,140,248,0.18); color: var(--text); transform: translateY(-1px); }
 
-/* Metrics */
-.metrics {
-  display: grid; grid-template-columns: repeat(4,1fr);
-  border: 1px solid var(--border); border-radius: var(--r-lg);
-  overflow: hidden; background: var(--bg2); margin-top: 52px;
-}
-.metric {
-  padding: 20px 22px; border-left: 1px solid var(--border);
-  position: relative; overflow: hidden;
-}
-.metric::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--g); opacity: 0;
-  transition: opacity var(--t);
-}
-.metric:hover::before { opacity: 1; }
-.metric:first-child { border-left: none; }
-.mval {
-  font-family: var(--font-d); font-size: 32px; font-weight: 700;
-  color: var(--text); line-height: 1; margin-bottom: 5px;
-}
-.mval sup { font-size: 15px; color: var(--g); }
-.mlabel { font-family: var(--font-m); font-size: 10px; color: var(--text3); text-transform: uppercase; line-height: 1.45; }
+/* Metrics bar */
+.metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: var(--bg-2); margin-top: 56px; }
+.metric-cell { padding: 22px 24px; transition: background var(--t); position: relative; border-left: 1px solid var(--border); }
+.metric-cell:first-child { border-left: none; }
+.metric-value { font-family: var(--font-display); font-size: 34px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 5px; }
+.metric-value sup { font-size: 17px; color: var(--cyan); }
+.metric-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; line-height: 1.4; }
 
-/* ── RL CANVAS PANEL ───────────────────────────── */
-.rl-panel {
-  position: relative; width: 100%; aspect-ratio: 1;
-  border-radius: var(--r-lg); border: 1px solid var(--border);
-  background: var(--bg2); overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(0,230,118,0.04), 0 24px 64px rgba(0,0,0,0.7);
-}
+/* Section layout */
+section { padding: 96px 0; }
+section + section { border-top: 1px solid var(--border); }
+.section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--cyan); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.section-label::before { content: ''; width: 18px; height: 1px; background: var(--cyan); opacity: 0.6; }
+h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 700; color: var(--text); line-height: 1.14; margin-bottom: 52px; }
 
-/* CRT corner brackets */
-.rl-panel::before, .rl-panel::after {
-  content: ''; position: absolute; width: 20px; height: 20px;
-  border-color: var(--g); border-style: solid; opacity: .4; z-index: 10; pointer-events: none;
-}
-.rl-panel::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
-.rl-panel::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
-
+/* ============================================================
+   4. RL CANVAS UI
+   ============================================================ */
+.rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1px solid var(--border); background: var(--bg-2); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
-.rl-top {
-  position: absolute; top: 14px; left: 14px; right: 14px;
-  display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
-}
-.rl-badge {
-  font-family: var(--font-m); font-size: 9.5px; font-weight: 700;
-  color: var(--ind); background: rgba(7,9,15,.88);
-  border: 1px solid var(--border); padding: 5px 10px;
-  border-radius: 999px; backdrop-filter: blur(4px);
-}
-.rl-score {
-  font-family: var(--font-m); font-size: 10px; color: var(--text);
-  background: rgba(7,9,15,.88); border: 1px solid var(--border);
-  padding: 5px 10px; border-radius: var(--r); backdrop-filter: blur(4px);
-}
-.rl-score span { color: var(--g); font-weight: 700; font-size: 13px; }
+.rl-ui-top { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+.rl-badge { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--indigo); background: rgba(9,11,18,0.85); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.rl-score { font-family: var(--font-mono); font-size: 11px; color: var(--text); background: rgba(9,11,18,0.85); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--r-sm); backdrop-filter: blur(4px); }
+.rl-score span { color: var(--green); font-weight: 700; font-size: 14px; }
 
-.rl-hint {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  font-family: var(--font-m); font-size: 11px; font-weight: 700;
-  color: var(--g); background: rgba(0,230,118,.08);
-  border: 1px solid rgba(0,230,118,.3);
-  padding: 10px 20px; border-radius: var(--r);
-  pointer-events: none; z-index: 10; text-align: center;
-  animation: pulse-hint 1.8s ease infinite;
-  transition: opacity .3s;
-}
-.rl-hint.gone { opacity: 0; animation: none; }
-@keyframes pulse-hint {
-  0%,100% { opacity:1; box-shadow: 0 0 8px rgba(0,230,118,.15); }
-  50%      { opacity:.5; box-shadow: 0 0 20px rgba(0,230,118,.3); }
-}
+.rl-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: var(--cyan); background: rgba(0,212,255,0.1); border: 1px solid var(--cyan-glow); padding: 12px 24px; border-radius: var(--r); pointer-events: none; animation: pulse-hint 1.5s infinite; transition: opacity 0.3s; z-index: 10; text-align: center; }
+@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px rgba(0,212,255,0.2); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.98); box-shadow: 0 0 20px rgba(0,212,255,0.4); } }
+.rl-hint.hidden { opacity: 0; animation: none; }
 
-.rl-bar {
-  position: absolute; bottom: 14px; right: 14px;
-  display: flex; gap: 6px; z-index: 10;
-}
-.rl-btn {
-  font-family: var(--font-m); font-size: 10px; font-weight: 500;
-  background: rgba(7,9,15,.88); color: var(--text2);
-  border: 1px solid var(--border); padding: 7px 12px;
-  border-radius: var(--r); cursor: pointer; backdrop-filter: blur(4px);
-  transition: all var(--t);
-}
-.rl-btn:hover { color: var(--g); border-color: var(--g); background: rgba(0,230,118,.06); }
+.rl-toolbar { position: absolute; bottom: 16px; right: 16px; display: flex; gap: 8px; z-index: 10; }
+.rl-btn { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: rgba(9,11,18,0.85); color: var(--text-2); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; backdrop-filter: blur(4px); transition: all var(--t); }
+.rl-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.05); }
 
-/* ── SECTIONS ─────────────────────────────────── */
-section { padding: 88px 0; }
-section + section { border-top: 1px solid var(--border); }
+/* ============================================================
+   5. CONTENT SECTIONS
+   ============================================================ */
 
-.sec-label {
-  font-family: var(--font-m); font-size: 10px; font-weight: 500;
-  color: var(--g); letter-spacing: .14em; text-transform: uppercase;
-  margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
-}
-.sec-label::before { content: ''; width: 20px; height: 1px; background: var(--g); opacity: .55; }
+/* About */
+.about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: start; }
+.about-text p { margin-bottom: 20px; font-size: 15px; line-height: 1.82; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
+.tag { font-family: var(--font-mono); font-size: 11px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-2); transition: all var(--t); }
+.tag:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.stack-panel h3 { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 22px; }
+.stack-group { margin-bottom: 24px; }
+.stack-group-label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
 
-h2 {
-  font-family: var(--font-d);
-  font-size: clamp(26px, 3.5vw, 42px);
-  font-weight: 700; color: var(--text); line-height: 1.14; margin-bottom: 48px;
-  letter-spacing: -0.015em;
-}
-
-/* ── ABOUT ───────────────────────────────────── */
-.about-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 60px; align-items: start; }
-.about-text p { margin-bottom: 18px; font-size: 14.5px; line-height: 1.84; }
-.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 18px; }
-.tag {
-  font-family: var(--font-m); font-size: 10.5px; padding: 3px 10px;
-  border-radius: 999px; border: 1px solid var(--border); color: var(--text2);
-  transition: all var(--t);
-}
-.tag:hover { border-color: var(--g); color: var(--g); background: var(--g-dim); }
-.stack h3 { font-family: var(--font-d); font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 20px; }
-.sg { margin-bottom: 22px; }
-.sg-label { font-family: var(--font-m); font-size: 9.5px; font-weight: 500; text-transform: uppercase; color: var(--text3); margin-bottom: 7px; }
-
-/* ── EXPERIENCE ───────────────────────────────── */
+/* Experience */
 .xp-list { display: flex; flex-direction: column; }
-.xp-item {
-  display: grid; grid-template-columns: 160px 1fr; gap: 32px;
-  padding: 26px 0; border-bottom: 1px solid var(--border); position: relative;
-}
+.xp-item { display: grid; grid-template-columns: 168px 1fr; gap: 36px; padding: 28px 0; border-bottom: 1px solid var(--border); position: relative; }
 .xp-item:last-child { border-bottom: none; }
-.xp-item::after {
-  content: ''; position: absolute; left: -28px; right: -28px; top: 0; bottom: 0;
-  background: var(--g-dim); border-radius: var(--r); opacity: 0;
-  transition: opacity var(--t); z-index: -1;
-}
-.xp-item:hover::after { opacity: 1; }
-.xp-date { font-family: var(--font-m); font-size: 11px; color: var(--text3); line-height: 1.5; }
-.xp-live {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--font-m); font-size: 9.5px; font-weight: 500; color: var(--g); margin-top: 8px;
-}
-.xp-live::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--g); box-shadow: 0 0 6px var(--g); animation: blink 2s ease infinite;
-}
-.xp-co { font-family: var(--font-d); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-.xp-role { font-size: 13px; color: var(--ind); font-weight: 500; margin-bottom: 14px; }
-.xp-ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.xp-ul li { position: relative; padding-left: 14px; font-size: 13.5px; color: var(--text2); }
-.xp-ul li::before { content: "–"; position: absolute; left: 0; color: var(--text3); }
+.xp-item::before { content: ''; position: absolute; left: -28px; right: -28px; top: 0; bottom: 0; background: var(--bg-2); border-radius: var(--r); opacity: 0; transition: opacity var(--t); z-index: -1; }
+.xp-item:hover::before { opacity: 1; }
+.xp-date { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); line-height: 1.5; }
 
-/* ── PROJECTS ─────────────────────────────────── */
-.proj-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-.proj-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
-  display: flex; flex-direction: column;
-  transition: all .18s var(--spring);
-  position: relative;
-}
-.proj-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--g), transparent);
-  opacity: 0; transition: opacity var(--t);
-}
-.proj-card:hover { border-color: var(--border2); transform: translateY(-5px); box-shadow: 0 20px 56px rgba(0,0,0,.6), 0 0 0 1px rgba(0,230,118,.05); }
-.proj-card:hover::before { opacity: 1; }
+/* FIX: .xp-live-dot was missing from CSS */
+.xp-live { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--green); margin-top: 8px; }
+.xp-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); animation: live-pulse 2.4s ease infinite; display: inline-block; flex-shrink: 0; }
 
-.proj-card.feat { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(120deg, var(--bg2) 0%, rgba(0,230,118,.018) 100%); }
-.proj-thumb {
-  background: var(--bg3); display: flex; align-items: center; justify-content: center;
-  aspect-ratio: 16/9; overflow: hidden; position: relative;
-}
-.proj-card.feat .proj-thumb { width: 44%; flex-shrink: 0; min-height: 260px; aspect-ratio: auto; }
-.proj-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
-.proj-card:hover .proj-thumb img { transform: scale(1.05); }
-.thumb-ph {
-  font-family: var(--font-m); font-size: 11px; color: var(--text3);
-  text-align: center; padding: 20px; line-height: 1.6;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-}
-.thumb-ph .ph-icon {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--bg4); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; margin-bottom: 4px;
-}
-.proj-body { padding: 20px 22px; flex: 1; display: flex; flex-direction: column; }
-.proj-type { font-family: var(--font-m); font-size: 10px; text-transform: uppercase; color: var(--ind); margin-bottom: 7px; }
-.proj-title { font-family: var(--font-d); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 9px; }
-.proj-desc { font-size: 13px; margin-bottom: 16px; flex: 1; color: var(--text2); line-height: 1.7; }
-.pills { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
-.pill {
-  font-family: var(--font-m); font-size: 10px; padding: 2px 8px;
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; color: var(--text3);
-}
-.proj-link {
-  font-size: 11.5px; font-weight: 600; color: var(--g); font-family: var(--font-m);
-  display: inline-flex; align-items: center; gap: 5px;
-  transition: gap var(--t), color var(--t);
-}
-.proj-link:hover { gap: 10px; color: var(--text); }
-.proj-link.disabled { color: var(--text3); cursor: default; pointer-events: none; }
+.xp-company { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.xp-role { font-size: 13.5px; color: var(--indigo); font-weight: 500; margin-bottom: 16px; }
+.xp-bullets { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.xp-bullets li { position: relative; padding-left: 16px; font-size: 14px; color: var(--text-2); }
+.xp-bullets li::before { content: "–"; position: absolute; left: 0; color: var(--text-3); }
 
-/* ── PUBLICATIONS ─────────────────────────────── */
-.yr-group { margin-bottom: 44px; }
-.yr-group:last-child { margin-bottom: 0; }
-.yr-head {
-  font-family: var(--font-d); font-size: 26px; font-weight: 700; color: var(--text);
-  margin-bottom: 22px; display: flex; align-items: center; gap: 14px;
-}
-.yr-head::after { content: ''; height: 1px; flex: 1; background: var(--border); }
-.yr-head span { color: var(--g); }
+/* Projects */
+.projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.project-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.18s var(--spring); }
+.project-card:hover { border-color: var(--border-hover); transform: translateY(-5px); box-shadow: 0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.06); }
+.project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(120deg, var(--bg-2) 0%, rgba(0,212,255,0.025) 100%); }
+.project-thumb { background: var(--bg-3); display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; overflow: hidden; position: relative; }
+.project-card.featured .project-thumb { width: 44%; flex-shrink: 0; min-height: 268px; }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+.project-card:hover .project-thumb img { transform: scale(1.06); }
 
-.pub-list { display: flex; flex-direction: column; gap: 8px; }
-.pub-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 24px 28px;
-  transition: all var(--t);
+/* Clean placeholder when image fails to load */
+.project-thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
 }
-.pub-card:hover { border-color: var(--border2); background: var(--bg3); }
-.pub-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; flex-wrap: wrap; }
-.pub-badge {
-  font-family: var(--font-m); font-size: 10px; font-weight: 500;
-  padding: 3px 9px; border-radius: 999px;
+
+.project-body { padding: 22px 24px; flex: 1; display: flex; flex-direction: column; }
+.project-type { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; color: var(--indigo); margin-bottom: 8px; }
+.project-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.project-desc { font-size: 13.5px; margin-bottom: 18px; flex: 1; color: var(--text-2); }
+.project-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
+.pill { font-family: var(--font-mono); font-size: 10.5px; padding: 3px 9px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px; color: var(--text-3); }
+.project-link { font-size: 12.5px; font-weight: 600; color: var(--cyan); display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); transition: gap var(--t), color var(--t); }
+.project-link:hover { gap: 10px; color: var(--text); }
+
+/* Unavailable link state — no href, muted appearance */
+.project-link-na {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  user-select: none;
 }
-.badge-j  { background: var(--g-dim); color: var(--g); border: 1px solid rgba(0,230,118,.2); }
-.badge-aw { background: var(--a-dim); color: var(--a); border: 1px solid rgba(255,179,0,.22); }
-.pub-venue { font-family: var(--font-m); font-size: 10.5px; color: var(--text3); }
-.pub-title { font-family: var(--font-d); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.5; }
-.pub-desc { font-size: 13px; line-height: 1.74; color: var(--text2); }
-.pub-link {
-  display: inline-flex; align-items: center; gap: 4px; margin-top: 12px;
-  font-size: 11.5px; font-weight: 500; font-family: var(--font-m); color: var(--g);
-  transition: gap var(--t), color var(--t);
-}
+
+/* ============================================================
+   6. PUBLICATIONS & AWARDS
+   ============================================================ */
+.year-group { margin-bottom: 48px; }
+.year-group:last-child { margin-bottom: 0; }
+.year-heading { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+.year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border); }
+.year-heading span { color: var(--cyan); }
+
+.pub-list { display: flex; flex-direction: column; gap: 10px; }
+.pub-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px 32px; transition: all var(--t); }
+.pub-card:hover { border-color: var(--border-hover); background: var(--bg-3); }
+.pub-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.pub-badge { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; padding: 3px 10px; border-radius: 999px; }
+.badge-journal { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+.badge-award { background: rgba(255,140,61,0.10); color: var(--orange); border: 1px solid rgba(255,140,61,0.22); }
+.pub-venue { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+.pub-title { font-family: var(--font-display); font-size: 15.5px; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.50; }
+.pub-desc { font-size: 13.5px; line-height: 1.74; color: var(--text-2); }
+.pub-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-mono); color: var(--cyan); transition: gap var(--t), color var(--t); }
 .pub-link:hover { gap: 8px; color: var(--text); }
 
-/* ── CONTACT ──────────────────────────────────── */
-.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-.contact-intro { font-size: 15px; color: var(--text2); margin-bottom: 28px; line-height: 1.84; }
-.contact-note {
-  font-family: var(--font-m); font-size: 11.5px; color: var(--text3);
-  border-top: 1px solid var(--border); padding-top: 16px; margin-top: 20px;
-}
-.contact-links { display: flex; flex-direction: column; gap: 7px; }
-.contact-link {
-  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r); color: var(--text2); transition: all var(--t);
-}
-.contact-link:hover { background: var(--bg3); border-color: var(--border2); transform: translateX(5px); color: var(--text); }
-.c-icon {
-  width: 36px; height: 36px; border-radius: var(--r); background: var(--bg3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0; border: 1px solid var(--border);
-}
-.c-text strong { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
-.c-text span { font-family: var(--font-m); font-size: 11px; color: var(--text3); }
+/* Contact */
+.contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.contact-intro { font-size: 15.5px; color: var(--text-2); margin-bottom: 32px; line-height: 1.82; }
+.contact-note { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); border-top: 1px solid var(--border); padding-top: 18px; }
+.contact-links { display: flex; flex-direction: column; gap: 8px; }
+.contact-link { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r); color: var(--text-2); transition: all var(--t); }
+.contact-link:hover { background: var(--bg-3); border-color: var(--border-hover); transform: translateX(5px); color: var(--text); }
+.contact-icon { width: 38px; height: 38px; border-radius: var(--r-sm); background: var(--bg-3); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.contact-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.contact-text span { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 
-/* ── TERMINAL BLOCK ───────────────────────────── */
-.terminal {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 22px 24px; margin-bottom: 28px;
-  position: relative; overflow: hidden;
-}
-.terminal::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--g), transparent); opacity: .4;
-}
-.t-bar { display: flex; gap: 6px; margin-bottom: 16px; }
-.t-dot { width: 10px; height: 10px; border-radius: 50%; }
-.t-dot:nth-child(1) { background: #FF5F57; }
-.t-dot:nth-child(2) { background: #FEBC2E; }
-.t-dot:nth-child(3) { background: var(--g); }
-.t-line { font-family: var(--font-m); font-size: 12px; line-height: 1.7; }
-.t-prompt { color: var(--g); }
-.t-cmd { color: var(--text); }
-.t-out { color: var(--text2); }
-.t-cursor {
-  display: inline-block; width: 7px; height: 14px;
-  background: var(--g); margin-left: 2px; vertical-align: middle;
-  animation: cursor-blink .8s step-end infinite;
-}
-@keyframes cursor-blink { 50% { opacity: 0; } }
-
-/* ── FOOTER ───────────────────────────────────── */
-footer { border-top: 1px solid var(--border); padding: 24px 0; }
+/* Footer */
+footer { border-top: 1px solid var(--border); padding: 28px 0; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.footer-copy, .footer-built { font-family: var(--font-m); font-size: 11px; color: var(--text3); }
-.footer-built span { color: var(--g); }
+.footer-copy, .footer-built { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+.footer-built span { color: var(--cyan); }
 
-/* ── REVEAL ───────────────────────────────────── */
-.reveal { opacity: 0; transform: translateY(16px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
-.reveal.on { opacity: 1; transform: translateY(0); }
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
 
-/* ── RESPONSIVE ───────────────────────────────── */
+/* ============================================================
+   7. RESPONSIVE
+   ============================================================ */
 @media (max-width: 960px) {
-  .hero-layout, .about-grid, .contact-grid { grid-template-columns: 1fr; }
-  .proj-grid, .metrics { grid-template-columns: repeat(2,1fr); }
-  .proj-card.feat { flex-direction: column; }
-  .proj-card.feat .proj-thumb { width: 100%; min-height: 200px; }
-  .metric:nth-child(3) { border-left: none; border-top: 1px solid var(--border); }
-  .metric:nth-child(4) { border-top: 1px solid var(--border); }
-}
-@media (max-width: 640px) {
-  .nav-links { display: none; }
-  .nav-burger { display: flex; }
-  .nav-cta { display: none; }
-  .proj-grid { grid-template-columns: 1fr; }
-  .btn-row { flex-direction: column; align-items: flex-start; }
-  .metrics { grid-template-columns: repeat(2,1fr); }
-  .footer-inner { flex-direction: column; text-align: center; }
-  #cursor-robot { display: none; }
+  .hero-layout, .about-grid, .contact-layout { grid-template-columns: 1fr; }
+  .projects-grid, .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+  .project-card.featured { flex-direction: column; }
+  .project-card.featured .project-thumb { width: 100%; min-height: 200px; }
+  .metric-cell:nth-child(3) { border-left: none; border-top: 1px solid var(--border); }
+  .metric-cell:nth-child(4) { border-top: 1px solid var(--border); }
 }
 
-/* ── REDUCED MOTION ───────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  .reveal { opacity: 1 !important; transform: none !important; }
-  #cursor-robot { display: none !important; }
+@media (max-width: 640px) {
+  /* FIX: show hamburger, hide desktop nav links */
+  .nav-links { display: none; }
+  .nav-cta  { display: none; }
+  .nav-mobile-btn { display: flex; }
+
+  .projects-grid { grid-template-columns: 1fr; }
+  .btn-group { flex-direction: column; }
+  .rl-badge { font-size: 8px; padding: 4px 8px; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .xp-item { grid-template-columns: 1fr; gap: 8px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Custom cursor robot -->
-<div id="cursor-robot" aria-hidden="true">
-  <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Lidar sweep -->
-    <g class="sweep" opacity="0.35">
-      <path d="M11 11 L11 3" stroke="#00E676" stroke-width="1" stroke-linecap="round"/>
-      <path d="M11 11 L17 6" stroke="#00E676" stroke-width="0.5" stroke-linecap="round" opacity="0.5"/>
-    </g>
-    <!-- Robot body -->
-    <rect x="5" y="6" width="12" height="10" rx="2" fill="#141824" stroke="#00E676" stroke-width="1"/>
-    <!-- Eyes -->
-    <circle cx="8.5" cy="10" r="1.5" fill="#00E676" opacity="0.9"/>
-    <circle cx="13.5" cy="10" r="1.5" fill="#00E676" opacity="0.9"/>
-    <!-- Wheels -->
-    <rect x="4" y="13" width="3" height="2" rx="1" fill="#00E676" opacity="0.4"/>
-    <rect x="15" y="13" width="3" height="2" rx="1" fill="#00E676" opacity="0.4"/>
-    <!-- Antenna -->
-    <line x1="11" y1="6" x2="11" y2="3" stroke="#00E676" stroke-width="1" stroke-linecap="round"/>
-    <circle cx="11" cy="2.5" r="1" fill="#00E676"/>
-  </svg>
+<!-- Mobile nav menu (lives outside nav for stacking context) -->
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="#about"        onclick="closeMobileMenu()">About</a>
+  <a href="#experience"   onclick="closeMobileMenu()">Experience</a>
+  <a href="#projects"     onclick="closeMobileMenu()">Projects</a>
+  <a href="#publications" onclick="closeMobileMenu()">Research</a>
+  <a href="#contact"      onclick="closeMobileMenu()">Contact</a>
+  <a href="mailto:duypham.robotics@gmail.com" onclick="closeMobileMenu()">Get in touch ↗</a>
 </div>
 
 <nav>
   <div class="nav-inner">
-    <div class="nav-logo"><span class="live-dot"></span>Phạm Đức Duy</div>
-    <ul class="nav-links">
+    <div class="nav-logo"><span class="nav-live-dot" aria-hidden="true"></span>Phạm Đức Duy</div>
+
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
       <li><a href="#about">About</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#publications">Research</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
+
     <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
-    <button class="nav-burger" id="burger" aria-label="Open menu">
+
+    <!-- FIX: hamburger button for mobile -->
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileMenu">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
-<div class="mobile-menu" id="mobile-menu">
-  <a href="#about"        onclick="closeMobile()">About</a>
-  <a href="#experience"   onclick="closeMobile()">Experience</a>
-  <a href="#projects"     onclick="closeMobile()">Projects</a>
-  <a href="#publications" onclick="closeMobile()">Research</a>
-  <a href="#contact"      onclick="closeMobile()">Contact</a>
-  <a href="mailto:duypham.robotics@gmail.com" onclick="closeMobile()">Get in touch ↗</a>
-</div>
+<div class="container">
 
-<div class="c">
-
-<!-- ═══ HERO ════════════════════════════════════════ -->
 <section class="hero" id="top">
-  <div class="hero-grid"></div>
+  <div class="hero-grid-bg" aria-hidden="true"></div>
   <div class="hero-inner">
     <div class="hero-layout">
 
       <div class="hero-text">
         <div class="hero-eyebrow">Robotics Software Engineer</div>
-        <h1>Phạm Đức<span class="outlined">Duy</span></h1>
+        <h1>Phạm Đức<span class="name-outlined">Duy</span></h1>
         <p class="hero-role">Building <strong>autonomous robots</strong> that navigate,<br>perceive, and act in the real world.</p>
-        <p class="hero-bio">
-          2 years deploying <strong>ROS 2</strong> mobile robots in production.
-          Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong>
-          for Embodied AI research, formerly Tech Lead at <strong>ByteHome Robotics</strong>.
-        </p>
+        <p class="hero-bio">2 years deploying <strong>ROS 2</strong> mobile robots into production. Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong> for Embodied AI research, formerly Tech Lead at ByteHome Robotics.</p>
 
-        <div class="btn-row">
+        <div class="btn-group">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
-          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost" target="_blank" rel="noopener">📄 CV</a>
-          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
-          <a href="#" class="btn btn-amber">🚀 Mission</a>
+          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">📄 CV</a>
+          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="/mission/" class="btn btn-indigo" target="_blank" rel="noopener noreferrer">🚀 Mission</a>
         </div>
 
-        <div class="metrics reveal">
-          <div class="metric"><div class="mval">2<sup>+</sup></div><div class="mlabel">Years in<br>production</div></div>
-          <div class="metric"><div class="mval">30<sup>+</sup></div><div class="mlabel">B2B clients<br>onboarded</div></div>
-          <div class="metric"><div class="mval">1</div><div class="mlabel">Q2 international<br>journal</div></div>
-          <div class="metric"><div class="mval">5</div><div class="mlabel">Academic<br>awards</div></div>
+        <div class="metrics-bar reveal">
+          <div class="metric-cell"><div class="metric-value">2<sup>+</sup></div><div class="metric-label">Years in<br>production</div></div>
+          <div class="metric-cell"><div class="metric-value">30<sup>+</sup></div><div class="metric-label">B2B clients<br>trained</div></div>
+          <div class="metric-cell"><div class="metric-value">1</div><div class="metric-label">Q2 international<br>journal</div></div>
+          <div class="metric-cell"><div class="metric-value">5</div><div class="metric-label">Academic<br>awards</div></div>
         </div>
       </div>
 
-      <!-- RL CANVAS -->
-      <div class="rl-panel reveal">
-        <div class="rl-top">
-          <div class="rl-badge">ALGO: Bellman Value Iteration · MDP</div>
+      <div class="rl-container reveal">
+        <div class="rl-ui-top">
+          <div class="rl-badge">ALGORITHM: Bellman Value Iteration (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
         </div>
-        <div class="rl-hint" id="rlHint">👉 Click & drag to draw walls</div>
-        <canvas id="rlCanvas" width="440" height="440"></canvas>
-        <div class="rl-bar">
-          <button class="rl-btn" onclick="rl.clear()">🧹 Clear</button>
-          <button class="rl-btn" onclick="rl.random()">🎲 Random</button>
+
+        <div class="rl-hint" id="rlHint">👉 CLICK &amp; DRAG TO DRAW OBSTACLES</div>
+
+        <!-- FIX: no width/height attributes — set dynamically for HiDPI -->
+        <canvas id="rlCanvas" aria-label="Interactive reinforcement learning demo — an agent navigating a grid using Bellman value iteration"></canvas>
+
+        <div class="rl-toolbar">
+          <button class="rl-btn" onclick="rlEngine.clearWalls()">🧹 Clear Obstacles</button>
         </div>
       </div>
 
@@ -657,30 +417,28 @@ footer { border-top: 1px solid var(--border); padding: 24px 0; }
   </div>
 </section>
 
-<!-- ═══ ABOUT ════════════════════════════════════════ -->
 <section id="about">
   <div class="reveal">
-    <div class="sec-label">About</div>
+    <div class="section-label">About</div>
     <h2>Engineer. Researcher. Builder.</h2>
   </div>
   <div class="about-grid reveal">
     <div class="about-text">
       <p>
         I build software that lets robots navigate, perceive, and act in unstructured real-world environments.
-        My work spans the full stack — from tuning <strong>DDS and QoS on ROS 2</strong> to deploying
-        <strong>Navigation2</strong> in hospitals and restaurants.
+        My work spans the full stack — from tuning <strong>DDS and QoS on ROS 2</strong> to deploying <strong>Navigation2</strong>
+        in hospitals and restaurants, and commercializing products end-to-end.
       </p>
       <p>
-        As Tech Lead at <strong>ByteHome Robotics</strong>, I led a 5-person team that shipped
-        and commercialized service robots, then directly onboarded <strong>30+ B2B clients</strong>
-        on ROS 2 operations. Today I'm part of the Talent Program at <strong>VinRobotics</strong>
-        and lead <strong>HalBotLab</strong> researching Embodied AI.
+        As Tech Lead at <strong>ByteHome Robotics</strong>, I led a 5-person team that shipped and commercialized service
+        robots, then directly trained <strong>30+ B2B clients</strong> on ROS 2 operations. Today I'm part of the
+        Talent Program at <strong>VinRobotics</strong> and lead <strong>HalBotLab</strong> researching Embodied AI.
       </p>
       <p>
-        On the research side: a <strong>Q2 international publication</strong> in MethodsX on distributional
+        On the research side: a <strong>Q2 international journal publication</strong> in MethodsX on distributional
         reinforcement learning for mobile robot path planning, and multiple university-level scientific research awards.
       </p>
-      <div class="tags">
+      <div class="tag-cloud">
         <span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer SLAM</span>
         <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">C++</span>
         <span class="tag">Python</span><span class="tag">Rust</span><span class="tag">GoLang</span>
@@ -689,32 +447,32 @@ footer { border-top: 1px solid var(--border); padding: 24px 0; }
       </div>
     </div>
 
-    <div class="stack">
+    <div class="stack-panel">
       <h3>Core Stack</h3>
-      <div class="sg">
-        <div class="sg-label">Robotics</div>
-        <div class="tags">
-          <span class="tag">ROS & ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer</span>
+      <div class="stack-group">
+        <div class="stack-group-label">Robotics</div>
+        <div class="tag-cloud">
+          <span class="tag">ROS &amp; ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer</span>
           <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">Gazebo</span><span class="tag">MuJoCo</span>
         </div>
       </div>
-      <div class="sg">
-        <div class="sg-label">AI / Perception</div>
-        <div class="tags">
+      <div class="stack-group">
+        <div class="stack-group-label">AI / Perception</div>
+        <div class="tag-cloud">
           <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
           <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
         </div>
       </div>
-      <div class="sg">
-        <div class="sg-label">Systems</div>
-        <div class="tags">
+      <div class="stack-group">
+        <div class="stack-group-label">Systems</div>
+        <div class="tag-cloud">
           <span class="tag">C++</span><span class="tag">Python</span><span class="tag">Rust</span>
           <span class="tag">GoLang</span><span class="tag">Linux</span><span class="tag">Docker</span><span class="tag">AWS</span>
         </div>
       </div>
-      <div class="sg">
-        <div class="sg-label">Hardware</div>
-        <div class="tags">
+      <div class="stack-group">
+        <div class="stack-group-label">Hardware</div>
+        <div class="tag-cloud">
           <span class="tag">Visionary-T</span><span class="tag">Intel D435</span>
           <span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Raspberry Pi</span>
         </div>
@@ -723,264 +481,303 @@ footer { border-top: 1px solid var(--border); padding: 24px 0; }
   </div>
 </section>
 
-<!-- ═══ EXPERIENCE ════════════════════════════════════ -->
 <section id="experience">
   <div class="reveal">
-    <div class="sec-label">Work</div>
+    <div class="section-label">Work</div>
     <h2>Where I've built things.</h2>
   </div>
 
   <div class="xp-list reveal">
     <div class="xp-item">
-      <div>
+      <div class="xp-left">
         <div class="xp-date">Mar 2026 — Present</div>
-        <div class="xp-live">Active</div>
+        <!-- FIX: .xp-live-dot now has CSS -->
+        <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
       </div>
       <div>
-        <div class="xp-co">VinRobotics</div>
-        <div class="xp-role">Robotics Software Engineer · Talent Program</div>
-        <ul class="xp-ul">
+        <div class="xp-company">VinRobotics</div>
+        <div class="xp-role">Robotics Software Engineer · VinRobotics Talent Program</div>
+        <ul class="xp-bullets">
           <li>Designed and architected the <strong>License system</strong> for robotic deployments at scale.</li>
-          <li>Deployed factory automation solutions, streamlining <strong>QC processes</strong>.</li>
+          <li>Supported factory operations by deploying automation solutions and streamlining <strong>QC processes</strong>.</li>
         </ul>
       </div>
     </div>
 
     <div class="xp-item">
-      <div>
+      <div class="xp-left">
         <div class="xp-date">Oct 2025 —<br>Mar 2026</div>
       </div>
       <div>
-        <div class="xp-co">ByteHome Robotics</div>
-        <div class="xp-role">Robotics Software Engineer — Tech Lead</div>
-        <ul class="xp-ul">
-          <li>Led a 5-person team to design and ship <strong>end-to-end service robots</strong> — ROS 2, Lidar/Camera/IMU, multilingual AI Voice.</li>
-          <li>Successfully <strong>commercialized</strong> product for restaurant and hospital environments.</li>
-          <li>Directly onboarded and transferred technology to <strong>30+ B2B customers</strong>.</li>
+        <div class="xp-company">ByteHome Robotics</div>
+        <div class="xp-role">Robotics Software Engineer</div>
+        <ul class="xp-bullets">
+          <li>Led a 5-member team to design and ship <strong>end-to-end service robots</strong> — ROS 2, Lidar/Camera/IMU, multilingual AI Voice.</li>
+          <li>Successfully <strong>commercialized</strong> the product for restaurant and hospital environments.</li>
+          <li>Directly trained and transferred technology to <strong>30+ B2B customers</strong> on ROS 2 operation.</li>
         </ul>
       </div>
     </div>
 
     <div class="xp-item">
-      <div>
+      <div class="xp-left">
         <div class="xp-date">Jun 2024 — Present</div>
-        <div class="xp-live">Active</div>
+        <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
       </div>
       <div>
-        <div class="xp-co">HalBotLab</div>
+        <div class="xp-company">HalBotLab</div>
         <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
-        <ul class="xp-ul">
-          <li>Lead research advancing <strong>Embodied AI</strong> applications and resolving core perception bottlenecks.</li>
-          <li>Built <strong>Point Cloud & depth image</strong> data pipelines for real-time object perception.</li>
-          <li>Developed embedded modules using <strong>ESP32 (Micro-ROS, RTOS)</strong> for real-time communication.</li>
+        <ul class="xp-bullets">
+          <li>Lead lab research advancing <strong>Embodied AI</strong> applications and resolving core perception bottlenecks.</li>
+          <li>Built complex <strong>Point Cloud &amp; depth image</strong> data pipelines for real-time object perception.</li>
+          <li>Developed embedded modules using <strong>ESP32 (Micro-ROS, RTOS)</strong> for real-time robot communication.</li>
         </ul>
       </div>
     </div>
 
     <div class="xp-item">
-      <div>
+      <div class="xp-left">
         <div class="xp-date">Expected 2026</div>
       </div>
       <div>
-        <div class="xp-co">Hanoi University of Industry</div>
+        <div class="xp-company">Hanoi University of Industry</div>
         <div class="xp-role">B.Eng. Robotics and Artificial Intelligence</div>
-        <ul class="xp-ul">
-          <li><strong>2nd Prize</strong> — University Scientific Research 2026, satellite map recognition with deep learning.</li>
-          <li><strong>2nd Prize</strong> — Informatics Olympiad 2025.</li>
-          <li><strong>3rd Prize</strong> — Scientific Research 2025, depth-data object detection. Student Math award.</li>
+        <ul class="xp-bullets">
+          <li><strong>2nd Prize</strong> in University Scientific Research (2026) — satellite map recognition with deep learning.</li>
+          <li><strong>2nd Prize</strong> in Informatics Olympiad (2025).</li>
+          <li><strong>3rd Prize</strong> in Scientific Research (2025) — depth-data object detection. Student Math award.</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ PROJECTS ══════════════════════════════════════ -->
 <section id="projects">
   <div class="reveal">
-    <div class="sec-label">Work samples</div>
+    <div class="section-label">Work samples</div>
     <h2>Projects I've shipped.</h2>
   </div>
 
-  <div class="proj-grid">
-    <!-- Featured -->
-    <div class="proj-card feat reveal">
-      <div class="proj-thumb">
-        <img src="assets/robot1.gif" alt="Service robot navigating hospital corridor"
-          onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\'thumb-ph\'><div class=\'ph-icon\'>🤖</div><span style=\'color:var(--text2)\'>Hospital Navigation Demo</span><span style=\'font-size:10px;color:var(--text3)\'>robot1.gif</span></div>'">
+  <div class="projects-grid">
+    <div class="project-card featured reveal">
+      <div class="project-thumb">
+        <!-- FIX: clean onerror — just hides the broken image, bg-3 shows as neutral placeholder -->
+        <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" onerror="this.style.opacity='0'">
+        <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
       </div>
-      <div class="proj-body">
-        <div class="proj-type">Autonomous Navigation · Commercialized</div>
-        <div class="proj-title">Service Robot for Hospitals & Restaurants</div>
-        <div class="proj-desc">
+      <div class="project-body">
+        <div class="project-type">Autonomous Navigation · Commercialized</div>
+        <div class="project-title">Service Robot for Hospitals &amp; Restaurants</div>
+        <div class="project-desc">
+          Designed, manufactured, and integrated software for service robots deployed in unstructured environments.
           Full ROS 2 stack — SLAM, Nav2, LiDAR fusion, camera perception, and multilingual AI Voice.
-          Designed, manufactured, and integrated software end-to-end.
-          <strong>Running in live production environments.</strong>
+          <strong style="color: var(--text);">Commercialized and running in live production environments.</strong>
         </div>
-        <div class="pills">
+        <div class="project-pills">
           <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
           <span class="pill">Nav2</span><span class="pill">SLAM</span><span class="pill">Cython</span>
         </div>
-        <span class="proj-link disabled">Demo video — coming soon</span>
+        <!-- FIX: dead link replaced with honest state -->
+        <span class="project-link-na">Demo available on request</span>
       </div>
     </div>
 
-    <div class="proj-card reveal">
-      <div class="proj-thumb">
-        <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance"
-          onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\'thumb-ph\'><div class=\'ph-icon\'>⚡</div><span style=\'color:var(--text2)\'>Imitation Learning Demo</span></div>'">
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance robot" onerror="this.style.opacity='0'">
+        <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
       </div>
-      <div class="proj-body">
-        <div class="proj-type">Imitation Learning</div>
-        <div class="proj-title">HG-Dagger Obstacle Avoidance</div>
-        <div class="proj-desc">
+      <div class="project-body">
+        <div class="project-type">Imitation Learning</div>
+        <div class="project-title">HG-Dagger Obstacle Avoidance</div>
+        <div class="project-desc">
           Obstacle avoidance via imitation learning — reduces FLOP cost by
-          <strong style="color:var(--g)">131×</strong> versus traditional DWA planners.
+          <strong style="color: var(--cyan);">131×</strong> versus traditional DWA planners.
         </div>
-        <div class="pills">
-          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span>
-          <span class="pill">ROS 2</span><span class="pill">C++</span><span class="pill">Python</span>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">ROS 2</span>
+          <span class="pill">C++</span><span class="pill">Python</span>
         </div>
-        <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="proj-link" target="_blank" rel="noopener">View on GitHub →</a>
+        <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
       </div>
     </div>
 
-    <div class="proj-card reveal">
-      <div class="proj-thumb">
-        <img src="assets/robot3.gif" alt="Skid-steer outdoor robot"
-          onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\'thumb-ph\'><div class=\'ph-icon\'>🏗️</div><span style=\'color:var(--text2)\'>Outdoor Navigation Demo</span></div>'">
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" onerror="this.style.opacity='0'">
+        <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
       </div>
-      <div class="proj-body">
-        <div class="proj-type">Outdoor Navigation</div>
-        <div class="proj-title">Skid-Steer Outdoor Robot</div>
-        <div class="proj-desc">
+      <div class="project-body">
+        <div class="project-type">Outdoor Navigation</div>
+        <div class="project-title">Skid-Steer Outdoor Robot</div>
+        <div class="project-desc">
           Multi-sensor outdoor mobile robot. 60 kg payload, RC + autonomous ROS 2 control via RS-485.
           University project — accepted.
         </div>
-        <div class="pills">
-          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span>
-          <span class="pill">RS485</span><span class="pill">ROS 2</span><span class="pill">C</span>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">RS485</span>
+          <span class="pill">ROS 2</span><span class="pill">C</span>
         </div>
-        <span class="proj-link disabled">Demo video — coming soon</span>
+        <!-- FIX: dead link replaced -->
+        <span class="project-link-na">Demo available on request</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ PUBLICATIONS ══════════════════════════════════ -->
 <section id="publications">
   <div class="reveal">
-    <div class="sec-label">Research & Awards</div>
-    <h2>Published work & achievements.</h2>
+    <div class="section-label">Research &amp; Awards</div>
+    <h2>Published work &amp; achievements.</h2>
   </div>
 
-  <div class="yr-group reveal">
-    <div class="yr-head"><span>2026</span></div>
-    <div class="pub-list">
-      <div class="pub-card">
-        <div class="pub-meta"><span class="pub-badge badge-aw">2nd Prize · University Research</span></div>
-        <div class="pub-title">Satellite Image Map Recognition Technology based on Image Processing and Deep Learning</div>
-        <div class="pub-desc">Research, design, and development of satellite image map recognition technology based on image processing and deep learning.</div>
-      </div>
-    </div>
-  </div>
+  <!-- FIX: all [cite: X] tags removed throughout this section -->
 
-  <div class="yr-group reveal">
-    <div class="yr-head"><span>2025</span></div>
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2026</span></div>
     <div class="pub-list">
       <div class="pub-card">
         <div class="pub-meta">
-          <span class="pub-badge badge-j">Q2 Journal</span>
+          <span class="pub-badge badge-award">2nd Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
+        </div>
+        <div class="pub-desc">
+          Research, design, and development of satellite image map recognition technology based on image processing and deep learning.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2025</span></div>
+    <div class="pub-list">
+
+      <div class="pub-card">
+        <div class="pub-meta">
+          <span class="pub-badge badge-journal">Q2 Journal</span>
           <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
         </div>
-        <div class="pub-title">Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning</div>
-        <div class="pub-desc">Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data and multiple obstacle configurations in unstructured environments.</div>
-        <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener" class="pub-link">DOI: 10.1016/j.mex.2025.103554 →</a>
+        <div class="pub-title">
+          Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning
+        </div>
+        <div class="pub-desc">
+          Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data and multiple obstacle configurations in unstructured environments.
+        </div>
+        <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
+          DOI: 10.1016/j.mex.2025.103554 →
+        </a>
       </div>
 
       <div class="pub-card">
-        <div class="pub-meta"><span class="pub-badge badge-aw">2nd Prize · Informatics Olympiad</span></div>
-        <div class="pub-title">Second Prize — University Informatics Olympiad 2025</div>
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">2nd Prize · Informatics Olympiad</span>
+        </div>
+        <div class="pub-title">
+          Second Prize – University Informatics Olympiad 2025
+        </div>
       </div>
 
       <div class="pub-card">
-        <div class="pub-meta"><span class="pub-badge badge-aw">3rd Prize · University Research</span></div>
-        <div class="pub-title">Research on Developing an Object Detection Model Based on Depth Image Data</div>
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">3rd Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Research on Developing an Object Detection Model Based on Depth Image Data
+        </div>
       </div>
+
     </div>
   </div>
 
-  <div class="yr-group reveal">
-    <div class="yr-head"><span>2024</span></div>
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2024</span></div>
     <div class="pub-list">
       <div class="pub-card">
-        <div class="pub-meta"><span class="pub-badge badge-aw">Consolation Prize · University Research</span></div>
-        <div class="pub-title">Research on the Design and Optimization of Motion Trajectory for a Pick-and-Place Robot on the TOSHIBA DC650B Die Casting Machine</div>
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">Consolation Prize · University Research</span>
+        </div>
+        <div class="pub-title">
+          Research on the Design and Optimization of the Motion Trajectory for a Pick-and-Place Robot on the TOSHIBA DC650B Die Casting Machine
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="yr-group reveal">
-    <div class="yr-head"><span>2023</span></div>
+  <div class="year-group reveal">
+    <div class="year-heading"><span>2023</span></div>
     <div class="pub-list">
       <div class="pub-card">
-        <div class="pub-meta"><span class="pub-badge badge-aw">3rd Prize · Student Mathematics</span></div>
-        <div class="pub-title">Third Prize — University Student Mathematics Competition 2023 (Linear Algebra)</div>
+        <div class="pub-meta">
+          <span class="pub-badge badge-award">3rd Prize · Student Mathematics</span>
+        </div>
+        <div class="pub-title">
+          Third Prize – University Student Mathematics Competition 2023 (Linear Algebra)
+        </div>
       </div>
     </div>
   </div>
+
 </section>
 
-<!-- ═══ CONTACT ════════════════════════════════════════ -->
 <section id="contact">
   <div class="reveal">
-    <div class="sec-label">Get in touch</div>
+    <div class="section-label">Get in touch</div>
     <h2>Let's work together.</h2>
   </div>
-  <div class="contact-grid">
+  <div class="contact-layout">
+
     <div class="reveal">
-
-      <!-- Terminal easter egg -->
-      <div class="terminal">
-        <div class="t-bar"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
-        <div class="t-line"><span class="t-prompt">duy@vinrobotics:~$</span> <span class="t-cmd">cat status.txt</span></div>
-        <div class="t-line"><span class="t-out">→ Open to: full-time, research collab, consulting</span></div>
-        <div class="t-line"><span class="t-out">→ Focus:   Embodied AI · ROS 2 · Edge computing</span></div>
-        <div class="t-line"><span class="t-out">→ Base:    Hanoi, Vietnam · Remote-first OK</span></div>
-        <div class="t-line"><span class="t-prompt">duy@vinrobotics:~$</span> <span class="t-cursor"></span></div>
-      </div>
-
       <p class="contact-intro">
+        I'm open to full-time roles, research collaborations, and projects — especially at the
+        intersection of Embodied AI, ROS 2 autonomous navigation, and edge computing.
+        <br><br>
         Whether you're building the next generation of service robots or working on complex
-        path-planning systems — I'd be glad to hear from you.
+        path-planning systems, I'd be glad to hear from you.
       </p>
       <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Send me an email ↗</a>
-      <p class="contact-note">Currently based in Hanoi, Vietnam.<br>Open to international roles — remote-first or relocation.</p>
+      <p class="contact-note" style="margin-top: 24px;">
+        Currently based in Hanoi, Vietnam.<br>
+        Open to international roles — remote-first or relocation.
+      </p>
     </div>
 
     <div class="contact-links reveal">
       <a href="mailto:duypham.robotics@gmail.com" class="contact-link">
-        <div class="c-icon">✉</div>
-        <div class="c-text"><strong>Email</strong><span>duypham.robotics@gmail.com</span></div>
+        <div class="contact-icon">✉</div>
+        <div class="contact-text">
+          <strong>Email</strong>
+          <span>duypham.robotics@gmail.com</span>
+        </div>
       </a>
       <a href="tel:0945577244" class="contact-link">
-        <div class="c-icon">📞</div>
-        <div class="c-text"><strong>Phone</strong><span>0945 577 244</span></div>
+        <div class="contact-icon">📞</div>
+        <div class="contact-text">
+          <strong>Phone</strong>
+          <span>0945 577 244</span>
+        </div>
       </a>
-      <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener">
-        <div class="c-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text2)">
+      <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
+        <div class="contact-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color: var(--text-2);">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
           </svg>
         </div>
-        <div class="c-text"><strong>GitHub</strong><span>github.com/phamduyaaaa</span></div>
+        <div class="contact-text">
+          <strong>GitHub</strong>
+          <span>github.com/phamduyaaaa</span>
+        </div>
       </a>
     </div>
+
   </div>
 </section>
 
 <footer class="reveal">
   <div class="footer-inner">
-    <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Phạm Đức Duy</div>
+    <!-- FIX: replace document.write() with a proper span filled by JS -->
+    <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
   </div>
 </footer>
@@ -988,259 +785,327 @@ footer { border-top: 1px solid var(--border); padding: 24px 0; }
 </div><!-- /container -->
 
 <script>
-/* ═══════════════════════════════════════════════
-   CURSOR ROBOT — follows mouse with smooth lerp
-═══════════════════════════════════════════════ */
-(function() {
-  const el = document.getElementById('cursor-robot');
-  if (!el || window.matchMedia('(max-width:640px)').matches) return;
-  let tx = -100, ty = -100, cx = -100, cy = -100;
-  let hidden = false;
+/* ============================================================
+   HAMBURGER MENU
+   ============================================================ */
+const hamburgerBtn  = document.getElementById('hamburgerBtn');
+const mobileMenu    = document.getElementById('mobileMenu');
 
-  document.addEventListener('mousemove', e => {
-    tx = e.clientX; ty = e.clientY;
-    if (hidden) { el.style.opacity = '1'; hidden = false; }
-  });
-  document.addEventListener('mouseleave', () => { el.style.opacity = '0'; hidden = true; });
-
-  let lastRaf = 0;
-  function frame(ts) {
-    if (ts - lastRaf > 16) { // ~60fps cap
-      cx += (tx - cx) * 0.12;
-      cy += (ty - cy) * 0.12;
-      el.style.left = cx + 'px';
-      el.style.top  = cy + 'px';
-      lastRaf = ts;
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-
-/* ═══════════════════════════════════════════════
-   MOBILE NAV
-═══════════════════════════════════════════════ */
-const burger = document.getElementById('burger');
-const mobileMenu = document.getElementById('mobile-menu');
-burger.addEventListener('click', () => {
-  burger.classList.toggle('open');
-  mobileMenu.classList.toggle('open');
-});
-function closeMobile() {
-  burger.classList.remove('open');
+function closeMobileMenu() {
   mobileMenu.classList.remove('open');
+  hamburgerBtn.classList.remove('open');
+  hamburgerBtn.setAttribute('aria-expanded', 'false');
 }
 
-/* ═══════════════════════════════════════════════
-   RL ENGINE — Bellman Value Iteration
-═══════════════════════════════════════════════ */
-const rl = (() => {
-  const canvas = document.getElementById('rlCanvas');
-  const ctx    = canvas.getContext('2d');
-  const scoreEl = document.getElementById('rlScore');
-  const hintEl  = document.getElementById('rlHint');
+hamburgerBtn.addEventListener('click', () => {
+  const isOpen = mobileMenu.classList.toggle('open');
+  hamburgerBtn.classList.toggle('open', isOpen);
+  hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+});
 
-  const G    = 22;
-  const CELL = canvas.width / G;
-  const GAM  = 0.93;
+// Close on outside click
+document.addEventListener('click', (e) => {
+  if (!hamburgerBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+    closeMobileMenu();
+  }
+});
 
-  let V    = mk2d(0);
-  let obs  = mk2d(false);
-  let goal = { x: 18, y: 18 };
-  let rob  = { x: 2.5, y: 2.5, angle: 0 };
-  let score = 0;
-  let down  = false;
-  let interacted = false;
+/* ============================================================
+   FOOTER YEAR — replaces document.write()
+   ============================================================ */
+document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-  // Default walls
-  [[5,3],[5,4],[5,5],[5,6],[12,12],[12,13],[13,12],[16,7],[16,8]].forEach(([x,y]) => obs[x][y]=true);
+/* ============================================================
+   REINFORCEMENT LEARNING ENGINE — Bellman Value Iteration
+   Fixes applied:
+     - HiDPI canvas (devicePixelRatio)
+     - Pause game loop when canvas not visible (IntersectionObserver)
+     - 20 Bellman iterations/frame instead of 2 (faster convergence)
+     - Named shape constants — no more magic numbers in draw()
+   ============================================================ */
+const rlEngine = (() => {
+  const canvas    = document.getElementById('rlCanvas');
+  const ctx       = canvas.getContext('2d');
+  const scoreUI   = document.getElementById('rlScore');
+  const hintUI    = document.getElementById('rlHint');
 
-  function mk2d(v) { return Array(G).fill(null).map(() => Array(G).fill(v)); }
+  const G       = 26;   // grid dimension
+  const LOGICAL = 480;  // logical canvas size in CSS pixels
+  const GAMMA   = 0.94; // RL discount factor
 
-  function bellman() {
-    const nV = V.map(r => [...r]);
-    for (let x=0; x<G; x++) {
-      for (let y=0; y<G; y++) {
-        if (x===goal.x && y===goal.y) { nV[x][y]=100; continue; }
-        if (obs[x][y]) { nV[x][y]=-100; continue; }
+  // FIX: HiDPI support — scale canvas buffer by devicePixelRatio
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = LOGICAL * dpr;
+  canvas.height = LOGICAL * dpr;
+  ctx.scale(dpr, dpr);
+  // CSS sizing is handled by width:100% in the stylesheet
+  const CELL = LOGICAL / G;
+
+  // Named shape constants — no more magic numbers in draw()
+  const SHAPE = {
+    BODY_HALF:   CELL / 2.5,
+    TRACK_W:     CELL / 1.5,
+    TRACK_H:     CELL / 5,
+    CORE_R:      CELL / 4,
+    EYE_R:       CELL / 8,
+    GOAL_INNER:  CELL / 3.5,
+    GOAL_OUTER:  CELL / 2,
+    RADAR_R:     CELL * 2.5,
+    RADAR_ANGLE: Math.PI / 5,
+  };
+
+  // State
+  let V   = Array.from({length: G}, () => new Float32Array(G));
+  let obs = Array.from({length: G}, () => new Uint8Array(G));
+  let goal   = { x: 22, y: 22 };
+  let robot  = { x: 3.5, y: 3.5, angle: 0 };
+  let score  = 0;
+  let isMouseDown  = false;
+  let hasInteracted = false;
+
+  // FIX: pause loop when off-screen
+  let animId    = null;
+  let isVisible = false;
+
+  // Default wall layout
+  [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]]
+    .forEach(([x, y]) => { obs[x][y] = 1; });
+
+  /* ---------- Bellman Value Iteration ---------- */
+  function solveBellman() {
+    const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
+    for (let x = 0; x < G; x++) {
+      for (let y = 0; y < G; y++) {
+        if (x === goal.x && y === goal.y) { V[x][y] = 100; continue; }
+        if (obs[x][y])                    { V[x][y] = -100; continue; }
+
         let best = -999;
-        [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dx,dy]) => {
-          const nx=x+dx, ny=y+dy;
-          if (nx>=0&&nx<G&&ny>=0&&ny<G&&!obs[nx][ny]) best=Math.max(best,V[nx][ny]);
-        });
-        if (best > -999) nV[x][y] = -1 + GAM * best;
-      }
-    }
-    V = nV;
-  }
-
-  function stepRobot() {
-    const cx=Math.floor(rob.x), cy=Math.floor(rob.y);
-    if (cx===goal.x && cy===goal.y) { score++; scoreEl.textContent=score; respawn(true); return; }
-
-    let bestVal=-9999, tX=rob.x, tY=rob.y, stuck=true;
-    [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy]) => {
-      const nx=cx+dx, ny=cy+dy;
-      if (nx>=0&&nx<G&&ny>=0&&ny<G&&!obs[nx][ny]) {
-        stuck = false;
-        if (V[nx][ny]>bestVal) { bestVal=V[nx][ny]; tX=nx+.5; tY=ny+.5; }
-      }
-    });
-    if (stuck || bestVal<=-50) { respawn(false); return; } // unstuck: teleport start
-
-    const dx=tX-rob.x, dy=tY-rob.y, d=Math.hypot(dx,dy);
-    if (d > 0.02) {
-      rob.x += (dx/d) * 0.038;
-      rob.y += (dy/d) * 0.038;
-      let diff = Math.atan2(dy,dx) - rob.angle;
-      while (diff<-Math.PI) diff+=Math.PI*2;
-      while (diff>Math.PI)  diff-=Math.PI*2;
-      rob.angle += diff * 0.14;
-    }
-  }
-
-  function draw() {
-    ctx.fillStyle = '#07090F';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const now = Date.now();
-
-    for (let x=0; x<G; x++) {
-      for (let y=0; y<G; y++) {
-        const px=x*CELL, py=y*CELL;
-        if (obs[x][y]) {
-          ctx.fillStyle = '#1A2030';
-          ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
-          ctx.strokeStyle = 'rgba(255,48,48,0.4)';
-          ctx.lineWidth = 0.5;
-          ctx.strokeRect(px+2,py+2,CELL-4,CELL-4);
-        } else {
-          const alpha = Math.max(0, V[x][y]) / 100 * 0.4;
-          ctx.fillStyle = `rgba(0,230,118,${alpha})`;
-          ctx.fillRect(px,py,CELL,CELL);
+        for (const [dx, dy] of DIRS) {
+          const nx = x + dx, ny = y + dy;
+          if (nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
+            if (V[nx][ny] > best) best = V[nx][ny];
+          }
         }
-        ctx.strokeStyle = 'rgba(255,255,255,0.025)';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(px,py,CELL,CELL);
+        if (best > -999) V[x][y] = -1 + GAMMA * best;
+      }
+    }
+  }
+
+  /* ---------- Robot step ---------- */
+  function stepRobot() {
+    const cx = Math.floor(robot.x), cy = Math.floor(robot.y);
+
+    if (cx === goal.x && cy === goal.y) {
+      score++;
+      scoreUI.textContent = score;
+      respawn(true);
+      return;
+    }
+
+    const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
+    let bestVal = -9999, targetX = robot.x, targetY = robot.y;
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
+        if (V[nx][ny] > bestVal) {
+          bestVal = V[nx][ny];
+          targetX = nx + 0.5;
+          targetY = ny + 0.5;
+        }
+      }
+    }
+
+    if (bestVal <= -50) return;
+
+    const dx = targetX - robot.x, dy = targetY - robot.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 0.02) {
+      robot.x += (dx / dist) * 0.035;
+      robot.y += (dy / dist) * 0.035;
+
+      const targetAngle = Math.atan2(dy, dx);
+      let diff = targetAngle - robot.angle;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff >  Math.PI) diff -= Math.PI * 2;
+      robot.angle += diff * 0.15;
+    }
+  }
+
+  /* ---------- Draw ---------- */
+  function draw() {
+    ctx.fillStyle = '#090B12';
+    ctx.fillRect(0, 0, LOGICAL, LOGICAL);
+
+    // Grid cells — heatmap + walls
+    for (let x = 0; x < G; x++) {
+      for (let y = 0; y < G; y++) {
+        const px = x * CELL, py = y * CELL;
+
+        if (obs[x][y]) {
+          ctx.fillStyle = '#1E2435';
+          ctx.fillRect(px + 1, py + 1, CELL - 2, CELL - 2);
+          ctx.strokeStyle = '#FF4D4D';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px + 3, py + 3, CELL - 6, CELL - 6);
+        } else {
+          const alpha = Math.max(0, V[x][y]) / 100 * 0.45;
+          ctx.fillStyle = `rgba(0,212,255,${alpha})`;
+          ctx.fillRect(px, py, CELL, CELL);
+        }
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px, py, CELL, CELL);
       }
     }
 
     // Goal
-    const gx=goal.x*CELL+CELL/2, gy=goal.y*CELL+CELL/2;
-    const pulse=Math.sin(now*.006)*2.5;
-    ctx.fillStyle='rgba(124,131,253,0.15)';
-    ctx.beginPath(); ctx.arc(gx,gy,CELL/2+pulse+3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#7C83FD';
-    ctx.beginPath(); ctx.arc(gx,gy,CELL/3.2,0,Math.PI*2); ctx.fill();
+    const gx = goal.x * CELL + CELL / 2;
+    const gy = goal.y * CELL + CELL / 2;
+    const pulse = Math.sin(Date.now() * 0.006) * 3;
+
+    ctx.fillStyle = '#818CF8';
+    ctx.beginPath();
+    ctx.arc(gx, gy, SHAPE.GOAL_INNER + pulse / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(129,140,248,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(gx, gy, SHAPE.GOAL_OUTER + pulse, 0, Math.PI * 2);
+    ctx.stroke();
 
     // Robot
     ctx.save();
-    ctx.translate(rob.x*CELL, rob.y*CELL);
-    ctx.rotate(rob.angle);
-    const r=CELL/2.8;
-
-    // Lidar sector
-    const lPulse=Math.sin(now*.008)*.06;
-    ctx.fillStyle='rgba(0,230,118,0.10)';
-    ctx.beginPath(); ctx.moveTo(0,0);
-    ctx.arc(0,0,CELL*2.2,-Math.PI/4.5+lPulse,Math.PI/4.5-lPulse);
-    ctx.fill();
+    ctx.translate(robot.x * CELL, robot.y * CELL);
+    ctx.rotate(robot.angle);
 
     // Body
-    ctx.fillStyle='#1A2030';
-    ctx.strokeStyle='#00E676';
-    ctx.lineWidth=0.8;
-    ctx.fillRect(-r,-r,r*2,r*2);
-    ctx.strokeRect(-r,-r,r*2,r*2);
+    ctx.fillStyle = '#2A3247';
+    ctx.fillRect(-SHAPE.BODY_HALF, -SHAPE.BODY_HALF, SHAPE.BODY_HALF * 2, SHAPE.BODY_HALF * 2);
 
-    // Wheels
-    ctx.fillStyle='#00E676';
-    ctx.globalAlpha=0.5;
-    ctx.fillRect(-r-2,-r*.6,3,r*1.2);
-    ctx.fillRect(r-1,-r*.6,3,r*1.2);
-    ctx.globalAlpha=1;
+    // Tracks
+    ctx.fillStyle = '#FF4D4D';
+    ctx.fillRect(-CELL / 3, -SHAPE.BODY_HALF * 1.15, SHAPE.TRACK_W, SHAPE.TRACK_H);
+    ctx.fillRect(-CELL / 3,  SHAPE.BODY_HALF * 0.9,  SHAPE.TRACK_W, SHAPE.TRACK_H);
 
-    // Core dot
-    ctx.fillStyle='#00E676';
-    ctx.beginPath(); ctx.arc(0,0,r*.4,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#07090F';
-    ctx.beginPath(); ctx.arc(r*.15,0,r*.2,0,Math.PI*2); ctx.fill();
+    // Core sensor
+    ctx.fillStyle = '#00D4FF';
+    ctx.beginPath();
+    ctx.arc(0, 0, SHAPE.CORE_R, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye / forward indicator
+    ctx.fillStyle = '#090B12';
+    ctx.beginPath();
+    ctx.arc(SHAPE.EYE_R, 0, SHAPE.EYE_R, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Radar sweep
+    const scanPulse = Math.sin(Date.now() * 0.01) * 0.1;
+    ctx.fillStyle = 'rgba(0,255,136,0.15)';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, SHAPE.RADAR_R, -SHAPE.RADAR_ANGLE + scanPulse, SHAPE.RADAR_ANGLE - scanPulse);
+    ctx.fill();
 
     ctx.restore();
   }
 
-  function handleMouse(e) {
-    if (!interacted) { interacted=true; hintEl.classList.add('gone'); }
-    const rect=canvas.getBoundingClientRect();
-    const sx=canvas.width/rect.width, sy=canvas.height/rect.height;
-    const x=Math.floor((e.clientX-rect.left)*sx/CELL);
-    const y=Math.floor((e.clientY-rect.top)*sy/CELL);
-    if (x<0||x>=G||y<0||y>=G) return;
-    if (x===goal.x&&y===goal.y) return;
-    if (Math.abs(x-Math.floor(rob.x))<=1&&Math.abs(y-Math.floor(rob.y))<=1) return;
-    obs[x][y]=true;
+  /* ---------- Mouse / Touch input ---------- */
+  function handlePointer(clientX, clientY) {
+    if (!hasInteracted) {
+      hasInteracted = true;
+      hintUI.classList.add('hidden');
+    }
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((clientX - rect.left) * (LOGICAL / rect.width) / CELL);
+    const y = Math.floor((clientY - rect.top)  * (LOGICAL / rect.height) / CELL);
+    if (x >= 0 && x < G && y >= 0 && y < G &&
+        !(x === goal.x && y === goal.y) &&
+        !(x === Math.floor(robot.x) && y === Math.floor(robot.y))) {
+      obs[x][y] = 1;
+    }
   }
 
-  canvas.addEventListener('mousedown', e=>{down=true;handleMouse(e);});
-  canvas.addEventListener('mousemove', e=>{if(down)handleMouse(e);});
-  window.addEventListener('mouseup', ()=>down=false);
-  canvas.addEventListener('touchstart', e=>{down=true;handleMouse(e.touches[0]);e.preventDefault();},{passive:false});
-  canvas.addEventListener('touchmove', e=>{if(down)handleMouse(e.touches[0]);e.preventDefault();},{passive:false});
-  window.addEventListener('touchend', ()=>down=false);
-  window.addEventListener('touchcancel', ()=>down=false);
+  canvas.addEventListener('mousedown', e => { isMouseDown = true; handlePointer(e.clientX, e.clientY); });
+  canvas.addEventListener('mousemove', e => { if (isMouseDown) handlePointer(e.clientX, e.clientY); });
+  window.addEventListener('mouseup',   () => { isMouseDown = false; });
 
-  function respawn(randomWalls) {
-    if (randomWalls) {
-      obs = mk2d(false);
-      for (let i=0;i<38;i++) {
-        const rx=Math.floor(Math.random()*G);
-        const ry=Math.floor(Math.random()*G);
-        if (Math.hypot(rx-goal.x,ry-goal.y)>3 && Math.hypot(rx-rob.x,ry-rob.y)>3)
-          obs[rx][ry]=true;
+  canvas.addEventListener('touchstart', e => { isMouseDown = true; handlePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove',  e => { if (isMouseDown) handlePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+  window.addEventListener('touchend',   () => { isMouseDown = false; });
+
+  /* ---------- Respawn ---------- */
+  function respawn(randomizeWalls = false) {
+    if (randomizeWalls) {
+      obs = Array.from({length: G}, () => new Uint8Array(G));
+      for (let i = 0; i < 45; i++) {
+        const rx = Math.floor(Math.random() * G);
+        const ry = Math.floor(Math.random() * G);
+        if (Math.hypot(rx - goal.x, ry - goal.y) > 3 && Math.hypot(rx - robot.x, ry - robot.y) > 3) {
+          obs[rx][ry] = 1;
+        }
       }
     }
-    // New random goal
-    let tries=0;
     do {
-      goal.x=Math.floor(Math.random()*(G-2))+1;
-      goal.y=Math.floor(Math.random()*(G-2))+1;
-      tries++;
-    } while ((obs[goal.x][goal.y]||Math.hypot(goal.x-rob.x,goal.y-rob.y)<4) && tries<100);
+      goal.x = Math.floor(Math.random() * (G - 2)) + 1;
+      goal.y = Math.floor(Math.random() * (G - 2)) + 1;
+    } while (obs[goal.x][goal.y] || (goal.x === Math.floor(robot.x) && goal.y === Math.floor(robot.y)));
 
-    // Reset start too
-    rob.x=2.5; rob.y=2.5; rob.angle=0;
-    V=mk2d(0);
+    V = Array.from({length: G}, () => new Float32Array(G));
   }
 
-  let lastTs=0;
-  function loop(ts) {
-    if (ts-lastTs >= 14) { // ~70fps cap
-      bellman(); bellman();
-      stepRobot();
-      draw();
-      lastTs=ts;
+  /* ---------- Game loop (FIX: pauses when off-screen) ---------- */
+  function loop() {
+    // FIX: run 20 iterations/frame instead of 2 — much faster convergence
+    for (let i = 0; i < 20; i++) solveBellman();
+    stepRobot();
+    draw();
+
+    if (isVisible) {
+      animId = requestAnimationFrame(loop);
+    } else {
+      animId = null;
     }
-    requestAnimationFrame(loop);
   }
-  requestAnimationFrame(loop);
+
+  // FIX: IntersectionObserver controls when the loop runs
+  const visibilityObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      isVisible = entry.isIntersecting;
+      if (isVisible && animId === null) {
+        animId = requestAnimationFrame(loop);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  visibilityObserver.observe(canvas);
+
+  // Start if already visible on load
+  if (canvas.getBoundingClientRect().top < window.innerHeight) {
+    isVisible = true;
+    animId = requestAnimationFrame(loop);
+  }
 
   return {
-    clear: () => {
-      obs=mk2d(false); V=mk2d(0);
-      if(!interacted){interacted=true;hintEl.classList.add('gone');}
-    },
-    random: () => respawn(true)
+    clearWalls: () => {
+      obs = Array.from({length: G}, () => new Uint8Array(G));
+      if (!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
+    }
   };
 })();
 
-/* ═══════════════════════════════════════════════
+/* ============================================================
    SCROLL REVEAL
-═══════════════════════════════════════════════ */
-const io = new IntersectionObserver(
-  entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); }),
-  { threshold: 0.06, rootMargin: '0px 0px -20px 0px' }
-);
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+   ============================================================ */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.07, rootMargin: '0px 0px -24px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 </script>
 </body>
 </html>
