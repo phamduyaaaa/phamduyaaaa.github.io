@@ -42,7 +42,7 @@
 
   --r-sm: 6px; --r: 10px; --r-lg: 16px;
   
-  /* Easing curves chuyên nghiệp (Apple / Awwwards style) */
+  /* Easing curves Apple/Awwwards style */
   --expo: cubic-bezier(0.16, 1, 0.3, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --t: 0.25s var(--expo);
@@ -181,7 +181,7 @@ h1 .name-accent { color: var(--amber); }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
 /* ============================================================
-   RL CANVAS (Khôi phục 100% thuật toán gốc)
+   RL CANVAS (100% Nguyên bản thuật toán)
    ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1.5px solid var(--border-2); background: var(--cream-2); overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
@@ -316,34 +316,44 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-built span { color: var(--amber-a11y); }
 
 /* ============================================================
-   AWWWARDS STYLE ANIMATIONS (Blur Reveal & Stagger)
+   2-WAY AWWWARDS STYLE ANIMATIONS (Blur & Fast Exit)
    ============================================================ */
+/* Trạng thái mặc định (Ẩn, chưa kích hoạt hoặc cuộn ra ngoài) */
 .reveal-slide {
   opacity: 0;
-  transform: translateY(50px);
-  filter: blur(10px);
-  transition: opacity 1.2s var(--expo), transform 1.2s var(--expo), filter 1.2s var(--expo);
+  transform: translateY(35px);
+  filter: blur(5px);
+  /* Khi cuộn đi qua (rời màn hình): Ẩn đi cực nhanh để dọn đường */
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out, filter 0.4s ease-out;
   will-change: opacity, transform, filter;
 }
+
+/* Trạng thái hiện (Cuộn vào màn hình) */
 .reveal-slide.visible {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
+  /* Trượt vào rất êm, có độ ghì (Apple style) */
+  transition: opacity 1.2s var(--expo), transform 1.2s var(--expo), filter 1.2s var(--expo);
 }
 
 .stagger-group {}
+
+/* Tương tự cho các phần tử con trong list */
 .stagger-item {
   opacity: 0;
-  transform: translateY(40px);
-  filter: blur(8px);
-  /* Mặc định transition cho hiệu ứng; Delay sẽ được bơm bằng JS */
-  transition: opacity 1s var(--expo), transform 1s var(--expo), filter 1s var(--expo);
+  transform: translateY(30px);
+  filter: blur(4px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, filter 0.3s ease-out;
   will-change: opacity, transform, filter;
 }
+
 .stagger-item.visible {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
+  /* Trượt vào chậm, sang trọng, Delay được tính toán qua JS */
+  transition: opacity 1s var(--expo), transform 1s var(--expo), filter 1s var(--expo);
 }
 
 /* ============================================================
@@ -876,7 +886,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 </div><script>
 /* ============================================================
-   UI LOGIC & AWWWARDS-STYLE ANIMATIONS
+   UI LOGIC & 2-WAY AWWWARDS ANIMATIONS
    ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
@@ -918,27 +928,40 @@ function toggleMenu(force) {
   });
 })();
 
-// 3. Hệ thống Reveal đỉnh cao (Blur & Stagger Delay = JS)
+// 3. Hệ thống Reveal 2 Chiều (Apple/Awwwards style)
+// Thay vì unobserve, ta giữ lại observer để add/remove class liên tục
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if(e.isIntersecting) {
-      // Kích hoạt animation cho block chính
+      // Khi scroll vào: Hiển thị mượt mà
       e.target.classList.add('visible');
       
-      // Kích hoạt stagger delay cho các con nếu là list
       if (e.target.classList.contains('stagger-group')) {
         const items = e.target.querySelectorAll('.stagger-item');
         items.forEach((item, index) => {
-          // Bơm delay tăng dần (120ms/item)
+          // Bơm delay tăng dần khi xuất hiện (để tạo hiệu ứng bậc thang)
           item.style.transitionDelay = `${index * 0.12}s`;
-          // Đẩy vào queue để browser render đúng nhịp
           requestAnimationFrame(() => item.classList.add('visible'));
         });
       }
-      revealObs.unobserve(e.target);
+    } else {
+      // Khi scroll ra ngoài: Ẩn đi nhanh chóng để re-trigger cho lần sau
+      e.target.classList.remove('visible');
+      
+      if (e.target.classList.contains('stagger-group')) {
+        const items = e.target.querySelectorAll('.stagger-item');
+        items.forEach((item) => {
+          // Xóa delay để chúng biến mất cùng lúc ngay lập tức
+          item.style.transitionDelay = '0s';
+          item.classList.remove('visible');
+        });
+      }
     }
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -10% 0px' });
+}, { 
+  threshold: 0.05, // Đợi 5% phần tử vào màn hình
+  rootMargin: '0px 0px -50px 0px' // Bắt đầu tính toán sớm hơn 50px từ đáy
+});
 
 document.querySelectorAll('.reveal-slide, .stagger-group').forEach(el => revealObs.observe(el));
 
@@ -982,8 +1005,6 @@ const rlEngine = (() => {
   let hasInteracted = false;
   let animId = null;
   let isVisible = false;
-  
-  // Biến cờ này chỉ giữ lại để chống lag CPU, không ảnh hưởng logic vẽ
   let wallsDirty = true;
 
   [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y])=>{ obs[x][y]=1; });
@@ -1105,7 +1126,6 @@ const rlEngine = (() => {
     }
   }
 
-  /* Khôi phục nguyên bản listener tương tác và e.preventDefault() */
   canvas.addEventListener('mousedown', e=>{isMouseDown=true;handlePointer(e.clientX,e.clientY);});
   canvas.addEventListener('mousemove', e=>{if(isMouseDown)handlePointer(e.clientX,e.clientY);});
   window.addEventListener('mouseup', ()=>{isMouseDown=false;});
