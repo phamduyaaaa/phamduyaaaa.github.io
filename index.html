@@ -92,6 +92,8 @@ h1 .name-outlined { display: block; color: transparent; -webkit-text-stroke: 1.5
 .btn-primary:hover { background: #2DDBFF; transform: translateY(-2px); box-shadow: 0 6px 20px var(--cyan-glow); }
 .btn-ghost { background: var(--bg-3); color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { background: var(--bg-4); border-color: var(--border-hover); transform: translateY(-1px); }
+.btn-indigo { background: var(--indigo-dim); color: var(--indigo); border: 1px solid rgba(129,140,248,0.20); }
+.btn-indigo:hover { background: rgba(129,140,248,0.18); color: var(--text); transform: translateY(-1px); }
 
 /* METRICS */
 .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: var(--bg-2); margin-top: 56px; }
@@ -126,7 +128,7 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .rl-btn { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: rgba(9,11,18,0.85); color: var(--text-2); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; backdrop-filter: blur(4px); transition: all var(--t); }
 .rl-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.05); }
 
-/* CONTENT STYLES (Giữ nguyên) */
+/* CONTENT STYLES */
 .about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: start; }
 .about-text p { margin-bottom: 20px; font-size: 15px; line-height: 1.82; }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
@@ -139,7 +141,9 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .xp-list { display: flex; flex-direction: column; }
 .xp-item { display: grid; grid-template-columns: 168px 1fr; gap: 36px; padding: 28px 0; border-bottom: 1px solid var(--border); position: relative; }
 .xp-item:last-child { border-bottom: none; }
-.xp-date { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+.xp-item::before { content: ''; position: absolute; left: -28px; right: -28px; top: 0; bottom: 0; background: var(--bg-2); border-radius: var(--r); opacity: 0; transition: opacity var(--t); z-index: -1; }
+.xp-item:hover::before { opacity: 1; }
+.xp-date { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); line-height: 1.5; }
 .xp-live { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--green); margin-top: 8px; }
 .xp-company { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .xp-role { font-size: 13.5px; color: var(--indigo); font-weight: 500; margin-bottom: 16px; }
@@ -149,29 +153,48 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 
 .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .project-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: all 0.18s var(--spring); }
-.project-card:hover { border-color: var(--border-hover); transform: translateY(-5px); }
+.project-card:hover { border-color: var(--border-hover); transform: translateY(-5px); box-shadow: 0 20px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.06); }
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(120deg, var(--bg-2) 0%, rgba(0,212,255,0.025) 100%); }
-.project-thumb { background: var(--bg-3); display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; overflow: hidden; }
-.project-card.featured .project-thumb { width: 44%; min-height: 268px; }
-.project-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.project-thumb { background: var(--bg-3); display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; overflow: hidden; position: relative; }
+.project-card.featured .project-thumb { width: 44%; flex-shrink: 0; min-height: 268px; }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+.project-card:hover .project-thumb img { transform: scale(1.06); }
 .project-body { padding: 22px 24px; flex: 1; display: flex; flex-direction: column; }
 .project-type { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; color: var(--indigo); margin-bottom: 8px; }
 .project-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
 .project-desc { font-size: 13.5px; margin-bottom: 18px; flex: 1; color: var(--text-2); }
 .project-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
 .pill { font-family: var(--font-mono); font-size: 10.5px; padding: 3px 9px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px; color: var(--text-3); }
+.project-link { font-size: 12.5px; font-weight: 600; color: var(--cyan); display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); transition: gap var(--t), color var(--t); }
+.project-link:hover { gap: 10px; color: var(--text); }
+
+.pub-list { display: flex; flex-direction: column; gap: 10px; }
+.pub-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px 32px; transition: all var(--t); }
+.pub-card:hover { border-color: var(--border-hover); background: var(--bg-3); }
+.pub-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.pub-badge { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; padding: 3px 10px; border-radius: 999px; }
+.badge-journal { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+.badge-award { background: rgba(255,140,61,0.10); color: var(--orange); border: 1px solid rgba(255,140,61,0.22); }
+.pub-venue { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+.pub-title { font-family: var(--font-display); font-size: 15.5px; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.50; }
+.pub-desc { font-size: 13.5px; line-height: 1.74; color: var(--text-2); }
+.pub-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-mono); color: var(--cyan); transition: gap var(--t), color var(--t); }
+.pub-link:hover { gap: 8px; color: var(--text); }
 
 .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
-.contact-intro { font-size: 15.5px; color: var(--text-2); margin-bottom: 32px; }
+.contact-intro { font-size: 15.5px; color: var(--text-2); margin-bottom: 32px; line-height: 1.82; }
+.contact-note { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); border-top: 1px solid var(--border); padding-top: 18px; }
 .contact-links { display: flex; flex-direction: column; gap: 8px; }
-.contact-link { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r); color: var(--text-2); }
-.contact-icon { width: 38px; height: 38px; border-radius: var(--r-sm); background: var(--bg-3); display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.contact-link { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r); color: var(--text-2); transition: all var(--t); }
+.contact-link:hover { background: var(--bg-3); border-color: var(--border-hover); transform: translateX(5px); color: var(--text); }
+.contact-icon { width: 38px; height: 38px; border-radius: var(--r-sm); background: var(--bg-3); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
 .contact-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
 .contact-text span { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
 
 footer { border-top: 1px solid var(--border); padding: 28px 0; }
-.footer-inner { display: flex; align-items: center; justify-content: space-between; }
-.footer-copy { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.footer-copy, .footer-built { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+.footer-built span { color: var(--cyan); }
 
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -180,12 +203,16 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   .hero-layout, .about-grid, .contact-layout { grid-template-columns: 1fr; }
   .projects-grid, .metrics-bar { grid-template-columns: repeat(2, 1fr); }
   .project-card.featured { flex-direction: column; }
+  .project-card.featured .project-thumb { width: 100%; min-height: 200px; }
+  .metric-cell:nth-child(3) { border-left: none; border-top: 1px solid var(--border); }
+  .metric-cell:nth-child(4) { border-top: 1px solid var(--border); }
 }
 @media (max-width: 640px) {
   .nav-links { display: none; }
   .projects-grid { grid-template-columns: 1fr; }
   .btn-group { flex-direction: column; }
   .rl-badge { font-size: 8px; padding: 4px 8px; }
+  .footer-inner { flex-direction: column; text-align: center; }
 }
 </style>
 </head>
@@ -198,6 +225,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <li><a href="#about">About</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#publications">Research</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
@@ -215,12 +243,13 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         <div class="hero-eyebrow">Robotics Software Engineer</div>
         <h1>Phạm Đức<span class="name-outlined">Duy</span></h1>
         <p class="hero-role">Building <strong>autonomous robots</strong> that navigate,<br>perceive, and act in the real world.</p>
-        <p class="hero-bio">2 years deploying <strong>ROS 2</strong> mobile robots into production. Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong> for Embodied AI research.</p>
+        <p class="hero-bio">2 years deploying <strong>ROS 2</strong> mobile robots into production. Source Engineer at <strong>VinRobotics</strong>, Lab Leader at <strong>HalBotLab</strong> for Embodied AI research, formerly Tech Lead at ByteHome Robotics.</p>
         
         <div class="btn-group">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
-          <a href="URL_LINK_CV" class="btn btn-ghost" target="_blank">📄 CV</a>
-          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank">GitHub</a>
+          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">📄 CV</a>
+          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="/mission/" class="btn btn-indigo" target="_blank" rel="noopener noreferrer">🚀 Mission</a>
         </div>
 
         <div class="metrics-bar reveal">
@@ -250,29 +279,325 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   </div>
 </section>
 
-<section id="about" style="min-height: 50vh;">
-  <div class="reveal"><div class="section-label">Scroll Down</div><h2>(Giữ nguyên các section nội dung ở đây)</h2></div>
+<section id="about">
+  <div class="reveal">
+    <div class="section-label">About</div>
+    <h2>Engineer. Researcher. Builder.</h2>
+  </div>
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <p>
+        I build software that lets robots navigate, perceive, and act in unstructured real-world environments.
+        My work spans the full stack — from tuning <strong>DDS and QoS on ROS 2</strong> to deploying <strong>Navigation2</strong>
+        in hospitals and restaurants, and commercializing products end-to-end.
+      </p>
+      <p>
+        As Tech Lead at <strong>ByteHome Robotics</strong>, I led a 5-person team that shipped and commercialized service
+        robots, then directly trained <strong>30+ B2B clients</strong> on ROS 2 operations. Today I'm part of the
+        Talent Program at <strong>VinRobotics</strong> and lead <strong>HalBotLab</strong> researching Embodied AI.
+      </p>
+      <p>
+        On the research side: a <strong>Q2 international journal publication</strong> in MethodsX on distributional
+        reinforcement learning for mobile robot path planning, and multiple university-level scientific research awards.
+      </p>
+      <div class="tag-cloud">
+        <span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer SLAM</span>
+        <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">C++</span>
+        <span class="tag">Python</span><span class="tag">Rust</span><span class="tag">GoLang</span>
+        <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span><span class="tag">MuJoCo</span>
+        <span class="tag">Gazebo</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
+      </div>
+    </div>
+
+    <div class="stack-panel">
+      <h3>Core Stack</h3>
+      <div class="stack-group">
+        <div class="stack-group-label">Robotics</div>
+        <div class="tag-cloud">
+          <span class="tag">ROS & ROS 2</span><span class="tag">Nav2</span><span class="tag">Cartographer</span>
+          <span class="tag">Micro-ROS</span><span class="tag">RTOS</span><span class="tag">Gazebo</span><span class="tag">MuJoCo</span>
+        </div>
+      </div>
+      <div class="stack-group">
+        <div class="stack-group-label">AI / Perception</div>
+        <div class="tag-cloud">
+          <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
+          <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
+        </div>
+      </div>
+      <div class="stack-group">
+        <div class="stack-group-label">Systems</div>
+        <div class="tag-cloud">
+          <span class="tag">C++</span><span class="tag">Python</span><span class="tag">Rust</span>
+          <span class="tag">GoLang</span><span class="tag">Linux</span><span class="tag">Docker</span><span class="tag">AWS</span>
+        </div>
+      </div>
+      <div class="stack-group">
+        <div class="stack-group-label">Hardware</div>
+        <div class="tag-cloud">
+          <span class="tag">Visionary-T</span><span class="tag">Intel D435</span>
+          <span class="tag">ESP32</span><span class="tag">Arduino</span><span class="tag">Raspberry Pi</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-      
-<footer><div class="footer-inner"><div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Phạm Đức Duy</div></div></footer>
 
-</div>
+<section id="experience">
+  <div class="reveal">
+    <div class="section-label">Work</div>
+    <h2>Where I've built things.</h2>
+  </div>
 
-<script>
-/* ==========================================================================
-   🧠 REINFORCEMENT LEARNING ENGINE (BELLMAN VALUE ITERATION)
-   Bản cập nhật: Map lớn hơn, Robot ngầu hơn, Dynamic walls.
-========================================================================== */
+  <div class="xp-list reveal">
+
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Mar 2026 — Present</div>
+        <div class="xp-live"><span class="xp-live-dot"></span> Active</div>
+      </div>
+      <div>
+        <div class="xp-company">VinRobotics</div>
+        <div class="xp-role">Robotics Software Engineer · VinRobotics Talent Program</div>
+        <ul class="xp-bullets">
+          <li>Designed and architected the <strong>License system</strong> for robotic deployments at scale.</li>
+          <li>Supported factory operations by deploying automation solutions and streamlining <strong>QC processes</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Oct 2025 —<br>Mar 2026</div>
+      </div>
+      <div>
+        <div class="xp-company">ByteHome Robotics</div>
+        <div class="xp-role">Robotics Software Engineer</div>
+        <ul class="xp-bullets">
+          <li>Led a 5-member team to design and ship <strong>end-to-end service robots</strong> — ROS 2, Lidar/Camera/IMU, multilingual AI Voice.</li>
+          <li>Successfully <strong>commercialized</strong> the product for restaurant and hospital environments.</li>
+          <li>Directly trained and transferred technology to <strong>30+ B2B customers</strong> on ROS 2 operation.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Jun 2024 — Present</div>
+        <div class="xp-live"><span class="xp-live-dot"></span> Active</div>
+      </div>
+      <div>
+        <div class="xp-company">HalBotLab</div>
+        <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
+        <ul class="xp-bullets">
+          <li>Lead lab research advancing <strong>Embodied AI</strong> applications and resolving core perception bottlenecks.</li>
+          <li>Built complex <strong>Point Cloud & depth image</strong> data pipelines for real-time object perception.</li>
+          <li>Developed embedded modules using <strong>ESP32 (Micro-ROS, RTOS)</strong> for real-time robot communication.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="xp-item">
+      <div class="xp-left">
+        <div class="xp-date">Expected 2026</div>
+      </div>
+      <div>
+        <div class="xp-company">Hanoi University of Industry</div>
+        <div class="xp-role">B.Eng. Robotics and Artificial Intelligence</div>
+        <ul class="xp-bullets">
+          <li><strong>2nd Prize</strong> in University Scientific Research (2026) — satellite map recognition with deep learning.</li>
+          <li><strong>2nd Prize</strong> in Informatics Olympiad (2025).</li>
+          <li><strong>3rd Prize</strong> in Scientific Research (2025) — depth-data object detection. Student Math award.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="projects">
+  <div class="reveal">
+    <div class="section-label">Work samples</div>
+    <h2>Projects I've shipped.</h2>
+  </div>
+
+  <div class="projects-grid">
+
+    <div class="project-card featured reveal">
+      <div class="project-thumb">
+        <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot1.gif<br><span style=\'font-size:9px;opacity:0.5\'>Hospital Navigation Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Autonomous Navigation · Commercialized</div>
+        <div class="project-title">Service Robot for Hospitals & Restaurants</div>
+        <div class="project-desc">
+          Designed, manufactured, and integrated software for service robots deployed in unstructured environments.
+          Full ROS 2 stack — SLAM, Nav2, LiDAR fusion, camera perception, and multilingual AI Voice.
+          <strong style="color: var(--text);">Commercialized and running in live production environments.</strong>
+        </div>
+        <div class="project-pills">
+          <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
+          <span class="pill">Nav2</span><span class="pill">SLAM</span><span class="pill">Cython</span>
+        </div>
+        <a href="#" class="project-link">View video demo →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance robot"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot2.gif<br><span style=\'font-size:9px;opacity:0.5\'>Imitation Learning Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Imitation Learning</div>
+        <div class="project-title">HG-Dagger Obstacle Avoidance</div>
+        <div class="project-desc">
+          Obstacle avoidance via imitation learning — reduces FLOP cost by
+          <strong style="color: var(--cyan);">131×</strong> versus traditional DWA planners.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">ROS 2</span>
+          <span class="pill">C++</span><span class="pill">Python</span>
+        </div>
+        <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot3.gif" alt="Skid-steer outdoor robot"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'project-thumb-ph\'>robot3.gif<br><span style=\'font-size:9px;opacity:0.5\'>Outdoor Navigation Demo</span></div>'">
+      </div>
+      <div class="project-body">
+        <div class="project-type">Outdoor Navigation</div>
+        <div class="project-title">Skid-Steer Outdoor Robot</div>
+        <div class="project-desc">
+          Multi-sensor outdoor mobile robot. 60 kg payload, RC + autonomous ROS 2 control via RS-485.
+          University project — accepted.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Micro-ROS</span><span class="pill">RTOS</span><span class="pill">RS485</span>
+          <span class="pill">ROS 2</span><span class="pill">C</span>
+        </div>
+        <a href="#" class="project-link">View video demo →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="publications">
+  <div class="reveal">
+    <div class="section-label">Research</div>
+    <h2>Published work & awards.</h2>
+  </div>
+  <div class="pub-list reveal">
+
+    <div class="pub-card">
+      <div class="pub-meta">
+        <span class="pub-badge badge-journal">Q2 Journal</span>
+        <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
+      </div>
+      <div class="pub-title">
+        Design a path-planning strategy for mobile robot in multi-structured environment based on distributional reinforcement learning
+      </div>
+      <div class="pub-desc">
+        Introduces an advanced path-planning strategy using distributional reinforcement learning to handle noisy depth data
+        and multiple obstacle configurations in unstructured environments.
+      </div>
+      <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="pub-link">
+        DOI: 10.1016/j.mex.2025.103554 →
+      </a>
+    </div>
+
+    <div class="pub-card">
+      <div class="pub-meta">
+        <span class="pub-badge badge-award">2nd Prize · University Research 2026</span>
+      </div>
+      <div class="pub-title">
+        Satellite Image Map Recognition Technology based on Image Processing and Deep Learning
+      </div>
+      <div class="pub-desc">
+        Researched and developed advanced map recognition on satellite imagery using image processing pipelines
+        and deep learning models. Awarded 2nd Prize in University Scientific Research (2026).
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="contact">
+  <div class="reveal">
+    <div class="section-label">Get in touch</div>
+    <h2>Let's work together.</h2>
+  </div>
+  <div class="contact-layout">
+
+    <div class="reveal">
+      <p class="contact-intro">
+        I'm open to full-time roles, research collaborations, and projects — especially at the
+        intersection of Embodied AI, ROS 2 autonomous navigation, and edge computing.
+        <br><br>
+        Whether you're building the next generation of service robots or working on complex
+        path-planning systems, I'd be glad to hear from you.
+      </p>
+      <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Send me an email ↗</a>
+      <p class="contact-note" style="margin-top: 24px;">
+        Currently based in Hanoi, Vietnam.<br>
+        Open to international roles — remote-first or relocation.
+      </p>
+    </div>
+
+    <div class="contact-links reveal">
+      <a href="mailto:duypham.robotics@gmail.com" class="contact-link">
+        <div class="contact-icon">✉</div>
+        <div class="contact-text">
+          <strong>Email</strong>
+          <span>duypham.robotics@gmail.com</span>
+        </div>
+      </a>
+      <a href="tel:0945577244" class="contact-link">
+        <div class="contact-icon">📞</div>
+        <div class="contact-text">
+          <strong>Phone</strong>
+          <span>0945 577 244</span>
+        </div>
+      </a>
+      <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
+        <div class="contact-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="color: var(--text-2);">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </div>
+        <div class="contact-text">
+          <strong>GitHub</strong>
+          <span>github.com/phamduyaaaa</span>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<footer class="reveal">
+  <div class="footer-inner">
+    <div class="footer-copy">© <script>document.write(new Date().getFullYear())</script> Phạm Đức Duy</div>
+    <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
+  </div>
+</footer>
+
+</div><script>
+/* 🧠 REINFORCEMENT LEARNING ENGINE (BELLMAN VALUE ITERATION) */
 const rlEngine = (() => {
   const canvas = document.getElementById('rlCanvas');
   const ctx = canvas.getContext('2d');
   const scoreUI = document.getElementById('rlScore');
   const hintUI = document.getElementById('rlHint');
   
-  // 1. Map to hơn: 26x26 (Cũ là 20x20)
   const G = 26; 
   const CELL = canvas.width / G;
-  const GAMMA = 0.94; // Discount factor
+  const GAMMA = 0.94; 
 
   let V = Array(G).fill().map(() => Array(G).fill(0));
   let obs = Array(G).fill().map(() => Array(G).fill(false));
@@ -282,7 +607,7 @@ const rlEngine = (() => {
   let isMouseDown = false;
   let hasInteracted = false;
 
-  // Khởi tạo một số bức tường làm mẫu
+  // Initial walls
   [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y]) => obs[x][y] = true);
 
   function solveBellman() {
@@ -308,11 +633,10 @@ const rlEngine = (() => {
   function stepRobot() {
     let cx = Math.floor(robot.x), cy = Math.floor(robot.y);
     
-    // Nếu ăn được mồi
     if (cx === goal.x && cy === goal.y) {
       score++;
       scoreUI.innerText = score;
-      respawn(true); // GỌI RANDOM WALLS
+      respawn(true);
       return;
     }
 
@@ -327,16 +651,14 @@ const rlEngine = (() => {
       }
     });
 
-    if (bestVal <= -50) return; // Kẹt tường -> Đứng im
+    if (bestVal <= -50) return;
 
     let dx = targetX - robot.x, dy = targetY - robot.y;
     let dist = Math.hypot(dx, dy);
     if (dist > 0.02) {
-      // 2. Đi chậm lại để thấy luồng sóng Q-Value (0.035 thay vì 0.055)
       robot.x += (dx/dist) * 0.035; 
       robot.y += (dy/dist) * 0.035;
       
-      // Smooth xoay góc (Interpolation)
       let targetAngle = Math.atan2(dy, dx);
       let diff = targetAngle - robot.angle;
       while (diff < -Math.PI) diff += Math.PI*2;
@@ -349,7 +671,6 @@ const rlEngine = (() => {
     ctx.fillStyle = '#090B12';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Vẽ Grid & Q-Value Heatmap
     for(let x=0; x<G; x++) {
       for(let y=0; y<G; y++) {
         let px = x*CELL, py = y*CELL;
@@ -357,7 +678,7 @@ const rlEngine = (() => {
           ctx.fillStyle = '#1E2435'; ctx.fillRect(px+1, py+1, CELL-2, CELL-2);
           ctx.strokeStyle = '#FF4D4D'; ctx.lineWidth = 1; ctx.strokeRect(px+3, py+3, CELL-6, CELL-6);
         } else {
-          let alpha = Math.max(0, V[x][y]) / 100 * 0.45; // Tăng cường độ sáng sóng
+          let alpha = Math.max(0, V[x][y]) / 100 * 0.45;
           ctx.fillStyle = `rgba(0, 212, 255, ${alpha})`;
           ctx.fillRect(px, py, CELL, CELL);
         }
@@ -365,35 +686,27 @@ const rlEngine = (() => {
       }
     }
 
-    // Vẽ Goal (Trạm sạc / Đích đến)
     let gx = goal.x*CELL + CELL/2, gy = goal.y*CELL + CELL/2;
     let pulse = Math.sin(Date.now()*0.006) * 3;
     ctx.fillStyle = '#818CF8'; ctx.beginPath(); ctx.arc(gx, gy, CELL/3.5 + pulse/2, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(129,140,248,0.5)'; ctx.beginPath(); ctx.arc(gx, gy, CELL/2 + pulse, 0, Math.PI*2); ctx.stroke();
 
-    // ==========================================
-    // 5. VẼ NHÂN VẬT: DIFFERENTIAL DRIVE ROBOT
-    // ==========================================
     ctx.save();
     ctx.translate(robot.x*CELL, robot.y*CELL);
     ctx.rotate(robot.angle);
     
-    // a. Khung xe (Chassis)
     ctx.fillStyle = '#2A3247'; 
     ctx.fillRect(-CELL/2.5, -CELL/2.5, CELL/1.25, CELL/1.25);
     
-    // b. Bánh xe trái & phải (Red wheels)
     ctx.fillStyle = '#FF4D4D';
-    ctx.fillRect(-CELL/3, -CELL/1.8, CELL/1.5, CELL/5); // Bánh trái
-    ctx.fillRect(-CELL/3,  CELL/2.8, CELL/1.5, CELL/5); // Bánh phải
+    ctx.fillRect(-CELL/3, -CELL/1.8, CELL/1.5, CELL/5);
+    ctx.fillRect(-CELL/3,  CELL/2.8, CELL/1.5, CELL/5);
     
-    // c. Cục điều hướng LiDAR trên nóc
     ctx.fillStyle = '#00D4FF';
     ctx.beginPath(); ctx.arc(0, 0, CELL/4, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#090B12';
-    ctx.beginPath(); ctx.arc(CELL/8, 0, CELL/8, 0, Math.PI*2); ctx.fill(); // Mắt cảm biến
+    ctx.beginPath(); ctx.arc(CELL/8, 0, CELL/8, 0, Math.PI*2); ctx.fill();
     
-    // d. Vùng quét FOV Scanner (Nón ánh sáng xanh)
     let scanPulse = Math.sin(Date.now()*0.01) * 0.1;
     ctx.fillStyle = 'rgba(0, 255, 136, 0.15)';
     ctx.beginPath();
@@ -407,12 +720,11 @@ const rlEngine = (() => {
   function handleMouse(e) {
     if (!hasInteracted) {
       hasInteracted = true;
-      hintUI.classList.add('hidden'); // Tắt chữ hướng dẫn khi người dùng bắt đầu vẽ
+      hintUI.classList.add('hidden');
     }
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width) / CELL);
     const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height) / CELL);
-    // Không cho vẽ tường đè lên robot hoặc đích
     if(x>=0 && x<G && y>=0 && y<G && (x !== goal.x || y !== goal.y) && (x !== Math.floor(robot.x) || y !== Math.floor(robot.y))) {
       obs[x][y] = true;
     }
@@ -421,20 +733,18 @@ const rlEngine = (() => {
   canvas.addEventListener('mousedown', e => { isMouseDown = true; handleMouse(e); });
   canvas.addEventListener('mousemove', e => { if(isMouseDown) handleMouse(e); });
   window.addEventListener('mouseup', () => isMouseDown = false);
-  // Hỗ trợ Touch cho Mobile
+  
   canvas.addEventListener('touchstart', e => { isMouseDown = true; handleMouse(e.touches[0]); e.preventDefault(); }, {passive: false});
   canvas.addEventListener('touchmove', e => { if(isMouseDown) handleMouse(e.touches[0]); e.preventDefault(); }, {passive: false});
   window.addEventListener('touchend', () => isMouseDown = false);
 
   function respawn(randomizeWalls = false) {
-    // Xóa tường cũ và sinh tường mới ngẫu nhiên (nếu được yêu cầu)
     if (randomizeWalls) {
       obs = Array(G).fill().map(() => Array(G).fill(false));
-      let wallCount = 45; // Số ô tường ngẫu nhiên
+      let wallCount = 45; 
       for(let i=0; i<wallCount; i++) {
         let rx = Math.floor(Math.random()*G);
         let ry = Math.floor(Math.random()*G);
-        // Kiểm tra không sinh tường sát khu vực Robot hoặc Đích
         let distToGoal = Math.hypot(rx - goal.x, ry - goal.y);
         let distToRobot = Math.hypot(rx - robot.x, ry - robot.y);
         if (distToGoal > 3 && distToRobot > 3) {
@@ -443,19 +753,16 @@ const rlEngine = (() => {
       }
     }
 
-    // Sinh Đích (Goal) mới
     do {
       goal.x = Math.floor(Math.random()*(G-2))+1;
       goal.y = Math.floor(Math.random()*(G-2))+1;
     } while(obs[goal.x][goal.y] || (goal.x === Math.floor(robot.x) && goal.y === Math.floor(robot.y)));
     
-    // Reset bảng Value
     V = Array(G).fill().map(() => Array(G).fill(0));
   }
 
-  // Chạy lặp 60 FPS
   function loop() {
-    solveBellman(); solveBellman(); // Lặp 2 lần/frame để sóng Q-Value chạy mượt hơn
+    solveBellman(); solveBellman(); 
     stepRobot();
     draw();
     requestAnimationFrame(loop);
@@ -470,7 +777,7 @@ const rlEngine = (() => {
   };
 })();
 
-// Scroll Reveal
+/* Scroll Reveal */
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.07, rootMargin: '0px 0px -24px 0px' });
