@@ -271,6 +271,18 @@ h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-w
 .pub-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-mono); color: var(--cyan); transition: gap var(--t), color var(--t); }
 .pub-link:hover { gap: 8px; color: var(--text); }
 
+/* Certifications */
+.cert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cert-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; transition: all var(--t); }
+.cert-card:hover { border-color: var(--border-hover); background: var(--bg-3); transform: translateY(-2px); }
+.cert-issuer { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--indigo); }
+.cert-name { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.cert-link { font-family: var(--font-mono); font-size: 11px; color: var(--cyan); display: inline-flex; align-items: center; gap: 4px; margin-top: auto; padding-top: 6px; transition: gap var(--t); }
+.cert-link:hover { gap: 8px; color: var(--text); }
+.cert-link-na { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-top: auto; padding-top: 6px; }
+@media (max-width: 960px) { .cert-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .cert-grid { grid-template-columns: 1fr; } }
+
 /* Contact */
 .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
 .contact-intro { font-size: 15.5px; color: var(--text-2); margin-bottom: 32px; line-height: 1.82; }
@@ -321,6 +333,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
   <a href="#experience"   onclick="closeMobileMenu()">Experience</a>
   <a href="#projects"     onclick="closeMobileMenu()">Projects</a>
   <a href="#publications" onclick="closeMobileMenu()">Research</a>
+  <a href="#certifications" onclick="closeMobileMenu()">Certs</a>
   <a href="#contact"      onclick="closeMobileMenu()">Contact</a>
   <a href="mailto:duypham.robotics@gmail.com" onclick="closeMobileMenu()">Get in touch ↗</a>
 </div>
@@ -333,6 +346,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <li><a href="#experience">Experience</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#publications">Research</a></li>
+      <li><a href="#certifications">Certs</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
@@ -568,7 +582,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
       </div>
       <div>
-        <div class="xp-company">HalBotLab</div>
+        <div class="xp-company">HalBotLab <a href="https://sites.google.com/view/haibot-lab" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-family:var(--font-mono);color:var(--cyan);font-weight:400;margin-left:8px;">↗ haibot-lab</a></div>
         <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
         <ul class="xp-bullets">
           <li>
@@ -662,7 +676,9 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
           <span class="pill">Nav2</span><span class="pill">Cartographer SLAM</span>
           <span class="pill">DWB Controller</span><span class="pill">Cython</span>
         </div>
-        <span class="project-link-na">Demo available on request</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <a href="https://www.youtube.com/watch?v=sChUaZtPHbc" class="project-link" target="_blank" rel="noopener noreferrer">▶ Watch Demo →</a>
+        </div>
       </div>
     </div>
 
@@ -675,22 +691,23 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <div class="project-body">
         <div class="project-type">Imitation Learning · Thesis Work</div>
         <div class="project-title">HG-Dagger Obstacle Avoidance</div>
-
-        <!-- REVISED: explain the 131× claim properly so it's credible, not just a number -->
         <div class="project-desc">
           Local obstacle avoidance policy trained via Human-Gated DAgger — an interactive
           imitation learning algorithm where a human expert corrects the policy only at
           failure states, reducing label cost. The learned policy replaces the DWA local
           planner; at inference the policy runs a single forward pass on LiDAR scan input,
           yielding <strong>131× fewer FLOPs</strong> per control cycle versus DWA's iterative
-          trajectory sampling. Deployed on Micro-ROS / ESP32 embedded compute.
+          trajectory sampling. Handles both static and dynamic obstacles.
+          Deployed on Micro-ROS / ESP32 embedded compute.
         </div>
-
         <div class="project-pills">
           <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
           <span class="pill">ROS 2</span><span class="pill">C++</span><span class="pill">Python</span>
         </div>
-        <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <a href="https://www.youtube.com/watch?v=j3T55NZ13EA" class="project-link" target="_blank" rel="noopener noreferrer">▶ Watch Demo →</a>
+          <a href="https://github.com/phamduyaaaa/do_an_tot_nghiep" class="project-link" target="_blank" rel="noopener noreferrer">GitHub →</a>
+        </div>
       </div>
     </div>
 
@@ -703,22 +720,68 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
       <div class="project-body">
         <div class="project-type">Outdoor Mobile Robotics · University Research</div>
         <div class="project-title">Skid-Steer Field Robot</div>
-
-        <!-- REVISED: mechanical spec given context, RS-485 explained, scope honest -->
         <div class="project-desc">
           60 kg payload outdoor platform with skid-steer kinematics — higher traction and
           simpler mechanical design than Ackermann at the cost of higher slip during turning.
           Motor controllers communicate with the ROS 2 stack via <strong>RS-485 Modbus</strong>
           running on a Micro-ROS ESP32 bridge, decoupling real-time motor control from the
-          main compute. Supports both RC teleoperation and autonomous ROS 2 navigation mode.
-          Accepted as a university-level research project.
+          main compute. Supports RC teleoperation and autonomous ROS 2 navigation.
+          Accepted and reviewed as a university-level research project.
         </div>
-
         <div class="project-pills">
           <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
           <span class="pill">RS-485 Modbus</span><span class="pill">ROS 2</span><span class="pill">C</span>
         </div>
-        <span class="project-link-na">Demo available on request</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <a href="https://youtube.com/shorts/_jLQVaTw8GA" class="project-link" target="_blank" rel="noopener noreferrer">▶ Watch Demo →</a>
+          <a href="https://khcn.haui.edu.vn/vn/trong-nuoc/nghiem-thu-de-tai-nckh-cap-truong-nghien-cuu-thiet-ke-va-che-tao-robot-di-dong-lam-viec-trong-moi-truong-ngoai-troi-su-dung-he-thong-dinh-vi-da-cam-bien/68878" class="project-link" target="_blank" rel="noopener noreferrer">Research Report →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distributional RL Path Planning -->
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <img src="assets/robot4.gif" alt="Distributional RL path planning in Gazebo simulation" onerror="this.style.opacity='0'">
+        <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
+      </div>
+      <div class="project-body">
+        <div class="project-type">Reinforcement Learning · Published Research</div>
+        <div class="project-title">Path Planning via Distributional RL</div>
+        <div class="project-desc">
+          The research project behind the MethodsX Q2 publication. Trained a
+          <strong>QR-DQN distributional critic</strong> for mobile robot navigation in
+          multi-structured environments where standard expected-value RL breaks down under
+          noisy depth sensor input. Evaluated across structured, semi-structured, and
+          cluttered obstacle maps in Gazebo. Training infra on Vast.ai with Docker.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Python</span><span class="pill">PyTorch</span>
+          <span class="pill">ROS</span><span class="pill">Gazebo</span>
+          <span class="pill">Docker</span><span class="pill">Vast.ai</span>
+        </div>
+        <a href="https://github.com/phamduyaaaa/qr-dqn-robot-simulation-assets" class="project-link" target="_blank" rel="noopener noreferrer">GitHub →</a>
+      </div>
+    </div>
+
+    <!-- Atari Double DQN -->
+    <div class="project-card reveal">
+      <div class="project-thumb">
+        <div class="project-thumb-placeholder" aria-hidden="true">Atari · Double DQN</div>
+      </div>
+      <div class="project-body">
+        <div class="project-type">Reinforcement Learning · Foundations</div>
+        <div class="project-title">Atari Agent — Double DQN</div>
+        <div class="project-desc">
+          Implemented Double DQN from scratch to train agents on Atari Gymnasium environments.
+          Built to understand the overestimation bias in standard DQN and how decoupling
+          action selection from value estimation corrects it — foundational work that informed
+          the distributional RL research above.
+        </div>
+        <div class="project-pills">
+          <span class="pill">Python</span><span class="pill">PyTorch</span><span class="pill">Gymnasium</span>
+        </div>
+        <a href="https://github.com/phamduyaaaa/Play-Atari-with-Double-Deep-Q-Learning" class="project-link" target="_blank" rel="noopener noreferrer">GitHub →</a>
       </div>
     </div>
 
@@ -844,6 +907,44 @@ footer { border-top: 1px solid var(--border); padding: 28px 0; }
     </div>
   </div>
 
+</section>
+
+<!-- ============================================================
+     CERTIFICATIONS
+     ============================================================ -->
+<section id="certifications">
+  <div class="reveal">
+    <div class="section-label">Learning</div>
+    <h2>Certifications.</h2>
+  </div>
+
+  <div class="cert-grid reveal">
+
+    <div class="cert-card">
+      <div class="cert-issuer">Coursera · DeepLearning.AI</div>
+      <div class="cert-name">Deep Learning Specialization <span style="color:var(--text-3);font-weight:400;font-size:12px;">(4/5 courses)</span></div>
+      <span class="cert-link-na">In progress</span>
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-issuer">Udemy</div>
+      <div class="cert-name">3D Point Cloud Masterclass — LiDAR &amp; CloudCompare</div>
+      <a href="https://www.udemy.com/certificate/UC-5fe0ec66-0d8b-4cf2-a4f9-d572887823f5" class="cert-link" target="_blank" rel="noopener noreferrer">View certificate →</a>
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-issuer">Udemy</div>
+      <div class="cert-name">Master Git and GitHub from A to Z</div>
+      <a href="https://www.udemy.com/certificate/UC-36ff825a-ea23-4532-8acd-30bb57c6ee65" class="cert-link" target="_blank" rel="noopener noreferrer">View certificate →</a>
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-issuer">Udemy</div>
+      <div class="cert-name">Introduction to Amazon Web Services</div>
+      <a href="https://www.udemy.com/certificate/UC-c07ac7c5-51e5-4e3d-a65a-0e734ccf7718" class="cert-link" target="_blank" rel="noopener noreferrer">View certificate →</a>
+    </div>
+
+  </div>
 </section>
 
 <!-- ============================================================
