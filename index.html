@@ -41,7 +41,6 @@
   --font-mono:    'JetBrains Mono', monospace;
 
   --r-sm: 6px; --r: 10px; --r-lg: 16px;
-  
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --t: 0.2s var(--ease);
@@ -314,13 +313,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-copy, .footer-built { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); }
 .footer-built span { color: var(--amber-a11y); }
 
-/* ============================================================
-   JS HARD-LINKED SCRUBBING CLASSES (NO CSS TRANSITIONS)
-   ============================================================ */
+/* Class mốc cho JS Scrubbing */
 .scrub-item {
   opacity: 0;
-  transform: translateY(45px);
-  filter: blur(5px);
   will-change: opacity, transform, filter;
 }
 
@@ -381,7 +376,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
     <div class="hero-layout">
-      <div class="hero-text scrub-item" data-scrub-speed="1.2">
+      <div class="hero-text scrub-item">
         <div class="hero-eyebrow">Robotics Software Engineer · Hanoi, Vietnam</div>
         <h1>
           <span class="name-first">Phạm Đức </span><span class="name-last">Duy<span class="name-accent">.</span></span>
@@ -405,7 +400,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <a href="/mission/" class="btn btn-amber scrub-item" target="_blank" rel="noopener noreferrer">Mission</a>
         </div>
 
-        <div class="metrics-bar scrub-item" data-scrub-speed="0.8">
+        <div class="metrics-bar scrub-item">
           <div class="metric-cell">
             <div class="metric-value">2<sup>+</sup></div>
             <div class="metric-label">Years shipping<br>production robots</div>
@@ -426,7 +421,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
 
       <!-- RL Canvas -->
-      <div class="rl-container scrub-item" data-scrub-speed="0.9">
+      <div class="rl-container scrub-item">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
@@ -893,83 +888,64 @@ function toggleMenu(force) {
 })();
 
 /* ============================================================
-   REAL 2-WAY SCROLL SCRUBBING (Lerp Absolute Coordinate Fix)
+   LIVE SCROLL SCRUBBING ENGINE (Foolproof Live Coordinate Fix)
    ============================================================ */
 (function initScrollScrubbing() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.scrub-item').forEach(el => {
-      el.style.opacity = 1;
-      el.style.transform = 'translateY(0)';
-      el.style.filter = 'blur(0)';
-    });
+    document.querySelectorAll('.scrub-item').forEach(el => el.style.opacity = 1);
     return;
   }
 
-  const elements = document.querySelectorAll('.scrub-item');
-  const scrubData = Array.from(elements).map(el => {
-    let staggerOffset = 0;
+  const items = Array.from(document.querySelectorAll('.scrub-item')).map(el => {
+    let stagger = 0;
     if (el.parentElement && el.parentElement.classList.contains('stagger-grid')) {
-      const siblings = Array.from(el.parentElement.children).filter(child => child.classList.contains('scrub-item'));
-      const index = siblings.indexOf(el);
-      staggerOffset = index * 140; // Tạo độ trễ hình học (bậc thang) giữa các card
+      const siblings = Array.from(el.parentElement.querySelectorAll('.scrub-item'));
+      stagger = siblings.indexOf(el) * 65; // Độ trễ hình học 65px giữa các card anh em
     }
-    
-    const speedStr = el.getAttribute('data-scrub-speed');
-    const speed = speedStr ? parseFloat(speedStr) : 1;
 
-    // Tính toán tọa độ tuyệt đối của phần tử so với đỉnh trang (không bị đổi khi scroll)
-    const absoluteTop = el.getBoundingClientRect().top + window.scrollY;
-
-    return { 
-      el, 
-      absoluteTop,
-      current: 0, 
-      target: 0, 
-      stagger: staggerOffset,
-      speed: speed
+    return {
+      el,
+      appliedY: 0,
+      current: 0,
+      target: 0,
+      stagger
     };
   });
 
-  // Cập nhật lại tọa độ tuyệt đối nếu user resize trình duyệt
-  window.addEventListener('resize', () => {
-    scrubData.forEach(item => {
-      item.absoluteTop = item.el.getBoundingClientRect().top + window.scrollY;
-    });
-  });
+  function renderScrub() {
+    const vh = window.innerHeight || 800;
 
-  function updateScrub() {
-    const sTop = window.scrollY;
-    const wh = window.innerHeight;
+    items.forEach(item => {
+      const liveTop = item.el.getBoundingClientRect().top;
+      // Khôi phục vị trí thực tế bằng cách trừ đi quãng đường translateY đang tác động lên nó
+      const pureTop = liveTop - item.appliedY + item.stagger;
 
-    scrubData.forEach(item => {
-      // Điểm bắt đầu kích hoạt animation (khi phần tử tiến sát đáy màn hình)
-      const animStart = item.absoluteTop - wh + item.stagger - 40;
-      // Điểm kết thúc animation (khi phần tử đi hẳn vào sâu trong khung hình)
-      const animEnd = item.absoluteTop - wh * 0.7 + item.stagger;
-      
-      // Tính toán tiến trình cuộn 2 chiều tuyệt đối (Progress: 0 -> 1)
-      let progress = (sTop - animStart) / (animEnd - animStart);
-      progress = Math.max(0, Math.min(1, progress));
-      
-      item.target = progress;
+      // Điểm kích hoạt animation (khi đỉnh phần tử chạm mép dưới màn hình + bù trễ)
+      const start = vh + 30;
+      // Điểm kết thúc animation (khi đỉnh phần tử đi vào sâu được 22% viewport)
+      const end = vh * 0.78;
 
-      // Nội suy tuyến tính làm mềm chuyển động (Lerp)
+      let p = (start - pureTop) / (start - end);
+      p = Math.max(0, Math.min(1, p));
+
+      item.target = p;
+      // Hàm nội suy Lerp: làm mềm các thao tác khựng giật của con lăn chuột
       item.current += (item.target - item.current) * 0.09;
 
-      if (Math.abs(item.target - item.current) > 0.0005) {
-        item.el.style.opacity = item.current;
-        // Tính khoảng dịch chuyển mượt mà dựa theo tốc độ tùy chỉnh
-        const yOffset = (1 - item.current) * 45 * item.speed;
-        const blurVal = (1 - item.current) * 5;
-        item.el.style.transform = `translateY(${yOffset}px)`;
-        item.el.style.filter = `blur(${blurVal}px)`;
-      }
+      const op = item.current;
+      const y = (1 - item.current) * 45;
+      const blur = (1 - item.current) * 6;
+
+      item.appliedY = y;
+      item.el.style.opacity = op;
+      item.el.style.transform = `translateY(${y}px)`;
+      item.el.style.filter = `blur(${blur}px)`;
     });
 
-    requestAnimationFrame(updateScrub);
+    requestAnimationFrame(renderScrub);
   }
 
-  requestAnimationFrame(updateScrub);
+  requestAnimationFrame(renderScrub);
 })();
 
 /* ============================================================
