@@ -12,7 +12,7 @@
 
 <style>
 /* ============================================================
-   SENIOR DESIGN TOKENS (WCAG AA Compliant)
+   TOKENS & BASE (WCAG AA Compliant)
    ============================================================ */
 :root {
   --cream:       #F7F5F0;
@@ -59,7 +59,6 @@ body {
 }
 
 :focus-visible { outline: 2.5px solid var(--amber-a11y); outline-offset: 3px; border-radius: 4px; }
-
 a { color: var(--amber-a11y); text-decoration: none; transition: color var(--t); }
 a:hover { color: var(--ink); }
 strong { color: var(--ink); font-weight: 600; }
@@ -67,7 +66,7 @@ em { font-style: italic; }
 .container { max-width: 1060px; margin: 0 auto; padding: 0 32px; }
 
 /* ============================================================
-   NAV & BACKDROP OVERLAY
+   NAV & MOBILE MENU
    ============================================================ */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -77,8 +76,7 @@ nav {
   border-bottom: 1px solid var(--border);
 }
 .nav-inner {
-  max-width: 1060px; margin: 0 auto;
-  height: 100%; padding: 0 32px;
+  max-width: 1060px; margin: 0 auto; height: 100%; padding: 0 32px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .nav-logo {
@@ -90,29 +88,25 @@ nav {
 .nav-links { display: flex; gap: 4px; list-style: none; }
 .nav-links a {
   font-size: 13.5px; font-weight: 500; color: var(--ink-3);
-  padding: 8px 14px; border-radius: var(--r-sm);
-  transition: all var(--t); position: relative;
-  display: inline-flex; align-items: center; min-height: 40px;
+  padding: 8px 14px; border-radius: var(--r-sm); transition: all var(--t);
+  position: relative; display: inline-flex; align-items: center; min-height: 40px;
 }
 .nav-links a:hover, .nav-links a.active { color: var(--ink); background: var(--cream-2); }
 .nav-links a.active::after {
-  content: ''; position: absolute; bottom: 4px; left: 50%;
-  transform: translateX(-50%); width: 4px; height: 4px;
-  border-radius: 50%; background: var(--amber);
+  content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--amber);
 }
 
 .nav-cta {
   font-family: var(--font-body); font-size: 13.5px; font-weight: 600; background: var(--amber);
   padding: 10px 20px; border-radius: var(--r-sm); color: white;
-  transition: all 0.15s var(--spring); min-height: 40px;
-  display: inline-flex; align-items: center;
+  transition: all 0.15s var(--spring); min-height: 40px; display: inline-flex; align-items: center;
 }
 .nav-cta:hover { background: var(--ink); transform: translateY(-1px); color: white; }
 
 .nav-mobile-btn {
   display: none; background: none; border: none; cursor: pointer;
-  width: 44px; height: 44px;
-  color: var(--ink-3); flex-direction: column; gap: 5px;
+  width: 44px; height: 44px; color: var(--ink-3); flex-direction: column; gap: 5px;
   align-items: center; justify-content: center; border-radius: var(--r-sm);
 }
 .nav-mobile-btn span {
@@ -124,9 +118,8 @@ nav {
 .nav-mobile-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .mobile-backdrop {
-  position: fixed; inset: 0; background: rgba(17, 17, 15, 0.5);
-  backdrop-filter: blur(4px); z-index: 98; opacity: 0;
-  pointer-events: none; transition: opacity var(--t);
+  position: fixed; inset: 0; background: rgba(17, 17, 15, 0.5); backdrop-filter: blur(4px);
+  z-index: 98; opacity: 0; pointer-events: none; transition: opacity var(--t);
 }
 .mobile-backdrop.open { opacity: 1; pointer-events: auto; }
 
@@ -138,10 +131,7 @@ nav {
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 .mobile-menu.open { transform: translateY(0); }
-.mobile-menu a {
-  font-size: 16px; font-weight: 500; color: var(--ink-2);
-  padding: 14px 0; border-bottom: 1px solid var(--border);
-}
+.mobile-menu a { font-size: 16px; font-weight: 500; color: var(--ink-2); padding: 14px 0; border-bottom: 1px solid var(--border); }
 .mobile-menu a:last-child { border-bottom: none; color: var(--amber-a11y); font-weight: 600; }
 
 /* ============================================================
@@ -175,11 +165,11 @@ h1 .name-accent { color: var(--amber); }
   transition: all 0.15s var(--spring); cursor: pointer; border: none; min-height: 44px; line-height: 1;
 }
 .btn-primary { background: var(--ink); color: var(--cream); }
-.btn-primary:hover { background: var(--amber-a11y); color: white; transform: translateY(-1px); }
+.btn-primary:hover { background: var(--amber-a11y); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .btn-ghost { background: transparent; color: var(--ink-2); border: 1.5px solid var(--border-2); }
-.btn-ghost:hover { background: var(--cream-2); border-color: var(--ink); transform: translateY(-1px); }
+.btn-ghost:hover { background: var(--cream-2); border-color: var(--ink); transform: translateY(-2px); }
 .btn-amber { background: var(--amber-dim); color: var(--amber-a11y); border: 1.5px solid var(--amber-soft); }
-.btn-amber:hover { background: var(--amber-soft); transform: translateY(-1px); }
+.btn-amber:hover { background: var(--amber-soft); transform: translateY(-2px); }
 
 .metrics-bar { display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--border-2); border-radius: var(--r-lg); background: var(--cream-2); margin-top: 52px; overflow: hidden; }
 .metric-cell { padding: 20px 16px; border-left: 1.5px solid var(--border); }
@@ -189,16 +179,26 @@ h1 .name-accent { color: var(--amber); }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
 /* ============================================================
-   RL CANVAS (Scroll-Trap fixed)
+   RL CANVAS (Fixed algorithm & interactions)
    ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1.5px solid var(--border-2); background: var(--cream-2); overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
-#rlCanvas { width: 100%; height: 100%; display: block; touch-action: pan-y; }
-#rlCanvas.draw-mode { touch-action: none; cursor: crosshair; }
+#rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
-.rl-ui-top { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; pointer-events: none; }
+.rl-ui-top { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; pointer-events: none; z-index: 10; }
 .rl-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--ink-3); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(4px); }
 .rl-score { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: var(--r-sm); backdrop-filter: blur(4px); }
 .rl-score span { color: var(--amber-a11y); }
+
+.rl-hint {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--amber-a11y);
+  background: rgba(247,245,240,0.95); border: 1.5px solid var(--amber-soft);
+  padding: 12px 24px; border-radius: var(--r); pointer-events: none; z-index: 10;
+  animation: pulse-hint 1.8s ease-in-out infinite; transition: opacity 0.4s var(--ease);
+  box-shadow: 0 8px 24px rgba(184,146,74,0.15); text-align: center; white-space: nowrap;
+}
+@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.97); } }
+.rl-hint.hidden { opacity: 0; pointer-events: none; animation: none; }
 
 .rl-toolbar { position: absolute; bottom: 14px; right: 14px; display: flex; gap: 8px; z-index: 10; }
 .rl-btn {
@@ -207,8 +207,7 @@ h1 .name-accent { color: var(--amber); }
   border: 1.5px solid var(--border-2); padding: 8px 14px; border-radius: var(--r-sm);
   cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; gap: 6px; transition: all var(--t);
 }
-.rl-btn:hover { background: white; border-color: var(--ink); }
-.rl-btn.active-mode { background: var(--ink); color: white; border-color: var(--ink); }
+.rl-btn:hover { background: white; border-color: var(--ink); transform: translateY(-1px); }
 
 /* ============================================================
    SECTIONS & CONTENT
@@ -221,8 +220,10 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; }
 .about-text p { margin-bottom: 22px; font-size: 15.5px; line-height: 1.75; color: var(--ink-2); }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.tag { font-family: var(--font-body); font-size: 12.5px; font-weight: 500; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border-2); color: var(--ink-3); }
+.tag { font-family: var(--font-body); font-size: 12.5px; font-weight: 500; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border-2); color: var(--ink-3); transition: all var(--t); }
+.tag:hover { background: var(--cream-2); border-color: var(--ink-4); color: var(--ink); }
 .tag-dark { background: var(--code-bg); color: var(--code-ink); border-color: transparent; }
+.tag-dark:hover { background: #2A2F48; color: white; border-color: transparent; }
 
 .stack-panel h3 { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 22px; letter-spacing: -0.01em; }
 .stack-group { margin-bottom: 24px; }
@@ -231,8 +232,8 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 /* ============================================================
    EXPERIENCE
    ============================================================ */
-.xp-item { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 32px 0; border-bottom: 1px solid var(--border); }
-.xp-item:last-child { border-bottom: none; }
+.xp-item { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 32px 0; border-bottom: 1px solid var(--border); transition: background var(--t); margin: 0 -24px; padding-left: 24px; padding-right: 24px; border-radius: var(--r); }
+.xp-item:hover { background: var(--cream-2); border-bottom-color: transparent; }
 .xp-date { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--ink-4); line-height: 1.5; }
 .xp-live { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--amber-a11y); margin-top: 8px; text-transform: uppercase; }
 .xp-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: amber-pulse 2s infinite; }
@@ -247,14 +248,14 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
    PROJECTS
    ============================================================ */
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; }
-.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform var(--t), border-color var(--t); }
-.project-card:hover { border-color: var(--ink-4); transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.06); }
+.project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease), border-color var(--t); }
+.project-card:hover { border-color: var(--ink-4); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
 
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
-.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
-.project-card:hover .project-thumb img { transform: scale(1.03); }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.project-card:hover .project-thumb img { transform: scale(1.05); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
 
 .project-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
@@ -269,7 +270,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .project-link:hover { color: var(--ink); gap: 10px; }
 
 /* ============================================================
-   PUBLICATIONS
+   PUBLICATIONS & CERTIFICATIONS
    ============================================================ */
 .year-group { margin-bottom: 48px; }
 .year-group:last-child { margin-bottom: 0; }
@@ -278,8 +279,8 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border-2); }
 
 .pub-list { display: flex; flex-direction: column; gap: 16px; }
-.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: all var(--t); }
-.pub-card:hover { border-color: var(--ink-4); box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+.pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: all 0.3s var(--spring); }
+.pub-card:hover { border-color: var(--ink-4); box-shadow: 0 8px 24px rgba(0,0,0,0.06); transform: translateY(-3px); }
 .pub-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .pub-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 4px; }
 .badge-journal { background: var(--amber-dim); color: var(--amber-a11y); border: 1px solid var(--amber-soft); }
@@ -288,41 +289,40 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .pub-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 10px; line-height: 1.48; }
 .pub-desc { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
 
-/* ============================================================
-   CERTIFICATIONS
-   ============================================================ */
 .cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: transform var(--t), border-color var(--t); }
-.cert-card:hover { border-color: var(--ink-4); transform: translateY(-2px); }
+.cert-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; transition: all 0.3s var(--spring); }
+.cert-card:hover { border-color: var(--ink-4); transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
 .cert-issuer { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-a11y); }
 .cert-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
 .cert-link-na { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); margin-top: auto; padding-top: 10px; }
 
 /* ============================================================
-   CONTACT
+   CONTACT & FOOTER
    ============================================================ */
 .contact-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: start; }
 .contact-intro { font-size: 16px; color: var(--ink-2); margin-bottom: 32px; line-height: 1.75; }
 .contact-note { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; line-height: 1.6; }
 .contact-links { display: flex; flex-direction: column; gap: 12px; }
-.contact-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: white; border: 1.5px solid var(--border); border-radius: var(--r); color: var(--ink-3); transition: all var(--t); min-height: 56px; }
-.contact-link:hover { background: var(--cream-2); border-color: var(--ink-4); transform: translateX(4px); color: var(--ink); }
+.contact-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: white; border: 1.5px solid var(--border); border-radius: var(--r); color: var(--ink-3); transition: all var(--spring); min-height: 56px; }
+.contact-link:hover { background: var(--cream-2); border-color: var(--ink-4); transform: translateX(6px); color: var(--ink); box-shadow: -4px 8px 24px rgba(0,0,0,0.04); }
 .contact-label { font-size: 14px; font-weight: 600; color: var(--ink); font-family: var(--font-display); }
 .contact-value { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--amber-a11y); }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
 footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .footer-copy, .footer-built { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); }
 .footer-built span { color: var(--amber-a11y); }
 
 /* ============================================================
-   ANIMATION (Scroll Reveal)
+   UPGRADED ANIMATIONS (Stagger Reveal)
    ============================================================ */
-.reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s var(--ease), transform 0.5s var(--ease); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+.reveal-up.visible { opacity: 1; transform: translateY(0); }
+
+/* Container để kiểm soát stagger */
+.stagger-container {}
+.stagger-item { opacity: 0; transform: translateY(24px) scale(0.98); transition: opacity 0.6s var(--ease), transform 0.6s var(--spring); }
+.stagger-item.visible { opacity: 1; transform: translateY(0) scale(1); }
 
 /* ============================================================
    RESPONSIVE
@@ -341,7 +341,8 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .btn-group { flex-direction: column; }
   .btn { width: 100%; }
   .footer-inner { flex-direction: column; text-align: center; }
-  .xp-item { grid-template-columns: 1fr; gap: 8px; padding-left: 0; padding-right: 0; }
+  .xp-item { grid-template-columns: 1fr; gap: 8px; margin: 0; padding-left: 0; padding-right: 0; }
+  .xp-item:hover { background: transparent; }
   .container { padding: 0 24px; }
 }
 
@@ -387,7 +388,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
     <div class="hero-layout">
-      <div class="hero-text">
+      <div class="hero-text reveal-up">
         <div class="hero-eyebrow">Robotics Software Engineer · Hanoi, Vietnam</div>
         <h1>
           <span class="name-first">Phạm Đức </span><span class="name-last">Duy<span class="name-accent">.</span></span>
@@ -404,14 +405,14 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           Two years shipping <strong>ROS 2</strong> mobile robots into production — hospitals, restaurants, factory floors. Currently Source Engineer at <strong>VinRobotics</strong> and Lab Leader at <strong>HalBotLab</strong>, researching Embodied AI and Nav2 systems. Published in <em>MethodsX</em> (Q2) on distributional RL for path planning under sensor noise.
         </p>
 
-        <div class="btn-group">
-          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
-          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">CV</a>
-          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="/mission/" class="btn btn-amber" target="_blank" rel="noopener noreferrer">Mission</a>
+        <div class="btn-group stagger-container">
+          <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary stagger-item">Get in touch ↗</a>
+          <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">CV</a>
+          <a href="https://github.com/phamduyaaaa" class="btn btn-ghost stagger-item" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="/mission/" class="btn btn-amber stagger-item" target="_blank" rel="noopener noreferrer">Mission</a>
         </div>
 
-        <div class="metrics-bar reveal">
+        <div class="metrics-bar reveal-up" style="transition-delay: 0.2s;">
           <div class="metric-cell">
             <div class="metric-value">2<sup>+</sup></div>
             <div class="metric-label">Years shipping<br>production robots</div>
@@ -431,15 +432,15 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
 
-      <div class="rl-container reveal">
+      <div class="rl-container reveal-up" style="transition-delay: 0.3s;">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
           <div class="rl-score">Goals: <span id="rlScore">0</span></div>
         </div>
+        <div class="rl-hint" id="rlHint">👉 CLICK &amp; DRAG TO DRAW OBSTACLES</div>
         <canvas id="rlCanvas" aria-label="Interactive Bellman value-iteration navigation demo." tabindex="0" role="img"></canvas>
         <div class="rl-toolbar">
-          <button class="rl-btn" id="rlModeBtn" onclick="rlEngine.toggleMode()" title="Toggle interaction mode" aria-label="Toggle Draw Mode">👆 Scroll Page</button>
-          <button class="rl-btn" onclick="rlEngine.clearWalls()" aria-label="Clear all obstacles">🧹 Clear</button>
+          <button class="rl-btn" onclick="rlEngine.clearWalls()" aria-label="Clear all obstacles">🧹 Clear Canvas</button>
         </div>
       </div>
     </div>
@@ -447,11 +448,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="about">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">About</div>
     <h2>What I actually do.</h2>
   </div>
-  <div class="about-grid reveal">
+  <div class="about-grid reveal-up">
     <div class="about-text">
       <p>
         Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.
@@ -462,19 +463,19 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       <p>
         At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.
       </p>
-      <div class="tag-cloud">
-        <span class="tag tag-dark">ROS 2</span><span class="tag tag-dark">Nav2</span>
-        <span class="tag tag-dark">Cartographer SLAM</span><span class="tag tag-dark">Micro-ROS</span>
-        <span class="tag tag-dark">RTOS</span><span class="tag tag-dark">C++</span>
-        <span class="tag tag-dark">Python</span><span class="tag tag-dark">Rust</span>
-        <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
-        <span class="tag">MuJoCo</span><span class="tag">Point Cloud</span><span class="tag">Depth Images</span>
+      <div class="tag-cloud stagger-container">
+        <span class="tag tag-dark stagger-item">ROS 2</span><span class="tag tag-dark stagger-item">Nav2</span>
+        <span class="tag tag-dark stagger-item">Cartographer SLAM</span><span class="tag tag-dark stagger-item">Micro-ROS</span>
+        <span class="tag tag-dark stagger-item">RTOS</span><span class="tag tag-dark stagger-item">C++</span>
+        <span class="tag tag-dark stagger-item">Python</span><span class="tag tag-dark stagger-item">Rust</span>
+        <span class="tag stagger-item">Embodied AI</span><span class="tag stagger-item">Reinforcement Learning</span>
+        <span class="tag stagger-item">MuJoCo</span><span class="tag stagger-item">Point Cloud</span><span class="tag stagger-item">Depth Images</span>
       </div>
     </div>
 
-    <div class="stack-panel">
+    <div class="stack-panel stagger-container">
       <h3>Core Stack</h3>
-      <div class="stack-group">
+      <div class="stack-group stagger-item">
         <div class="stack-group-label">Robotics</div>
         <div class="tag-cloud">
           <span class="tag tag-dark">ROS &amp; ROS 2</span><span class="tag tag-dark">Nav2</span>
@@ -482,14 +483,14 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <span class="tag tag-dark">Gazebo</span><span class="tag tag-dark">MuJoCo</span>
         </div>
       </div>
-      <div class="stack-group">
+      <div class="stack-group stagger-item">
         <div class="stack-group-label">AI / Perception</div>
         <div class="tag-cloud">
           <span class="tag">Embodied AI</span><span class="tag">Reinforcement Learning</span>
           <span class="tag">Imitation Learning</span><span class="tag">Point Cloud</span>
         </div>
       </div>
-      <div class="stack-group">
+      <div class="stack-group stagger-item">
         <div class="stack-group-label">Systems</div>
         <div class="tag-cloud">
           <span class="tag tag-dark">C++</span><span class="tag tag-dark">Python</span>
@@ -497,7 +498,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <span class="tag tag-dark">Linux</span><span class="tag tag-dark">Docker</span>
         </div>
       </div>
-      <div class="stack-group">
+      <div class="stack-group stagger-item">
         <div class="stack-group-label">Hardware</div>
         <div class="tag-cloud">
           <span class="tag">Visionary-T</span><span class="tag">Intel D435</span>
@@ -509,13 +510,13 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="experience">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">Work</div>
     <h2>Where I've built things.</h2>
   </div>
 
-  <div class="xp-list reveal">
-    <div class="xp-item">
+  <div class="xp-list stagger-container">
+    <div class="xp-item stagger-item">
       <div>
         <div class="xp-date">Mar 2026 — Present</div>
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
@@ -530,7 +531,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item">
+    <div class="xp-item stagger-item">
       <div>
         <div class="xp-date">Oct 2025 — Mar 2026</div>
       </div>
@@ -545,7 +546,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item">
+    <div class="xp-item stagger-item">
       <div>
         <div class="xp-date">Jun 2024 — Present</div>
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
@@ -561,7 +562,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="xp-item">
+    <div class="xp-item stagger-item">
       <div>
         <div class="xp-date">Expected 2026</div>
       </div>
@@ -580,13 +581,13 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="projects">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">Work samples</div>
     <h2>Projects I've shipped.</h2>
   </div>
 
-  <div class="projects-grid">
-    <div class="project-card featured reveal">
+  <div class="projects-grid stagger-container">
+    <div class="project-card featured stagger-item">
       <div class="project-thumb">
         <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
@@ -609,7 +610,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card reveal">
+    <div class="project-card stagger-item">
       <div class="project-thumb">
         <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
@@ -633,7 +634,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card reveal">
+    <div class="project-card stagger-item">
       <div class="project-thumb">
         <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
@@ -657,7 +658,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card reveal">
+    <div class="project-card stagger-item">
       <div class="project-thumb">
         <img src="assets/robot4.gif" alt="Distributional RL path planning" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
@@ -680,7 +681,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
 
-    <div class="project-card reveal">
+    <div class="project-card stagger-item">
       <div class="project-thumb">
         <img src="assets/robot5.gif" alt="Atari Double DQN" loading="lazy" decoding="async">
         <div class="project-thumb-placeholder" aria-hidden="true">Atari · Double DQN</div>
@@ -701,20 +702,19 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
 <section id="publications">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">Research &amp; Awards</div>
     <h2>Published work &amp; recognition.</h2>
   </div>
 
-  <div class="year-group reveal">
-    <div class="year-heading"><span>2026</span></div>
+  <div class="year-group stagger-container">
+    <div class="year-heading stagger-item"><span>2026</span></div>
     <div class="pub-list">
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta"><span class="pub-badge badge-award">2nd Prize · University Scientific Research</span></div>
         <div class="pub-title">Satellite Image Map Recognition Based on Image Processing and Deep Learning</div>
         <div class="pub-desc">Recognition pipeline for satellite map imagery using classical image processing for region segmentation combined with a CNN-based classification backbone.</div>
@@ -722,10 +722,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group reveal">
-    <div class="year-heading"><span>2025</span></div>
+  <div class="year-group stagger-container">
+    <div class="year-heading stagger-item"><span>2025</span></div>
     <div class="pub-list">
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta">
           <span class="pub-badge badge-journal">Q2 Journal</span>
           <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
@@ -736,12 +736,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
         <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="project-link" style="margin-top:12px;">DOI Reference</a>
       </div>
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta"><span class="pub-badge badge-award">2nd Prize · Informatics Olympiad</span></div>
         <div class="pub-title">University Informatics Olympiad 2025</div>
         <div class="pub-desc">Placed 2nd in the competitive programming track.</div>
       </div>
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta"><span class="pub-badge badge-award">3rd Prize · University Scientific Research</span></div>
         <div class="pub-title">Object Detection from Depth Image Data</div>
         <div class="pub-desc">Detection architectures trained on depth images, targeting robustness in low-light and texture-poor environments typical of indoor robot operation.</div>
@@ -749,10 +749,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group reveal">
-    <div class="year-heading"><span>2024</span></div>
+  <div class="year-group stagger-container">
+    <div class="year-heading stagger-item"><span>2024</span></div>
     <div class="pub-list">
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta"><span class="pub-badge badge-award">Consolation Prize · Univ. Scientific Research</span></div>
         <div class="pub-title">Motion Trajectory Design and Optimization for a Pick-and-Place Robot on the TOSHIBA DC650B Die-Casting Machine</div>
         <div class="pub-desc">Designed and optimized end-effector trajectories for an industrial pick-and-place arm integrated into a die-casting production cell, focusing on cycle time reduction and collision-free path generation.</div>
@@ -760,10 +760,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
   </div>
 
-  <div class="year-group reveal">
-    <div class="year-heading"><span>2023</span></div>
+  <div class="year-group stagger-container">
+    <div class="year-heading stagger-item"><span>2023</span></div>
     <div class="pub-list">
-      <div class="pub-card">
+      <div class="pub-card stagger-item">
         <div class="pub-meta"><span class="pub-badge badge-award">3rd Prize · Student Mathematics Competition</span></div>
         <div class="pub-title">University Student Mathematics Competition 2023 — Linear Algebra</div>
         <div class="pub-desc">Placed 3rd in the Linear Algebra category of the university-wide student mathematics competition.</div>
@@ -773,34 +773,34 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="certifications">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">Learning</div>
     <h2>Certifications.</h2>
   </div>
 
-  <div class="cert-grid reveal">
-    <div class="cert-card">
+  <div class="cert-grid stagger-container">
+    <div class="cert-card stagger-item">
       <div>
         <div class="cert-issuer">Coursera · DeepLearning.AI</div>
         <div class="cert-name">Deep Learning Specialization <span style="color:var(--ink-4);font-weight:400;font-size:13px;">(4/5 courses)</span></div>
       </div>
       <span class="cert-link-na">In progress</span>
     </div>
-    <div class="cert-card">
+    <div class="cert-card stagger-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">3D Point Cloud Masterclass — LiDAR &amp; CloudCompare</div>
       </div>
       <a href="https://www.udemy.com/certificate/UC-5fe0ec66-0d8b-4cf2-a4f9-d572887823f5" class="project-link" style="font-size:12.5px;min-height:auto" target="_blank" rel="noopener noreferrer">View certificate</a>
     </div>
-    <div class="cert-card">
+    <div class="cert-card stagger-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">Master Git and GitHub from A to Z</div>
       </div>
       <a href="https://www.udemy.com/certificate/UC-36ff825a-ea23-4532-8acd-30bb57c6ee65" class="project-link" style="font-size:12.5px;min-height:auto" target="_blank" rel="noopener noreferrer">View certificate</a>
     </div>
-    <div class="cert-card">
+    <div class="cert-card stagger-item">
       <div>
         <div class="cert-issuer">Udemy</div>
         <div class="cert-name">Introduction to Amazon Web Services</div>
@@ -811,12 +811,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </section>
 
 <section id="contact">
-  <div class="reveal">
+  <div class="reveal-up">
     <div class="section-label">Get in touch</div>
     <h2>Let's work on something real.</h2>
   </div>
   <div class="contact-layout">
-    <div class="reveal">
+    <div class="reveal-up">
       <p class="contact-intro">
         Looking for roles where the robots actually ship — not just simulate. Particularly interested in teams working on <strong>autonomous mobile robots, Embodied AI, or edge-compute robotics stacks</strong> where the distance between a ROS 2 node and a physical actuator is short.<br><br>
         Research collaborations welcome: sim-to-real transfer, distributional RL, or perception for navigation. If you're training operators on ROS 2 and need someone who's done it before — that too.
@@ -828,16 +828,16 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </p>
     </div>
 
-    <div class="contact-links reveal">
-      <a href="mailto:duypham.robotics@gmail.com" class="contact-link">
+    <div class="contact-links stagger-container">
+      <a href="mailto:duypham.robotics@gmail.com" class="contact-link stagger-item">
         <div class="contact-label">Email</div>
         <div class="contact-value">duypham.robotics@gmail.com</div>
       </a>
-      <a href="tel:0945577244" class="contact-link">
+      <a href="tel:0945577244" class="contact-link stagger-item">
         <div class="contact-label">Phone</div>
         <div class="contact-value">0945 577 244</div>
       </a>
-      <a href="https://github.com/phamduyaaaa" class="contact-link" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/phamduyaaaa" class="contact-link stagger-item" target="_blank" rel="noopener noreferrer">
         <div class="contact-label">GitHub</div>
         <div class="contact-value">github.com/phamduyaaaa</div>
       </a>
@@ -845,7 +845,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<footer class="reveal">
+<footer class="reveal-up">
   <div class="footer-inner">
     <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
     <div class="footer-built">Built with <span>HTML + Vanilla JS</span> · No frameworks.</div>
@@ -854,11 +854,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 </div><script>
 /* ============================================================
-   UX LOGIC & CANVAS ENGINE
+   UI LOGIC & STAGGER ANIMATIONS
    ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-// 1. Menu Mobile an toàn
+// 1. Menu Mobile
 const menu = document.getElementById('mobileMenu');
 const backdrop = document.getElementById('mobileBackdrop');
 const hamBtn = document.getElementById('hamburgerBtn');
@@ -871,7 +871,7 @@ function toggleMenu(force) {
   hamBtn.setAttribute('aria-expanded', String(isOpen));
 }
 
-// 2. Nav Active State (Bao gồm đầy đủ các sections)
+// 2. Nav Active State
 (function initNavActiveState() {
   const sections = ['about', 'experience', 'projects', 'publications', 'certifications', 'contact'];
   const navLinks = {};
@@ -896,37 +896,54 @@ function toggleMenu(force) {
   });
 })();
 
-// 3. Scroll Reveal Animation
+// 3. Hệ thống Animation mới (Reveal & Stagger)
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
-    if(e.isIntersecting) e.target.classList.add('visible');
+    if(e.isIntersecting) {
+      // Hiện phần tử cha
+      e.target.classList.add('visible');
+      
+      // Nếu là Container chứa các thẻ con cần Stagger
+      if (e.target.classList.contains('stagger-container')) {
+        const children = e.target.querySelectorAll('.stagger-item');
+        children.forEach((child, index) => {
+          setTimeout(() => {
+            child.classList.add('visible');
+          }, index * 100); // Mỗi card xuất hiện cách nhau 100ms
+        });
+      }
+      
+      // Dừng observe sau khi đã hiện để tối ưu hiệu suất
+      revealObs.unobserve(e.target);
+    }
   });
-}, { threshold: 0.15, rootMargin: '0px 0px -32px 0px' });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+document.querySelectorAll('.reveal-up, .stagger-container').forEach(el => revealObs.observe(el));
 
 
-// 4. Tự động dừng Canvas khi trình duyệt yêu cầu Reduced-Motion
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+/* ============================================================
+   RL CANVAS ENGINE (Khôi phục 100% Thuật toán tương tác gốc)
+   ============================================================ */
 const rlEngine = (() => {
   const canvas = document.getElementById('rlCanvas');
   const ctx = canvas.getContext('2d');
   const scoreUI = document.getElementById('rlScore');
-  const modeBtn = document.getElementById('rlModeBtn');
+  const hintUI = document.getElementById('rlHint');
 
   const G = 26; const LOGICAL = 480; const GAMMA = 0.94;
-  let drawModeActive = false; // [FIX UX]: Chế độ mặc định là cuộn trang
+  const dpr = window.devicePixelRatio || 1;
   let wallsDirty = true;
   let score = 0;
+  let hasInteracted = false;
+  let isMouseDown = false;
 
-  const dpr = window.devicePixelRatio || 1;
   let V = Array.from({length: G}, () => new Float32Array(G));
   let obs = Array.from({length: G}, () => new Uint8Array(G));
   let goal = {x: 22, y: 22};
   let robot = {x: 3.5, y: 3.5, angle: 0};
 
-  // Tạo tường mặc định
+  // Khởi tạo map gốc
   [[6,4],[6,5],[6,6],[6,7],[6,8],[14,14],[14,15],[15,14],[19,8],[19,9],[19,10]].forEach(([x,y]) => obs[x][y] = 1);
 
   function setupCanvas() {
@@ -938,54 +955,56 @@ const rlEngine = (() => {
   const resizeObs = new ResizeObserver(() => { ctx.resetTransform(); setupCanvas(); });
   resizeObs.observe(canvas);
 
-  function toggleMode() {
-    drawModeActive = !drawModeActive;
-    canvas.classList.toggle('draw-mode', drawModeActive);
-    modeBtn.classList.toggle('active-mode', drawModeActive);
-    modeBtn.innerHTML = drawModeActive ? '✏️ Draw Mode' : '👆 Scroll Page';
-  }
-
+  // Xử lý Click & Drag vẽ tường trực tiếp
   function handleInput(clientX, clientY) {
-    if (!drawModeActive) return;
+    if (!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((clientX - rect.left) * (LOGICAL / rect.width) / (LOGICAL / G));
     const y = Math.floor((clientY - rect.top) * (LOGICAL / rect.height) / (LOGICAL / G));
-    if (x >= 0 && x < G && y >= 0 && y < G && !(x === goal.x && y === goal.y) && !(x === Math.floor(robot.x) && y === Math.floor(robot.y))) {
+    
+    if (x >= 0 && x < G && y >= 0 && y < G && !(x === goal.x && y === goal.y) && !(x === Math.floor(robot.x) && y === Math.floor(robot.y)) && !obs[x][y]) {
       obs[x][y] = 1; wallsDirty = true;
     }
   }
 
-  let isDown = false;
-  canvas.addEventListener('pointerdown', e => { isDown = true; handleInput(e.clientX, e.clientY); });
-  canvas.addEventListener('pointermove', e => { if(isDown) handleInput(e.clientX, e.clientY); });
-  window.addEventListener('pointerup', () => isDown = false);
+  // Khôi phục các Event Listener nguyên bản
+  canvas.addEventListener('mousedown', e => { isMouseDown = true; handleInput(e.clientX, e.clientY); });
+  canvas.addEventListener('mousemove', e => { if (isMouseDown) handleInput(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', () => isMouseDown = false);
   
-  canvas.addEventListener('keydown', e => { if(e.key === 'c' || e.key === 'C') clearWalls(); });
+  canvas.addEventListener('touchstart', e => { isMouseDown = true; handleInput(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
+  canvas.addEventListener('touchmove',  e => { if (isMouseDown) handleInput(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
+  window.addEventListener('touchend',   () => isMouseDown = false);
+  
+  canvas.addEventListener('keydown', e => { if (e.key === 'c' || e.key === 'C') clearWalls(); });
 
   function solveBellman() {
     const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
-    for(let x=0; x<G; x++) for(let y=0; y<G; y++) {
+    for(let x = 0; x < G; x++) for(let y = 0; y < G; y++) {
       if(x === goal.x && y === goal.y) { V[x][y] = 100; continue; }
       if(obs[x][y]) { V[x][y] = -100; continue; }
       let best = -999;
       for(const [dx,dy] of DIRS) {
-        const nx = x+dx; const ny = y+dy;
-        if(nx>=0 && nx<G && ny>=0 && ny<G && !obs[nx][ny]) best = Math.max(best, V[nx][ny]);
+        const nx = x + dx, ny = y + dy;
+        if(nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
+          if (V[nx][ny] > best) best = V[nx][ny];
+        }
       }
       if(best > -999) V[x][y] = -1 + GAMMA * best;
     }
   }
 
   function clearWalls() {
-    obs = Array.from({length:G},()=>new Uint8Array(G));
+    obs = Array.from({length:G}, () => new Uint8Array(G));
     wallsDirty = true;
+    if (!hasInteracted) { hasInteracted = true; hintUI.classList.add('hidden'); }
   }
 
   function loop() {
     if (wallsDirty) { for(let i=0; i<40; i++) solveBellman(); wallsDirty = false; }
     
-    // Step robot
-    const cx = Math.floor(robot.x); const cy = Math.floor(robot.y);
+    // Thuật toán di chuyển nguyên bản (DWA style)
+    const cx = Math.floor(robot.x), cy = Math.floor(robot.y);
     if(cx === goal.x && cy === goal.y) {
       scoreUI.textContent = ++score;
       do {
@@ -994,17 +1013,18 @@ const rlEngine = (() => {
       V = Array.from({length: G}, () => new Float32Array(G));
       wallsDirty = true;
     } else {
-      let bestV = -9999; let tx = robot.x; let ty = robot.y;
+      let bestVal = -9999, targetX = robot.x, targetY = robot.y;
       [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy]) => {
-        const nx = cx+dx; const ny = cy+dy;
-        if(nx>=0 && nx<G && ny>=0 && ny<G && !obs[nx][ny] && V[nx][ny] > bestV) {
-          bestV = V[nx][ny]; tx = nx + 0.5; ty = ny + 0.5;
+        const nx = cx + dx, ny = cy + dy;
+        if(nx >= 0 && nx < G && ny >= 0 && ny < G && !obs[nx][ny]) {
+          if(V[nx][ny] > bestVal) { bestVal = V[nx][ny]; targetX = nx + 0.5; targetY = ny + 0.5; }
         }
       });
-      if(bestV > -50) {
-        const dx = tx - robot.x, dy = ty - robot.y, dist = Math.hypot(dx, dy);
+      
+      if(bestVal > -50) {
+        const dx = targetX - robot.x, dy = targetY - robot.y, dist = Math.hypot(dx, dy);
         if(dist > 0.02) {
-          robot.x += (dx/dist)*0.035; robot.y += (dy/dist)*0.035;
+          robot.x += (dx/dist) * 0.035; robot.y += (dy/dist) * 0.035;
           const ta = Math.atan2(dy, dx);
           let diff = ta - robot.angle;
           while(diff < -Math.PI) diff += Math.PI*2;
@@ -1014,7 +1034,7 @@ const rlEngine = (() => {
       }
     }
 
-    // Render
+    // Render Logic
     ctx.fillStyle = '#EFEBE4'; ctx.fillRect(0,0,LOGICAL,LOGICAL);
     const CELL = LOGICAL / G;
     
@@ -1026,44 +1046,46 @@ const rlEngine = (() => {
       const px = x*CELL, py = y*CELL;
       if(obs[x][y]) { 
         ctx.fillStyle = '#DDD7CC'; ctx.fillRect(px+1, py+1, CELL-2, CELL-2); 
-        ctx.strokeStyle = 'rgba(184,146,74,0.35)'; ctx.strokeRect(px+3, py+3, CELL-6, CELL-6);
+        ctx.strokeStyle = 'rgba(184,146,74,0.35)'; ctx.lineWidth=1; ctx.strokeRect(px+3, py+3, CELL-6, CELL-6);
       }
       else {
-        ctx.fillStyle = `rgba(184,146,74,${Math.max(0, V[x][y])/100*0.30})`;
-        ctx.fillRect(px, py, CELL, CELL);
+        const alpha = Math.max(0, V[x][y]) / 100 * 0.30;
+        ctx.fillStyle = `rgba(184,146,74,${alpha})`; ctx.fillRect(px, py, CELL, CELL);
       }
     }
 
-    // Goal
+    // Render Goal
     const gx = goal.x*CELL+CELL/2, gy = goal.y*CELL+CELL/2;
     const pulse = Math.sin(Date.now()*0.006)*2.5;
     ctx.fillStyle = '#B8924A'; ctx.beginPath(); ctx.arc(gx, gy, CELL/3.5 + pulse/2, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(184,146,74,0.45)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(gx, gy, CELL/2 + pulse, 0, Math.PI*2); ctx.stroke();
 
-    // Robot
+    // Render Robot
     ctx.save();
     ctx.translate(robot.x*CELL, robot.y*CELL); ctx.rotate(robot.angle);
     ctx.fillStyle = '#DDD7CC'; ctx.beginPath(); ctx.roundRect(-CELL/2.5, -CELL/2.5, CELL/1.25, CELL/1.25, 3); ctx.fill();
-    ctx.strokeStyle = 'rgba(30,28,24,0.15)'; ctx.stroke();
+    ctx.strokeStyle = 'rgba(30,28,24,0.15)'; ctx.lineWidth=1; ctx.stroke();
     ctx.fillStyle = '#A8A89E';
     ctx.fillRect(-CELL/3, -CELL/2.5*1.15, CELL/1.5, CELL/5);
     ctx.fillRect(-CELL/3, CELL/2.5*0.9, CELL/1.5, CELL/5);
     ctx.fillStyle = '#B8924A'; ctx.beginPath(); ctx.arc(0, 0, CELL/4, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#EFEBE4'; ctx.beginPath(); ctx.arc(CELL/8, 0, CELL/8, 0, Math.PI*2); ctx.fill();
+    
+    const sp = Math.sin(Date.now()*0.01)*0.1;
+    ctx.fillStyle = 'rgba(184,146,74,0.12)';
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0, 0, CELL*2.5, -Math.PI/5 + sp, Math.PI/5 - sp); ctx.fill();
     ctx.restore();
 
     requestAnimationFrame(loop);
   }
 
-  if (!prefersReducedMotion) {
-    // Tối ưu hóa: Chỉ chạy animation khi Canvas nằm trong viewport
-    const visObs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if(e.isIntersecting) loop(); });
-    }, { threshold: 0.1 });
-    visObs.observe(canvas);
-  }
+  // Tối ưu Performance: Chỉ vẽ khi Canvas xuất hiện trong màn hình
+  const visObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) loop(); });
+  }, { threshold: 0.1 });
+  visObs.observe(canvas);
 
-  return { toggleMode, clearWalls };
+  return { clearWalls };
 })();
 </script>
 </body>
