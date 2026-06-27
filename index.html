@@ -315,20 +315,15 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-built span { color: var(--amber-a11y); }
 
 /* ============================================================
-   JS SCRUBBING CLASSES (KHÔNG sử dụng CSS Transition)
+   JS HARD-LINKED SCRUBBING CLASSES (NO CSS TRANSITIONS)
    ============================================================ */
-/* Lớp này đóng vai trò làm mốc ban đầu, JS sẽ overwrite các thuộc tính này 60 lần/giây */
 .scrub-item {
   opacity: 0;
-  transform: translateY(60px);
-  filter: blur(8px);
+  transform: translateY(45px);
+  filter: blur(5px);
   will-change: opacity, transform, filter;
-  /* TUYỆT ĐỐI KHÔNG DÙNG CSS TRANSITION Ở ĐÂY ĐỂ TRÁNH LAG */
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
 @media (max-width: 960px) {
   .hero-layout, .about-grid, .contact-layout { grid-template-columns: 1fr; gap: 48px; }
   .project-card.featured { flex-direction: column; }
@@ -344,7 +339,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .btn { width: 100%; }
   .footer-inner { flex-direction: column; text-align: center; }
   .xp-item { grid-template-columns: 1fr; gap: 8px; margin: 0; padding-left: 0; padding-right: 0; }
-  .xp-item:hover { background: transparent; }
   .container { padding: 0 24px; }
 }
 </style>
@@ -382,6 +376,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 <div class="container">
 
+<!-- ============ HERO ============ -->
 <section class="hero" id="top">
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
@@ -430,6 +425,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
 
+      <!-- RL Canvas -->
       <div class="rl-container scrub-item" data-scrub-speed="0.9">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
@@ -445,6 +441,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ ABOUT ============ -->
 <section id="about">
   <div class="scrub-item">
     <div class="section-label">About</div>
@@ -507,6 +504,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ EXPERIENCE ============ -->
 <section id="experience">
   <div class="scrub-item">
     <div class="section-label">Work</div>
@@ -578,6 +576,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ PROJECTS ============ -->
 <section id="projects">
   <div class="scrub-item">
     <div class="section-label">Work samples</div>
@@ -703,6 +702,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ PUBLICATIONS ============ -->
 <section id="publications">
   <div class="scrub-item">
     <div class="section-label">Research &amp; Awards</div>
@@ -770,6 +770,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ CERTIFICATIONS ============ -->
 <section id="certifications">
   <div class="scrub-item">
     <div class="section-label">Learning</div>
@@ -808,6 +809,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
+<!-- ============ CONTACT ============ -->
 <section id="contact">
   <div class="scrub-item">
     <div class="section-label">Get in touch</div>
@@ -850,7 +852,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </footer>
 
-</div><script>
+</div><!-- /container -->
+
+<script>
 /* ============================================================
    UI LOGIC & MENU
    ============================================================ */
@@ -889,11 +893,9 @@ function toggleMenu(force) {
 })();
 
 /* ============================================================
-   SCROLL SCRUBBING ENGINE (Awwwards Style - Vanilla JS)
+   REAL 2-WAY SCROLL SCRUBBING (Lerp Absolute Coordinate Fix)
    ============================================================ */
-// Kỹ thuật này trói chặt Animation vào Tọa độ cuộn (không dùng CSS Transition)
 (function initScrollScrubbing() {
-  // Tôn trọng cài đặt hệ điều hành của người dùng về tiền đình
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll('.scrub-item').forEach(el => {
       el.style.opacity = 1;
@@ -905,53 +907,60 @@ function toggleMenu(force) {
 
   const elements = document.querySelectorAll('.scrub-item');
   const scrubData = Array.from(elements).map(el => {
-    let delayOffset = 0;
-    // Giả lập Stagger: Thêm khoảng bù (offset) cho các phần tử anh em trong cùng 1 Grid
+    let staggerOffset = 0;
     if (el.parentElement && el.parentElement.classList.contains('stagger-grid')) {
       const siblings = Array.from(el.parentElement.children).filter(child => child.classList.contains('scrub-item'));
       const index = siblings.indexOf(el);
-      delayOffset = index * 40; // Mỗi element trễ hơn 40px không gian cuộn
+      staggerOffset = index * 140; // Tạo độ trễ hình học (bậc thang) giữa các card
     }
     
-    // Đọc speed tùy chỉnh từ data attribute (nếu có)
     const speedStr = el.getAttribute('data-scrub-speed');
     const speed = speedStr ? parseFloat(speedStr) : 1;
 
+    // Tính toán tọa độ tuyệt đối của phần tử so với đỉnh trang (không bị đổi khi scroll)
+    const absoluteTop = el.getBoundingClientRect().top + window.scrollY;
+
     return { 
       el, 
+      absoluteTop,
       current: 0, 
       target: 0, 
-      offset: delayOffset,
+      stagger: staggerOffset,
       speed: speed
     };
   });
 
+  // Cập nhật lại tọa độ tuyệt đối nếu user resize trình duyệt
+  window.addEventListener('resize', () => {
+    scrubData.forEach(item => {
+      item.absoluteTop = item.el.getBoundingClientRect().top + window.scrollY;
+    });
+  });
+
   function updateScrub() {
+    const sTop = window.scrollY;
     const wh = window.innerHeight;
 
     scrubData.forEach(item => {
-      const rect = item.el.getBoundingClientRect();
-      const effectiveTop = rect.top + item.offset;
+      // Điểm bắt đầu kích hoạt animation (khi phần tử tiến sát đáy màn hình)
+      const animStart = item.absoluteTop - wh + item.stagger - 40;
+      // Điểm kết thúc animation (khi phần tử đi hẳn vào sâu trong khung hình)
+      const animEnd = item.absoluteTop - wh * 0.7 + item.stagger;
       
-      // Bắt đầu lộ diện khi mép trên cách đáy màn hình 1 chút
-      const start = wh + 50; 
-      // Rõ hoàn toàn khi đi vào sâu được 18% chiều cao màn hình
-      const end = wh * 0.82; 
-      
-      // Tính toán phần trăm (Progress từ 0 đến 1)
-      let progress = (start - effectiveTop) / (start - end);
+      // Tính toán tiến trình cuộn 2 chiều tuyệt đối (Progress: 0 -> 1)
+      let progress = (sTop - animStart) / (animEnd - animStart);
       progress = Math.max(0, Math.min(1, progress));
       
       item.target = progress;
 
-      // Nội suy tuyến tính (Lerp) - Bí quyết làm mượt thao tác cuộn 2 chiều
-      item.current += (item.target - item.current) * 0.08;
+      // Nội suy tuyến tính làm mềm chuyển động (Lerp)
+      item.current += (item.target - item.current) * 0.09;
 
-      // Chỉ cập nhật DOM nếu độ lệch đủ lớn để tiết kiệm GPU
-      if (Math.abs(item.target - item.current) > 0.001) {
+      if (Math.abs(item.target - item.current) > 0.0005) {
         item.el.style.opacity = item.current;
-        const yOffset = (1 - item.current) * 50 * item.speed;
-        const blurVal = (1 - item.current) * 6;
+        // Tính khoảng dịch chuyển mượt mà dựa theo tốc độ tùy chỉnh
+        const yOffset = (1 - item.current) * 45 * item.speed;
+        const blurVal = (1 - item.current) * 5;
         item.el.style.transform = `translateY(${yOffset}px)`;
         item.el.style.filter = `blur(${blurVal}px)`;
       }
@@ -960,12 +969,11 @@ function toggleMenu(force) {
     requestAnimationFrame(updateScrub);
   }
 
-  // Khởi động vòng lặp 60FPS
   requestAnimationFrame(updateScrub);
 })();
 
 /* ============================================================
-   RL CANVAS ENGINE (100% Khôi phục thuật toán nguyên bản)
+   RL CANVAS ENGINE (100% Khôi phục thuật toán tương tác nguyên bản)
    ============================================================ */
 const rlEngine = (() => {
   const canvas  = document.getElementById('rlCanvas');
