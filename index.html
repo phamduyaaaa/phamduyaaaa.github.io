@@ -216,7 +216,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
-.project-thumb img, .project-thumb video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.project-thumb img, .project-thumb video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); position: relative; z-index: 1; }
 .project-card:hover .project-thumb img, .project-card:hover .project-thumb video { transform: scale(1.06); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
 .project-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
