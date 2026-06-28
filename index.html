@@ -1225,75 +1225,49 @@ backdrop.addEventListener('click', () => toggleMenu(false));
    SCROLL SCRUB — respects prefers-reduced-motion
    ============================================================ */
 (function initScrollScrub() {
-  // FIX: if user prefers reduced motion, just reveal everything immediately
   if (NO_MOTION) {
     document.querySelectorAll('.scrub-item').forEach(el => {
-      el.style.opacity = 1;
+      el.style.opacity = '1';
       el.style.transform = 'none';
+      el.style.filter = 'none';
     });
     return;
   }
 
-  const items   = [];
-  const domItems = document.querySelectorAll('.scrub-item');
-  const staggers = document.querySelectorAll('.stagger-grid');
+  const items = [];
 
   function snapshot() {
-    const scrollY = window.scrollY;
-    const oldProgress = new Map();
-    items.forEach(item => oldProgress.set(item.el, item.progress));
-
-    const staggerMap = new Map();
-    staggers.forEach(parent => {
-      const children = Array.from(parent.querySelectorAll(':scope > .scrub-item'));
-      children.forEach((child, i) => staggerMap.set(child, i));
-    });
-
-    domItems.forEach(el => { el.style.transform = 'none'; });
-    const rects = Array.from(domItems).map(el => el.getBoundingClientRect());
-
     items.length = 0;
-    domItems.forEach((el, i) => {
-      const naturalTop = rects[i].top + scrollY;
-      const staggerIndex = staggerMap.get(el) ?? 0;
-      const p = oldProgress.get(el) ?? 0;
-      items.push({ el, naturalTop, staggerOffset: staggerIndex * 60, progress: p });
-      applyProgress(el, p);
+    const scrollY = window.scrollY;
+    document.querySelectorAll('.scrub-item').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      items.push({ el, naturalTop: rect.top + scrollY, progress: 0 });
     });
-  }
-
-  function applyProgress(el, p) {
-    el.style.opacity    = p;
-    el.style.transform  = `translateY(${(1-p)*42}px) scale(${0.92 + p*0.08})`;
-    el.style.filter     = (1-p)*5 > 0.05 ? `blur(${((1-p)*5).toFixed(2)}px)` : 'none';
   }
 
   snapshot();
+  new ResizeObserver(debounce(snapshot, 150)).observe(document.body);
 
-  const resizeObs = new ResizeObserver(debounce(snapshot, 100));
-  resizeObs.observe(document.body);
-
+  const ENTER_OFFSET = 80;
+  const RANGE = 260;
   let rafId = null;
 
   function tick() {
     const scrollY = window.scrollY;
-    const vh      = window.innerHeight;
+    const vh = window.innerHeight;
     items.forEach(item => {
-      const triggerTop = item.naturalTop - vh + item.staggerOffset * 0.3;
-      let target = Math.max(0, Math.min(1, (scrollY - triggerTop) / 180));
-      item.progress += (target - item.progress) * 0.1;
-      applyProgress(item.el, item.progress);
+      const t = Math.max(0, Math.min(1, (scrollY - (item.naturalTop - vh + ENTER_OFFSET)) / RANGE));
+      item.progress += (t - item.progress) * 0.18;
+      const p = item.progress;
+      item.el.style.opacity = p.toFixed(3);
+      item.el.style.transform = `translateY(${((1 - p) * 28).toFixed(1)}px)`;
     });
     if (!document.hidden) rafId = requestAnimationFrame(tick);
+    else rafId = null;
   }
 
-  // FIX: pause rAF when tab is hidden to save CPU/battery
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      if (rafId === null) rafId = requestAnimationFrame(tick);
-    } else {
-      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
-    }
+    if (!document.hidden && rafId === null) rafId = requestAnimationFrame(tick);
   });
 
   rafId = requestAnimationFrame(tick);
