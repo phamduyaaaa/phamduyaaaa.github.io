@@ -216,8 +216,9 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
-.project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
-.project-card:hover .project-thumb img { transform: scale(1.06); }
+/* Đã update để hỗ trợ cả thẻ video */
+.project-thumb img, .project-thumb video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.project-card:hover .project-thumb img, .project-card:hover .project-thumb video { transform: scale(1.06); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
 .project-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
 .project-type { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-a11y); margin-bottom: 8px; letter-spacing: 0.05em; }
@@ -511,7 +512,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="projects-grid stagger-grid">
     <div class="project-card featured scrub-item">
       <div class="project-thumb">
-        <img src="assets/robot1.gif" alt="Service robot navigating a hospital corridor" loading="lazy" decoding="async">
+        <video autoplay loop muted playsinline poster="assets/robot1.jpg" aria-label="Service robot navigating a hospital corridor">
+          <source src="assets/robot1.avif" type="video/avif">
+          <source src="assets/robot1.webm" type="video/webm">
+        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
       </div>
       <div class="project-body">
@@ -531,7 +535,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
     <div class="project-card scrub-item">
       <div class="project-thumb">
-        <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance" loading="lazy" decoding="async">
+        <video autoplay loop muted playsinline poster="assets/robot2.jpg" aria-label="HG-Dagger obstacle avoidance">
+          <source src="assets/robot2.avif" type="video/avif">
+          <source src="assets/robot2.webm" type="video/webm">
+        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
       </div>
       <div class="project-body">
@@ -552,7 +559,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
     <div class="project-card scrub-item">
       <div class="project-thumb">
-        <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" loading="lazy" decoding="async">
+        <video autoplay loop muted playsinline poster="assets/robot3.jpg" aria-label="Skid-steer outdoor robot">
+          <source src="assets/robot3.avif" type="video/avif">
+          <source src="assets/robot3.webm" type="video/webm">
+        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
       </div>
       <div class="project-body">
@@ -573,7 +583,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
     <div class="project-card scrub-item">
       <div class="project-thumb">
-        <img src="assets/robot4.gif" alt="Distributional RL path planning" loading="lazy" decoding="async">
+        <video autoplay loop muted playsinline poster="assets/robot4.jpg" aria-label="Distributional RL path planning">
+          <source src="assets/robot4.avif" type="video/avif">
+          <source src="assets/robot4.webm" type="video/webm">
+        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
       </div>
       <div class="project-body">
@@ -593,7 +606,10 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     </div>
     <div class="project-card scrub-item">
       <div class="project-thumb">
-        <img src="assets/robot5.gif" alt="Atari Double DQN" loading="lazy" decoding="async">
+        <video autoplay loop muted playsinline poster="assets/robot5.jpg" aria-label="Atari Double DQN">
+          <source src="assets/robot5.avif" type="video/avif">
+          <source src="assets/robot5.webm" type="video/webm">
+        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Atari · Double DQN</div>
       </div>
       <div class="project-body">
@@ -790,79 +806,89 @@ function toggleMenu(force) {
 })();
 
 /* ============================================================
-   SCROLL-DRIVEN SCALE + FADE + BLUR
-   Cách tiếp cận mới: dùng scrollY thay vì getBoundingClientRect
-   để tránh lỗi feedback loop khi transform đang tác động
+   Debounce Helper
+   ============================================================ */
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+/* ============================================================
+   SCROLL-DRIVEN SCALE + FADE + BLUR (Optimized)
+   Tách biệt Read/Write phase để loại bỏ hoàn toàn Layout Thrashing
    ============================================================ */
 (function initScrollScrubbing() {
-  /* Chụp offsetTop thực tế MỘT LẦN sau khi trang load xong
-     (lúc này chưa có transform nào, nên vị trí là chính xác) */
   const items = [];
+  const domItems = document.querySelectorAll('.scrub-item');
+  const staggers = document.querySelectorAll('.stagger-grid');
 
   function snapshot() {
     items.length = 0;
-    document.querySelectorAll('.scrub-item').forEach(el => {
-      /* Tạm reset transform để đọc vị trí thực */
-      el.style.transform = 'translateY(40px) scale(0.96)';
-      el.style.opacity = '0';
-    });
+    const scrollY = window.scrollY;
 
-    /* Tính stagger index */
+    /* Tính stagger index 1 lần duy nhất */
     const staggerMap = new Map();
-    document.querySelectorAll('.stagger-grid').forEach(parent => {
+    staggers.forEach(parent => {
       const children = Array.from(parent.querySelectorAll(':scope > .scrub-item'));
       children.forEach((child, i) => staggerMap.set(child, i));
     });
 
-    document.querySelectorAll('.scrub-item').forEach(el => {
-      /* Đọc vị trí TRƯỚC khi animation (reset transform trước) */
-      const savedTransform = el.style.transform;
+    /* WRITE PHASE 1: Reset styles để có thể đọc natural position */
+    domItems.forEach(el => {
       el.style.transform = 'none';
       el.style.opacity = '1';
-      const rect = el.getBoundingClientRect();
-      const naturalTop = rect.top + window.scrollY;
-      /* Khôi phục trạng thái ban đầu */
-      el.style.transform = savedTransform;
-      el.style.opacity = '0';
+    });
 
+    /* READ PHASE: Batch toàn bộ DOM reads lại để tránh reflow lặp lại */
+    const rects = Array.from(domItems).map(el => el.getBoundingClientRect());
+
+    /* WRITE PHASE 2: Apply lại initial state cho scrub item và lưu data */
+    domItems.forEach((el, index) => {
+      const rect = rects[index];
+      const naturalTop = rect.top + scrollY;
       const staggerIndex = staggerMap.get(el) ?? 0;
+
+      el.style.transform = 'translateY(40px) scale(0.96)';
+      el.style.opacity = '0';
 
       items.push({
         el,
         naturalTop,                    /* vị trí tuyệt đối, không đổi */
         staggerOffset: staggerIndex * 60, /* px delay theo chiều cuộn */
         progress: 0,                   /* 0 = ẩn, 1 = hoàn toàn hiện */
-        velocity: 0,                   /* smooth lerp */
       });
     });
   }
 
-  /* Snapshot lại khi resize để naturalTop luôn đúng */
   snapshot();
-  window.addEventListener('resize', () => { snapshot(); }, { passive: true });
+
+  /* Thay thế window resize bằng ResizeObserver + Debounce (rất tốt cho perf) */
+  const resizeObs = new ResizeObserver(debounce(() => {
+    snapshot();
+  }, 100));
+  resizeObs.observe(document.body);
 
   function tick() {
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
 
     items.forEach(item => {
-      /* triggerTop: vị trí cuộn mà phần tử bắt đầu reveal
-         (khi đáy viewport chạm đỉnh phần tử, trừ thêm stagger) */
       const triggerTop = item.naturalTop - vh + item.staggerOffset * 0.3;
-      /* endTop: phần tử hoàn toàn hiện khi đã cuộn thêm 180px */
       const endTop = triggerTop + 180;
 
       let target = (scrollY - triggerTop) / (endTop - triggerTop);
       target = Math.max(0, Math.min(1, target));
 
-      /* Ease in: lerp mượt, hệ số 0.1 cho cảm giác nhẹ */
       item.progress += (target - item.progress) * 0.1;
       const p = item.progress;
 
       const op = p;
-      const ty = (1 - p) * 42;                  /* translateY: 42px → 0 */
-      const sc = 0.92 + p * 0.08;               /* scale: 0.92 → 1.0 */
-      const bl = (1 - p) * 5;                   /* blur: 5px → 0 */
+      const ty = (1 - p) * 42;
+      const sc = 0.92 + p * 0.08;
+      const bl = (1 - p) * 5;
 
       item.el.style.opacity = op;
       item.el.style.transform = `translateY(${ty}px) scale(${sc})`;
