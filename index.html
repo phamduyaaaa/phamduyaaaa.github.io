@@ -11,35 +11,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-/* ============================================================
-   TOKENS & BASE (WCAG AA Compliant)
-   ============================================================ */
 :root {
   --cream:       #F7F5F0;
   --cream-2:     #EFEBE4;
   --cream-3:     #E6E0D5;
   --cream-4:     #DDD7CC;
-
   --ink:         #11110F;
   --ink-2:       #262622;
   --ink-3:       #40403A;
   --ink-4:       #5E5E56;
-
   --amber:       #B8924A;
   --amber-a11y:  #7D5A16;
   --amber-dim:   rgba(184,146,74,0.14);
   --amber-soft:  rgba(184,146,74,0.28);
-
   --code-bg:     #1E2030;
   --code-ink:    #E0E4F0;
-
   --border:      rgba(30,28,24,0.12);
   --border-2:    rgba(30,28,24,0.22);
-
   --font-display: 'Lora', Georgia, serif;
   --font-body:    'Inter', -apple-system, sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
-
   --r-sm: 6px; --r: 10px; --r-lg: 16px;
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -65,9 +56,6 @@ strong { color: var(--ink); font-weight: 600; }
 em { font-style: italic; }
 .container { max-width: 1060px; margin: 0 auto; padding: 0 32px; }
 
-/* ============================================================
-   NAV & MOBILE MENU
-   ============================================================ */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 60px;
@@ -84,7 +72,6 @@ nav {
   color: var(--ink); display: flex; align-items: center; gap: 10px; letter-spacing: -0.01em;
 }
 .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
-
 .nav-links { display: flex; gap: 4px; list-style: none; }
 .nav-links a {
   font-size: 13.5px; font-weight: 500; color: var(--ink-3);
@@ -96,14 +83,12 @@ nav {
   content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
   width: 4px; height: 4px; border-radius: 50%; background: var(--amber);
 }
-
 .nav-cta {
   font-family: var(--font-body); font-size: 13.5px; font-weight: 600; background: var(--amber);
   padding: 10px 20px; border-radius: var(--r-sm); color: white;
   transition: all 0.3s var(--spring); min-height: 40px; display: inline-flex; align-items: center;
 }
 .nav-cta:hover { background: var(--ink); transform: translateY(-2px); color: white; }
-
 .nav-mobile-btn {
   display: none; background: none; border: none; cursor: pointer;
   width: 44px; height: 44px; color: var(--ink-3); flex-direction: column; gap: 5px;
@@ -116,13 +101,11 @@ nav {
 .nav-mobile-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .nav-mobile-btn.open span:nth-child(2) { opacity: 0; }
 .nav-mobile-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
 .mobile-backdrop {
   position: fixed; inset: 0; background: rgba(17, 17, 15, 0.5); backdrop-filter: blur(4px);
   z-index: 98; opacity: 0; pointer-events: none; transition: opacity var(--t);
 }
 .mobile-backdrop.open { opacity: 1; pointer-events: auto; }
-
 .mobile-menu {
   display: flex; position: fixed; top: 60px; left: 0; right: 0;
   background: var(--cream); border-bottom: 1px solid var(--border-2);
@@ -134,9 +117,6 @@ nav {
 .mobile-menu a { font-size: 16px; font-weight: 500; color: var(--ink-2); padding: 14px 0; border-bottom: 1px solid var(--border); }
 .mobile-menu a:last-child { border-bottom: none; color: var(--amber-a11y); font-weight: 600; }
 
-/* ============================================================
-   HERO & METRICS
-   ============================================================ */
 .hero { padding-top: 60px; min-height: 100vh; display: flex; align-items: center; position: relative; }
 .hero-rules {
   position: absolute; inset: 0; pointer-events: none;
@@ -152,7 +132,6 @@ h1 { font-family: var(--font-display); font-size: clamp(48px, 6.5vw, 84px); line
 h1 .name-first { font-weight: 400; color: var(--ink-3); }
 h1 .name-last { font-weight: 700; color: var(--ink); }
 h1 .name-accent { color: var(--amber); }
-
 .hero-rule-line { width: 40px; height: 2.5px; background: var(--amber); margin: 24px 0; }
 .hero-role { font-family: var(--font-display); font-size: clamp(17px, 2vw, 21px); font-style: italic; color: var(--ink-2); margin-bottom: 24px; line-height: 1.5; }
 .hero-role strong { color: var(--amber-a11y); font-style: normal; font-weight: 600; }
@@ -178,17 +157,12 @@ h1 .name-accent { color: var(--amber); }
 .metric-value sup { font-size: 16px; color: var(--amber-a11y); }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
-/* ============================================================
-   RL CANVAS
-   ============================================================ */
 .rl-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--r-lg); border: 1.5px solid var(--border-2); background: var(--cream-2); overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
 #rlCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
-
 .rl-ui-top { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; pointer-events: none; z-index: 10; }
 .rl-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--ink-3); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(4px); }
 .rl-score { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(247,245,240,0.95); border: 1px solid var(--border-2); padding: 6px 12px; border-radius: var(--r-sm); backdrop-filter: blur(4px); }
 .rl-score span { color: var(--amber-a11y); font-size: 14px; }
-
 .rl-hint {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--amber-a11y);
@@ -197,9 +171,8 @@ h1 .name-accent { color: var(--amber); }
   animation: pulse-hint 1.7s ease-in-out infinite; transition: opacity 0.4s var(--ease);
   box-shadow: 0 8px 24px rgba(184,146,74,0.15); text-align: center; white-space: nowrap;
 }
-@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.96); box-shadow: 0 0 0 6px transparent; } }
+@keyframes pulse-hint { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.96); } }
 .rl-hint.hidden { opacity: 0; pointer-events: none; animation: none; }
-
 .rl-toolbar { position: absolute; bottom: 14px; right: 14px; display: flex; gap: 8px; z-index: 10; }
 .rl-btn {
   font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
@@ -209,9 +182,6 @@ h1 .name-accent { color: var(--amber); }
 }
 .rl-btn:hover { background: white; border-color: var(--ink); transform: translateY(-2px); }
 
-/* ============================================================
-   SECTIONS & CONTENT
-   ============================================================ */
 section { padding: clamp(64px, 8vw, 96px) 0; }
 section + section { border-top: 1.5px solid var(--border-2); }
 .section-label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--amber-a11y); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
@@ -224,14 +194,10 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .tag:hover { background: var(--cream-2); border-color: var(--ink-4); color: var(--ink); }
 .tag-dark { background: var(--code-bg); color: var(--code-ink); border-color: transparent; }
 .tag-dark:hover { background: #2A2F48; color: white; border-color: transparent; }
-
 .stack-panel h3 { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 22px; letter-spacing: -0.01em; }
 .stack-group { margin-bottom: 24px; }
 .stack-group-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-4); margin-bottom: 8px; }
 
-/* ============================================================
-   EXPERIENCE
-   ============================================================ */
 .xp-item { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 32px 0; border-bottom: 1px solid var(--border); transition: background var(--t); margin: 0 -24px; padding-left: 24px; padding-right: 24px; border-radius: var(--r); }
 .xp-item:hover { background: var(--cream-2); border-bottom-color: transparent; }
 .xp-date { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--ink-4); line-height: 1.5; }
@@ -244,40 +210,30 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .xp-bullets li { position: relative; padding-left: 18px; font-size: 15.5px; color: var(--ink-2); line-height: 1.7; }
 .xp-bullets li::before { content: "▪"; position: absolute; left: 0; color: var(--amber-a11y); font-size: 12px; top: 2px; }
 
-/* ============================================================
-   PROJECTS
-   ============================================================ */
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; }
 .project-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease), border-color var(--t); }
 .project-card:hover { border-color: var(--ink-4); transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,0,0,0.08); }
 .project-card.featured { grid-column: 1 / -1; flex-direction: row; background: linear-gradient(to right, white 60%, var(--cream)); }
-
 .project-thumb { background: var(--code-bg); aspect-ratio: 16/9; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
 .project-card.featured .project-thumb { width: 44%; flex-shrink: 0; aspect-ratio: auto; min-height: 280px; }
 .project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
 .project-card:hover .project-thumb img { transform: scale(1.06); }
 .project-thumb-placeholder { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
-
 .project-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
 .project-type { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-a11y); margin-bottom: 8px; letter-spacing: 0.05em; }
 .project-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 12px; line-height: 1.3; }
 .project-desc { font-size: 14.5px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.7; flex: 1; }
 .project-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
 .pill { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 4px 10px; background: var(--cream-2); border-radius: 4px; color: var(--ink-2); }
-
 .project-links { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
 .project-link { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--amber-a11y); display: inline-flex; align-items: center; gap: 6px; min-height: 44px; transition: color var(--t), gap var(--t); }
 .project-link:hover { color: var(--ink); gap: 10px; }
 
-/* ============================================================
-   PUBLICATIONS & CERTIFICATIONS
-   ============================================================ */
 .year-group { margin-bottom: 48px; }
 .year-group:last-child { margin-bottom: 0; }
 .year-heading { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 20px; display: flex; align-items: center; gap: 18px; }
 .year-heading span { color: var(--amber-a11y); }
 .year-heading::after { content: ''; height: 1px; flex: 1; background: var(--border-2); }
-
 .pub-list { display: flex; flex-direction: column; gap: 16px; }
 .pub-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 26px 30px; transition: transform 0.4s var(--spring), box-shadow 0.4s var(--ease), border-color var(--t); }
 .pub-card:hover { border-color: var(--ink-4); box-shadow: 0 12px 32px rgba(0,0,0,0.06); transform: translateY(-4px); }
@@ -296,9 +252,6 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .cert-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
 .cert-link-na { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); margin-top: auto; padding-top: 10px; }
 
-/* ============================================================
-   CONTACT & FOOTER
-   ============================================================ */
 .contact-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: start; }
 .contact-intro { font-size: 16px; color: var(--ink-2); margin-bottom: 32px; line-height: 1.75; }
 .contact-note { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; line-height: 1.6; }
@@ -313,9 +266,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 .footer-copy, .footer-built { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); }
 .footer-built span { color: var(--amber-a11y); }
 
-/* Class mốc cho JS Scrubbing */
+/* ============================================================
+   SCRUB ITEMS — bắt đầu invisible, JS sẽ reveal khi scroll
+   ============================================================ */
 .scrub-item {
   opacity: 0;
+  transform: translateY(40px) scale(0.96);
   will-change: opacity, transform, filter;
 }
 
@@ -342,12 +298,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 <div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
 <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
-  <a href="#about"          onclick="toggleMenu(false)">About</a>
-  <a href="#experience"     onclick="toggleMenu(false)">Experience</a>
-  <a href="#projects"       onclick="toggleMenu(false)">Projects</a>
-  <a href="#publications"   onclick="toggleMenu(false)">Research</a>
+  <a href="#about" onclick="toggleMenu(false)">About</a>
+  <a href="#experience" onclick="toggleMenu(false)">Experience</a>
+  <a href="#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="#publications" onclick="toggleMenu(false)">Research</a>
   <a href="#certifications" onclick="toggleMenu(false)">Certs</a>
-  <a href="#contact"        onclick="toggleMenu(false)">Contact</a>
+  <a href="#contact" onclick="toggleMenu(false)">Contact</a>
   <a href="mailto:duypham.robotics@gmail.com" onclick="toggleMenu(false)">Get in touch ↗</a>
 </div>
 
@@ -355,12 +311,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   <div class="nav-inner">
     <a href="#top" class="nav-logo" aria-label="Back to top"><span class="nav-dot"></span>Phạm Đức Duy</a>
     <ul class="nav-links" role="navigation" aria-label="Main navigation">
-      <li><a href="#about"          data-section="about">About</a></li>
-      <li><a href="#experience"     data-section="experience">Experience</a></li>
-      <li><a href="#projects"       data-section="projects">Projects</a></li>
-      <li><a href="#publications"   data-section="publications">Research</a></li>
+      <li><a href="#about" data-section="about">About</a></li>
+      <li><a href="#experience" data-section="experience">Experience</a></li>
+      <li><a href="#projects" data-section="projects">Projects</a></li>
+      <li><a href="#publications" data-section="publications">Research</a></li>
       <li><a href="#certifications" data-section="certifications">Certs</a></li>
-      <li><a href="#contact"        data-section="contact">Contact</a></li>
+      <li><a href="#contact" data-section="contact">Contact</a></li>
     </ul>
     <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Get in touch ↗</a>
     <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
@@ -371,7 +327,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 
 <div class="container">
 
-<!-- ============ HERO ============ -->
 <section class="hero" id="top">
   <div class="hero-rules" aria-hidden="true"></div>
   <div class="hero-inner">
@@ -381,25 +336,20 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <h1>
           <span class="name-first">Phạm Đức </span><span class="name-last">Duy<span class="name-accent">.</span></span>
         </h1>
-
         <div class="hero-rule-line" aria-hidden="true"></div>
-
         <p class="hero-role">
           Closing the gap between<br>
           <strong>autonomous navigation research</strong> and deployed hardware.
         </p>
-
         <p class="hero-bio">
           Two years shipping <strong>ROS 2</strong> mobile robots into production — hospitals, restaurants, factory floors. Currently Source Engineer at <strong>VinRobotics</strong> and Lab Leader at <strong>HalBotLab</strong>, researching Embodied AI and Nav2 systems. Published in <em>MethodsX</em> (Q2) on distributional RL for path planning under sensor noise.
         </p>
-
         <div class="btn-group stagger-grid">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary scrub-item">Get in touch ↗</a>
           <a href="https://drive.google.com/drive/folders/1UV3EWrlyR9M7QqwRTitKg1yLDf1sWeoz" class="btn btn-ghost scrub-item" target="_blank" rel="noopener noreferrer">CV</a>
           <a href="https://github.com/phamduyaaaa" class="btn btn-ghost scrub-item" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a href="/mission/" class="btn btn-amber scrub-item" target="_blank" rel="noopener noreferrer">Mission</a>
         </div>
-
         <div class="metrics-bar scrub-item">
           <div class="metric-cell">
             <div class="metric-value">2<sup>+</sup></div>
@@ -420,7 +370,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
 
-      <!-- RL Canvas -->
       <div class="rl-container scrub-item">
         <div class="rl-ui-top">
           <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
@@ -436,7 +385,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ ABOUT ============ -->
 <section id="about">
   <div class="scrub-item">
     <div class="section-label">About</div>
@@ -444,15 +392,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
   <div class="about-grid scrub-item">
     <div class="about-text">
-      <p>
-        Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.
-      </p>
-      <p>
-        At <strong>ByteHome Robotics</strong>, I led the full cycle from prototype to commercialized product — hardware integration, software stack, and the rarely-mentioned last mile: writing operator runbooks, training 30+ non-technical B2B clients to maintain and operate ROS 2 robots without engineering support on-site.
-      </p>
-      <p>
-        At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.
-      </p>
+      <p>Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.</p>
+      <p>At <strong>ByteHome Robotics</strong>, I led the full cycle from prototype to commercialized product — hardware integration, software stack, and the rarely-mentioned last mile: writing operator runbooks, training 30+ non-technical B2B clients to maintain and operate ROS 2 robots without engineering support on-site.</p>
+      <p>At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.</p>
       <div class="tag-cloud stagger-grid">
         <span class="tag tag-dark scrub-item">ROS 2</span><span class="tag tag-dark scrub-item">Nav2</span>
         <span class="tag tag-dark scrub-item">Cartographer SLAM</span><span class="tag tag-dark scrub-item">Micro-ROS</span>
@@ -462,7 +404,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <span class="tag scrub-item">MuJoCo</span><span class="tag scrub-item">Point Cloud</span><span class="tag scrub-item">Depth Images</span>
       </div>
     </div>
-
     <div class="stack-panel stagger-grid">
       <h3>Core Stack</h3>
       <div class="stack-group scrub-item">
@@ -499,13 +440,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ EXPERIENCE ============ -->
 <section id="experience">
   <div class="scrub-item">
     <div class="section-label">Work</div>
     <h2>Where I've built things.</h2>
   </div>
-
   <div class="xp-list stagger-grid">
     <div class="xp-item scrub-item">
       <div>
@@ -521,11 +460,8 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </ul>
       </div>
     </div>
-
     <div class="xp-item scrub-item">
-      <div>
-        <div class="xp-date">Oct 2025 — Mar 2026</div>
-      </div>
+      <div><div class="xp-date">Oct 2025 — Mar 2026</div></div>
       <div>
         <div class="xp-company">ByteHome Robotics</div>
         <div class="xp-role">Robotics Software Engineer · Tech Lead</div>
@@ -536,7 +472,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </ul>
       </div>
     </div>
-
     <div class="xp-item scrub-item">
       <div>
         <div class="xp-date">Jun 2024 — Present</div>
@@ -552,11 +487,8 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </ul>
       </div>
     </div>
-
     <div class="xp-item scrub-item">
-      <div>
-        <div class="xp-date">Expected 2026</div>
-      </div>
+      <div><div class="xp-date">Expected 2026</div></div>
       <div>
         <div class="xp-company">Hanoi University of Industry</div>
         <div class="xp-role">B.Eng. · Robotics and Artificial Intelligence</div>
@@ -571,13 +503,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ PROJECTS ============ -->
 <section id="projects">
   <div class="scrub-item">
     <div class="section-label">Work samples</div>
     <h2>Projects I've shipped.</h2>
   </div>
-
   <div class="projects-grid stagger-grid">
     <div class="project-card featured scrub-item">
       <div class="project-thumb">
@@ -588,9 +518,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <div>
           <div class="project-type">Autonomous Navigation · Commercialized Product</div>
           <div class="project-title">Service Robot Platform — Hospitality &amp; Healthcare</div>
-          <div class="project-desc">
-            End-to-end differential-drive service robot for dynamic indoor environments. Navigation uses <strong>Cartographer SLAM</strong> for map building and <strong>Nav2 with DWB controller</strong> for real-time obstacle avoidance. Multi-sensor fusion — 2D LiDAR, Intel D435, IMU — reduces localization drift on reflective floors where LiDAR-only SLAM fails. On-device ASR model with ROS 2 action interface for staff dispatch via natural speech. Deployed in live restaurant and hospital environments.
-          </div>
+          <div class="project-desc">End-to-end differential-drive service robot for dynamic indoor environments. Navigation uses <strong>Cartographer SLAM</strong> for map building and <strong>Nav2 with DWB controller</strong> for real-time obstacle avoidance. Multi-sensor fusion — 2D LiDAR, Intel D435, IMU — reduces localization drift on reflective floors where LiDAR-only SLAM fails. On-device ASR model with ROS 2 action interface for staff dispatch via natural speech. Deployed in live restaurant and hospital environments.</div>
           <div class="project-pills">
             <span class="pill">C++</span><span class="pill">Python</span><span class="pill">ROS 2</span>
             <span class="pill">Nav2</span><span class="pill">Cartographer SLAM</span><span class="pill">DWB</span>
@@ -601,7 +529,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
     </div>
-
     <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot2.gif" alt="HG-Dagger obstacle avoidance" loading="lazy" decoding="async">
@@ -611,9 +538,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <div>
           <div class="project-type">Imitation Learning · Thesis Work</div>
           <div class="project-title">HG-Dagger Obstacle Avoidance</div>
-          <div class="project-desc">
-            Local obstacle avoidance policy trained via Human-Gated DAgger. The learned policy replaces the DWA local planner — a single forward pass on LiDAR scan input yields <strong>131× fewer FLOPs</strong> per control cycle versus DWA's iterative trajectory sampling. Deployed on Micro-ROS / ESP32.
-          </div>
+          <div class="project-desc">Local obstacle avoidance policy trained via Human-Gated DAgger. The learned policy replaces the DWA local planner — a single forward pass on LiDAR scan input yields <strong>131× fewer FLOPs</strong> per control cycle versus DWA's iterative trajectory sampling. Deployed on Micro-ROS / ESP32.</div>
           <div class="project-pills">
             <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
             <span class="pill">ROS 2</span><span class="pill">C++</span>
@@ -625,7 +550,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
     </div>
-
     <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot3.gif" alt="Skid-steer outdoor robot" loading="lazy" decoding="async">
@@ -635,9 +559,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <div>
           <div class="project-type">Outdoor Mobile Robotics · University Research</div>
           <div class="project-title">Skid-Steer Field Robot</div>
-          <div class="project-desc">
-            60 kg payload outdoor platform with skid-steer kinematics. Motor controllers communicate via <strong>RS-485 Modbus</strong> on a Micro-ROS ESP32 bridge, decoupling real-time motor control from main compute. Supports RC teleoperation and autonomous ROS 2 navigation.
-          </div>
+          <div class="project-desc">60 kg payload outdoor platform with skid-steer kinematics. Motor controllers communicate via <strong>RS-485 Modbus</strong> on a Micro-ROS ESP32 bridge, decoupling real-time motor control from main compute. Supports RC teleoperation and autonomous ROS 2 navigation.</div>
           <div class="project-pills">
             <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
             <span class="pill">RS-485</span><span class="pill">ROS 2</span>
@@ -649,7 +571,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
     </div>
-
     <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot4.gif" alt="Distributional RL path planning" loading="lazy" decoding="async">
@@ -659,9 +580,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <div>
           <div class="project-type">Reinforcement Learning · Published Research</div>
           <div class="project-title">Path Planning via Distributional RL</div>
-          <div class="project-desc">
-            The research behind the MethodsX Q2 publication. Trained a <strong>QR-DQN distributional critic</strong> for mobile robot navigation in multi-structured environments where standard expected-value RL breaks down under noisy depth sensor input.
-          </div>
+          <div class="project-desc">The research behind the MethodsX Q2 publication. Trained a <strong>QR-DQN distributional critic</strong> for mobile robot navigation in multi-structured environments where standard expected-value RL breaks down under noisy depth sensor input.</div>
           <div class="project-pills">
             <span class="pill">Python</span><span class="pill">PyTorch</span>
             <span class="pill">ROS</span><span class="pill">Gazebo</span>
@@ -672,7 +591,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         </div>
       </div>
     </div>
-
     <div class="project-card scrub-item">
       <div class="project-thumb">
         <img src="assets/robot5.gif" alt="Atari Double DQN" loading="lazy" decoding="async">
@@ -682,9 +600,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         <div>
           <div class="project-type">Reinforcement Learning · Foundations</div>
           <div class="project-title">Atari Agent — Double DQN</div>
-          <div class="project-desc">
-            Implemented Double DQN from scratch to understand the overestimation bias in standard DQN and how decoupling action selection from value estimation corrects it — foundational work that informed the distributional RL research above.
-          </div>
+          <div class="project-desc">Implemented Double DQN from scratch to understand the overestimation bias in standard DQN and how decoupling action selection from value estimation corrects it — foundational work that informed the distributional RL research above.</div>
           <div class="project-pills">
             <span class="pill">Python</span><span class="pill">PyTorch</span><span class="pill">Gymnasium</span>
           </div>
@@ -697,13 +613,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ PUBLICATIONS ============ -->
 <section id="publications">
   <div class="scrub-item">
     <div class="section-label">Research &amp; Awards</div>
     <h2>Published work &amp; recognition.</h2>
   </div>
-
   <div class="year-group stagger-grid">
     <div class="year-heading scrub-item"><span>2026</span></div>
     <div class="pub-list">
@@ -714,7 +628,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
   </div>
-
   <div class="year-group stagger-grid">
     <div class="year-heading scrub-item"><span>2025</span></div>
     <div class="pub-list">
@@ -724,9 +637,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
           <span class="pub-venue">MethodsX · Dec 2025 · vol. 15, 103554</span>
         </div>
         <div class="pub-title">Path Planning for Mobile Robots in Multi-Structured Environments via Distributional Reinforcement Learning</div>
-        <div class="pub-desc">
-          Standard RL path planners optimize for expected reward, which makes them brittle when sensor noise is heavy-tailed. This paper replaces the expected-value critic with a <strong>distributional critic</strong> (C51-style return distribution), allowing risk-aware navigation across structured, semi-structured, and cluttered map variants in Gazebo.
-        </div>
+        <div class="pub-desc">Standard RL path planners optimize for expected reward, which makes them brittle when sensor noise is heavy-tailed. This paper replaces the expected-value critic with a <strong>distributional critic</strong> (C51-style return distribution), allowing risk-aware navigation across structured, semi-structured, and cluttered map variants in Gazebo.</div>
         <a href="https://doi.org/10.1016/j.mex.2025.103554" target="_blank" rel="noopener noreferrer" class="project-link" style="margin-top:12px;">DOI Reference</a>
       </div>
       <div class="pub-card scrub-item">
@@ -741,7 +652,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
   </div>
-
   <div class="year-group stagger-grid">
     <div class="year-heading scrub-item"><span>2024</span></div>
     <div class="pub-list">
@@ -752,7 +662,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       </div>
     </div>
   </div>
-
   <div class="year-group stagger-grid">
     <div class="year-heading scrub-item"><span>2023</span></div>
     <div class="pub-list">
@@ -765,13 +674,11 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ CERTIFICATIONS ============ -->
 <section id="certifications">
   <div class="scrub-item">
     <div class="section-label">Learning</div>
     <h2>Certifications.</h2>
   </div>
-
   <div class="cert-grid stagger-grid">
     <div class="cert-card scrub-item">
       <div>
@@ -804,7 +711,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </section>
 
-<!-- ============ CONTACT ============ -->
 <section id="contact">
   <div class="scrub-item">
     <div class="section-label">Get in touch</div>
@@ -822,7 +728,6 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         Open to international roles — remote-first or relocation.
       </p>
     </div>
-
     <div class="contact-links stagger-grid">
       <a href="mailto:duypham.robotics@gmail.com" class="contact-link scrub-item">
         <div class="contact-label">Email</div>
@@ -847,12 +752,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   </div>
 </footer>
 
-</div><!-- /container -->
+</div>
 
 <script>
-/* ============================================================
-   UI LOGIC & MENU
-   ============================================================ */
 document.getElementById('footerYear').textContent = new Date().getFullYear();
 
 const menu = document.getElementById('mobileMenu');
@@ -886,74 +788,104 @@ function toggleMenu(force) {
     if (el) sectionObs.observe(el);
   });
 })();
+
 /* ============================================================
-   SCROLL-DRIVEN SCALE + FADE + BLUR ENGINE
+   SCROLL-DRIVEN SCALE + FADE + BLUR
+   Cách tiếp cận mới: dùng scrollY thay vì getBoundingClientRect
+   để tránh lỗi feedback loop khi transform đang tác động
    ============================================================ */
 (function initScrollScrubbing() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.scrub-item').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.scrub-item').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.filter = 'none';
+    });
     return;
   }
 
-  const items = Array.from(document.querySelectorAll('.scrub-item')).map(el => {
-    let stagger = 0;
-    if (el.parentElement && el.parentElement.classList.contains('stagger-grid')) {
-      const siblings = Array.from(el.parentElement.querySelectorAll('.scrub-item'));
-      stagger = siblings.indexOf(el) * 65;
-    }
-    return { el, appliedY: 0, appliedScale: 1, current: 0, target: 0, stagger };
-  });
+  /* Chụp offsetTop thực tế MỘT LẦN sau khi trang load xong
+     (lúc này chưa có transform nào, nên vị trí là chính xác) */
+  const items = [];
 
-  function renderScrub() {
-    const vh = window.innerHeight || 800;
-
-    items.forEach(item => {
-      // Khôi phục vị trí thực bằng cách bù lại transform đang tác động
-      const liveTop = item.el.getBoundingClientRect().top;
-      // Đảo ngược scale transform để lấy lại pureTop chính xác
-      const scaledMidOffset = (item.appliedScale - 1) * (item.el.offsetHeight / 2);
-      const pureTop = liveTop - item.appliedY + scaledMidOffset + item.stagger;
-
-      const start = vh + 30;
-      const end = vh * 0.78;
-
-      let p = (start - pureTop) / (start - end);
-      p = Math.max(0, Math.min(1, p));
-
-      item.target = p;
-      item.current += (item.target - item.current) * 0.09;
-
-      const t = item.current;
-
-      // Opacity: 0 → 1
-      const op = t;
-
-      // TranslateY: 45px → 0px
-      const y = (1 - t) * 45;
-
-      // Scale: 0.88 → 1.0 (bắt đầu từ 88%, phóng to về kích thước thực)
-      const scale = 0.88 + t * 0.12;
-
-      // Blur: 6px → 0px
-      const blur = (1 - t) * 6;
-
-      item.appliedY = y;
-      item.appliedScale = scale;
-
-      item.el.style.opacity = op;
-      item.el.style.transform = `translateY(${y}px) scale(${scale})`;
-      item.el.style.filter = `blur(${blur}px)`;
-      item.el.style.transformOrigin = 'center bottom';
+  function snapshot() {
+    items.length = 0;
+    document.querySelectorAll('.scrub-item').forEach(el => {
+      /* Tạm reset transform để đọc vị trí thực */
+      el.style.transform = 'translateY(40px) scale(0.96)';
+      el.style.opacity = '0';
     });
 
-    requestAnimationFrame(renderScrub);
+    /* Tính stagger index */
+    const staggerMap = new Map();
+    document.querySelectorAll('.stagger-grid').forEach(parent => {
+      const children = Array.from(parent.querySelectorAll(':scope > .scrub-item'));
+      children.forEach((child, i) => staggerMap.set(child, i));
+    });
+
+    document.querySelectorAll('.scrub-item').forEach(el => {
+      /* Đọc vị trí TRƯỚC khi animation (reset transform trước) */
+      const savedTransform = el.style.transform;
+      el.style.transform = 'none';
+      el.style.opacity = '1';
+      const rect = el.getBoundingClientRect();
+      const naturalTop = rect.top + window.scrollY;
+      /* Khôi phục trạng thái ban đầu */
+      el.style.transform = savedTransform;
+      el.style.opacity = '0';
+
+      const staggerIndex = staggerMap.get(el) ?? 0;
+
+      items.push({
+        el,
+        naturalTop,                    /* vị trí tuyệt đối, không đổi */
+        staggerOffset: staggerIndex * 60, /* px delay theo chiều cuộn */
+        progress: 0,                   /* 0 = ẩn, 1 = hoàn toàn hiện */
+        velocity: 0,                   /* smooth lerp */
+      });
+    });
   }
 
-  requestAnimationFrame(renderScrub);
+  /* Snapshot lại khi resize để naturalTop luôn đúng */
+  snapshot();
+  window.addEventListener('resize', () => { snapshot(); }, { passive: true });
+
+  function tick() {
+    const scrollY = window.scrollY;
+    const vh = window.innerHeight;
+
+    items.forEach(item => {
+      /* triggerTop: vị trí cuộn mà phần tử bắt đầu reveal
+         (khi đáy viewport chạm đỉnh phần tử, trừ thêm stagger) */
+      const triggerTop = item.naturalTop - vh + item.staggerOffset * 0.3;
+      /* endTop: phần tử hoàn toàn hiện khi đã cuộn thêm 180px */
+      const endTop = triggerTop + 180;
+
+      let target = (scrollY - triggerTop) / (endTop - triggerTop);
+      target = Math.max(0, Math.min(1, target));
+
+      /* Ease in: lerp mượt, hệ số 0.1 cho cảm giác nhẹ */
+      item.progress += (target - item.progress) * 0.1;
+      const p = item.progress;
+
+      const op = p;
+      const ty = (1 - p) * 42;                  /* translateY: 42px → 0 */
+      const sc = 0.92 + p * 0.08;               /* scale: 0.92 → 1.0 */
+      const bl = (1 - p) * 5;                   /* blur: 5px → 0 */
+
+      item.el.style.opacity = op;
+      item.el.style.transform = `translateY(${ty}px) scale(${sc})`;
+      item.el.style.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : 'none';
+    });
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
 })();
 
 /* ============================================================
-   RL CANVAS ENGINE (100% Khôi phục thuật toán tương tác nguyên bản)
+   RL CANVAS ENGINE
    ============================================================ */
 const rlEngine = (() => {
   const canvas  = document.getElementById('rlCanvas');
@@ -975,7 +907,6 @@ const rlEngine = (() => {
   resizeObs.observe(canvas);
 
   const CELL = LOGICAL / G;
-
   const SHAPE = {
     BODY_HALF: CELL/2.5, TRACK_W: CELL/1.5, TRACK_H: CELL/5,
     CORE_R: CELL/4, EYE_R: CELL/8,
@@ -1044,11 +975,9 @@ const rlEngine = (() => {
 
   function draw() {
     ctx.fillStyle = '#EFEBE4'; ctx.fillRect(0,0,LOGICAL,LOGICAL);
-
     ctx.strokeStyle='rgba(30,28,24,0.055)';ctx.lineWidth=1;
     for(let x=0;x<G;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,LOGICAL);ctx.stroke();}
     for(let y=0;y<G;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(LOGICAL,y*CELL);ctx.stroke();}
-
     for(let x=0;x<G;x++) for(let y=0;y<G;y++) {
       const px=x*CELL,py=y*CELL;
       if(obs[x][y]) {
@@ -1062,16 +991,12 @@ const rlEngine = (() => {
         ctx.fillRect(px,py,CELL,CELL);
       }
     }
-
-    /* Goal */
     const gx=goal.x*CELL+CELL/2,gy=goal.y*CELL+CELL/2;
     const pulse=Math.sin(Date.now()*0.006)*2.5;
     ctx.fillStyle='#B8924A';
     ctx.beginPath();ctx.arc(gx,gy,SHAPE.GOAL_INNER+pulse/2,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle='rgba(184,146,74,0.45)';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(gx,gy,SHAPE.GOAL_OUTER+pulse,0,Math.PI*2);ctx.stroke();
-
-    /* Robot */
     ctx.save();
     ctx.translate(robot.x*CELL,robot.y*CELL);ctx.rotate(robot.angle);
     ctx.fillStyle='#DDD7CC';
@@ -1092,10 +1017,7 @@ const rlEngine = (() => {
   }
 
   function markInteracted() {
-    if(!hasInteracted){
-      hasInteracted=true;
-      hintUI.classList.add('hidden');
-    }
+    if(!hasInteracted){ hasInteracted=true; hintUI.classList.add('hidden'); }
   }
 
   function handlePointer(clientX,clientY) {
@@ -1107,22 +1029,17 @@ const rlEngine = (() => {
       &&!(x===goal.x&&y===goal.y)
       &&!(x===Math.floor(robot.x)&&y===Math.floor(robot.y))
       &&!obs[x][y]) {
-      obs[x][y]=1;
-      wallsDirty=true;
+      obs[x][y]=1; wallsDirty=true;
     }
   }
 
   canvas.addEventListener('mousedown', e=>{isMouseDown=true;handlePointer(e.clientX,e.clientY);});
   canvas.addEventListener('mousemove', e=>{if(isMouseDown)handlePointer(e.clientX,e.clientY);});
   window.addEventListener('mouseup', ()=>{isMouseDown=false;});
-  
   canvas.addEventListener('touchstart', e=>{isMouseDown=true;handlePointer(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
   canvas.addEventListener('touchmove',  e=>{if(isMouseDown)handlePointer(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
   window.addEventListener('touchend',   ()=>{isMouseDown=false;});
-
-  canvas.addEventListener('keydown', e=>{
-    if(e.key==='c'||e.key==='C'){clearWalls();}
-  });
+  canvas.addEventListener('keydown', e=>{if(e.key==='c'||e.key==='C'){clearWalls();}});
 
   function respawn() {
     do {
@@ -1135,14 +1052,11 @@ const rlEngine = (() => {
 
   function clearWalls() {
     obs=Array.from({length:G},()=>new Uint8Array(G));
-    wallsDirty=true;
-    markInteracted();
+    wallsDirty=true; markInteracted();
   }
 
   function loop() {
-    maybeResolveBellman();
-    stepRobot();
-    draw();
+    maybeResolveBellman(); stepRobot(); draw();
     if(isVisible) animId=requestAnimationFrame(loop);
     else animId=null;
   }
@@ -1156,8 +1070,7 @@ const rlEngine = (() => {
   visObs.observe(canvas);
 
   if(canvas.getBoundingClientRect().top<window.innerHeight){
-    isVisible=true;
-    animId=requestAnimationFrame(loop);
+    isVisible=true; animId=requestAnimationFrame(loop);
   }
 
   return { clearWalls };
