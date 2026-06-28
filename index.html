@@ -795,15 +795,6 @@ function toggleMenu(force) {
    để tránh lỗi feedback loop khi transform đang tác động
    ============================================================ */
 (function initScrollScrubbing() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.scrub-item').forEach(el => {
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-      el.style.filter = 'none';
-    });
-    return;
-  }
-
   /* Chụp offsetTop thực tế MỘT LẦN sau khi trang load xong
      (lúc này chưa có transform nào, nên vị trí là chính xác) */
   const items = [];
