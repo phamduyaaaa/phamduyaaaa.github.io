@@ -1224,28 +1224,44 @@ backdrop.addEventListener('click', () => toggleMenu(false));
    SCROLL SCRUB — respects prefers-reduced-motion
    ============================================================ */
 (function initScrollScrub() {
+  const domItems = document.querySelectorAll('.scrub-item');
+
   if (NO_MOTION) {
-    document.querySelectorAll('.scrub-item').forEach(el => {
+    domItems.forEach(el => {
       el.style.opacity = '1';
       el.style.transform = 'none';
-      el.style.filter = 'none';
     });
     return;
   }
+
+  // Set initial state trước khi snapshot
+  domItems.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)';
+  });
 
   const items = [];
 
   function snapshot() {
     items.length = 0;
     const scrollY = window.scrollY;
-    document.querySelectorAll('.scrub-item').forEach(el => {
+    // Tạm thời xóa transform để đo đúng vị trí
+    domItems.forEach(el => el.style.transform = 'none');
+    domItems.forEach(el => {
       const rect = el.getBoundingClientRect();
       items.push({ el, naturalTop: rect.top + scrollY, progress: 0 });
     });
+    // Khôi phục transform cho các item chưa visible
+    items.forEach(item => {
+      if (item.progress < 0.01) item.el.style.transform = 'translateY(28px)';
+    });
   }
 
-  snapshot();
+  // Delay snapshot đến sau khi fonts + layout ổn định
+  requestAnimationFrame(() => requestAnimationFrame(snapshot));
+
   new ResizeObserver(debounce(snapshot, 150)).observe(document.body);
+  window.addEventListener('load', snapshot);  // re-snapshot sau khi ảnh/font load xong
 
   const ENTER_OFFSET = 80;
   const RANGE = 260;
@@ -1255,7 +1271,9 @@ backdrop.addEventListener('click', () => toggleMenu(false));
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
     items.forEach(item => {
-      const t = Math.max(0, Math.min(1, (scrollY - (item.naturalTop - vh + ENTER_OFFSET)) / RANGE));
+      const t = Math.max(0, Math.min(1,
+        (scrollY - (item.naturalTop - vh + ENTER_OFFSET)) / RANGE
+      ));
       item.progress += (t - item.progress) * 0.18;
       const p = item.progress;
       item.el.style.opacity = p.toFixed(3);
