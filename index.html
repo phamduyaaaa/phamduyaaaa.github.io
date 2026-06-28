@@ -886,13 +886,12 @@ function toggleMenu(force) {
     if (el) sectionObs.observe(el);
   });
 })();
-
 /* ============================================================
-   LIVE SCROLL SCRUBBING ENGINE (Foolproof Live Coordinate Fix)
+   SCROLL-DRIVEN SCALE + FADE + BLUR ENGINE
    ============================================================ */
 (function initScrollScrubbing() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.scrub-item').forEach(el => el.style.opacity = 1);
+    document.querySelectorAll('.scrub-item').forEach(el => { el.style.opacity = 1; });
     return;
   }
 
@@ -900,46 +899,51 @@ function toggleMenu(force) {
     let stagger = 0;
     if (el.parentElement && el.parentElement.classList.contains('stagger-grid')) {
       const siblings = Array.from(el.parentElement.querySelectorAll('.scrub-item'));
-      stagger = siblings.indexOf(el) * 65; // Độ trễ hình học 65px giữa các card anh em
+      stagger = siblings.indexOf(el) * 65;
     }
-
-    return {
-      el,
-      appliedY: 0,
-      current: 0,
-      target: 0,
-      stagger
-    };
+    return { el, appliedY: 0, appliedScale: 1, current: 0, target: 0, stagger };
   });
 
   function renderScrub() {
     const vh = window.innerHeight || 800;
 
     items.forEach(item => {
+      // Khôi phục vị trí thực bằng cách bù lại transform đang tác động
       const liveTop = item.el.getBoundingClientRect().top;
-      // Khôi phục vị trí thực tế bằng cách trừ đi quãng đường translateY đang tác động lên nó
-      const pureTop = liveTop - item.appliedY + item.stagger;
+      // Đảo ngược scale transform để lấy lại pureTop chính xác
+      const scaledMidOffset = (item.appliedScale - 1) * (item.el.offsetHeight / 2);
+      const pureTop = liveTop - item.appliedY + scaledMidOffset + item.stagger;
 
-      // Điểm kích hoạt animation (khi đỉnh phần tử chạm mép dưới màn hình + bù trễ)
       const start = vh + 30;
-      // Điểm kết thúc animation (khi đỉnh phần tử đi vào sâu được 22% viewport)
       const end = vh * 0.78;
 
       let p = (start - pureTop) / (start - end);
       p = Math.max(0, Math.min(1, p));
 
       item.target = p;
-      // Hàm nội suy Lerp: làm mềm các thao tác khựng giật của con lăn chuột
       item.current += (item.target - item.current) * 0.09;
 
-      const op = item.current;
-      const y = (1 - item.current) * 45;
-      const blur = (1 - item.current) * 6;
+      const t = item.current;
+
+      // Opacity: 0 → 1
+      const op = t;
+
+      // TranslateY: 45px → 0px
+      const y = (1 - t) * 45;
+
+      // Scale: 0.88 → 1.0 (bắt đầu từ 88%, phóng to về kích thước thực)
+      const scale = 0.88 + t * 0.12;
+
+      // Blur: 6px → 0px
+      const blur = (1 - t) * 6;
 
       item.appliedY = y;
+      item.appliedScale = scale;
+
       item.el.style.opacity = op;
-      item.el.style.transform = `translateY(${y}px)`;
+      item.el.style.transform = `translateY(${y}px) scale(${scale})`;
       item.el.style.filter = `blur(${blur}px)`;
+      item.el.style.transformOrigin = 'center bottom';
     });
 
     requestAnimationFrame(renderScrub);
