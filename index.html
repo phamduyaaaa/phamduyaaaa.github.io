@@ -984,8 +984,7 @@ function debounce(func, wait) {
 const rlEngine = (() => {
   const canvas  = document.getElementById('rlCanvas');
   const ctx     = canvas.getContext('2d');
-  const scoreUI = document.getElementById('rlScore');
-  const scoreSpan = scoreUI.querySelector('span');
+  const scoreSpan = document.getElementById('rlScore'); // Đã sửa DOM reference
   const hintUI  = document.getElementById('rlHint');
 
   const G = 26, LOGICAL = 480, GAMMA = 0.94;
