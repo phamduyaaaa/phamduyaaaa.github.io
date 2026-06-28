@@ -271,10 +271,8 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
    ============================================================ */
 .scrub-item {
   opacity: 0;
-  transform: translateY(40px) scale(0.96);
   will-change: opacity, transform, filter;
 }
-
 @media (max-width: 960px) {
   .hero-layout, .about-grid, .contact-layout { grid-template-columns: 1fr; gap: 48px; }
   .project-card.featured { flex-direction: column; }
@@ -879,6 +877,8 @@ function debounce(func, wait) {
     snapshot();
   }, 100));
   resizeObs.observe(document.body);
+
+  window.addEventListener('load', snapshot);
 
   function tick() {
     const scrollY = window.scrollY;
