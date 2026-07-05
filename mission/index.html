@@ -149,11 +149,6 @@
   .note-meta { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 3px; }
   .note-text { font-size: 11px; color: var(--text2); }
 
-  /* PROGRESS RING */
-  .prog-ring { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
-  .prog-ring svg { transform: rotate(-90deg); }
-  .prog-ring .pct-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; font-weight: 700; }
-
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -379,7 +374,7 @@ const WEEKS = [
  ],
  tasks:[
   {day:'T2',tag:'paper',title:'Đọc SigLIP paper "Sigmoid Loss for Language Image Pre-Training"',sub:'Tại sao sigmoid loss tốt hơn softmax ở batch lớn?',out:'Notes: SigLIP vs CLIP loss mechanics'},
-  {day:'T3',tag:'paper',title:'Đọc DINOv2 paper — self-supervised ViT không cần labels',sub:'Focus: Section 3 training, Figure 2 feature quality',out:'Hiểu tại sao DINOv2 features tốt cho dense tasks'},
+  {day:'T3',tag:'paper',title(--w:8--),'title':'Đọc DINOv2 paper — self-supervised ViT không cần labels',sub:'Focus: Section 3 training, Figure 2 feature quality',out:'Hiểu tại sao DINOv2 features tốt cho dense tasks'},
   {day:'T4',tag:'code',title:'Load SigLIP-400M và DINOv2-L bằng HuggingFace transformers',sub:'Extract features từ robot observation images (BridgeData)',out:'Feature tensors đúng shape, verify với tsne plot'},
   {day:'T5',tag:'run',title:'Benchmark: SigLIP vs DINOv2 vs CLIP trên robot image retrieval',sub:'Sử dụng BridgeData V2 subset 10k ảnh',out:'Bảng so sánh: R@1, R@5, inference time'},
   {day:'T6',tag:'read',title:'Đọc OpenVLA paper Section 3 — dual encoder design choice',sub:'Tại sao dùng cả DINOv2 + SigLIP thay vì chỉ 1 model?',out:'Hiểu motivation của feature concatenation'},
@@ -398,7 +393,7 @@ const WEEKS = [
   {day:'T3',tag:'read',title:'CS224n Lecture 9-10: Pretraining, Question Answering',sub:'Span extraction vs generative QA',out:'Notes: how QA maps to robot instruction'},
   {day:'T4',tag:'code',title:'Fine-tune BERT cho NER task — nhận dạng object, action, location trong lệnh robot',sub:'Dataset tự tạo: 500 câu lệnh robot annotated',out:'NER model F1 > 0.85'},
   {day:'T5',tag:'code',title:'Semantic parsing: chuyển câu tự nhiên → structured robot command',sub:'"Pick up the red cube on the left" → {action: pick, obj: cube, color: red, pos: left}',out:'Parser accuracy > 80% trên test set'},
-  {day:'T6',tag:'write',title(--w:9--),'sub':'Cần gì thêm để kết nối với visual grounding?',out:'Research note 600 từ'},
+  {day:'T6',tag:'write',title:'Viết: "NLP cho robot instruction — bài học từ tuần này"',sub:'Cần gì thêm để kết nối với visual grounding?',out:'Research note 600 từ'},
  ]
 },
 {w:10, phase:1, title:'Multimodal Fusion — Kết nối Vision và Language',
@@ -511,7 +506,7 @@ const WEEKS = [
   {day:'T2',tag:'paper',title:'Đọc OpenVLA paper (Kim et al. 2024) đầy đủ',sub:'Focus: Section 3 architecture, Section 4 training data (Open X-Embodiment)',out:'Diagram: DINOv2 + SigLIP → LLaMA-7B'},
   {day:'T3',tag:'code',title:'Load OpenVLA-7B từ HuggingFace, chạy inference trên demo images',sub:'openvla/openvla-7b — follow README inference script',out:'Action tokens generated, decoded to joint angles'},
   {day:'T4',tag:'run',title:'Evaluate OpenVLA trên BridgeData V2 — tính success rate zero-shot',sub:'Dùng BridgeData eval set chuẩn, 20 tasks',out:'Zero-shot success rate table per task'},
-  {day:'T5',tag:'code',title:'Visualize: với mỗi instruction, plot attention map + predicted action',sub:'Overlay attention trên robot camera image',out:'Visualization script + 10 example figures'},
+  {day:'T5',tag:'code',title:'Visualize: với instruction, plot attention map + predicted action',sub:'Overlay attention trên robot camera image',out:'Visualization script + 10 example figures'},
   {day:'T6',tag:'write',title:'Viết: "OpenVLA failure modes — khi nào nó fail?"',sub:'Phân tích: task mới, visual distribution shift, ambiguous instruction',out:'Failure analysis doc — input cho P3 research'},
  ]
 },
@@ -576,7 +571,7 @@ const WEEKS = [
   {day:'T3',tag:'paper',title:'Đọc "WorldVLA" hoặc UniVLA — world model prediction trong VLA',sub:'Tìm preprint 2025-2026 trên arxiv: VLA world model',out:'Hiểu latent action prediction approach'},
   {day:'T4',tag:'read',title:'Đọc LeRobot docs về GR00T integration: lerobot/common/policies/gr00t.py',sub:'Trace code, hiểu interface',out:'Notes: GR00T trong LeRobot'},
   {day:'T5',tag:'run',title:'Chạy GR00T demo hoặc load checkpoint nếu có access (NVIDIA Open Model License)',sub:'Nếu không có: reproduce bằng π0 thay thế',out:'Inference output + qualitative analysis'},
-  {day(--w:20--),tag:'write',title:'Viết: "VLA landscape 2026 — map đầy đủ các approach"',sub:'Discrete token / diffusion / flow / world model',out:'Landscape doc — reference cho research P3'},
+  {day:'T6',tag:'write',title:'Viết: "VLA landscape 2026 — map đầy đủ các approach"',sub:'Discrete token / diffusion / flow / world model',out:'Landscape doc — reference cho research P3'},
  ]
 },
 {w:21, phase:2, title:'Real Robot Integration — ROS2 + LeRobot Bridge',
@@ -604,7 +599,7 @@ const WEEKS = [
   {k:'Kết quả',v:'HIL pipeline tích hợp với policy, data auto-saved'},
  ],
  tasks:[
-  {day:'T2',tag:'read',title:'Đọc lại paper của bạn về HG-DAgger — fresh eyes sau khi học VLA',sub:'Note: cái gì giống / khác với LeRobot HIL approach?',out:'Comparison: paper cũ vs LeRobot HIL'},
+  {day:'T2',tag:'read',title:'Đọc lại paper của bạn về HG-DAgger — fresh eyes sau khi học VLA',sub:'Note: cái gì giống / khác with LeRobot HIL approach?',out:'Comparison: paper cũ vs LeRobot HIL'},
   {day:'T3',tag:'code',title:'Setup gym_hil với MuJoCo Franka Panda environment',sub:'lerobot/gym_hil — follow quickstart',out:'Joystick/keyboard intervention working'},
   {day:'T4',tag:'code',title:'Record HIL dataset: 2 giờ collect demonstration + intervention',sub:'Dùng lerobot-record, save LeRobotDataset format',out:'Dataset: ~500 episodes, logged to HF Hub'},
   {day:'T5',tag:'run',title:'Fine-tune policy trên HIL data, so sánh với pure BC',sub:'Hypothesis: HIL data + BC > pure BC',out:'Success rate comparison'},
@@ -622,7 +617,7 @@ const WEEKS = [
  tasks:[
   {day:'T2',tag:'read',title:'Đọc LIBERO paper và Meta-World paper',sub:'Task suites, metrics, baseline numbers',out:'Hiểu LIBERO-Spatial, LIBERO-Object, LIBERO-Goal, LIBERO-100'},
   {day:'T3',tag:'code',title:'Setup LIBERO evaluation với LeRobot',sub:'lerobot + libero integration, 4 task suites',out:'Eval script chạy 1 task suite clean'},
-  {day:'T4',tag:'run',title:'Chạy đầy đủ LIBERO benchmark cho 3 policies: ACT, DiffPol, OpenVLA-LoRA',sub:'100 episodes × 4 suites × 3 policies = 1200 episodes',out:'Full benchmark table'},
+  {day:'T4',tag(--w:23--),'run',title:'Chạy đầy đủ LIBERO benchmark cho 3 policies: ACT, DiffPol, OpenVLA-LoRA',sub:'100 episodes × 4 suites × 3 policies = 1200 episodes',out:'Full benchmark table'},
   {day:'T5',tag:'code',title:'Tạo automated benchmark report: HTML + matplotlib figures',sub:'Script: run_eval.py → report.html tự động',out:'report.html với tất cả kết quả'},
   {day:'T6',tag:'write',title:'Phân tích kết quả: task nào khó nhất? Tại sao?',sub:'Failure case analysis + hypothesis',out:'Analysis doc — input cho P3 hypothesis'},
  ]
@@ -834,7 +829,7 @@ const WEEKS = [
   {day:'T3',tag:'write',title:'Phân tích: kết quả P3 áp dụng vào sản phẩm VinRobotics thế nào?',sub:'Identify 2-3 product scenarios: service robot nhận lệnh tự nhiên',out:'Product application doc'},
   {day:'T4',tag:'write',title:'Viết P4 Deployment Plan: timeline, resources, success metrics',sub:'Bao gồm: safety requirements, real robot testing protocol',out:'P4 plan v1.0'},
   {day:'T5',tag:'write',title:'Technical debt list: cái gì cần refactor trước khi deploy production',sub:'P2 code, data pipeline, inference server',out:'Tech debt prioritized list'},
-  {day:'T6',tag(--w:36--),tag:'write',title:'Gửi P4 plan cho manager/team tại VinRobotics, align expectations',sub:'Timeline realistic, resources confirmed',out:'P4 plan approved'},
+  {day:'T6',tag:'write',title:'Gửi P4 plan cho manager/team tại VinRobotics, align expectations',sub:'Timeline realistic, resources confirmed',out:'P4 plan approved'},
  ]
 },
 
@@ -962,7 +957,7 @@ const WEEKS = [
  tasks:[
   {day:'T2',tag:'write',title:'Document GPU cluster: nodes, VRAM, networking, job scheduler',sub:'SLURM config template, best practices',out:'Cluster guide doc'},
   {day:'T3',tag:'code',title:'Setup data lake: LeRobotDataset trên NFS + HuggingFace Hub backup',sub:'Naming convention, version control cho datasets',out:'Data lake ready, versioned'},
-  {day:'T4',tag:'code',title:'Setup experiment tracking template: WandB + standard config YAML',sub:'1 YAML → 1 reproducible experiment',out:'Experiment template + example'},
+  {day:'T4',tag(--w:44--),'code',title:'Setup experiment tracking template: WandB + standard config YAML',sub:'1 YAML → 1 reproducible experiment',out:'Experiment template + example'},
   {day:'T5',tag:'write',title:'Viết onboarding guide cho junior researcher mới vào lab',sub:'"Chạy experiment đầu tiên trong 1 ngày"',out:'Onboarding guide 2000 từ'},
   {day:'T6',tag:'write',title:'Lab handbook v1.0: policies, best practices, tooling',sub:'Bao gồm: code review, paper writing, experiment standards',out:'Lab handbook published trên Notion/Confluence'},
  ]
@@ -1057,8 +1052,8 @@ const WEEKS = [
  ],
  tasks:[
   {day:'T2',tag:'write',title:'Đếm thành tích: papers, deployments, citations, team impact',sub:'Dùng Mission Control history để thống kê task completion',out:'Achievement summary'},
-  {day:'T3',tag:'write',title:'Viết "What worked" — 5 điều hiệu quả nhất',sub:'Cụ thể, có evidence, không chung chung',out:'What worked section'},
-  {day:'T4',tag:'write',title:'Viết "What didn\'t work" — 5 điều thất bại hoặc overestimated',sub:'Honest, no blame',out:'What didn\'t work section'},
+  {day:'T3',tag:'write',title:'Viết "What worked" — 5 điều hiệu quả nhất',sub:'Cụ thể, có evidence, có bằng chứng, không chung chung',out:'What worked section'},
+  {day:'T4',tag:'write',title:'Viết "What didn\'t work" — 5 điều thất bại hoặc overestimated',sub:'Honest, không đổ lỗi',out:'What didn\'t work section'},
   {day:'T5',tag:'write',title:'Viết "Year 2 plan" — research + product + team goals',sub:'SMART goals, 3 tháng / 6 tháng / 12 tháng',out:'Year 2 plan draft'},
   {day:'T6',tag:'write',title:'Finalize annual review, share với mentor + management',sub:'Dùng làm basis cho promotion/grant discussion',out:'Annual review v1.0 published'},
  ]
@@ -1068,7 +1063,7 @@ const WEEKS = [
  gate:'1 grant proposal submitted',
  playbook:[
   {k:'Mục tiêu',v:'Funding = independence + bigger compute'},
-  {k(--w:51--),'v':'Nafosted robotics call + research track record từ paper'},
+  {k:'Nguồn chính',v:'Nafosted robotics call + research track record từ paper'},
   {k:'Kết quả',v:'Grant proposal submitted'},
  ],
  tasks:[
@@ -1344,7 +1339,7 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderWeek();
 });
 
-// Chạy an toàn sau khi load xong DOM tree
+// Khởi chạy sau khi load xong DOM tree
 window.addEventListener('DOMContentLoaded', async () => {
   await loadState();
   render();
