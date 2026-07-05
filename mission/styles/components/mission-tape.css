@@ -1,0 +1,55 @@
+.mission-tape {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  overflow-x: auto;
+  height: 52px;
+  scrollbar-width: thin;
+}
+
+.tape-phase {
+  display: flex;
+}
+
+.tape-seg {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  height: 100%;
+  border-right: 1px solid var(--border-subtle);
+  cursor: pointer;
+  min-width: 80px;
+  position: relative;
+  transition: background-color var(--transition-fast);
+}
+
+.tape-seg:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.tape-seg--current {
+  background-color: var(--bg-hover);
+}
+
+.tape-seg__label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.tape-seg__title {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tape-seg__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  transition: width var(--transition-normal);
+}
