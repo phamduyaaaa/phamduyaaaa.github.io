@@ -5,6 +5,9 @@ export class TaskTable {
   constructor(headerContainer, tableContainer) {
     this.headerContainer = headerContainer;
     this.tableContainer = tableContainer;
+    
+    // Khởi tạo Event Delegation ngay khi tạo Component
+    this.initEventDelegation();
   }
 
   render(state) {
@@ -41,16 +44,17 @@ export class TaskTable {
       );
     }
 
-    // 3. Render Table
+    // 3. Render Table với Key đã được mã hóa an toàn (encodeURIComponent)
     const rows = tasks.map(t => {
-      const key = `${week.w}_${t.day}_${t.title.slice(0, 20)}`;
-      const isDone = !!state.done[key];
+      const rawKey = `${week.w}_${t.day}_${t.title.slice(0, 20)}`;
+      const safeKey = encodeURIComponent(rawKey);
+      const isDone = !!state.done[rawKey];
 
       return `
         <tr class="task-row">
           <td>
             <button class="task-check" role="checkbox" aria-checked="${isDone}" 
-                    data-key="${key}" aria-label="Mark task ${t.title} as completed" type="button">
+                    data-key="${safeKey}" aria-label="Mark task ${t.title} as completed" type="button">
             </button>
           </td>
           <td class="task-day">${t.day}</td>
@@ -77,17 +81,19 @@ export class TaskTable {
         <tbody>${rows}</tbody>
       </table>
     `;
-
-    this.bindEvents();
   }
 
-  bindEvents() {
-    this.tableContainer.querySelectorAll('.task-check').forEach(chk => {
-      chk.addEventListener('click', async (e) => {
-        const key = e.currentTarget.dataset.key;
-        store.toggleTask(key);
-        await savePersistedState(store.state);
-      });
+  // Event Delegation: Bắt sự kiện click từ container cha, cực kỳ mượt mà và chống lỗi re-render
+  initEventDelegation() {
+    this.tableContainer.addEventListener('click', async (e) => {
+      const checkBtn = e.target.closest('.task-check');
+      if (!checkBtn) return;
+
+      // Giải mã key về nguyên bản để lưu store
+      const rawKey = decodeURIComponent(checkBtn.dataset.key);
+      
+      store.toggleTask(rawKey);
+      await savePersistedState(store.state);
     });
   }
 }
