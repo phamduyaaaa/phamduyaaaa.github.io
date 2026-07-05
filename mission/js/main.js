@@ -10,7 +10,7 @@ import { Playbook } from './components/Playbook.js';
 import { Notes } from './components/Notes.js';
 
 async function bootstrap() {
-  // 1. Khởi tạo Storage & Kiểm tra kết nối mạng
+  // 1. Khởi tạo Storage & Kiểm tra kết nối mạng (Firebase / LocalStorage)
   const isOnline = await initStorage();
 
   // 2. Tải dữ liệu từ weeks.json
@@ -19,15 +19,15 @@ async function bootstrap() {
     const res = await fetch('./data/weeks.json');
     rawData = await res.json();
   } catch (e) {
-    console.error("Lỗi đọc data/weeks.json:", e);
+    console.error("Lỗi đọc file data/weeks.json:", e);
   }
 
   let phases = [];
   let weeks = [];
 
-  // 3. ADAPTER: Kiểm tra cấu trúc JSON (Nested Phases mới hay Flat Weeks cũ)
-  if (rawData.length > 0 && rawData[0].weeks) {
-    // ==> Cấu trúc lồng nhóm theo Phase (p0 -> p5) của bạn
+  // 3. DATA ADAPTER: Chuẩn hóa & bóc tách dữ liệu
+  if (Array.isArray(rawData) && rawData.length > 0 && rawData[0].weeks) {
+    // ==> Trường hợp 1: Cấu trúc lồng nhóm theo Phase (p0 -> p5) của bạn
     const phaseColors = [
       'var(--p1)', 'var(--p2)', 'var(--p3)', 
       'var(--p4)', '#38bdf8', '#f43f5e'
@@ -47,24 +47,32 @@ async function bootstrap() {
         p.weeks.forEach(w => {
           weeks.push({
             ...w,
-            phase: phaseId // Gắn phaseId vào từng tuần để UI lọc chuẩn xác
+            phase: phaseId,
+            // PHÒNG THỦ: Đảm bảo tasks luôn là mảng [], tránh lỗi 'forEach' on undefined
+            tasks: Array.isArray(w.tasks) ? w.tasks : []
           });
         });
       }
     });
   } else {
-    // ==> Trường hợp cấu trúc phẳng cũ (Fallback)
-    weeks = rawData;
+    // ==> Trường hợp 2: Cấu trúc phẳng cũ (Fallback)
+    weeks = (rawData || []).map(w => ({
+      ...w,
+      tasks: Array.isArray(w.tasks) ? w.tasks : []
+    }));
+
     try {
       const pRes = await fetch('./data/phases.json');
       phases = await pRes.json();
-    } catch(e) {}
+    } catch(e) {
+      console.warn("Không tải được phases.json, sử dụng cấu hình mặc định.");
+    }
   }
 
-  // 4. Tải tiến độ đã lưu của người dùng
+  // 4. Tải tiến độ đã lưu của người dùng (Checklist done & Notes)
   const persistedState = await loadPersistedState();
 
-  // 5. Khởi tạo UI Components
+  // 5. Khởi tạo các UI Components dựa trên data-attribute
   const headerComp = new Header(document.querySelector('[data-component="header"]'));
   const weekListComp = new WeekList(document.querySelector('[data-component="week-list"]'));
   const missionTapeComp = new MissionTape(document.querySelector('[data-component="mission-tape"]'));
@@ -76,7 +84,7 @@ async function bootstrap() {
   const playbookComp = new Playbook(document.querySelector('[data-component="playbook"]'));
   const notesComp = new Notes(document.querySelector('[data-component="notes"]'));
 
-  // 6. Đăng ký nhận sự kiện cập nhật giao diện
+  // 6. Đăng ký nhận sự kiện cập nhật giao diện (Reactive Pub/Sub)
   store.subscribe((state) => {
     headerComp.render(state, isOnline);
     weekListComp.render(state);
@@ -87,7 +95,7 @@ async function bootstrap() {
     notesComp.render(state);
   });
 
-  // 7. Nạp dữ liệu ban đầu vào Store
+  // 7. Nạp trạng thái ban đầu vào Store để kích hoạt lần render đầu tiên
   store.setState({
     phases,
     weeks,
