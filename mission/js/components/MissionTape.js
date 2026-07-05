@@ -10,8 +10,8 @@ export class MissionTape {
       const phWeeks = state.weeks.filter(w => w.phase === ph.id);
       const segs = phWeeks.map(w => {
         let done = 0;
-        w.tasks.forEach(t => {
-          if (state.done[`${w.w}_${t.day}_${t.title.slice(0, 20)}`]) done++;
+        w.tasks.forEach((t, idx) => {
+          if (state.done[`${w.w}_${t.day}_${idx}`]) done++;
         });
         const pct = w.tasks.length ? (done / w.tasks.length) * 100 : 0;
         const isCurrent = w.w === state.currentWeek ? 'tape-seg--current' : '';
