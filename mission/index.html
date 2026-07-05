@@ -175,6 +175,9 @@
   #search-input { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-size: 11px; padding: 4px 10px; outline: none; width: 160px; }
   #search-input:focus { border-color: var(--accent); }
 </style>
+<!-- Sử dụng CDN script chuẩn v8, loại bỏ type="module" hoàn toàn để tránh lỗi cross-origin trên github.io -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
@@ -224,11 +227,8 @@
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-
-// ─── FIREBASE ───────────────────────────────────────────────────────────────
+<script>
+// ─── FIREBASE CONFIG ────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyBSHMHJf2P-uxk_bKlKPTxFWsefAtjXVPE",
   authDomain: "claude-mission-control.firebaseapp.com",
@@ -238,14 +238,17 @@ const firebaseConfig = {
   messagingSenderId: "1011955299073",
   appId: "1:1011955299073:web:abc123def456"
 };
-let db;
-try {
-  const app = initializeApp(firebaseConfig);
-  db = getDatabase(app);
-  document.getElementById('sync-dot').classList.add('ok');
-} catch(e) { console.warn('Firebase init failed, running offline:', e); }
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  document.getElementById('sync-dot').classList.add('ok');
+} catch(e) { 
+  console.warn('Firebase init failed, running offline mode:', e); 
+}
+
+// ─── DATA LO TRÌNH ───────────────────────────────────────────────────────────
 const PHASES = [
   { id: 1, label: 'P1', title: 'Transformer + Vision-Language', color: 'var(--p1)', weeks: [1,12] },
   { id: 2, label: 'P2', title: 'VLA Thực Chiến (LeRobot)', color: 'var(--p2)', weeks: [13,24] },
@@ -992,7 +995,7 @@ const WEEKS = [
  tasks:[
   {day:'T2',tag:'paper',title:'Survey arxiv: robot learning papers tháng 10-12/2026',sub:'Focus: world models cho robot, VLA embodiment transfer',out:'20 papers annotated'},
   {day:'T3',tag:'paper',title:'Đọc sâu 3 papers promising nhất',sub:'Tìm: chưa ai làm + bạn có competitive advantage',out:'Deep notes 3 papers'},
-  {day:'T4',tag:'write',title:'Brainstorm: 5 research ideas, mỗi idea 1 paragraph',sub:'Liên hệ: RL background + VLA knowledge của bạn',out:'5 ideas doc'},
+  {day:'T4',tag:'run',title:'Brainstorm: 5 research ideas, mỗi idea 1 paragraph',sub:'Liên hệ: RL background + VLA knowledge của bạn',out:'5 ideas doc'},
   {day:'T5',tag:'write',title:'Chọn 1 idea mạnh nhất, viết mini-proposal',sub:'Problem, why now, your advantage, expected contribution',out:'Mini-proposal 1 trang'},
   {day:'T6',tag:'write',title:'Discuss với mentor, refine',sub:'Check: feasible trong 1 năm? Novel enough?',out:'Next research direction confirmed'},
  ]
@@ -1010,7 +1013,7 @@ const WEEKS = [
   {day:'T3',tag:'code',title:'ONNX export + TensorRT optimization',sub:'tensorrt.Engine cho vision encoder',out:'TRT engine, benchmark latency'},
   {day:'T4',tag:'run',title:'Benchmark: FP32 vs FP16 vs INT8 vs TRT trên edge GPU',sub:'Jetson Orin hoặc 3090 24GB làm "edge"',out:'Speed/accuracy tradeoff table'},
   {day:'T5',tag:'code',title:'Knowledge distillation: distill OpenVLA-7B → 1B model',sub:'Teacher: OpenVLA-LoRA, student: SmolVLA',out:'Distilled model training running'},
-  {day:'T6',tag:'write',title:'Viết: "Edge deployment of VLA — guide cho hardware team"',sub:'Practical guide không phải paper',out:'Edge deployment guide doc'},
+  {day:'T6',tag(--w:47--),'v':'Edge deployment guide doc'},
  ]
 },
 {w:48, phase:4, title:'Security + Robustness — Adversarial Testing',
@@ -1095,26 +1098,45 @@ const WEEKS = [
 },
 ]; // end WEEKS
 
-// State
+// Khởi tạo State ban đầu
 let state = { done: {}, notes: {}, currentWeek: 1, currentPhase: 1, filter: 'all', search: '' };
 const KEY = 'vla_mc_state_v2';
 
+// Hàm bất đồng bộ tải dữ liệu (Phối hợp Realtime lắng nghe Firebase và Local làm backup)
 async function loadState() {
+  // 1. Phục hồi từ LocalStorage trước để giao diện hiển thị ngay lập tức
+  try {
+    const s = localStorage.getItem(KEY);
+    if (s) {
+      const localData = JSON.parse(s);
+      state.done = Object.assign({}, state.done, localData.done || {});
+      state.notes = Object.assign({}, state.notes, localData.notes || {});
+    }
+  } catch(e) { console.warn("LocalStorage load blocked.", e); }
+
+  // 2. Nếu có kết nối Firebase, lấy data mới nhất về đè lên bản Local
   if (db) {
     try {
-      const snap = await get(ref(db, KEY));
-      if (snap.exists()) state = { ...state, ...snap.val() };
-    } catch(e) {}
-  } else {
-    try { const s = localStorage.getItem(KEY); if (s) state = { ...state, ...JSON.parse(s) }; } catch(e) {}
+      const snap = await db.ref(KEY).get();
+      if (snap.exists()) {
+        const fbData = snap.val();
+        state.done = Object.assign({}, state.done, fbData.done || {});
+        state.notes = Object.assign({}, state.notes, fbData.notes || {});
+      }
+    } catch(e) { console.error("Firebase get state error:", e); }
   }
 }
 
+// Hàm đồng bộ lưu trữ lên đám mây và lưu cục bộ song song
 async function saveState() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch(e) { console.warn("LocalStorage save blocked.", e); }
+
   if (db) {
-    try { await set(ref(db, KEY), state); } catch(e) {}
-  } else {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+    try {
+      await db.ref(KEY).set(state);
+    } catch(e) { console.error("Firebase write state error:", e); }
   }
 }
 
@@ -1245,12 +1267,18 @@ function renderWeek() {
     <tbody>${rows}</tbody>
   </table>`;
 
+  // Thêm logic đồng bộ hóa giao diện an toàn
   taskArea.querySelectorAll('.task-check').forEach(el => {
-    el.addEventListener('click', async () => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation(); // Ngăn lỗi nổi bọt sự kiện gây đứng màn hình
       const k = el.dataset.key;
       state.done[k] = !state.done[k];
-      await saveState();
+      
+      // Render UI local trước để tạo cảm giác bấm mượt không độ trễ
       render();
+      
+      // Đẩy data ngầm lên Firebase / LocalStorage sau
+      await saveState();
     });
   });
 
@@ -1284,14 +1312,13 @@ function renderWeek() {
       if (!state.notes[state.currentWeek]) state.notes[state.currentWeek] = [];
       state.notes[state.currentWeek].unshift({ text: txt, date: new Date().toLocaleString('vi-VN') });
       e.target.value = '';
-      await saveState();
       render();
+      await saveState();
     }
   });
 }
 
 function render() {
-  // Phase pills
   document.querySelectorAll('.phase-pill').forEach(el => {
     el.classList.toggle('active', +el.dataset.p === state.currentPhase);
   });
@@ -1324,8 +1351,7 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderWeek();
 });
 
-// ─── INITIALIZATION ──────────────────────────────────────────────────────────
-// Đợi trình duyệt dựng xong DOM cấu trúc toàn bộ cây HTML rồi mới chạy logic render
+// Chạy khởi tạo an toàn sau khi load DOM tree thành công
 window.addEventListener('DOMContentLoaded', async () => {
   await loadState();
   render();
