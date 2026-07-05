@@ -9,7 +9,7 @@ export class Header {
     let totalDone = 0;
     let totalTasks = 0;
 
-    state.weeks.forEach(w => {
+    (state.weeks || []).forEach(w => {
       w.tasks.forEach((t, idx) => {
         totalTasks++;
         const key = `${w.w}_${t.day}_${idx}`;
