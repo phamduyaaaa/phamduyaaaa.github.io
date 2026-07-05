@@ -1,0 +1,6 @@
+[
+  { "id": 1, "label": "P1", "title": "Transformer + Vision-Language", "color": "var(--p1)", "weeks": [1, 12] },
+  { "id": 2, "label": "P2", "title": "VLA Thực Chiến (LeRobot)", "color": "var(--p2)", "weeks": [13, 24] },
+  { "id": 3, "label": "P3", "title": "Research Track", "color": "var(--p3)", "weeks": [25, 36] },
+  { "id": 4, "label": "P4", "title": "Deploy + Paper", "color": "var(--p4)", "weeks": [37, 52] }
+]
