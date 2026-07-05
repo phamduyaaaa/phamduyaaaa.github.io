@@ -5,8 +5,6 @@ export class TaskTable {
   constructor(headerContainer, tableContainer) {
     this.headerContainer = headerContainer;
     this.tableContainer = tableContainer;
-    
-    // Khởi tạo Event Delegation ngay khi tạo Component
     this.initEventDelegation();
   }
 
@@ -16,7 +14,6 @@ export class TaskTable {
 
     const currentPhase = state.phases.find(p => p.id === week.phase) || state.phases[0];
 
-    // 1. Render Week Header
     this.headerContainer.innerHTML = `
       <div class="week-header__badge" style="background: ${currentPhase.color}22; color: ${currentPhase.color}">
         W${week.w}
@@ -34,7 +31,6 @@ export class TaskTable {
       </div>
     `;
 
-    // 2. Filter & Search Tasks
     let tasks = week.tasks;
     if (state.filter !== 'all') tasks = tasks.filter(t => t.tag === state.filter);
     if (state.search) {
@@ -44,11 +40,12 @@ export class TaskTable {
       );
     }
 
-    // 3. Render Table với Key đã được mã hóa an toàn (encodeURIComponent)
-    const rows = tasks.map(t => {
-      const rawKey = `${week.w}_${t.day}_${t.title.slice(0, 20)}`;
-      const safeKey = encodeURIComponent(rawKey);
-      const isDone = !!state.done[rawKey];
+    // Sử dụng Index làm key tuyệt đối an toàn
+    const rows = tasks.map((t) => {
+      // Tìm index gốc của task trong mảng week.tasks
+      const originalIdx = week.tasks.indexOf(t);
+      const safeKey = `${week.w}_${t.day}_${originalIdx}`;
+      const isDone = !!state.done[safeKey];
 
       return `
         <tr class="task-row">
@@ -83,16 +80,12 @@ export class TaskTable {
     `;
   }
 
-  // Event Delegation: Bắt sự kiện click từ container cha, cực kỳ mượt mà và chống lỗi re-render
   initEventDelegation() {
     this.tableContainer.addEventListener('click', async (e) => {
       const checkBtn = e.target.closest('.task-check');
       if (!checkBtn) return;
-
-      // Giải mã key về nguyên bản để lưu store
-      const rawKey = decodeURIComponent(checkBtn.dataset.key);
-      
-      store.toggleTask(rawKey);
+      const key = checkBtn.dataset.key;
+      store.toggleTask(key);
       await savePersistedState(store.state);
     });
   }
