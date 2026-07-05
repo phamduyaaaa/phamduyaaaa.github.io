@@ -350,7 +350,7 @@ const WEEKS = [
   {day:'T3',tag:'read',title:'CS231n 2024 — Lecture về ViT và modern vision backbones',sub:'cs231n.stanford.edu slides + notes',out:'Hiểu inductive bias ViT vs CNN'},
   {day:'T4',tag:'code',title:'Implement ViT-tiny từ scratch (patch embed + transformer blocks)',sub:'Target: CIFAR-10, 72 dims, 6 heads, 6 layers',out:'vit_tiny.py — training loop runs'},
   {day:'T5',tag:'code',title:'Train ViT-tiny vs ResNet-18 trên CIFAR-10, so sánh',sub:'Accuracy, speed, data efficiency, convergence',out:'Comparison: ViT cần data nhiều hơn'},
-  {day(--w:6--),tag:'code',title:'Load ViT-L/16 pre-trained (timm library), visualize attention maps',sub:'Attention rollout trên robot observation image',out:'Hiểu vùng nào ViT attend trong ảnh robot'},
+  {day:'T6',tag:'code',title:'Load ViT-L/16 pre-trained (timm library), visualize attention maps',sub:'Attention rollout trên robot observation image',out:'Hiểu vùng nào ViT attend trong ảnh robot'},
  ]
 },
 {w:7, phase:1, title:'CLIP — Contrastive Vision-Language Pretraining',
@@ -398,7 +398,7 @@ const WEEKS = [
   {day:'T3',tag:'read',title:'CS224n Lecture 9-10: Pretraining, Question Answering',sub:'Span extraction vs generative QA',out:'Notes: how QA maps to robot instruction'},
   {day:'T4',tag:'code',title:'Fine-tune BERT cho NER task — nhận dạng object, action, location trong lệnh robot',sub:'Dataset tự tạo: 500 câu lệnh robot annotated',out:'NER model F1 > 0.85'},
   {day:'T5',tag:'code',title:'Semantic parsing: chuyển câu tự nhiên → structured robot command',sub:'"Pick up the red cube on the left" → {action: pick, obj: cube, color: red, pos: left}',out:'Parser accuracy > 80% trên test set'},
-  {day:'T6',tag:'write',title:'Viết: "NLP cho robot instruction — bài học từ tuần này"',sub:'Cần gì thêm để kết nối với visual grounding?',out:'Research note 600 từ'},
+  {day:'T6',tag:'write',title(--w:9--),'sub':'Cần gì thêm để kết nối với visual grounding?',out:'Research note 600 từ'},
  ]
 },
 {w:10, phase:1, title:'Multimodal Fusion — Kết nối Vision và Language',
@@ -576,7 +576,7 @@ const WEEKS = [
   {day:'T3',tag:'paper',title:'Đọc "WorldVLA" hoặc UniVLA — world model prediction trong VLA',sub:'Tìm preprint 2025-2026 trên arxiv: VLA world model',out:'Hiểu latent action prediction approach'},
   {day:'T4',tag:'read',title:'Đọc LeRobot docs về GR00T integration: lerobot/common/policies/gr00t.py',sub:'Trace code, hiểu interface',out:'Notes: GR00T trong LeRobot'},
   {day:'T5',tag:'run',title:'Chạy GR00T demo hoặc load checkpoint nếu có access (NVIDIA Open Model License)',sub:'Nếu không có: reproduce bằng π0 thay thế',out:'Inference output + qualitative analysis'},
-  {day:'T6',tag:'write',title:'Viết: "VLA landscape 2026 — map đầy đủ các approach"',sub:'Discrete token / diffusion / flow / world model',out:'Landscape doc — reference cho research P3'},
+  {day(--w:20--),tag:'write',title:'Viết: "VLA landscape 2026 — map đầy đủ các approach"',sub:'Discrete token / diffusion / flow / world model',out:'Landscape doc — reference cho research P3'},
  ]
 },
 {w:21, phase:2, title:'Real Robot Integration — ROS2 + LeRobot Bridge',
@@ -834,7 +834,7 @@ const WEEKS = [
   {day:'T3',tag:'write',title:'Phân tích: kết quả P3 áp dụng vào sản phẩm VinRobotics thế nào?',sub:'Identify 2-3 product scenarios: service robot nhận lệnh tự nhiên',out:'Product application doc'},
   {day:'T4',tag:'write',title:'Viết P4 Deployment Plan: timeline, resources, success metrics',sub:'Bao gồm: safety requirements, real robot testing protocol',out:'P4 plan v1.0'},
   {day:'T5',tag:'write',title:'Technical debt list: cái gì cần refactor trước khi deploy production',sub:'P2 code, data pipeline, inference server',out:'Tech debt prioritized list'},
-  {day:'T6',tag:'write',title:'Gửi P4 plan cho manager/team tại VinRobotics, align expectations',sub:'Timeline realistic, resources confirmed',out:'P4 plan approved'},
+  {day:'T6',tag(--w:36--),tag:'write',title:'Gửi P4 plan cho manager/team tại VinRobotics, align expectations',sub:'Timeline realistic, resources confirmed',out:'P4 plan approved'},
  ]
 },
 
@@ -980,7 +980,7 @@ const WEEKS = [
   {day:'T3',tag:'write',title:'Polish blog post, thêm figures từ paper, publish',sub:'Medium hoặc personal site + cross-post LinkedIn',out:'Blog post live, link shared'},
   {day:'T4',tag:'write',title:'Prepare internal seminar slides: 30 phút talk về VLA research',sub:'Audience: lab team + VinRobotics engineers',out:'Slides 25 trang'},
   {day:'T5',tag:'run',title:'Deliver internal seminar, Q&A',sub:'Record nếu được',out:'Talk delivered, feedback collected'},
-  {day(--w:45--),tag:'write',title:'Prepare abstract + slides cho conference talk (nếu paper accepted)',sub:'ICRA / CoRL talk: 12 phút + 3 phút Q&A',out:'Conference slides draft'},
+  {day:'T6',tag:'write',title:'Prepare abstract + slides cho conference talk (nếu paper accepted)',sub:'ICRA / CoRL talk: 12 phút + 3 phút Q&A',out:'Conference slides draft'},
  ]
 },
 {w:46, phase:4, title:'Next Research Direction — Scouting',
@@ -1068,7 +1068,7 @@ const WEEKS = [
  gate:'1 grant proposal submitted',
  playbook:[
   {k:'Mục tiêu',v:'Funding = independence + bigger compute'},
-  {k:'Nguồn chính',v:'Nafosted robotics call + research track record từ paper'},
+  {k(--w:51--),'v':'Nafosted robotics call + research track record từ paper'},
   {k:'Kết quả',v:'Grant proposal submitted'},
  ],
  tasks:[
@@ -1101,7 +1101,7 @@ const WEEKS = [
 let state = { done: {}, notes: {}, currentWeek: 1, currentPhase: 1, filter: 'all', search: '' };
 const KEY = 'vla_mc_state_v2';
 
-// Tải dữ liệu bất đồng bộ (Local & Cloud song song)
+// Tải dữ liệu bất đồng bộ
 async function loadState() {
   try {
     const s = localStorage.getItem(KEY);
@@ -1264,17 +1264,13 @@ function renderWeek() {
     <tbody>${rows}</tbody>
   </table>`;
 
-  // Xử lý sự kiện click checkbox an toàn không độ trễ
+  // Checkbox Event
   taskArea.querySelectorAll('.task-check').forEach(el => {
     el.addEventListener('click', async (e) => {
       e.stopPropagation();
       const k = el.dataset.key;
       state.done[k] = !state.done[k];
-      
-      // Đồng bộ giao diện cục bộ tức thời
       render();
-      
-      // Đồng bộ dữ liệu ngầm
       await saveState();
     });
   });
@@ -1325,7 +1321,7 @@ function render() {
   renderWeek();
 }
 
-// Quản lý các bộ lắng nghe sự kiện chuyển đổi Phase/Filter/Search
+// Event listeners
 document.querySelectorAll('.phase-pill').forEach(el => {
   el.addEventListener('click', () => {
     state.currentPhase = +el.dataset.p;
@@ -1348,7 +1344,7 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderWeek();
 });
 
-// Điểm khởi chạy hệ thống sau khi cây HTML sẵn sàng
+// Chạy an toàn sau khi load xong DOM tree
 window.addEventListener('DOMContentLoaded', async () => {
   await loadState();
   render();
