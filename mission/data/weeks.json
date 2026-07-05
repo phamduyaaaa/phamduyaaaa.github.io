@@ -1,0 +1,79 @@
+[
+  {
+    "w": 1, "phase": 1, "title": "Attention Is All You Need — Từ số 0",
+    "sub": "Self-attention cơ học, multi-head, positional encoding",
+    "gate": "Giải thích được tại sao Q,K,V hoạt động như lookup mềm",
+    "playbook": [
+      { "k": "Mục tiêu", "v": "Hiểu hoàn toàn cơ học attention, implement tay" },
+      { "k": "Nguồn chính", "v": "Paper \"Attention Is All You Need\" + Karpathy GPT video" },
+      { "k": "Kết quả", "v": "File attention.py tự code, chạy được forward pass" }
+    ],
+    "tasks": [
+      { "day": "T2", "tag": "read", "title": "Đọc paper \"Attention Is All You Need\" (Vaswani et al. 2017)", "sub": "Focus: Section 3 Model Architecture, Figure 1-2", "out": "Ghi chú tay 1 trang: Q,K,V,MHA,FFN" },
+      { "day": "T3", "tag": "read", "title": "Xem Karpathy \"Let's build GPT from scratch\" (video 2h)", "sub": "youtube.com/watch?v=kCc8FmEb1nY — xem chậm, pause code theo", "out": "Understand full forward pass" },
+      { "day": "T4", "tag": "code", "title": "Tự implement MultiHeadAttention không nhìn code mẫu", "sub": "Python+PyTorch, batch first, causal mask option", "out": "attention.py — test: output shape đúng" },
+      { "day": "T5", "tag": "code", "title": "Thêm Positional Encoding sin/cos + LayerNorm + Residual", "sub": "Transformer block hoàn chỉnh", "out": "transformer_block.py" },
+      { "day": "T6", "tag": "code", "title": "Stack thành mini-Transformer, train trên tiny Shakespeare", "sub": "Dataset: karpathy/char-rnn-pytorch, CPU/GPU đều được", "out": "Loss giảm rõ rệt sau 1k steps" }
+    ]
+  },
+  {
+    "w": 2, "phase": 1, "title": "GPT Kiến Trúc Sâu + Tokenization",
+    "sub": "BPE, causal LM, sampling strategies",
+    "gate": "Fine-tune GPT-2 small bằng HuggingFace trong < 1 giờ",
+    "playbook": [
+      { "k": "Mục tiêu", "v": "Hiểu tokenization + luồng training LM causal" },
+      { "k": "Nguồn chính", "v": "HuggingFace Transformers docs + GPT-2 paper" },
+      { "k": "Kết quả", "v": "Script fine-tune GPT-2 small trên dataset tùy chỉnh" }
+    ],
+    "tasks": [
+      { "day": "T2", "tag": "read", "title": "Đọc GPT-2 paper \"Language Models are Unsupervised Multitask Learners\"", "sub": "3 trang chính, tập trung vào training objective và zero-shot", "out": "Hiểu tại sao causal LM đủ powerful" },
+      { "day": "T3", "tag": "code", "title": "Implement BPE tokenizer tối giản từ scratch", "sub": "Theo hướng dẫn Karpathy minbpe repo", "out": "tokenizer.py — encode/decode round-trip đúng" },
+      { "day": "T4", "tag": "code", "title": "HuggingFace quickstart: load GPT-2, generate text", "sub": "transformers.AutoModelForCausalLM.from_pretrained", "out": "Generation chạy được, hiểu .generate() params" },
+      { "day": "T5", "tag": "code", "title": "Fine-tune GPT-2 small trên dataset robotics paper abstracts", "sub": "Dùng Trainer API, 1 epoch, GPU cluster", "out": "Perplexity giảm so với base model" },
+      { "day": "T6", "tag": "write", "title": "Viết summary: \"GPT-2 vs mini-GPT tự code — khác gì?\"", "sub": "Tập trung: scale, data, architecture decisions", "out": "Note 500 từ, lưu vào research log" }
+    ]
+  },
+  {
+    "w": 13, "phase": 2, "title": "LeRobot Setup + Ecosystem Overview",
+    "sub": "Cài đặt, chạy baseline, hiểu codebase",
+    "gate": "lerobot-train chạy được trên GPU cluster, loss log ra",
+    "playbook": [
+      { "k": "Mục tiêu", "v": "Master LeRobot codebase — đây là framework làm việc chính P2-P4" },
+      { "k": "Nguồn chính", "v": "github.com/huggingface/lerobot — docs + examples" },
+      { "k": "Kết quả", "v": "Working training environment, first policy trained" }
+    ],
+    "tasks": [
+      { "day": "T2", "tag": "code", "title": "Clone LeRobot, cài đầy đủ dependencies trên GPU cluster", "sub": "Follow INSTALL.md, test: python -c \"import lerobot\"", "out": "Environment clean, all tests pass" },
+      { "day": "T3", "tag": "run", "title": "Chạy quickstart: lerobot-train với policy.type=act, dataset=lerobot/pusht", "sub": "1000 steps, monitor GPU util, loss curve", "out": "Training chạy stable, loss giảm" },
+      { "day": "T4", "tag": "read", "title": "Đọc kỹ codebase: lerobot/common/policies/, datasets/, envs/", "sub": "Trace code từ dataset loading → model forward → loss", "out": "Diagram: LeRobot data flow" }
+    ]
+  },
+  {
+    "w": 25, "phase": 3, "title": "Literature Review Sâu — Action Uncertainty trong VLA",
+    "sub": "Survey toàn diện: distributional output, uncertainty quantification cho robot",
+    "gate": "Survey note 3000 từ, 30+ papers annotated",
+    "playbook": [
+      { "k": "Mục tiêu", "v": "Nắm rõ state-of-art trước khi bắt đầu implement" },
+      { "k": "Nguồn chính", "v": "arxiv 2023-2026 + ACL/ICRA/CoRL proceedings" },
+      { "k": "Kết quả", "v": "Related work draft + research gap clearly identified" }
+    ],
+    "tasks": [
+      { "day": "T2", "tag": "paper", "title": "Survey: uncertainty quantification trong imitation learning", "sub": "Tìm 10 papers: BNN, ensemble, MC Dropout cho IL", "out": "Annotated list với relevance score" },
+      { "day": "T3", "tag": "paper", "title": "Survey: distributional RL (liên kết paper cũ) áp dụng cho continuous control", "sub": "IQN, QRDQN, C51 cho robot manipulation", "out": "Notes: gap — chưa ai dùng distributional output cho VLA action" }
+    ]
+  },
+  {
+    "w": 37, "phase": 4, "title": "Production Deployment — Inference Server",
+    "sub": "FastAPI + TorchServe, triển khai VLA model thành microservice",
+    "gate": "API endpoint /predict chạy được < 100ms, load test pass",
+    "playbook": [
+      { "k": "Mục tiêu", "v": "Production-grade inference server cho VLA" },
+      { "k": "Nguồn chính", "v": "FastAPI docs + TorchServe + NVIDIA Triton" },
+      { "k": "Kết quả", "v": "Inference server deployed, monitored" }
+    ],
+    "tasks": [
+      { "day": "T2", "tag": "code", "title": "Export OpenVLA-LoRA model sang TorchScript hoặc ONNX", "sub": "Verify: output chính xác trước và sau export", "out": "model.pt / model.onnx verified" },
+      { "day": "T3", "tag": "code", "title": "Viết FastAPI inference server: /predict endpoint", "sub": "Input: image (base64) + instruction (text) → output: action (json)", "out": "server.py — curl test pass" }
+    ]
+  }
+]
