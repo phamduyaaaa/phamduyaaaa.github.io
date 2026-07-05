@@ -51,6 +51,8 @@
 .phase-pill[data-p="2"].phase-pill--active { background-color: var(--p2); }
 .phase-pill[data-p="3"].phase-pill--active { background-color: var(--p3); color: var(--text-inverse); }
 .phase-pill[data-p="4"].phase-pill--active { background-color: var(--p4); }
+.phase-pill[data-p="5"].phase-pill--active { background-color: #38bdf8; color: var(--text-inverse); }
+.phase-pill[data-p="6"].phase-pill--active { background-color: #f43f5e; color: #fff; }
 
 .topbar__spacer { flex: 1; }
 
