@@ -1,0 +1,14 @@
+/* Mobile-first: Ẩn/hiện được xử lý bởi layout-sidebar trong layout.css */
+.sidebar__section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding: 0 16px 8px;
+  text-transform: uppercase;
+}
