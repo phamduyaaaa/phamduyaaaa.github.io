@@ -20,7 +20,7 @@ export class TaskTable {
       </div>
       <div class="week-header__meta">
         <div class="week-header__phase" style="color: ${currentPhase.color}">
-          Phase ${week.phase} — ${currentPhase.title}
+          ${currentPhase.label || 'Phase ' + week.phase} — ${currentPhase.title}
         </div>
         <h1 class="week-header__title">${week.title}</h1>
         <p class="week-header__sub">${week.sub}</p>
