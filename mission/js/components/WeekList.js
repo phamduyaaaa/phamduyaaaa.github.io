@@ -12,8 +12,8 @@ export class WeekList {
       let doneCount = 0;
       const totalTasks = w.tasks.length;
 
-      const sparkBars = w.tasks.map(t => {
-        const key = `${w.w}_${t.day}_${t.title.slice(0, 20)}`;
+      const sparkBars = w.tasks.map((t, idx) => {
+        const key = `${w.w}_${t.day}_${idx}`;
         const isDone = !!state.done[key];
         if (isDone) doneCount++;
         return `<div class="spark-bar ${isDone ? 'spark-bar--done' : ''}"></div>`;
