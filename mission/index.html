@@ -374,7 +374,7 @@ const WEEKS = [
  ],
  tasks:[
   {day:'T2',tag:'paper',title:'Đọc SigLIP paper "Sigmoid Loss for Language Image Pre-Training"',sub:'Tại sao sigmoid loss tốt hơn softmax ở batch lớn?',out:'Notes: SigLIP vs CLIP loss mechanics'},
-  {day:'T3',tag:'paper','title':'Đọc DINOv2 paper — self-supervised ViT không cần labels',sub:'Focus: Section 3 training, Figure 2 feature quality',out:'Hiểu tại sao DINOv2 features tốt cho dense tasks'},
+  {day:'T3',tag:'paper',title:'Đọc DINOv2 paper — self-supervised ViT không cần labels',sub:'Focus: Section 3 training, Figure 2 feature quality',out:'Hiểu tại sao DINOv2 features tốt cho dense tasks'},
   {day:'T4',tag:'code',title:'Load SigLIP-400M và DINOv2-L bằng HuggingFace transformers',sub:'Extract features từ robot observation images (BridgeData)',out:'Feature tensors đúng shape, verify với tsne plot'},
   {day:'T5',tag:'run',title:'Benchmark: SigLIP vs DINOv2 vs CLIP trên robot image retrieval',sub:'Sử dụng BridgeData V2 subset 10k ảnh',out:'Bảng so sánh: R@1, R@5, inference time'},
   {day:'T6',tag:'read',title:'Đọc OpenVLA paper Section 3 — dual encoder design choice',sub:'Tại sao dùng cả DINOv2 + SigLIP thay vì chỉ 1 model?',out:'Hiểu motivation của feature concatenation'},
@@ -1260,15 +1260,15 @@ function renderWeek() {
   </table>`;
 
   // Checkbox Event
-  taskArea.querySelectorAll('.task-check').forEach(el => {
-    el.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const k = el.dataset.key;
-      state.done[k] = !state.done[k];
-      render();
-      await saveState();
-    });
-  });
+  taskArea.onclick = async (e) => {
+    const el = e.target.closest('.task-check');
+    if (!el) return;
+    const k = el.dataset.key;
+    state.done[k] = !state.done[k];
+    render();
+    await saveState();
+  };
+
 
   // Playbook
   const pb = document.getElementById('playbook-area');
