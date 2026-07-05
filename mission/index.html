@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Mission Control — Embodied AI VLA 1</title>
+<title>Mission Control — Embodied AI VLA</title>
 <style>
   :root {
     --bg: #0d0f14;
@@ -175,7 +175,6 @@
   #search-input { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-size: 11px; padding: 4px 10px; outline: none; width: 160px; }
   #search-input:focus { border-color: var(--accent); }
 </style>
-<!-- Sử dụng CDN script chuẩn v8, loại bỏ type="module" hoàn toàn để tránh lỗi cross-origin trên github.io -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -351,7 +350,7 @@ const WEEKS = [
   {day:'T3',tag:'read',title:'CS231n 2024 — Lecture về ViT và modern vision backbones',sub:'cs231n.stanford.edu slides + notes',out:'Hiểu inductive bias ViT vs CNN'},
   {day:'T4',tag:'code',title:'Implement ViT-tiny từ scratch (patch embed + transformer blocks)',sub:'Target: CIFAR-10, 72 dims, 6 heads, 6 layers',out:'vit_tiny.py — training loop runs'},
   {day:'T5',tag:'code',title:'Train ViT-tiny vs ResNet-18 trên CIFAR-10, so sánh',sub:'Accuracy, speed, data efficiency, convergence',out:'Comparison: ViT cần data nhiều hơn'},
-  {day:'T6',tag:'code',title:'Load ViT-L/16 pre-trained (timm library), visualize attention maps',sub:'Attention rollout trên robot observation image',out:'Hiểu vùng nào ViT attend trong ảnh robot'},
+  {day(--w:6--),tag:'code',title:'Load ViT-L/16 pre-trained (timm library), visualize attention maps',sub:'Attention rollout trên robot observation image',out:'Hiểu vùng nào ViT attend trong ảnh robot'},
  ]
 },
 {w:7, phase:1, title:'CLIP — Contrastive Vision-Language Pretraining',
@@ -981,7 +980,7 @@ const WEEKS = [
   {day:'T3',tag:'write',title:'Polish blog post, thêm figures từ paper, publish',sub:'Medium hoặc personal site + cross-post LinkedIn',out:'Blog post live, link shared'},
   {day:'T4',tag:'write',title:'Prepare internal seminar slides: 30 phút talk về VLA research',sub:'Audience: lab team + VinRobotics engineers',out:'Slides 25 trang'},
   {day:'T5',tag:'run',title:'Deliver internal seminar, Q&A',sub:'Record nếu được',out:'Talk delivered, feedback collected'},
-  {day:'T6',tag:'write',title:'Prepare abstract + slides cho conference talk (nếu paper accepted)',sub:'ICRA / CoRL talk: 12 phút + 3 phút Q&A',out:'Conference slides draft'},
+  {day(--w:45--),tag:'write',title:'Prepare abstract + slides cho conference talk (nếu paper accepted)',sub:'ICRA / CoRL talk: 12 phút + 3 phút Q&A',out:'Conference slides draft'},
  ]
 },
 {w:46, phase:4, title:'Next Research Direction — Scouting',
@@ -1013,7 +1012,7 @@ const WEEKS = [
   {day:'T3',tag:'code',title:'ONNX export + TensorRT optimization',sub:'tensorrt.Engine cho vision encoder',out:'TRT engine, benchmark latency'},
   {day:'T4',tag:'run',title:'Benchmark: FP32 vs FP16 vs INT8 vs TRT trên edge GPU',sub:'Jetson Orin hoặc 3090 24GB làm "edge"',out:'Speed/accuracy tradeoff table'},
   {day:'T5',tag:'code',title:'Knowledge distillation: distill OpenVLA-7B → 1B model',sub:'Teacher: OpenVLA-LoRA, student: SmolVLA',out:'Distilled model training running'},
-  {day:'T6',tag(--w:47--),'v':'Edge deployment guide doc'},
+  {day:'T6',tag:'write',title:'Viết: "Edge deployment of VLA — guide cho hardware team"',sub:'Edge deployment guide doc'},
  ]
 },
 {w:48, phase:4, title:'Security + Robustness — Adversarial Testing',
@@ -1102,9 +1101,8 @@ const WEEKS = [
 let state = { done: {}, notes: {}, currentWeek: 1, currentPhase: 1, filter: 'all', search: '' };
 const KEY = 'vla_mc_state_v2';
 
-// Hàm bất đồng bộ tải dữ liệu (Phối hợp Realtime lắng nghe Firebase và Local làm backup)
+// Tải dữ liệu bất đồng bộ (Local & Cloud song song)
 async function loadState() {
-  // 1. Phục hồi từ LocalStorage trước để giao diện hiển thị ngay lập tức
   try {
     const s = localStorage.getItem(KEY);
     if (s) {
@@ -1114,7 +1112,6 @@ async function loadState() {
     }
   } catch(e) { console.warn("LocalStorage load blocked.", e); }
 
-  // 2. Nếu có kết nối Firebase, lấy data mới nhất về đè lên bản Local
   if (db) {
     try {
       const snap = await db.ref(KEY).get();
@@ -1123,11 +1120,11 @@ async function loadState() {
         state.done = Object.assign({}, state.done, fbData.done || {});
         state.notes = Object.assign({}, state.notes, fbData.notes || {});
       }
-    } catch(e) { console.error("Firebase get state error:", e); }
+    } catch(e) { console.error("Firebase state synchronization failed:", e); }
   }
 }
 
-// Hàm đồng bộ lưu trữ lên đám mây và lưu cục bộ song song
+// Đồng bộ lưu trữ
 async function saveState() {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
@@ -1136,7 +1133,7 @@ async function saveState() {
   if (db) {
     try {
       await db.ref(KEY).set(state);
-    } catch(e) { console.error("Firebase write state error:", e); }
+    } catch(e) { console.error("Firebase database push failed:", e); }
   }
 }
 
@@ -1267,17 +1264,17 @@ function renderWeek() {
     <tbody>${rows}</tbody>
   </table>`;
 
-  // Thêm logic đồng bộ hóa giao diện an toàn
+  // Xử lý sự kiện click checkbox an toàn không độ trễ
   taskArea.querySelectorAll('.task-check').forEach(el => {
     el.addEventListener('click', async (e) => {
-      e.stopPropagation(); // Ngăn lỗi nổi bọt sự kiện gây đứng màn hình
+      e.stopPropagation();
       const k = el.dataset.key;
       state.done[k] = !state.done[k];
       
-      // Render UI local trước để tạo cảm giác bấm mượt không độ trễ
+      // Đồng bộ giao diện cục bộ tức thời
       render();
       
-      // Đẩy data ngầm lên Firebase / LocalStorage sau
+      // Đồng bộ dữ liệu ngầm
       await saveState();
     });
   });
@@ -1328,7 +1325,7 @@ function render() {
   renderWeek();
 }
 
-// Event listeners
+// Quản lý các bộ lắng nghe sự kiện chuyển đổi Phase/Filter/Search
 document.querySelectorAll('.phase-pill').forEach(el => {
   el.addEventListener('click', () => {
     state.currentPhase = +el.dataset.p;
@@ -1351,7 +1348,7 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderWeek();
 });
 
-// Chạy khởi tạo an toàn sau khi load DOM tree thành công
+// Điểm khởi chạy hệ thống sau khi cây HTML sẵn sàng
 window.addEventListener('DOMContentLoaded', async () => {
   await loadState();
   render();
