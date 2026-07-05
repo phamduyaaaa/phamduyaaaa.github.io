@@ -1,0 +1,81 @@
+.topbar {
+  height: var(--topbar-height);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar__logo {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.topbar__separator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-strong);
+}
+
+.phase-pills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.phase-pill {
+  padding: 4px 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.phase-pill:hover,
+.phase-pill--active {
+  color: #fff;
+  border-color: transparent;
+}
+
+.phase-pill[data-p="1"].phase-pill--active { background-color: var(--p1); }
+.phase-pill[data-p="2"].phase-pill--active { background-color: var(--p2); }
+.phase-pill[data-p="3"].phase-pill--active { background-color: var(--p3); color: var(--text-inverse); }
+.phase-pill[data-p="4"].phase-pill--active { background-color: var(--p4); }
+
+.topbar__spacer { flex: 1; }
+
+.global-stats {
+  display: none;
+  gap: 16px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.global-stats__val {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+.sync-dot--ok { background-color: var(--status-done); }
+
+@media (min-width: 768px) {
+  .global-stats { display: flex; }
+}
