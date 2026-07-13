@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sổ tay Ngữ âm — Lộ trình 48 ngày</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1C1B18;
+    --bg-raised: #232220;
+    --paper: #EDE7DA;
+    --paper-dim: #B8B2A3;
+    --rule: #3A3833;
+    --rule-soft: #2A2926;
+    --accent-a: #C6572A;      /* giai đoạn 1: âm đơn */
+    --accent-a-soft: #C6572A22;
+    --accent-b: #4A7C6F;      /* giai đoạn 2: nhịp điệu */
+    --accent-b-soft: #4A7C6F22;
+    --gold: #B08B4F;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection{ background: var(--accent-a); color: var(--bg); }
+
+  .display{ font-family: 'Fraunces', serif; }
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  a{ color: inherit; }
+
+  /* ===== Texture ===== */
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.035;
+    background-image: radial-gradient(circle at 1px 1px, #fff 1px, transparent 0);
+    background-size: 3px 3px;
+  }
+
+  /* ===== Header ===== */
+  header{
+    position: relative;
+    padding: 6rem 6vw 4rem;
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+  }
+
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-a);
+    margin-bottom: 1.4rem;
+    display:flex;
+    align-items:center;
+    gap: 0.7rem;
+  }
+  .eyebrow::before{
+    content:"";
+    width: 28px; height: 1px;
+    background: var(--accent-a);
+    display:inline-block;
+  }
+
+  h1.title{
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 600;
+    font-variation-settings: "opsz" 144;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.2rem;
+    max-width: 16ch;
+  }
+  h1.title em{
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  .subhead{
+    max-width: 56ch;
+    color: var(--paper-dim);
+    font-size: 1.05rem;
+  }
+
+  .ipa-float{
+    position: absolute;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--paper);
+    opacity: 0.05;
+    font-size: 14rem;
+    right: -2rem;
+    top: -3rem;
+    pointer-events: none;
+    line-height: 1;
+    user-select: none;
+  }
+
+  /* ===== Progress rail ===== */
+  .progress-rail{
+    display:flex;
+    gap: 2px;
+    margin-top: 3rem;
+    max-width: 640px;
+  }
+  .progress-rail .seg{
+    height: 5px;
+    flex: 1;
+    background: var(--rule);
+    border-radius: 2px;
+  }
+  .progress-rail .seg.phase-a{ background: var(--accent-a); opacity: 0.55; }
+  .progress-rail .seg.phase-b{ background: var(--accent-b); opacity: 0.55; }
+  .progress-labels{
+    display:flex;
+    justify-content: space-between;
+    max-width: 640px;
+    margin-top: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--paper-dim);
+  }
+
+  /* ===== Nav ===== */
+  nav{
+    position: sticky;
+    top:0;
+    z-index: 20;
+    background: rgba(28,27,24,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 6vw;
+    display:flex;
+    gap: 0.4rem;
+    overflow-x:auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar{ display:none; }
+  nav a{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    text-decoration: none;
+    color: var(--paper-dim);
+    padding: 1.1rem 0.9rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  nav a:hover{ color: var(--paper); }
+  nav a.phase-a-link:hover{ border-color: var(--accent-a); }
+  nav a.phase-b-link:hover{ border-color: var(--accent-b); }
+
+  /* ===== Main layout ===== */
+  main{ position: relative; z-index: 2; }
+
+  .phase-intro{
+    padding: 5rem 6vw 2rem;
+    max-width: 900px;
+  }
+  .phase-intro .num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--paper-dim);
+    letter-spacing: 0.1em;
+  }
+  .phase-intro h2{
+    font-family:'Fraunces', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 600;
+    margin: 0.5rem 0 1rem;
+  }
+  .phase-intro p{ color: var(--paper-dim); max-width: 62ch; }
+
+  .phase-a-tag{ color: var(--accent-a); }
+  .phase-b-tag{ color: var(--accent-b); }
+
+  /* ===== Week block ===== */
+  .week{
+    padding: 1rem 6vw 3rem;
+    max-width: 1200px;
+  }
+  .week-head{
+    display:flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid var(--rule-soft);
+    padding-bottom: 0.9rem;
+  }
+  .week-head .wk-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--paper-dim);
+  }
+  .week-head h3{
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .day-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+  }
+
+  .day-card{
+    background: var(--bg-raised);
+    padding: 1.6rem 1.5rem;
+    display:flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    position: relative;
+  }
+  .day-card.review{
+    background: repeating-linear-gradient(135deg, var(--bg-raised), var(--bg-raised) 10px, #26241f 10px, #26241f 11px);
+  }
+
+  .day-label{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  .day-label .d-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--paper-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .pair{
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap: 0.9rem;
+    padding: 0.6rem 0;
+  }
+  .pair .sym{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 1.9rem;
+    font-weight: 600;
+  }
+  .phase-a .pair .sym{ color: var(--accent-a); }
+  .phase-b .pair .sym{ color: var(--accent-b); }
+
+  .pair .vs{
+    font-family:'IBM Plex Mono', monospace;
+    color: var(--paper-dim);
+    font-size: 0.75rem;
+  }
+
+  .examples{
+    font-size: 0.88rem;
+    color: var(--paper-dim);
+    text-align:center;
+  }
+  .examples b{ color: var(--paper); font-weight: 500; }
+
+  .drill{
+    margin-top: auto;
+    font-size: 0.82rem;
+    color: var(--paper-dim);
+    border-top: 1px dashed var(--rule);
+    padding-top: 0.8rem;
+    line-height: 1.5;
+  }
+  .drill .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    display:block;
+    margin-bottom: 0.3rem;
+  }
+
+  .single-topic{
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.4rem 0;
+  }
+
+  /* Review card variant */
+  .review-title{
+    font-family:'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    text-align:center;
+    color: var(--paper);
+  }
+
+  /* ===== Footer ===== */
+  footer{
+    padding: 4rem 6vw 6rem;
+    border-top: 1px solid var(--rule);
+    color: var(--paper-dim);
+    font-size: 0.88rem;
+  }
+  footer .foot-mark{
+    font-family:'IBM Plex Mono', monospace;
+    color: var(--accent-a);
+    margin-bottom: 0.6rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+  }
+
+  @media (max-width: 600px){
+    header{ padding: 4rem 5vw 3rem; }
+    .ipa-float{ display:none; }
+    .week, .phase-intro{ padding-left: 5vw; padding-right: 5vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ipa-float">ə</div>
+  <div class="eyebrow">Sổ tay luyện âm · 48 ngày</div>
+  <h1 class="title">Nghe đúng từng âm, <em>trước khi</em> nói đúng cả câu.</h1>
+  <p class="subhead">Lộ trình luyện phát âm nền tảng cho tiếng Anh — chia hai giai đoạn: nắm vững từng nguyên âm và phụ âm dễ nhầm lẫn, rồi tiến sang trọng âm, nhịp điệu và nối âm để lời nói nghe tự nhiên.</p>
+
+  <div class="progress-rail">
+    <!-- 27 ngày phase A, 21 ngày phase B, tổng 48 -->
+    <div class="seg phase-a" style="flex-grow:27"></div>
+    <div class="seg phase-b" style="flex-grow:21"></div>
+  </div>
+  <div class="progress-labels">
+    <span>Ngày 1</span>
+    <span>Ngày 27 — chuyển giai đoạn</span>
+    <span>Ngày 48</span>
+  </div>
+</header>
+
+<nav>
+  <a class="phase-a-link" href="#w1">Tuần 1</a>
+  <a class="phase-a-link" href="#w2">Tuần 2</a>
+  <a class="phase-a-link" href="#w3">Tuần 3</a>
+  <a class="phase-a-link" href="#w4">Tuần 4</a>
+  <a class="phase-b-link" href="#w5">Tuần 5</a>
+  <a class="phase-b-link" href="#w6">Tuần 6</a>
+  <a class="phase-b-link" href="#w7">Tuần 7</a>
+</nav>
+
+<main>
+
+  <!-- ============ PHASE 1 INTRO ============ -->
+  <div class="phase-intro">
+    <div class="num mono">Giai đoạn I · Ngày 01–27</div>
+    <h2><span class="phase-a-tag">Âm nền tảng</span> — nguyên âm &amp; phụ âm dễ nhầm</h2>
+    <p>Học từng cặp âm đối lập (minimal pairs) — nghe ra sự khác biệt trước, sau đó luyện miệng bắt chước đúng khẩu hình. Đây là bước bắt buộc trước khi học nhịp điệu, vì nhịp điệu chỉ đúng khi từng âm đã đúng.</p>
+  </div>
+
+  <!-- ============ WEEK 1 ============ -->
+  <section class="week phase-a" id="w1">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 01</span>
+      <h3>Nguyên âm đơn cơ bản</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 01</span></div>
+        <div class="pair"><span class="sym">iː</span><span class="vs">vs</span><span class="sym">ɪ</span></div>
+        <div class="examples"><b>seat</b> — dài, môi căng &nbsp;·&nbsp; <b>sit</b> — ngắn, thả lỏng</div>
+        <div class="drill"><span class="tag">Luyện</span>So sánh seat–sit, feel–fill, sheep–ship. Giữ âm /iː/ dài gấp đôi /ɪ/.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 02</span></div>
+        <div class="pair"><span class="sym">e</span><span class="vs">vs</span><span class="sym">æ</span></div>
+        <div class="examples"><b>men</b> — miệng mở vừa &nbsp;·&nbsp; <b>man</b> — hàm hạ thấp hơn</div>
+        <div class="drill"><span class="tag">Luyện</span>men–man, bed–bad, pen–pan. Cảm nhận hàm dưới hạ thấp hơn hẳn ở /æ/.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 03</span></div>
+        <div class="pair"><span class="sym">ɑː</span><span class="vs">vs</span><span class="sym">ʌ</span></div>
+        <div class="examples"><b>car</b> — mở sâu, dài &nbsp;·&nbsp; <b>cup</b> — ngắn, giữa lưỡi</div>
+        <div class="drill"><span class="tag">Luyện</span>car–cup, heart–hut, part–putt. Đừng kéo dài /ʌ/ như /ɑː/.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 04</span></div>
+        <div class="pair"><span class="sym">ɔː</span><span class="vs">vs</span><span class="sym">ɒ</span></div>
+        <div class="examples"><b>call</b> — tròn môi, dài &nbsp;·&nbsp; <b>hot</b> — tròn môi, ngắn</div>
+        <div class="drill"><span class="tag">Luyện</span>call–collar, ball–bottle. Giữ độ tròn môi ở cả hai, chỉ khác độ dài.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 05</span></div>
+        <div class="pair"><span class="sym">uː</span><span class="vs">vs</span><span class="sym">ʊ</span></div>
+        <div class="examples"><b>food</b> — môi tròn chúm, dài &nbsp;·&nbsp; <b>book</b> — môi lỏng hơn</div>
+        <div class="drill"><span class="tag">Luyện</span>food–foot, fool–full, pool–pull.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 06</span></div>
+        <div class="pair"><span class="sym">ɜː</span><span class="vs">vs</span><span class="sym">ə</span></div>
+        <div class="examples"><b>bird</b> — trọng âm, dài &nbsp;·&nbsp; <b>sofa</b> — không trọng âm, cực ngắn</div>
+        <div class="drill"><span class="tag">Luyện</span>bird–ago, her–the. /ə/ luôn xuất hiện ở âm tiết không nhấn.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 07 · ÔN TẬP</span></div>
+        <div class="review-title">Nhại lại: ship–sheep · full–fool · man–men</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Nghe file audio, viết lại từ nghe được, tự thu âm và so sánh với bản gốc.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WEEK 2 ============ -->
+  <section class="week phase-a" id="w2">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 02</span>
+      <h3>Nguyên âm đôi</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 08</span></div>
+        <div class="pair"><span class="sym">eɪ</span><span class="vs">vs</span><span class="sym">aɪ</span></div>
+        <div class="examples"><b>make</b> &nbsp;·&nbsp; <b>time</b></div>
+        <div class="drill"><span class="tag">Luyện</span>make–mike, day–die. Lướt rõ từ âm đầu sang âm sau, không dừng giữa chừng.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 09</span></div>
+        <div class="pair"><span class="sym">ɔɪ</span><span class="vs">vs</span><span class="sym">aʊ</span></div>
+        <div class="examples"><b>boy</b> &nbsp;·&nbsp; <b>house</b></div>
+        <div class="drill"><span class="tag">Luyện</span>boy–bow, toy–town. Môi tròn rồi kéo dẹt (oy); mở rộng rồi tròn dần (ow).</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 10</span></div>
+        <div class="pair"><span class="sym">əʊ</span><span class="vs">vs</span><span class="sym">ɪə</span></div>
+        <div class="examples"><b>go</b> &nbsp;·&nbsp; <b>here</b></div>
+        <div class="drill"><span class="tag">Luyện</span>go–goal, here–hear. Chú ý /ɪə/ chỉ có trong giọng Anh-Anh (British).</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 11</span></div>
+        <div class="pair"><span class="sym">eə</span><span class="vs">vs</span><span class="sym">ʊə</span></div>
+        <div class="examples"><b>care</b> &nbsp;·&nbsp; <b>tour</b></div>
+        <div class="drill"><span class="tag">Luyện</span>care–chair, tour–poor. Đây là 2 nguyên âm đôi hay bị lược bỏ trong giọng Mỹ — nghe cả hai giọng để phân biệt.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 12</span></div>
+        <div class="single-topic">Nguyên âm đôi trong từ TOEIC</div>
+        <div class="examples"><b>chair</b> · <b>flight</b> · <b>employee</b></div>
+        <div class="drill"><span class="tag">Luyện</span>Nhặt 10 từ TOEIC quen thuộc chứa nguyên âm đôi, đọc to và ghi âm lại.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 13</span></div>
+        <div class="single-topic">So sánh nhanh: dài — ngắn</div>
+        <div class="examples">Ôn chéo toàn bộ nguyên âm đơn dài/ngắn đã học tuần 1</div>
+        <div class="drill"><span class="tag">Luyện</span>Ghép ngẫu nhiên các cặp đã học, luyện phản xạ phân biệt trong 2–3 giây.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 14 · ÔN TẬP</span></div>
+        <div class="review-title">Mini test: nghe &amp; nhại lại</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Nghe 10 câu ngắn chứa nguyên âm đôi tuần này, nhại lại và tự chấm độ chính xác.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WEEK 3 ============ -->
+  <section class="week phase-a" id="w3">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 03</span>
+      <h3>Phụ âm vô thanh — hữu thanh dễ nhầm</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 15</span></div>
+        <div class="pair"><span class="sym">p</span><span class="vs">vs</span><span class="sym">b</span></div>
+        <div class="examples"><b>pen</b> — bật hơi, không rung dây thanh &nbsp;·&nbsp; <b>book</b> — rung dây thanh</div>
+        <div class="drill"><span class="tag">Luyện</span>Đặt tay lên cổ họng: /b/ rung, /p/ không. pen–Ben, cap–cab.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 16</span></div>
+        <div class="pair"><span class="sym">t</span><span class="vs">vs</span><span class="sym">d</span></div>
+        <div class="examples"><b>time</b> &nbsp;·&nbsp; <b>day</b></div>
+        <div class="drill"><span class="tag">Luyện</span>time–dime, tie–die. Đầu lưỡi chạm lợi trên, khác biệt duy nhất là rung thanh quản.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 17</span></div>
+        <div class="pair"><span class="sym">k</span><span class="vs">vs</span><span class="sym">g</span></div>
+        <div class="examples"><b>cat</b> &nbsp;·&nbsp; <b>go</b></div>
+        <div class="drill"><span class="tag">Luyện</span>cat–gap, class–glass, cold–gold.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 18</span></div>
+        <div class="pair"><span class="sym">f</span><span class="vs">vs</span><span class="sym">v</span></div>
+        <div class="examples"><b>food</b> &nbsp;·&nbsp; <b>very</b></div>
+        <div class="drill"><span class="tag">Luyện</span>fan–van, safe–save. Răng trên chạm môi dưới ở cả hai âm.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 19</span></div>
+        <div class="pair"><span class="sym">s</span><span class="vs">vs</span><span class="sym">z</span></div>
+        <div class="examples"><b>see</b> &nbsp;·&nbsp; <b>zoo</b></div>
+        <div class="drill"><span class="tag">Luyện</span>Chú ý hậu tố số nhiều/động từ chia ngôi 3: cats /s/ vs dogs /z/.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 20 · ÔN TẬP</span></div>
+        <div class="review-title">Nhại lại: ship–zip · cap–cab · fan–van</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Luyện phản xạ nghe rung thanh quản; ghi âm và so sánh độ rõ ràng vô thanh/hữu thanh.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WEEK 4 ============ -->
+  <section class="week phase-a" id="w4">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 04</span>
+      <h3>Các phụ âm còn lại</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 21</span></div>
+        <div class="pair"><span class="sym">θ</span><span class="vs">vs</span><span class="sym">ð</span></div>
+        <div class="examples"><b>think</b> — vô thanh &nbsp;·&nbsp; <b>this</b> — hữu thanh</div>
+        <div class="drill"><span class="tag">Luyện</span>Lưỡi đặt giữa hai hàm răng ở cả hai âm; think–this, thing–than.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 22</span></div>
+        <div class="pair"><span class="sym">ʃ</span><span class="vs">vs</span><span class="sym">ʒ</span></div>
+        <div class="examples"><b>she</b> &nbsp;·&nbsp; <b>vision</b></div>
+        <div class="drill"><span class="tag">Luyện</span>she–measure. /ʒ/ hiếm ở đầu từ tiếng Anh, thường xuất hiện giữa từ.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 23</span></div>
+        <div class="pair"><span class="sym">tʃ</span><span class="vs">vs</span><span class="sym">dʒ</span></div>
+        <div class="examples"><b>check</b> &nbsp;·&nbsp; <b>job</b></div>
+        <div class="drill"><span class="tag">Luyện</span>check–jet, cheap–jeep. Đây là hai phụ âm ghép (affricate) rất hay dùng trong từ TOEIC.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 24</span></div>
+        <div class="pair"><span class="sym">h</span><span class="vs">vs</span><span class="sym">r</span></div>
+        <div class="examples"><b>hat</b> &nbsp;·&nbsp; <b>red</b></div>
+        <div class="drill"><span class="tag">Luyện</span>hat–rat. /r/ tiếng Anh không rung lưỡi như tiếng Việt — cong lưỡi về sau, không chạm vòm miệng.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 25</span></div>
+        <div class="pair"><span class="sym">l</span><span class="vs">vs</span><span class="sym">j</span></div>
+        <div class="examples"><b>light</b> &nbsp;·&nbsp; <b>yes</b></div>
+        <div class="drill"><span class="tag">Luyện</span>light–yet. Chú ý light /l/ (đầu từ) và dark /l/ (cuối từ, như trong "ball").</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 26</span></div>
+        <div class="pair"><span class="sym">m</span><span class="vs">vs</span><span class="sym">n</span></div>
+        <div class="examples"><b>man</b> &nbsp;·&nbsp; <b>no</b></div>
+        <div class="drill"><span class="tag">Luyện</span>man–Nan, ram–ran. Môi khép hoàn toàn ở /m/, chỉ đầu lưỡi chạm lợi ở /n/.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 27</span></div>
+        <div class="pair"><span class="sym">ŋ</span><span class="vs">vs</span><span class="sym">w</span></div>
+        <div class="examples"><b>sing</b> &nbsp;·&nbsp; <b>we</b></div>
+        <div class="drill"><span class="tag">Luyện</span>sing–thin, wet–yet. /ŋ/ phát âm từ gốc lưỡi, không phải đầu lưỡi.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ PHASE 2 INTRO ============ -->
+  <div class="phase-intro">
+    <div class="num mono">Giai đoạn II · Ngày 28–48</div>
+    <h2><span class="phase-b-tag">Nhịp điệu &amp; ngữ điệu</span> — nói tự nhiên như người bản xứ</h2>
+    <p>Khi từng âm đã chắc, bước tiếp theo là học cách các âm "sống chung" trong câu: từ nào được nhấn, từ nào lướt nhẹ, âm nào nối vào nhau, và giọng lên xuống ra sao. Đây là yếu tố quyết định phần lớn điểm Pronunciation trong IELTS Speaking.</p>
+  </div>
+
+  <!-- ============ WEEK 5 ============ -->
+  <section class="week phase-b" id="w5">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 05</span>
+      <h3>Trọng âm từ (Word Stress)</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 28</span></div>
+        <div class="single-topic">Danh từ vs động từ 2 âm tiết</div>
+        <div class="examples"><b>REcord</b> (n.) — <b>reCORD</b> (v.)</div>
+        <div class="drill"><span class="tag">Luyện</span>Nhiều từ tiếng Anh đổi nghĩa khi đổi trọng âm: PREsent–preSENT, EXport–exPORT.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 29</span></div>
+        <div class="single-topic">Trọng âm theo hậu tố</div>
+        <div class="examples">-tion, -sion, -ic, -ity → nhấn ngay trước hậu tố</div>
+        <div class="drill"><span class="tag">Luyện</span>ediCAtion, deciSION, ecoNOMic, activITY. Học quy tắc thay vì học thuộc từng từ riêng lẻ.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 30</span></div>
+        <div class="single-topic">Trọng âm theo tiền tố</div>
+        <div class="examples">un-, re-, dis- thường không mang trọng âm</div>
+        <div class="drill"><span class="tag">Luyện</span>unHAPpy, reWRITE, disaGREE. So sánh với từ gốc để thấy trọng âm không đổi vị trí.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 31</span></div>
+        <div class="single-topic">Từ TOEIC/IELTS hay sai trọng âm</div>
+        <div class="examples"><b>COMfortable</b> · <b>VEGetable</b> · <b>PHOtograph</b> — phoTOGraphy — photoGRAPHic</div>
+        <div class="drill"><span class="tag">Luyện</span>Chú ý trọng âm dịch chuyển khi từ đổi dạng (danh từ → tính từ → trạng từ).</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 32</span></div>
+        <div class="single-topic">Trọng âm từ ghép (compound nouns)</div>
+        <div class="examples"><b>'BLACKboard</b> (bảng đen) vs <b>black 'BOARD</b> (tấm ván màu đen)</div>
+        <div class="drill"><span class="tag">Luyện</span>Danh từ ghép thường nhấn từ đầu; cụm tính từ + danh từ thường nhấn từ sau.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 33</span></div>
+        <div class="single-topic">Luyện nghe – đoán trọng âm</div>
+        <div class="examples">Dùng audio thật (podcast, tin tức) để nhận diện trọng âm</div>
+        <div class="drill"><span class="tag">Luyện</span>Nghe 5 câu, gạch chân âm tiết được nhấn trước khi xem đáp án.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 34 · ÔN TẬP</span></div>
+        <div class="review-title">Ôn tập trọng âm từ tuần 5</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Tự đọc 10 từ đã học, ghi âm, đối chiếu vị trí trọng âm với từ điển.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WEEK 6 ============ -->
+  <section class="week phase-b" id="w6">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 06</span>
+      <h3>Trọng âm câu &amp; Nhịp điệu</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 35</span></div>
+        <div class="single-topic">Content words vs Function words</div>
+        <div class="examples">Danh/động/tính/trạng từ được nhấn — giới từ, mạo từ lướt nhẹ</div>
+        <div class="drill"><span class="tag">Luyện</span>Gạch chân từ mang nghĩa chính trong 5 câu bất kỳ, chỉ nhấn đúng những từ đó khi đọc.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 36</span></div>
+        <div class="single-topic">Nhịp điệu trọng âm đều (stress-timed)</div>
+        <div class="examples">Khoảng cách giữa các âm tiết nhấn gần như đều nhau</div>
+        <div class="drill"><span class="tag">Luyện</span>Vỗ tay theo từng âm tiết nhấn khi đọc câu — đặc trưng khác biệt lớn so với tiếng Việt.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 37</span></div>
+        <div class="single-topic">Weak forms (dạng yếu)</div>
+        <div class="examples">a, an, the, to, of, was, were khi không mang trọng âm</div>
+        <div class="drill"><span class="tag">Luyện</span>"a cup of tea" → /ə kʌp əv tiː/, không đọc rõ từng từ như khi đứng riêng lẻ.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 38</span></div>
+        <div class="single-topic">Luyện câu IELTS Speaking Part 1</div>
+        <div class="examples">Áp dụng trọng âm câu vào câu trả lời thực tế</div>
+        <div class="drill"><span class="tag">Luyện</span>Chọn 5 câu trả lời mẫu Part 1, đánh dấu trọng âm câu trước khi luyện nói.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 39</span></div>
+        <div class="single-topic">Contrastive stress (nhấn đối lập)</div>
+        <div class="examples">"I said BLUE, not GREEN" — nhấn để làm rõ ý đối lập</div>
+        <div class="drill"><span class="tag">Luyện</span>Tạo 5 câu có ý đối lập, luyện nhấn đúng từ mang thông tin tương phản.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 40</span></div>
+        <div class="single-topic">Shadowing với audio ngắn</div>
+        <div class="examples">Nhại theo TED Talk / BBC Learning English</div>
+        <div class="drill"><span class="tag">Luyện</span>Chọn đoạn 30–60 giây, nghe 1 lần, sau đó nói đồng thời cùng audio.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 41 · ÔN TẬP</span></div>
+        <div class="review-title">Ôn tập trọng âm câu &amp; nhịp điệu</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Ghi âm 1 phút nói tự do, tự đánh giá độ đều của nhịp điệu.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WEEK 7 ============ -->
+  <section class="week phase-b" id="w7">
+    <div class="week-head">
+      <span class="wk-no">TUẦN 07</span>
+      <h3>Nối âm &amp; Ngữ điệu</h3>
+    </div>
+    <div class="day-grid">
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 42</span></div>
+        <div class="single-topic">Nối phụ âm – nguyên âm</div>
+        <div class="examples"><b>an apple</b> → nghe như "a-napple"</div>
+        <div class="drill"><span class="tag">Luyện</span>Phụ âm cuối từ trước nối liền vào nguyên âm đầu từ sau: turn_it_off, come_in.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 43</span></div>
+        <div class="single-topic">Nối phụ âm – phụ âm giống nhau</div>
+        <div class="examples"><b>big garden</b> → giữ âm /g/ dài hơn, không tách hai lần</div>
+        <div class="drill"><span class="tag">Luyện</span>black cat, bus stop — hai phụ âm giống nhau hợp thành một âm kéo dài.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 44</span></div>
+        <div class="single-topic">Biến đổi âm /t/, /d/</div>
+        <div class="examples">Flapping &amp; glottal stop — khác biệt Anh-Anh vs Anh-Mỹ</div>
+        <div class="drill"><span class="tag">Luyện</span>"water" → giọng Mỹ nghe gần như "wa-der"; giọng Anh-Anh giữ /t/ rõ hoặc lược thành glottal stop.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 45</span></div>
+        <div class="single-topic">Ngữ điệu câu hỏi</div>
+        <div class="examples">Yes/No question ↗ &nbsp;·&nbsp; Wh-question ↘</div>
+        <div class="drill"><span class="tag">Luyện</span>"Are you ready?" lên giọng cuối câu; "Where are you going?" xuống giọng cuối câu.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 46</span></div>
+        <div class="single-topic">Ngữ điệu trong liệt kê &amp; câu phức</div>
+        <div class="examples">"I need eggs ↗, milk ↗, and bread ↘"</div>
+        <div class="drill"><span class="tag">Luyện</span>Mệnh đề phụ thường xuống giọng nhẹ, mệnh đề chính giữ ngữ điệu chính của câu.</div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-label"><span class="d-no">NGÀY 47</span></div>
+        <div class="single-topic">Luyện tổng hợp — IELTS Speaking Part 2</div>
+        <div class="examples">Trọng âm + nối âm + ngữ điệu trong cùng một đoạn nói</div>
+        <div class="drill"><span class="tag">Luyện</span>Chọn 1 đề Part 2 quen thuộc, đánh dấu đầy đủ trọng âm/nối âm/ngữ điệu rồi luyện nói 2 phút.</div>
+      </div>
+
+      <div class="day-card review">
+        <div class="day-label"><span class="d-no">NGÀY 48 · TỔNG KẾT</span></div>
+        <div class="review-title">Test tổng kết 3 tuần</div>
+        <div class="drill"><span class="tag">Bài kiểm tra nhỏ</span>Ghi âm bản thân nói 2 phút, so sánh với bản ghi ở Ngày 1 để thấy tiến bộ rõ rệt.</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-mark">◆ SỔ TAY NGỮ ÂM</div>
+  <p>Học 15–20 phút mỗi ngày, đều đặn quan trọng hơn học nhiều trong thời gian ngắn. Luôn ghi âm giọng nói của bản thân — tai người học tiến bộ nhanh hơn khi có bằng chứng để so sánh.</p>
+</footer>
+
+</body>
+</html>
