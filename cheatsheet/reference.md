@@ -168,6 +168,20 @@
 
 ---
 
+### 🛠️ Modern C++ Error Handling & Memory Layout
+
+<details>
+<summary><strong>No-exception Policy, std::expected, std::optional & Memory Layout</strong></summary>
+
+| Thành phần | Khai báo / Cú pháp | Mục đích | Ví dụ ngắn | Ghi chú |
+|---|---|---|---|---|
+| **No-exception Policy** | `-fno-exceptions` | Cấm dùng `try-catch` trong Hard Real-time loop | Trả về `ErrorCode` hoặc `struct Result` | Exception yêu cầu stack unwinding, gây latency không xác định (non-deterministic). Thường áp dụng trong AUTOSAR, MISRA C++, Robotics RT. |
+| **`std::expected` (C++23)** | `std::expected<Data, ErrorCode>` | Xử lý lỗi theo phong cách modern C++ không dùng exception | `if(res) use(*res); else log(res.error());` | Với C++17/20 có thể dùng `tl::expected`. |
+| **`std::optional`** | `std::optional<LidarPoint>` | Giá trị có thể tồn tại hoặc không | `if(pt) process(*pt);` | Dùng thay raw pointer hoặc sentinel value. Zero-overhead abstraction. |
+| **SoA vs AoS** *(⭐ Optional / Nâng cao)* | `struct { float x[N], y[N]; };`<br>`struct Point { float x,y; } pts[N];` | Tối ưu cache locality và SIMD | Point cloud filtering | AoS trực quan hơn nhưng SoA thường đạt cache hit rate và SIMD efficiency cao hơn khi xử lý từng trường dữ liệu. |
+
+</details>
+
 ## Lớp 2 — OS Internals, Hardware Architecture & Real-time Linux
 
 ---
@@ -266,6 +280,19 @@
 </details>
 
 ---
+
+### 🌐 Time Synchronization & Hardware Architecture
+
+<details>
+<summary><strong>PTP, CPU Power States & I/O Bus Architecture</strong></summary>
+
+| Thành phần | Khai báo / Cú pháp | Mục đích | Ví dụ ngắn | Ghi chú |
+|---|---|---|---|---|
+| **PTP (IEEE 1588)** | `ptp4l -i eth0 -m` | Đồng bộ thời gian mức micro-giây | Đồng bộ Camera và LiDAR | NTP thường chỉ đạt sai số mức ms. Sensor Fusion thường cần timestamp chính xác hơn. |
+| **CPU P-State / C-State** *(⭐ Optional)* | `intel_idle.max_cstate=0`<br>`processor.max_cstate=0` | Giảm jitter do CPU power management | BIOS hoặc GRUB | Khóa CPU ở trạng thái hiệu năng cố định có thể giúp giảm jitter trong hệ thống real-time, đổi lại tiêu thụ điện năng cao hơn. |
+| **I/O Bus Architecture** *(⭐ Optional)* | GMSL / PCIe / CAN / USB3 | Hiểu giới hạn băng thông và độ trễ | Camera GMSL → Jetson | Việc lựa chọn bus phụ thuộc yêu cầu hệ thống; GMSL và PCIe thường được dùng trong hệ thống camera hiệu năng cao. |
+
+</details>
 
 ## Lớp 3 — Robot Middleware, Zero-Copy IPC & Math Engines
 
@@ -380,6 +407,19 @@
 
 ---
 
+### 🚀 Production ROS 2 Deployment
+
+<details>
+<summary><strong>Lifecycle Nodes, UDP Buffer & tf2 Time Synchronization</strong></summary>
+
+| Thành phần | Khai báo / Cú pháp | Mục đích | Ví dụ ngắn | Ghi chú |
+|---|---|---|---|---|
+| **Lifecycle Nodes** | `class MyNode : public rclcpp_lifecycle::LifecycleNode` | Quản lý trạng thái node | `on_configure()` → `on_activate()` | Giúp hệ thống khởi tạo theo trình tự rõ ràng, đặc biệt hữu ích trong robot nhiều thành phần. |
+| **UDP Buffer Tuning** | `sysctl -w net.core.rmem_max=2147483647` | Tăng socket buffer | DDS truyền PointCloud | Khi lưu lượng dữ liệu lớn, buffer mặc định của Linux có thể trở thành nút thắt. Cần đánh giá cùng với QoS. |
+| **tf2 Time Synchronization** | `lookupTransform(target, source, stamp)` | Lấy transform đúng thời điểm | `lookupTransform(..., msg.header.stamp)` | Với dữ liệu cảm biến, thường ưu tiên timestamp của message thay vì `Time::now()`. |
+
+</details>
+
 ## Lớp 4 — Edge AI Infra & Real-world Deployment
 
 ---
@@ -435,25 +475,49 @@
 
 ---
 
+### 🛡️ Functional Safety & AI Deployment
+
+<details>
+<summary><strong>Dual-MCU Safety & Zero-copy AI Pipeline</strong></summary>
+
+| Thành phần | Khai báo / Cú pháp | Mục đích | Ví dụ ngắn | Ghi chú |
+|---|---|---|---|---|
+| **Dual-MCU Watchdog Architecture** | SoC ↔ MCU qua SPI/CAN | Tách AI và tầng Safety | Heartbeat mỗi 10ms | Đây là kiến trúc thường gặp trong các hệ thống yêu cầu mức an toàn chức năng cao; yêu cầu cụ thể phụ thuộc tiêu chuẩn áp dụng (ví dụ ISO 26262, IEC 61508). |
+| **Zero-copy AI Pipeline** *(⭐ Optional)* | `NvBufSurface` / CUDA EGLStream | Camera → GPU không qua CPU | CSI → GPU → TensorRT | Có thể giảm số lần copy bộ nhớ trên nền tảng Jetson hỗ trợ pipeline phù hợp. |
+
+</details>
+
 ## ✅ Checklist tra cứu nhanh
 
-```
+```text
 Khi gặp latency spike bất thường:
-  → perf stat → cache miss cao? → kiểm tra false sharing (alignas)
-  → strace → nhiều syscall? → dùng io_uring / vDSO
-  → cyclictest → jitter cao? → kiểm tra PREEMPT_RT, isolcpus, mlockall
+  → perf stat → cache miss cao?
+  → strace → nhiều syscall?
+  → cyclictest → PREEMPT_RT, isolcpus, mlockall?
 
 Khi code concurrent có hành vi kỳ lạ:
-  → Chạy TSan → có data race?
-  → Kiểm tra memory_order của atomic đang dùng
-  → Kiểm tra spurious wakeup trong condition_variable
+  → Chạy TSan
+  → Kiểm tra memory_order
+  → Kiểm tra condition_variable
 
-Khi AI inference quá chậm trên robot:
-  → trtexec benchmark → GPU utilization?
-  → Quantize FP16 → INT8 nếu cần
-  → Kiểm tra H↔D transfer (dùng cudaMemcpyAsync + pinned memory)
+Khi AI inference quá chậm:
+  → TensorRT benchmark
+  → FP16 / INT8
+  → cudaMemcpyAsync + pinned memory
+
+Khi Camera/LiDAR trong ROS 2 bị drop frame:
+  → Kiểm tra UDP Buffer Linux (rmem_max / wmem_max)
+  → Kiểm tra QoS (BEST_EFFORT hay RELIABLE?)
+  → Kiểm tra đang serialize hay đã dùng shared memory / Iceoryx?
+
+Khi Sensor Fusion bị drift hoặc jitter:
+  → Kiểm tra Time Synchronization (NTP hay PTP?)
+  → Kiểm tra tf2 timestamp
+  → *(Optional)* Kiểm tra CPU Power Management (P-State / C-State)
+
+Khi Robot gặp Kernel Panic hoặc lỗi nghiêm trọng:
+  → Kiểm tra Watchdog
+  → MCU Safety có ngắt actuator đúng thiết kế không?
 ```
-
----
 
 *Reference cheatsheet bổ sung cho **Robotics Systems Engineering Cheatsheet (Nhánh A)**.*
