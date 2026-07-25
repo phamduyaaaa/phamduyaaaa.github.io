@@ -1,0 +1,17 @@
+[
+  {
+    "slug": "bat-dau-voi-nav2",
+    "date": "2026-07-25",
+    "date_display": "25 Jul 2026",
+    "title_en": "Getting Started with Nav2 on a Real Robot",
+    "title_vi": "Bắt đầu với Nav2 trên robot thật",
+    "excerpt_en": "Notes on the gap between Nav2 in simulation and Nav2 on a robot that has to work every single time, on a real floor.",
+    "excerpt_vi": "Ghi chú về khoảng cách giữa Nav2 trên mô phỏng và Nav2 trên robot phải chạy đúng mọi lúc, trên sàn nhà thật.",
+    "tags": [
+      "ROS2",
+      "Nav2",
+      "SLAM"
+    ],
+    "read_min": 2
+  }
+]

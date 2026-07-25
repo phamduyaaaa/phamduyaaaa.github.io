@@ -3,478 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Field Reports — Phạm Đức Duy. Câu chuyện thật từ production robots, research labs, và những thứ đã hỏng.">
-<title>Field Reports · Phạm Đức Duy</title>
+<meta name="description" content="Phạm Đức Duy — Blog về ROS 2, Nav2, Embodied AI và những gì thực sự xảy ra khi đưa robot vào sản xuất.">
+<title>Blog · Phạm Đức Duy</title>
 
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-<style>
-:root {
-  --bg:       #0D0E13;
-  --bg-2:     #13151C;
-  --bg-3:     #1A1D27;
-  --border:   rgba(255,255,255,0.06);
-  --border-2: rgba(255,255,255,0.10);
-  --ink:      #E8E6DF;
-  --ink-2:    #8A8880;
-  --ink-3:    #3E3D3A;
-  --accent:   #C8A97A;
-  --accent-dim: rgba(200,169,122,0.10);
-  --blue:     #7BA7D4;
-  --green:    #6DB88F;
-  --red:      #C97A7A;
+<meta property="og:title" content="Blog · Phạm Đức Duy">
+<meta property="og:description" content="ROS 2, Nav2, Embodied AI — ghi chú từ thực chiến triển khai robot.">
+<meta property="og:type" content="website">
 
-  --serif: 'Lora', 'Georgia', serif;
-  --sans:  'Inter', system-ui, sans-serif;
-  --mono:  'JetBrains Mono', monospace;
-
-  --ease: cubic-bezier(0.25,0.46,0.45,0.94);
-  --t: 0.2s var(--ease);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--ink-2);
-  font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-a { color: inherit; text-decoration: none; transition: color var(--t); }
-strong { color: var(--ink); font-weight: 500; }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 32px; }
-
-/* NAV */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: 52px;
-  background: rgba(13,14,19,0.90);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-}
-.nav-in {
-  max-width: 1040px; margin: 0 auto;
-  height: 100%; padding: 0 32px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.nav-logo {
-  font-family: var(--serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--ink);
-  display: flex; align-items: center; gap: 10px;
-}
-.nav-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: pulse 2.8s ease infinite;
-  flex-shrink: 0;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-.nav-links { display: flex; gap: 0; list-style: none; }
-.nav-links a {
-  font-size: 12.5px; font-weight: 400;
-  color: var(--ink-3);
-  padding: 6px 14px;
-  border-radius: 6px;
-  transition: color var(--t);
-  letter-spacing: 0.01em;
-}
-.nav-links a:hover, .nav-links a.here { color: var(--ink-2); }
-.nav-links a.here { color: var(--accent); }
-.nav-cta {
-  font-size: 12px; font-weight: 500;
-  color: var(--bg);
-  background: var(--accent);
-  padding: 6px 16px;
-  border-radius: 6px;
-  letter-spacing: 0.01em;
-  transition: opacity var(--t);
-}
-.nav-cta:hover { opacity: .85; }
-
-/* HERO */
-.hero {
-  padding: 130px 0 80px;
-  border-bottom: 1px solid var(--border);
-}
-.hero-label {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--ink-3);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-bottom: 28px;
-}
-.hero-title {
-  font-family: var(--serif);
-  font-size: clamp(36px,5vw,62px);
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.12;
-  margin-bottom: 22px;
-  letter-spacing: -0.01em;
-}
-.hero-title em {
-  font-style: italic;
-  color: var(--accent);
-}
-.hero-sub {
-  font-size: 15.5px;
-  color: var(--ink-2);
-  max-width: 480px;
-  line-height: 1.85;
-}
-
-/* FILTERS */
-.filters {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  padding: 36px 0 32px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 56px;
-}
-.f-btn {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  padding: 6px 14px;
-  border-radius: 100px;
-  border: 1px solid var(--border-2);
-  background: transparent;
-  color: var(--ink-3);
-  cursor: pointer;
-  transition: all var(--t);
-}
-.f-btn:hover { color: var(--ink-2); border-color: rgba(255,255,255,0.15); }
-.f-btn.on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-
-/* POSTS LIST — editorial, not grid */
-.posts { display: flex; flex-direction: column; padding-bottom: 96px; }
-
-/* Featured post */
-.post-feat {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--bg-2);
-  margin-bottom: 20px;
-  transition: border-color var(--t);
-  cursor: pointer;
-}
-.post-feat:hover { border-color: var(--border-2); }
-
-.feat-left {
-  padding: 40px 44px;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.feat-right {
-  padding: 40px 44px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 20px;
-  background: var(--bg-3);
-}
-
-/* Regular post row */
-.post-row {
-  display: grid;
-  grid-template-columns: 180px 1fr auto;
-  gap: 0;
-  padding: 32px 0;
-  border-bottom: 1px solid var(--border);
-  align-items: start;
-  cursor: pointer;
-  transition: all var(--t);
-  position: relative;
-}
-.post-row::before {
-  content: '';
-  position: absolute; left: -16px; right: -16px; top: 0; bottom: 0;
-  border-radius: 8px;
-  background: var(--bg-2);
-  opacity: 0;
-  transition: opacity var(--t);
-  z-index: -1;
-}
-.post-row:hover::before { opacity: 1; }
-
-.post-row:last-child { border-bottom: none; }
-
-/* SHARED post parts */
-.post-eyebrow {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-}
-.eyebrow-tag {
-  padding: 2px 8px;
-  border-radius: 100px;
-  border: 1px solid;
-  font-size: 9.5px;
-}
-.et-retro { color: var(--blue); border-color: rgba(123,167,212,0.25); }
-.et-human { color: var(--accent); border-color: rgba(200,169,122,0.25); }
-.et-deep  { color: var(--green); border-color: rgba(109,184,143,0.25); }
-
-.post-title {
-  font-family: var(--serif);
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.32;
-  letter-spacing: -0.005em;
-}
-.feat-title { font-size: 22px; }
-.row-title  { font-size: 17px; }
-
-.post-excerpt {
-  font-size: 14px;
-  color: var(--ink-2);
-  line-height: 1.82;
-}
-
-.post-meta-row {
-  display: flex; align-items: center; gap: 10px;
-  flex-wrap: wrap;
-}
-.meta-where {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--ink-3);
-}
-.meta-time {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--ink-3);
-}
-.meta-sep { color: var(--ink-3); opacity: .4; }
-
-.post-read-link {
-  font-family: var(--serif);
-  font-size: 13px;
-  font-style: italic;
-  color: var(--accent);
-  display: inline-flex; align-items: center; gap: 5px;
-  transition: gap var(--t);
-  white-space: nowrap;
-  padding-left: 24px;
-  padding-top: 2px;
-}
-.post-row:hover .post-read-link { gap: 9px; }
-
-/* Row meta column */
-.row-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 4px;
-}
-.row-meta .meta-where { font-size: 11px; color: var(--ink-3); }
-.row-date {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--ink-3);
-}
-
-/* PLACEHOLDER */
-.post-placeholder {
-  padding: 28px 0;
-  border-bottom: 1px solid var(--border);
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-/* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 28px 0; }
-.foot-in {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-}
-.foot-txt {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-}
-.foot-txt a { color: var(--accent); transition: opacity var(--t); }
-.foot-txt a:hover { opacity: .75; }
-
-/* REVEAL */
-.reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
-.reveal.in { opacity: 1; transform: none; }
-
-@media (max-width: 900px) {
-  .post-feat { grid-template-columns: 1fr; }
-  .feat-left { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 28px 24px; }
-  .feat-right { padding: 24px 28px 28px; }
-  .post-row { grid-template-columns: 1fr; gap: 8px; }
-  .post-read-link { padding-left: 0; }
-  .row-meta { flex-direction: row; flex-wrap: wrap; }
-}
-@media (max-width: 640px) {
-  .nav-links, .nav-cta { display: none; }
-  .wrap { padding: 0 20px; }
-}
-</style>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="styles/blog.css">
 </head>
 <body>
 
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="./" onclick="toggleMenu(false)">Blog</a>
+  <a href="../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
 <nav>
-  <div class="nav-in">
-    <div class="nav-logo">
-      <span class="nav-dot"></span>
-      <a href="https://phamduyaaaa.github.io">Phạm Đức Duy</a>
-    </div>
-    <ul class="nav-links">
-      <li><a href="https://phamduyaaaa.github.io/#about">About</a></li>
-      <li><a href="https://phamduyaaaa.github.io/#experience">Experience</a></li>
-      <li><a href="https://phamduyaaaa.github.io/#projects">Projects</a></li>
-      <li><a href="/blog/" class="here">Field Reports</a></li>
-      <li><a href="https://phamduyaaaa.github.io/mission/">Mission</a></li>
+  <div class="nav-inner">
+    <a href="../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="./" class="active">Blog</a></li>
+      <li><a href="../#projects">Projects</a></li>
+      <li><a href="../#contact">Contact</a></li>
     </ul>
-    <a href="mailto:duypham.robotics@gmail.com" class="nav-cta">Contact</a>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
 
-<div class="wrap">
-
-  <div class="hero reveal">
-    <div class="hero-label">Field Reports</div>
-    <h1 class="hero-title">Những gì thực sự<br>xảy ra <em>ngoài lab.</em></h1>
-    <p class="hero-sub">
-      Không phải tech doc, không phải LinkedIn post.
-      Câu chuyện thật từ production robots, quyết định sai, team tốt,
-      và những thứ đã hỏng lúc 2 giờ sáng.
+<div class="container">
+  <section class="blog-hero">
+    <div class="section-label">Blog</div>
+    <h1>
+      <span data-en>Notes from deployment.</span>
+      <span data-vi>Ghi chú từ thực chiến.</span>
+    </h1>
+    <p>
+      <span data-en>ROS 2, Nav2, and Embodied AI — what actually happens when robots leave the lab and enter hospitals, restaurants, and factory floors.</span>
+      <span data-vi>ROS 2, Nav2, và Embodied AI — chuyện gì thực sự xảy ra khi robot rời phòng lab và bước vào bệnh viện, nhà hàng, nhà máy.</span>
     </p>
-  </div>
+  </section>
 
-  <div class="filters reveal">
-    <button class="f-btn on" data-f="all">Tất cả</button>
-    <button class="f-btn" data-f="retro">Project Retrospective</button>
-    <button class="f-btn" data-f="human">Câu chuyện con người</button>
-    <button class="f-btn" data-f="deep">Technical deep-dive</button>
-  </div>
+  <section id="postList" class="post-list" aria-live="polite">
+    <!-- Được render động bằng JS từ blog/posts.json -->
+  </section>
 
-  <div class="posts" id="posts">
-
-    <!-- FEATURED -->
-    <a href="posts/bytehome-retrospective.html" class="post-feat reveal" data-tags="retro human">
-      <div class="feat-left">
-        <div class="post-eyebrow">
-          <span class="eyebrow-tag et-retro">Retrospective</span>
-          <span class="eyebrow-tag et-human">Con người</span>
-        </div>
-        <div class="feat-title post-title">
-          5 tháng đưa robot vào bệnh viện —<br>thứ không ai nói với bạn
-        </div>
-        <p class="post-excerpt">
-          Prototype chạy đẹp trong lab. Rồi chúng tôi mang nó vào hành lang bệnh viện thật,
-          với sàn phản chiếu, thang máy không có API, và điều dưỡng cần robot dừng khi họ nói
-          "dừng" — không phải khi nó tự quyết định. Đây là những gì đã hỏng.
-        </p>
-      </div>
-      <div class="feat-right">
-        <div class="post-meta-row">
-          <span class="meta-where">📍 ByteHome Robotics</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-time">Mar 2026</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-time">~8 phút</span>
-        </div>
-        <div style="font-family:var(--serif);font-size:13px;font-style:italic;color:var(--accent);">
-          Đọc báo cáo →
-        </div>
-      </div>
-    </a>
-
-    <!-- ROW 1 -->
-    <a href="posts/halbotlab-esp32-2am.html" class="post-row reveal" data-tags="human deep">
-      <div class="row-meta">
-        <span class="meta-where">HalBotLab</span>
-        <span class="row-date">Jan 2025</span>
-        <span class="meta-time">~6 phút</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="post-eyebrow">
-          <span class="eyebrow-tag et-human">Con người</span>
-          <span class="eyebrow-tag et-deep">Technical</span>
-        </div>
-        <div class="row-title post-title">ESP32 latency 47ms. Target 5ms.<br>Và cái đêm tìm ra tại sao.</div>
-        <p class="post-excerpt">Micro-ROS trên ESP32 lẽ ra phải publish sensor data dưới 5ms. Thực tế: 47ms, không ổn định. Ba tuần debug. Một đêm tìm ra nguyên nhân hoàn toàn không phải code.</p>
-      </div>
-      <span class="post-read-link">Đọc →</span>
-    </a>
-
-    <!-- ROW 2 -->
-    <a href="posts/distributional-rl-what-broke.html" class="post-row reveal" data-tags="retro deep">
-      <div class="row-meta">
-        <span class="meta-where">HalBotLab · MethodsX</span>
-        <span class="row-date">Oct 2025</span>
-        <span class="meta-time">~10 phút</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="post-eyebrow">
-          <span class="eyebrow-tag et-deep">Technical</span>
-          <span class="eyebrow-tag et-retro">Retrospective</span>
-        </div>
-        <div class="row-title post-title">Từ idea đến Q2 journal — và 4 tháng<br>thứ không vào paper</div>
-        <p class="post-excerpt">Paper published. DOI có rồi. Nhưng có khoảng 4 tháng training runs thất bại, một lần phải refactor lại toàn bộ reward function, và một review comment khiến mình mất ngủ 3 ngày.</p>
-      </div>
-      <span class="post-read-link">Đọc →</span>
-    </a>
-
-    <!-- PLACEHOLDER -->
-    <div class="post-placeholder post-row reveal" data-tags="human">
-      <div class="row-meta">
-        <span class="meta-where">ByteHome</span>
-        <span class="row-date">Sắp có</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="post-eyebrow"><span class="eyebrow-tag et-human">Con người</span></div>
-        <div class="row-title post-title" style="color:var(--ink-3);">Training 30 khách hàng B2B dùng ROS 2 — mà không có terminal</div>
-      </div>
-    </div>
-
-  </div>
-
-  <footer class="reveal">
-    <div class="foot-in">
-      <span class="foot-txt">© <span id="yr"></span> Phạm Đức Duy · Field Reports</span>
-      <span class="foot-txt"><a href="https://phamduyaaaa.github.io">← Về trang chủ</a></span>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
     </div>
   </footer>
-
 </div>
 
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="js/i18n.js"></script>
 <script>
-document.getElementById('yr').textContent = new Date().getFullYear();
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+<script>
+(function () {
+  var listEl = document.getElementById('postList');
 
-document.querySelectorAll('.f-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    const f = btn.dataset.f;
-    document.querySelectorAll('[data-tags]').forEach(el => {
-      el.style.display = (f === 'all' || el.dataset.tags.includes(f)) ? '' : 'none';
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderPosts(posts) {
+    if (!posts.length) {
+      listEl.innerHTML =
+        '<div class="post-list-empty">' +
+        '<span data-en>No posts yet. Check back soon.</span>' +
+        '<span data-vi>Chưa có bài viết nào. Quay lại sau nhé.</span>' +
+        '</div>';
+      return;
+    }
+
+    listEl.innerHTML = posts.map(function (p) {
+      var tags = (p.tags || []).map(function (t) {
+        return '<span class="pill">' + escapeHtml(t) + '</span>';
+      }).join('');
+
+      return (
+        '<a class="post-card" href="posts/' + p.slug + '.html">' +
+          '<div class="post-date">' + escapeHtml(p.date_display) + '<br>' + p.read_min +
+            '<span data-en> min</span><span data-vi> phút</span></div>' +
+          '<div class="post-card-body">' +
+            '<div class="post-title" data-en>' + escapeHtml(p.title_en) + '</div>' +
+            '<div class="post-title" data-vi>' + escapeHtml(p.title_vi) + '</div>' +
+            '<p class="post-excerpt" data-en>' + escapeHtml(p.excerpt_en) + '</p>' +
+            '<p class="post-excerpt" data-vi>' + escapeHtml(p.excerpt_vi) + '</p>' +
+            '<div class="post-tags">' + tags + '</div>' +
+          '</div>' +
+          '<div class="post-arrow" aria-hidden="true">→</div>' +
+        '</a>'
+      );
+    }).join('');
+  }
+
+  fetch('posts.json')
+    .then(function (res) {
+      if (!res.ok) throw new Error('posts.json not found');
+      return res.json();
+    })
+    .then(renderPosts)
+    .catch(function () {
+      listEl.innerHTML =
+        '<div class="post-list-empty">' +
+        '<span data-en>Could not load posts right now.</span>' +
+        '<span data-vi>Không tải được danh sách bài viết lúc này.</span>' +
+        '</div>';
     });
-  });
-});
-
-const ro = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }), { threshold: 0.06 });
-document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+})();
 </script>
 </body>
 </html>
