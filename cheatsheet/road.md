@@ -31,7 +31,8 @@ Lớp 4 (Edge AI Deploy)   ████                      10%
 | `Memory alignment` & Padding | Ảnh hưởng trực tiếp đến cache hit rate và SIMD vectorization |
 | Zero-cost abstractions | Dùng `constexpr`, `inline`, template để không trả thêm chi phí runtime |
 | `std::pmr::memory_resource` (Custom Allocators) | Tự quản lý bộ nhớ đệm → tránh phân mảnh heap RAM trong loop dài hạn |
-
+| `std::expected` / No-exception Policy | Tránh `try-catch` trong critical loop; ưu tiên xử lý lỗi theo giá trị trả về để giữ tính xác định của hệ thống |
+| SoA vs AoS *(⭐ Optional)* | Bố trí dữ liệu phù hợp để cải thiện cache locality và SIMD |
 </details>
 
 <details>
@@ -88,6 +89,8 @@ Lớp 4 (Edge AI Deploy)   ████                      10%
 | SIMD — `AVX-512` (x86) / `ARM NEON` | Nhân ma trận 3D cho LiDAR/IMU nhanh hơn 4–8× so với scalar code |
 | Branch Prediction & Pipeline stalls | Sắp xếp lại điều kiện `if` để CPU đoán đúng → giảm stall |
 | DMA (Direct Memory Access) | Truyền dữ liệu sensor ↔ RAM mà không chiếm CPU cycles |
+| PTP (IEEE 1588) | Đồng bộ timestamp giữa các cảm biến và máy tính ở độ chính xác cao, hữu ích cho Sensor Fusion |
+| CPU P-State / C-State *(⭐ Optional)* | Điều chỉnh power management để giảm jitter trong hệ thống real-time khi cần |
 
 </details>
 
@@ -141,6 +144,8 @@ Lớp 4 (Edge AI Deploy)   ████                      10%
 | Callback groups & Mutually Exclusive | Điều phối để callback Camera không chặn callback Motor |
 | DDS (Data Distribution Service) | Tầng transport phía dưới ROS 2 — cấu hình sai QoS là nguồn gốc nhiều vấn đề |
 | QoS policy (reliability, durability, deadline) | `BEST_EFFORT` cho sensor; `RELIABLE` cho command — đừng dùng default cho tất cả |
+| Lifecycle Nodes (`rclcpp_lifecycle`) | Quản lý vòng đời node theo trạng thái rõ ràng trước khi đưa vào hoạt động |
+| UDP Buffer Tuning | Điều chỉnh `rmem_max` và `wmem_max` khi truyền dữ liệu DDS tốc độ cao |
 
 </details>
 
@@ -207,23 +212,38 @@ Lớp 4 (Edge AI Deploy)   ████                      10%
 | Graceful Degradation | Khi camera fail → chuyển sang LiDAR-only mode thay vì crash |
 | Safety Layer / Hardware Interlocks | Lớp độc lập với AI — triggered khi latency vượt ngưỡng hoặc AI output bất thường |
 | Fault Tolerance (Heartbeat / Fail-safe) | Nếu AI thread không heartbeat trong X ms → safety layer tự động phanh |
+| Dual-MCU Watchdog Architecture | Tách biệt tầng AI và tầng Safety để tăng khả năng xử lý lỗi nghiêm trọng |
+| Zero-copy AI Pipeline *(⭐ Optional)* | Giảm số lần copy bộ nhớ trong pipeline Camera → GPU trên nền tảng hỗ trợ |
 
 </details>
 
 ---
 
-## ✅ Checklist thực hành — 1 từ khoá = 3 bước
+## ✅ Checklist thực hành
 
-```
-□ Bước 1 — Định nghĩa bằng lời mình
-    Không copy-paste từ Wikipedia. Giải thích được cho người không biết lĩnh vực.
+```text
+□ Bước 1 — Hiểu khái niệm
 
-□ Bước 2 — Code C++ minh hoạ
-    Tự viết class/function. Compile và chạy được thực sự.
+□ Bước 2 — Viết code C++
 
-□ Bước 3 — Đo lường bằng tool
-    Ví dụ với SPSC Ring Buffer:
-    → Viết class C++ → Chạy TSan (không có data race?) → Đo p99.9 bằng perf (< 1 µs?)
+□ Bước 3 — Đo bằng công cụ thực tế
+
+──────────────────────────────
+
+Khi Camera/LiDAR ROS 2 bị drop frame:
+→ UDP Buffer
+→ QoS
+→ Shared Memory / Iceoryx
+
+Khi SLAM / EKF bị drift:
+→ PTP Time Sync
+→ tf2 Timestamp
+→ CPU Power Management
+
+Khi Robot gặp lỗi nghiêm trọng:
+→ Dual-MCU Watchdog
+→ Safety Layer
+→ Hardware E-Stop
 ```
 
 ---
