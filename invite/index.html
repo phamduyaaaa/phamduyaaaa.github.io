@@ -344,7 +344,7 @@
 
     <!-- KHUNG ẢNH TRUNG TÂM KÈM CHỮ KÝ GIAO THOA TRỰC TIẾP -->
     <div class="photo-showcase">
-      <img id="uiMainPhoto" src="" alt="Graduation Portrait" loading="eager" onerror="this.style.display='none'">
+      <img id="uiMainPhoto" src="" alt="Graduation Portrait" loading="eager">
       <div class="signature-overlay font-script" id="uiSignature"></div>
     </div>
 
@@ -554,7 +554,18 @@
     document.getElementById('uiGradTitle').innerText = "GRADUATION";
     document.getElementById('uiCeremony').innerText = "Ceremony";
     
-    document.getElementById('uiMainPhoto').src = TEMPLATE_CONFIG.person.mainPhotoUrl;
+    const img = document.getElementById("uiMainPhoto");
+
+    img.onload = function () {
+        img.style.display = "block";
+    };
+
+    img.onerror = function () {
+        console.error("Không tải được ảnh:", img.src);
+        img.style.display = "none";
+    };
+
+img.src = TEMPLATE_CONFIG.person.mainPhotoUrl;   
     document.getElementById('uiSignature').innerText = TEMPLATE_CONFIG.person.signatureName;
     document.getElementById('uiQuote').innerText = TEMPLATE_CONFIG.person.quote;
     
