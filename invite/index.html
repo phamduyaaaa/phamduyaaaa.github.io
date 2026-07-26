@@ -14,13 +14,13 @@
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Great+Vibes&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant Garamond:wght@600;700;800&family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
 <style>
   :root {
     --navy-deep: #061123;
     --navy-royal: #0D2247;
-    --gold-metallic: #C59B27;
+    --gold-metallic: #D4AF37;
     --gold-light: #F4E8C1;
     --text-main: #1A2433;
     --text-muted: #526071;
@@ -46,7 +46,7 @@
     padding: 30px 12px;
   }
 
-  .font-serif { font-family: 'Cinzel', serif; }
+  .font-serif { font-family: 'Cormorant Garamond', serif; }
   .font-script { font-family: 'Great Vibes', cursive; }
 
   /* --- KHUNG THIỆP CHÍNH --- */
@@ -54,8 +54,7 @@
     width: 100%;
     max-width: 440px;
     background-color: var(--paper-cream);
-    background-image: radial-gradient(rgba(212, 175, 55, 0.05) 0.75px, transparent 0.75px);
-    background-size: 16px 16px;
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(252,251,249,0.95) 100%);
     border-radius: 36px;
     box-shadow: 
       0 30px 60px -12px var(--paper-shadow),
@@ -70,86 +69,129 @@
     padding-bottom: 60px;
   }
 
-  /* --- RUY BĂNG CỬ NHÂN --- */
+  /* ==========================================================
+     RUY BĂNG CỬ NHÂN - MÔ HÌNH KHỚP NÓI ĐÔI & GỢN SÓNG VẬT LÝ THẬT
+     ========================================================== */
+  /* Khớp 1: Neo tại vai (Nửa trên di chuyển nhẹ nhàng) */
   .stole-wrapper {
-    position: absolute; top: -4px; left: 20px;
-    width: 82px; height: 440px;
-    background: linear-gradient(to right, #030811 0%, #0d2247 18%, #1c4488 50%, #0d2247 82%, #030811 100%);
+    position: absolute; top: -4px; left: 18px;
+    width: 82px;
+    height: 380px; /* Đã thu ngắn lại cho cân đối chuẩn bản gốc */
     z-index: 25;
-    clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+    pointer-events: none;
     transform-origin: top center;
-    will-change: transform;
-    animation: stoleSway 5s ease-in-out infinite alternate;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.85);
-    filter: drop-shadow(10px 16px 20px rgba(6, 17, 35, 0.5));
+    animation: topShoulderSway 6s ease-in-out infinite alternate;
+  }
+
+  /* Khớp 2: Thân và đuôi ruy băng (Nửa dưới chịu gió, tạo gợn sóng gấp & co ngắn lại) */
+  .stole-fabric-body {
+    width: 100%; height: 100%;
+    position: relative;
+    background: linear-gradient(
+      105deg,
+      #030812 0%,
+      #0a1830 18%,
+      #132b53 45%, 
+      #1a3869 50%, 
+      #132b53 55%, 
+      #0a1830 82%,
+      #030812 100%
+    );
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+    /* Điểm xoay uốn lượn đặt ở khoảng giữa ruy băng */
+    transform-origin: center 120px;
+    will-change: transform, filter;
+    animation: bottomWaveFold 6s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+    box-shadow: inset 0 0 18px rgba(0,0,0,0.95);
+    filter: drop-shadow(6px 12px 14px rgba(3, 8, 18, 0.5)) drop-shadow(14px 22px 28px rgba(6, 17, 35, 0.35));
     display: flex; flex-direction: column; align-items: center;
-    padding-top: 14px; pointer-events: none;
+    padding-top: 12px;
   }
 
   .stole-border {
-    position: absolute; inset: 0 5.5px 3px 5.5px;
-    border-left: 1.5px solid var(--gold-metallic);
-    border-right: 1.5px solid var(--gold-metallic);
+    position: absolute; inset: 0 5px 3px 5px;
+    border-left: 1.8px solid var(--gold-metallic);
+    border-right: 1.8px solid var(--gold-metallic);
     clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 99%, 0 88%);
+    box-shadow: inset 0 0 4px rgba(212, 175, 55, 0.4);
     opacity: 0.9;
   }
 
-  .stole-wrapper::after {
+  .stole-fabric-body::after {
     content: ""; position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.22) 40%, transparent 70%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.18) 45%, transparent 75%);
     background-size: 100% 200%;
-    animation: silkShine 5s ease-in-out infinite alternate;
+    animation: silkShine 6s ease-in-out infinite alternate;
   }
 
-  /* ==========================================================
-     KHẮC PHỤC TRIỆT ĐỂ LỖI LOGO TRƯỜNG LỌT THỎM
-     ========================================================== */
   .stole-logo-slot {
-    width: 54px; height: 54px; /* Tăng từ 44px lên 54px cho cân đối với dải lụa */
+    width: 48px; height: 48px;
     border-radius: 50%;
     background: #FFFFFF;
-    border: 2.5px solid var(--gold-metallic);
+    border: 2px solid var(--gold-metallic);
     position: relative;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; 
-    margin-bottom: 12px; z-index: 3;
-    /* Bóng râm 3D kép: Tạo cảm giác huy hiệu kim loại đính chặt vào lụa */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 6px rgba(0, 0, 0, 0.25);
+    margin-bottom: 10px; z-index: 3;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 0 5px rgba(0, 0, 0, 0.25);
     flex-shrink: 0;
   }
-  
   .stole-logo-slot img { 
-    position: absolute; inset: 0;
-    width: 100%; height: 100%; 
-    object-fit: cover; /* Chuyển từ contain sang cover để lấp đầy hình tròn */
-    background: #FFFFFF;
-    padding: 0; /* Xóa bỏ hoàn toàn lớp padding trắng gây thu nhỏ ảnh */
-    /* Zoom 15% để tự động cắt bỏ lớp viền thừa bên trong file ảnh PNG của trường */
-    transform: scale(1.15);
-    transition: transform 0.3s ease;
-    z-index: 2;
+    position: absolute; inset: 0; width: 100%; height: 100%; 
+    object-fit: cover; background: #FFFFFF; padding: 0;
+    transform: scale(1.15); z-index: 2;
   }
-  
   .stole-logo-fallback { 
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; color: var(--navy-deep); 
-    z-index: 1; letter-spacing: 1px; background: #FFF;
+    font-size: 11px; font-weight: 800; color: var(--navy-deep); 
+    z-index: 1; background: #FFF;
   }
 
-  .stole-text-group { display: flex; justify-content: center; gap: 6px; height: 66%; z-index: 2; }
-  .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; color: var(--gold-light); text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 0 10px rgba(197, 155, 39, 0.5); user-select: none; font-weight: 700; }
-  .text-school { font-size: 9.5px; opacity: 0.95; font-weight: 600; letter-spacing: 2px; }
-  .text-name { font-size: 16px; font-weight: 800; color: #FFF9E6; letter-spacing: 4px; }
-  .stole-badge { margin-top: auto; margin-bottom: 24px; color: #FFF9E6; font-size: 13px; font-weight: 800; letter-spacing: 2px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
-
-  @keyframes stoleSway {
-    0% { transform: rotateZ(0deg) rotateY(0deg) skewY(0deg); }
-    33% { transform: rotateZ(-3deg) rotateY(-12deg) skewY(1deg); }
-    66% { transform: rotateZ(2.5deg) rotateY(10deg) skewY(-1deg); }
-    100% { transform: rotateZ(-2deg) rotateY(-8deg) skewY(1deg); }
+  .stole-text-group { display: flex; justify-content: center; gap: 6px; height: 60%; z-index: 2; }
+  .vertical-text { 
+    writing-mode: vertical-rl; text-orientation: mixed; 
+    color: #FFFDF7; 
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 12px rgba(212, 175, 55, 0.4); 
+    user-select: none; font-weight: 700;
   }
-  @keyframes silkShine { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100%; } }
+  .text-school { font-family: 'Montserrat', sans-serif; font-size: 8px; font-weight: 700; letter-spacing: 2px; color: #EAD396; opacity: 0.95; }
+  .text-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 800; letter-spacing: 3.5px; }
+
+  .stole-divider {
+    width: 46px; height: 1.5px;
+    background: linear-gradient(90deg, transparent, #F4E8C1, var(--gold-metallic), #F4E8C1, transparent);
+    margin-top: auto; margin-bottom: 6px; z-index: 2;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.9);
+  }
+
+  .stole-badge { 
+    margin-bottom: 20px; color: #FFFDF7; 
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12.5px; font-weight: 800; letter-spacing: 2.5px; 
+    z-index: 2; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 10px rgba(212, 175, 55, 0.5); 
+  }
+
+  /* KỊCH BẢN VẬT LÝ: Nửa trên chuyển động nhẹ, nửa dưới gợn sóng gấp & co ngắn lại */
+  @keyframes topShoulderSway {
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(-1.2deg); } /* Nửa trên dao động nhẹ nhàng */
+  }
+
+  @keyframes bottomWaveFold {
+    0% {
+      transform: perspective(800px) rotateX(0deg) skewY(0deg) scaleY(1);
+    }
+    50% {
+      /* Gió thổi nửa dưới: uốn gợn sóng (rotateX), xô lệch nhẹ (skewY) và co ngắn lại (scaleY = 0.97) */
+      transform: perspective(800px) rotateX(6deg) skewY(1.5deg) scaleY(0.97);
+    }
+    100% {
+      transform: perspective(800px) rotateX(-2deg) skewY(-0.8deg) scaleY(0.99);
+    }
+  }
+
+  @keyframes silkShine { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100% } }
 
   /* --- HERO SECTION --- */
   .hero-section { width: 100%; padding: 40px 22px 10px 22px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
@@ -170,11 +212,17 @@
   .photo-showcase:hover img { transform: scale(1.04); }
 
   .signature-overlay {
-    position: absolute; bottom: -8px; left: 0; right: 0;
-    text-align: center; font-size: 58px; color: var(--navy-deep);
-    text-shadow: 0 0 10px rgba(252, 251, 249, 0.95), 0 0 20px rgba(252, 251, 249, 1), 0 4px 15px rgba(252, 251, 249, 1);
+    position: absolute; bottom: 12px; left: 0; right: 0;
+    text-align: center; font-size: 56px; color: var(--navy-deep);
+    text-shadow: 
+      0 0 12px rgba(255, 255, 255, 0.95),
+      0 0 25px rgba(255, 255, 255, 1),
+      0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 20; pointer-events: none; line-height: 1;
   }
+
+  .quote-box { text-align: center; padding: 0 25px; margin-top: 15px; margin-bottom: 15px; }
+  .quote-text { font-size: 13.5px; font-weight: 600; color: var(--navy-deep); letter-spacing: 2px; line-height: 1.6; }
 
   /* --- PHẦN "THÂN MỜI" OVERLAPPING --- */
   .invite-card-section { width: 100%; padding: 15px 18px 25px 18px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
@@ -187,7 +235,7 @@
   .invite-time { font-size: 15px; font-weight: 700; color: var(--navy-royal); letter-spacing: 1px; margin-bottom: 12px; }
   .date-display-box { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 28px; }
   .date-side { font-size: 13px; font-weight: 700; color: var(--navy-royal); letter-spacing: 2px; border-bottom: 1.5px solid var(--navy-royal); padding-bottom: 5px; text-transform: uppercase; }
-  .date-main { font-size: 64px; font-weight: 700; color: var(--navy-deep); line-height: 0.85; font-family: 'Cinzel', serif; }
+  .date-main { font-size: 64px; font-weight: 700; color: var(--navy-deep); line-height: 0.85; font-family: 'Cormorant Garamond', serif; }
   .invite-sub-label { font-size: 12.5px; font-weight: 500; color: var(--text-muted); font-style: italic; margin-bottom: 8px; }
   .invite-venue-name { font-size: 18px; font-weight: 700; color: var(--navy-deep); letter-spacing: 1px; margin-bottom: 4px; }
   .invite-room { font-size: 15px; font-weight: 600; color: var(--navy-royal); margin-bottom: 12px; }
@@ -230,7 +278,7 @@
   .luubut-box { width: 100%; padding: 15px 10px 10px 10px; margin: 10px 0 25px 0; text-align: center; position: relative; z-index: 10; }
   .luubut-title { font-size: 54px; color: #718096; line-height: 0.9; margin-bottom: 24px; font-weight: normal; }
   .luubut-body { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; padding: 0 8px; }
-  .luubut-paragraph { font-size: 13.5px; line-height: 1.9; color: #2D3748; text-align: left; font-weight: 400; }
+  .luubut-paragraph { font-size: 13.5px; line-height: 1.9; color: #2D3748; text-align: left; font-weight: 400; font-family: 'Lora', serif; }
   .luubut-signature { font-size: 50px; color: #718096; line-height: 1; margin-top: 5px; }
   .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; width: 100%; margin-bottom: 30px; }
   .album-card { aspect-ratio: 4/5; background-color: #CBD5E1; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 10px 22px -4px rgba(6, 17, 35, 0.12); border: 3px solid #FFFFFF; }
@@ -248,10 +296,9 @@
 
   footer { margin-top: 35px; text-align: center; font-size: 11px; color: var(--text-muted); letter-spacing: 1.5px; opacity: 0.8; }
 
-  /* Tối ưu hóa cho màn hình điện thoại nhỏ (iPhone SE 375px) */
   @media (max-width: 380px) {
-    .stole-wrapper { width: 74px; height: 400px; left: 14px; }
-    .stole-logo-slot { width: 48px; height: 48px; }
+    .stole-wrapper { width: 74px; height: 350px; left: 14px; }
+    .stole-logo-slot { width: 44px; height: 44px; }
     .header-titles { padding-left: 85px; }
     .title-main { font-size: 23px; }
     .title-script { font-size: 36px; }
@@ -269,18 +316,21 @@
 
 <div class="invitation-card">
 
-  <!-- RUY BĂNG CỬ NHÂN - LOGO TRƯỜNG ĐÃ TỐI ƯU DÀN TRANG -->
+  <!-- RUY BĂNG CỬ NHÂN - MÔ HÌNH VẬT LÝ SÓNG LỤA MỀM MẠI -->
   <div class="stole-wrapper">
-    <div class="stole-border"></div>
-    <div class="stole-logo-slot">
-      <img id="uiStoleLogoImg" src="" alt="Logo Trường" loading="eager">
-      <span class="stole-logo-fallback font-serif" id="uiStoleFallbackLogo"></span>
+    <div class="stole-fabric-body">
+      <div class="stole-border"></div>
+      <div class="stole-logo-slot">
+        <img id="uiStoleLogoImg" src="" alt="Logo Trường" loading="eager">
+        <span class="stole-logo-fallback font-serif" id="uiStoleFallbackLogo"></span>
+      </div>
+      <div class="stole-text-group">
+        <div class="vertical-text text-school" id="uiSchoolName"></div>
+        <div class="vertical-text text-name" id="uiPersonName"></div>
+      </div>
+      <div class="stole-divider"></div>
+      <div class="stole-badge" id="uiCohort"></div>
     </div>
-    <div class="stole-text-group">
-      <div class="vertical-text text-school" id="uiSchoolName"></div>
-      <div class="vertical-text text-name" id="uiPersonName"></div>
-    </div>
-    <div class="stole-badge" id="uiCohort"></div>
   </div>
 
   <!-- HERO SECTION -->
@@ -292,6 +342,7 @@
       <div class="title-script font-script" id="uiCeremony">Ceremony</div>
     </div>
 
+    <!-- KHUNG ẢNH TRUNG TÂM KÈM CHỮ KÝ GIAO THOA TRỰC TIẾP -->
     <div class="photo-showcase">
       <img id="uiMainPhoto" src="" alt="Graduation Portrait" loading="eager" onerror="this.style.display='none'">
       <div class="signature-overlay font-script" id="uiSignature"></div>
@@ -315,9 +366,9 @@
       </div>
 
       <div class="invite-sub-label">Tại địa điểm:</div>
-      <div class="invite-venue-name font-serif" id="uiInviteVenue">ĐẠI HỌC PHENIKAA</div>
+      <div class="invite-venue-name font-serif" id="uiInviteVenue">ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI</div>
       <div class="invite-room" id="uiInviteRoom">(Hội trường A9-A10)</div>
-      <div class="invite-address" id="uiInviteAddress">P. Nguyễn Trác, Dương Nội, Hà Nội, Việt Nam</div>
+      <div class="invite-address" id="uiInviteAddress">số 298 Cầu Diễn, quận Bắc Từ Liêm, Hà Nội, Việt Nam</div>
 
       <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="btn-direction font-serif" id="uiInviteMapLink">
         <svg viewBox="0 0 24 24">
