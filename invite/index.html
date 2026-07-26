@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title id="seoTitle">Thiệp Mời Tốt Nghiệp - Vũ Thị Ngọc Lý</title>
+<meta name="description" id="seoDesc" content="Trân trọng kính mời bạn đến dự lễ tốt nghiệp...">
+<meta property="og:type" content="website">
+<meta property="og:title" id="ogTitle" content="Thiệp Mời Tốt Nghiệp">
+<meta property="og:description" id="ogDesc" content="Sự hiện diện của bạn là niềm vinh hạnh lớn nhất">
+<meta property="og:image" id="ogImage" content="imgs/anh-share-link.jpg">
+
+<!-- Google Fonts: Thêm bộ font Lora chuẩn thư tín/lưu bút văn học -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --navy-deep: #081B38;
+    --navy-royal: #112D5A;
+    --gold-main: #D4AF37;
+    --gold-light: #F3E5AB;
+    --text-dark: #1E293B;
+    --text-muted: #475569;
+    --bg-page: #E2E8F0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  
+  body {
+    background-color: var(--bg-page);
+    background-image: 
+      radial-gradient(at 10% 10%, rgba(255, 255, 255, 0.9) 0px, transparent 50%),
+      radial-gradient(at 90% 90%, rgba(255, 255, 255, 0.8) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, #F8FAFC 0%, #E2E8F0 100%);
+    background-attachment: fixed;
+    color: var(--text-dark);
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 10px;
+  }
+
+  .font-serif { font-family: 'Cinzel', serif; }
+  .font-script { font-family: 'Great Vibes', cursive; }
+  .font-literary { font-family: 'Lora', serif; } /* Font riêng cho phần Lưu bút */
+
+  /* --- KHUNG THIỆP CHÍNH --- */
+  .invitation-card {
+    width: 100%;
+    max-width: 440px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 60%, #F1F5F9 100%);
+    border-radius: 32px;
+    box-shadow: 0 25px 50px -12px rgba(8, 27, 56, 0.25), 0 0 0 1px rgba(255,255,255,0.8);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 50px;
+  }
+
+  /* --- RUY BĂNG CỬ NHÂN --- */
+  .stole-wrapper {
+    position: absolute; top: -6px; left: 20px;
+    width: 74px; height: 410px;
+    background: linear-gradient(135deg, #051329 0%, var(--navy-royal) 50%, #040a16 100%);
+    z-index: 25;
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+    transform-origin: top center;
+    will-change: transform;
+    animation: stoleSway 5s ease-in-out infinite alternate;
+    filter: drop-shadow(6px 12px 16px rgba(8, 27, 56, 0.45));
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 15px; pointer-events: none;
+  }
+
+  .stole-border {
+    position: absolute; inset: 0 4.5px 3px 4.5px;
+    border-left: 1.5px solid var(--gold-main);
+    border-right: 1.5px solid var(--gold-main);
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 99%, 0 88%);
+  }
+
+  .stole-wrapper::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.22) 40%, transparent 70%);
+    background-size: 100% 200%;
+    animation: silkShine 5s ease-in-out infinite alternate;
+  }
+
+  .stole-text-group { display: flex; justify-content: center; gap: 5px; height: 74%; margin-top: 10px; z-index: 2; }
+  .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; color: var(--gold-main); text-shadow: 1px 1px 2px rgba(0,0,0,0.8); letter-spacing: 2px; user-select: none; }
+  .text-school { font-size: 8.5px; font-weight: 600; opacity: 0.9; }
+  .text-name { font-size: 13px; font-weight: 800; color: var(--gold-light); letter-spacing: 3px; }
+  .stole-badge { margin-top: auto; margin-bottom: 24px; color: var(--gold-light); font-size: 12px; font-weight: 700; z-index: 2; }
+
+  @keyframes stoleSway {
+    0% { transform: rotateZ(0deg) skewY(0deg); }
+    50% { transform: rotateZ(-1.5deg) skewY(0.5deg); }
+    100% { transform: rotateZ(1deg) skewY(-0.5deg); }
+  }
+  @keyframes silkShine { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100%; } }
+
+  /* --- MUSIC PLAYER --- */
+  .music-btn {
+    position: absolute; top: 20px; right: 20px;
+    width: 42px; height: 42px;
+    background: #FFFFFF; border: 1.5px solid var(--gold-main);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 30;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease; font-size: 16px;
+  }
+  .music-btn:hover { transform: scale(1.1); }
+  .music-btn.playing { animation: spin 4s linear infinite; background: var(--navy-royal); color: var(--gold-light); }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  /* --- HERO SECTION --- */
+  .hero-section { width: 100%; padding: 35px 20px 20px 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
+  .header-titles { width: 100%; padding-left: 85px; text-align: right; margin-bottom: 20px; }
+  .uni-logo { font-size: 15px; font-weight: 800; color: var(--navy-deep); letter-spacing: 1px; }
+  .uni-sub { font-size: 7.5px; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .title-main { font-size: 26px; font-weight: 700; color: var(--navy-deep); letter-spacing: 1px; line-height: 1; }
+  .title-script { font-size: 38px; color: var(--navy-royal); margin-top: -8px; margin-right: 5px; font-weight: normal; }
+
+  .photo-showcase {
+    width: 90%; height: 440px;
+    border-radius: 28px; overflow: hidden; position: relative;
+    box-shadow: 0 20px 40px rgba(8, 27, 56, 0.18);
+    background-color: #CBD5E1;
+    margin-bottom: 25px;
+  }
+  .photo-showcase img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; transition: transform 0.5s; }
+  .photo-showcase:hover img { transform: scale(1.03); }
+
+  .signature-overlay {
+    position: absolute; bottom: -10px; left: 0; right: 0;
+    text-align: center; font-size: 54px; color: var(--navy-deep);
+    text-shadow: 0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,1);
+    z-index: 20; pointer-events: none; line-height: 1;
+  }
+
+  .quote-box { text-align: center; padding: 0 25px; margin-top: 10px; margin-bottom: 25px; }
+  .quote-text { font-size: 13.5px; font-weight: 600; color: var(--navy-deep); letter-spacing: 2px; line-height: 1.6; }
+
+  /* --- NỘI DUNG CHI TIẾT --- */
+  .content-section { width: 100%; padding: 30px 25px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+  .section-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent); margin: 15px 0 35px 0; }
+  .sec-title { font-size: 20px; color: var(--navy-deep); font-weight: 700; letter-spacing: 1.5px; margin-bottom: 20px; text-align: center; }
+
+  /* Countdown */
+  .countdown { display: flex; gap: 10px; justify-content: center; width: 100%; margin-bottom: 10px; }
+  .count-box { background: #FFFFFF; border: 1px solid rgba(212, 175, 55, 0.3); padding: 10px 12px; min-width: 65px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+  .count-num { font-size: 20px; font-weight: 700; color: var(--navy-royal); display: block; }
+  .count-label { font-size: 8.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
+  .date-highlight { font-size: 13px; font-weight: 700; color: var(--navy-royal); letter-spacing: 3px; margin-top: 15px; }
+
+  /* Event Cards */
+  .event-list { display: flex; flex-direction: column; gap: 18px; width: 100%; }
+  .event-item { background: #FFFFFF; border-radius: 20px; padding: 25px 20px; text-align: center; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 25px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+  .event-item::top { content: ""; position: absolute; top:0; left:0; right:0; height: 4px; background: var(--navy-royal); }
+  .event-icon { font-size: 26px; margin-bottom: 10px; }
+  .event-item h3 { font-size: 17px; color: var(--navy-royal); margin-bottom: 10px; font-weight: 700; }
+  .event-item p { font-size: 13.5px; color: var(--text-muted); margin-bottom: 4px; line-height: 1.5; }
+  .btn-map { display: inline-block; margin-top: 12px; padding: 8px 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--navy-royal); border: 1px solid var(--navy-royal); border-radius: 50px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+  .btn-map:hover { background: var(--navy-royal); color: #FFF; }
+
+  /* --- FILMSTRIP SECTION --- */
+  .filmstrip-wrapper { width: 100%; margin: 20px 0 25px 0; position: relative; z-index: 15; }
+  .film-header { text-align: center; margin-bottom: 15px; }
+  .film-header .script-word { font-size: 46px; color: var(--navy-royal); line-height: 0.8; }
+  .film-header .serif-word { font-size: 15px; color: var(--text-muted); font-weight: 600; letter-spacing: 4px; text-transform: uppercase; margin-left: 50px; display: block; margin-top: 5px; }
+
+  .film-container { width: 100%; background: #0D1726; padding: 35px 12px; position: relative; display: flex; gap: 12px; align-items: stretch; height: 520px; box-shadow: 0 15px 35px rgba(8, 27, 56, 0.3); }
+  .torn-edge { position: absolute; left: 0; right: 0; width: 100%; height: 22px; z-index: 10; pointer-events: none; }
+  .torn-edge.top { top: -1px; }
+  .torn-edge.bottom { bottom: -1px; transform: rotate(180deg); }
+  .torn-edge svg { width: 100%; height: 100%; display: block; }
+
+  .film-left-col { width: 44%; background: #111e32; border-radius: 6px; position: relative; overflow: hidden; padding: 8px 12px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
+  .film-left-col::before, .film-left-col::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 5px;
+    background: repeating-linear-gradient(to bottom, transparent 0px, transparent 6px, rgba(255,255,255,0.45) 6px, rgba(255,255,255,0.45) 12px);
+    z-index: 5;
+  }
+  .film-left-col::before { left: 3px; }
+  .film-left-col::after { right: 3px; }
+
+  .film-track { display: flex; flex-direction: column; gap: 12px; width: 100%; animation: filmRollUp 16s linear infinite; }
+  .film-left-col:hover .film-track { animation-play-state: paused; }
+  .film-frame { width: 100%; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; border: 2px solid rgba(255,255,255,0.85); background: #334155; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+  .film-frame img { width: 100%; height: 100%; object-fit: cover; }
+  @keyframes filmRollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+
+  .film-right-col { width: 56%; border-radius: 12px; overflow: hidden; position: relative; background: #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.15); }
+  .film-right-col img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.7s; }
+  .film-right-col:hover img { transform: scale(1.05); }
+
+  /* ==========================================================
+     PHẦN LƯU BÚT VĂN HỌC (EDITORIAL GUESTBOOK CARD) - MỚI!
+     ========================================================== */
+  .luubut-card {
+    width: 100%;
+    background: #FFFFFF;
+    border-radius: 30px;
+    padding: 38px 25px 30px 25px;
+    margin: 10px 0 30px 0;
+    box-shadow: 0 20px 40px -10px rgba(8, 27, 56, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Tiêu đề Calligraphy màu Bạc nhạt (Silver Slate) */
+  .luubut-title {
+    font-size: 52px;
+    color: #94A3B8; /* Màu bạc nhạt sang trọng */
+    text-align: center;
+    line-height: 0.9;
+    margin-bottom: 25px;
+    font-weight: normal;
+  }
+
+  /* Đoạn văn serif mang phong cách thư tín (Epistolary) */
+  .luubut-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 25px;
+  }
+  .luubut-paragraph {
+    font-size: 14px;
+    line-height: 1.85;
+    color: #1E293B;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  /* Chữ ký kết thúc trang lưu bút */
+  .luubut-signature {
+    font-size: 48px;
+    color: #94A3B8;
+    text-align: center;
+    line-height: 1;
+    margin-top: 10px;
+  }
+
+  /* --- ALBUM KỶ YẾU GRID 2x2 (ĐẶT SAU LƯU BÚT) --- */
+  .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; width: 100%; margin-bottom: 35px; }
+  .album-card { aspect-ratio: 4/5; background-color: #CBD5E1; border-radius: 18px; overflow: hidden; position: relative; box-shadow: 0 8px 20px rgba(8, 27, 56, 0.1); border: 3px solid #FFFFFF; }
+  .album-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+  .album-card:hover img { transform: scale(1.08); }
+
+  /* --- RSVP FORM --- */
+  .rsvp-box { background: #FFFFFF; border-radius: 24px; padding: 35px 20px; width: 100%; text-align: center; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 15px 30px rgba(0,0,0,0.03); }
+  .form-group { margin-bottom: 15px; text-align: left; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--navy-deep); }
+  .form-control { width: 100%; padding: 12px 15px; border: 1px solid #CBD5E1; border-radius: 12px; font-family: inherit; font-size: 13.5px; color: var(--text-dark); transition: border-color 0.3s; }
+  .form-control:focus { outline: none; border-color: var(--navy-royal); }
+  .btn-submit { background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-royal) 100%); color: #FFF; border: none; padding: 14px 30px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; cursor: pointer; transition: opacity 0.3s; width: 100%; border-radius: 12px; margin-top: 10px; box-shadow: 0 8px 20px rgba(17, 45, 90, 0.25); }
+  .btn-submit:hover { opacity: 0.9; }
+  .btn-submit:disabled { background: #94A3B8; cursor: not-allowed; box-shadow: none; }
+  .form-feedback { margin-top: 15px; font-size: 13px; font-weight: 600; display: none; }
+
+  footer { margin-top: 30px; text-align: center; font-size: 11.5px; color: var(--text-muted); letter-spacing: 1px; }
+
+  @media (max-width: 380px) {
+    .stole-wrapper { width: 64px; height: 360px; left: 12px; }
+    .header-titles { padding-left: 75px; }
+    .title-main { font-size: 22px; }
+    .title-script { font-size: 32px; }
+    .photo-showcase { height: 380px; }
+    .signature-overlay { font-size: 44px; }
+    .count-box { min-width: 55px; padding: 8px 6px; }
+    .film-container { height: 450px; padding: 28px 8px; }
+    .luubut-title { font-size: 44px; }
+    .luubut-signature { font-size: 42px; }
+    .luubut-card { padding: 30px 18px 25px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="invitation-card">
+
+  <!-- NÚT PHÁT NHẠC -->
+  <button class="music-btn" id="musicBtn" aria-label="Bật/Tắt nhạc" title="Bật/Tắt Nhạc">🎵</button>
+  <audio id="bgMusic" loop preload="none"></audio>
+
+  <!-- RUY BĂNG CỬ NHÂN -->
+  <div class="stole-wrapper">
+    <div class="stole-border"></div>
+    <div class="stole-text-group">
+      <div class="vertical-text text-school" id="uiSchoolName"></div>
+      <div class="vertical-text text-name" id="uiPersonName"></div>
+    </div>
+    <div class="stole-badge" id="uiCohort"></div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <div class="hero-section">
+    <div class="header-titles">
+      <div class="uni-logo font-serif" id="uiSchoolLogo">PHENIKAA</div>
+      <div class="uni-sub" id="uiSubLogo">UNIVERSITY</div>
+      <div class="title-main font-serif" id="uiGradTitle">GRADUATION</div>
+      <div class="title-script font-script" id="uiCeremony">Ceremony</div>
+    </div>
+
+    <!-- KHUNG ẢNH HERO -->
+    <div class="photo-showcase">
+      <img id="uiMainPhoto" src="" alt="Graduation Portrait" loading="eager" onerror="this.style.display='none'">
+      <div class="signature-overlay font-script" id="uiSignature"></div>
+    </div>
+
+    <div class="quote-box">
+      <div class="quote-text font-serif" id="uiQuote"></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- NỘI DUNG CHI TIẾT -->
+  <div class="content-section">
+    <div class="sec-title font-serif">ĐẾN GIỜ GIAO THỪA</div>
+    
+    <div class="countdown" id="countdownContainer">
+      <div class="count-box"><span class="count-num font-serif" id="days">00</span><span class="count-label">Ngày</span></div>
+      <div class="count-box"><span class="count-num font-serif" id="hours">00</span><span class="count-label">Giờ</span></div>
+      <div class="count-box"><span class="count-num font-serif" id="mins">00</span><span class="count-label">Phút</span></div>
+      <div class="count-box"><span class="count-num font-serif" id="secs">00</span><span class="count-label">Giây</span></div>
+    </div>
+    <div class="date-highlight font-serif" id="uiDateText"></div>
+
+    <div class="section-divider"></div>
+
+    <div class="sec-title font-serif">THÔNG TIN SỰ KIỆN</div>
+    <div class="event-list" id="eventList"></div>
+  </div>
+
+  <!-- THƯỚC PHIM CUỘN & GIẤY RÁCH (FILMSTRIP SECTION) -->
+  <div class="filmstrip-wrapper">
+    <div class="film-header">
+      <span class="script-word font-script">Lưu giữ</span>
+      <span class="serif-word font-serif">kỷ niệm</span>
+    </div>
+
+    <div class="film-container">
+      <div class="torn-edge top">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 L0,80 Q100,110 200,60 T400,90 T600,50 T800,100 T1000,60 T1200,80 L1200,0 Z" fill="#FFFFFF"></path>
+        </svg>
+      </div>
+
+      <div class="film-left-col">
+        <div class="film-track" id="filmTrack"></div>
+      </div>
+
+      <div class="film-right-col">
+        <img id="uiRightAlbumPhoto" src="" alt="Featured Graduation Photo" loading="lazy" onerror="this.style.display='none'">
+      </div>
+
+      <div class="torn-edge bottom">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 L0,80 Q100,110 200,60 T400,90 T600,50 T800,100 T1000,60 T1200,80 L1200,0 Z" fill="#FFFFFF"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       PHẦN LƯU BÚT & ALBUM ẢNH (GUESTBOOK & GALLERY)
+       ========================================================== -->
+  <div class="content-section" style="padding-top: 5px;">
+    
+    <!-- THẺ LƯU BÚT VĂN HỌC -->
+    <div class="luubut-card">
+      <div class="luubut-title font-script">Lưu Bút</div>
+      <div class="luubut-body font-literary" id="uiLuubutBody">
+        <!-- JS sẽ tự động đổ 3 đoạn văn cảm xúc vào đây -->
+      </div>
+      <div class="luubut-signature font-script" id="uiLuubutSign"></div>
+    </div>
+
+    <!-- ALBUM KỶ YẾU GRID 2x2 (NGAY DƯỚI LƯU BÚT CHUẨN ẢNH MẪU) -->
+    <div class="sec-title font-serif" style="margin-top: 10px;">ALBUM KỶ YẾU</div>
+    <div class="album-grid" id="albumGrid"></div>
+
+    <div class="section-divider"></div>
+
+    <!-- RSVP FORM -->
+    <div class="sec-title font-serif">XÁC NHẬN THAM DỰ</div>
+    <div class="rsvp-box">
+      <p style="margin-bottom: 18px; color: var(--text-muted); font-size: 13px;" id="uiRsvpNote"></p>
+      <form id="rsvpForm" novalidate>
+        <div class="form-group">
+          <label for="guestName">Họ và tên của bạn: *</label>
+          <input type="text" id="guestName" class="form-control" placeholder="Nhập tên của bạn..." required>
+        </div>
+        <div class="form-group">
+          <label for="guestStatus">Bạn sẽ đến chứ? *</label>
+          <select id="guestStatus" class="form-control" required>
+            <option value="">-- Vui lòng chọn --</option>
+            <option value="yes">Chắc chắn mình sẽ có mặt!</option>
+            <option value="no">Tiếc quá, mình bận mất rồi</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="guestWish">Lời chúc gửi đến cử nhân:</label>
+          <textarea id="guestWish" class="form-control" rows="2" placeholder="Gửi vài lời chúc tốt đẹp..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit font-serif" id="submitBtn">Gửi Phản Hồi</button>
+        <div class="form-feedback" id="formFeedback"></div>
+      </form>
+    </div>
+
+    <footer id="uiFooter"></footer>
+  </div>
+
+</div>
+
+<script>
+  /* ==========================================================
+     1. SAAS DATA CONFIGURATION ENGINE (ĐÃ BỔ SUNG PHẦN LƯU BÚT)
+     ========================================================== */
+  const TEMPLATE_CONFIG = {
+    seo: {
+      title: "Thiệp Mời Tốt Nghiệp - Vũ Thị Ngọc Lý",
+      description: "Trân trọng kính mời bạn đến dự lễ tốt nghiệp của Vũ Thị Ngọc Lý tại ĐH Công Nghiệp Hà Nội.",
+      ogImage: "imgs/anh-share-link.jpg"
+    },
+    person: {
+      fullName: "Vũ Thị Ngọc Lý",
+      signatureName: "Ngọc Lý",
+      schoolName: "ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI",
+      schoolShortLogo: "HaUI",
+      schoolSubLogo: "UNIVERSITY",
+      cohort: "K18",
+      mainPhotoUrl: "imgs/anh-chan-dung-chinh.jpg",
+      quote: "EVERY END IS\nA NEW BEGINNING..."
+    },
+    /* Dữ liệu Lưu bút thư tín văn học */
+    luubut: {
+      paragraphs: [
+        "Mỗi hành trình đều có một dấu mốc để ta dừng lại, nhìn về những điều đã qua và trân trọng từng kỷ niệm đẹp của tuổi thanh xuân.",
+        "Mình thân mời gia đình, người thân và bạn bè đến tham dự lễ tốt nghiệp, cùng mình chia sẻ niềm vui và lưu giữ những khoảnh khắc thật đáng nhớ. Sự hiện diện của mọi người không chỉ làm ngày hôm ấy thêm trọn vẹn mà còn là món quà ý nghĩa nhất đối với mình.",
+        "Mình rất mong được gặp và đón tiếp mọi người trong ngày đặc biệt này!"
+      ],
+      signature: "Ngọc Lý"
+    },
+    filmstrip: {
+      rightFeaturedPhoto: "imgs/album-right.jpg",
+      rollingPhotos: [
+        "imgs/film-1.jpg",
+        "imgs/film-2.jpg",
+        "imgs/film-3.jpg",
+        "imgs/film-4.jpg"
+      ]
+    },
+    gallery: [
+      { url: "imgs/album-1.jpg", caption: "Rạng rỡ ngày tốt nghiệp" },
+      { url: "imgs/album-2.jpg", caption: "Thanh xuân K18" },
+      { url: "imgs/album-3.jpg", caption: "Tung mũ cử nhân" },
+      { url: "imgs/album-4.jpg", caption: "Kỷ niệm không thể quên" }
+    ],
+    event: {
+      mainTitle: "GRADUATION",
+      scriptTitle: "Ceremony",
+      targetDateIso: "2026-07-26T08:00:00+07:00",
+      dateDisplayText: "CHỦ NHẬT · 26 . 07 . 2026",
+      rsvpDeadlineText: "Vui lòng xác nhận sự hiện diện trước ngày 20/07/2026 để Lý chuẩn bị đón tiếp chu đáo nhất nhé!",
+      locations: [
+        {
+          icon: "🎓",
+          title: "Lễ Trao Bằng",
+          timeText: "08:00 AM - Chủ Nhật",
+          dateText: "Ngày 26 tháng 07 năm 2026",
+          placeName: "Hội trường A9 - A10",
+          address: "Trường Đại học Công nghiệp Hà Nội, 298 Cầu Diễn",
+          mapUrl: "https://maps.google.com"
+        },
+        {
+          icon: "🥂",
+          title: "Tiệc Thân Mật",
+          timeText: "11:30 AM - Cùng Ngày",
+          dateText: "Ngày 26 tháng 07 năm 2026",
+          placeName: "Nhà hàng Sen Tây Hồ",
+          address: "614 Lạc Long Quân, Tây Hồ, Hà Nội",
+          mapUrl: "https://maps.google.com"
+        }
+      ]
+    },
+    media: {
+      bgMusicUrl: "imgs/nhac-nen.mp3"
+    },
+    rsvp: {
+      webhookUrl: "https://jsonplaceholder.typicode.com/posts" 
+    }
+  };
+
+  /* ==========================================================
+     2. RENDER ENGINE & UI INJECTION
+     ========================================================== */
+  function initTemplate() {
+    // SEO
+    document.getElementById('seoTitle').innerText = TEMPLATE_CONFIG.seo.title;
+    document.getElementById('seoDesc').setAttribute('content', TEMPLATE_CONFIG.seo.description);
+    document.getElementById('ogTitle').setAttribute('content', TEMPLATE_CONFIG.seo.title);
+    document.getElementById('ogDesc').setAttribute('content', TEMPLATE_CONFIG.seo.description);
+    document.getElementById('ogImage').setAttribute('content', TEMPLATE_CONFIG.seo.ogImage);
+
+    // Stole Ribbon Data
+    const schoolEl = document.getElementById('uiSchoolName');
+    const nameEl = document.getElementById('uiPersonName');
+    schoolEl.innerText = TEMPLATE_CONFIG.person.schoolName;
+    nameEl.innerText = TEMPLATE_CONFIG.person.fullName.toUpperCase();
+    document.getElementById('uiCohort').innerText = TEMPLATE_CONFIG.person.cohort;
+    
+    if (TEMPLATE_CONFIG.person.fullName.length > 18) nameEl.style.fontSize = "11px";
+    if (TEMPLATE_CONFIG.person.schoolName.length > 25) schoolEl.style.fontSize = "7.5px";
+
+    // Hero Header & Photo
+    document.getElementById('uiSchoolLogo').innerText = TEMPLATE_CONFIG.person.schoolShortLogo;
+    document.getElementById('uiSubLogo').innerText = TEMPLATE_CONFIG.person.schoolSubLogo;
+    document.getElementById('uiGradTitle').innerText = TEMPLATE_CONFIG.event.mainTitle;
+    document.getElementById('uiCeremony').innerText = TEMPLATE_CONFIG.event.scriptTitle;
+    
+    document.getElementById('uiMainPhoto').src = TEMPLATE_CONFIG.person.mainPhotoUrl;
+    document.getElementById('uiSignature').innerText = TEMPLATE_CONFIG.person.signatureName;
+    document.getElementById('uiQuote').innerText = TEMPLATE_CONFIG.person.quote;
+    
+    // Dates & Event List
+    document.getElementById('uiDateText').innerText = TEMPLATE_CONFIG.event.dateDisplayText;
+    document.getElementById('uiRsvpNote').innerText = TEMPLATE_CONFIG.event.rsvpDeadlineText;
+    
+    const eventList = document.getElementById('eventList');
+    eventList.innerHTML = TEMPLATE_CONFIG.event.locations.map(loc => `
+      <div class="event-item">
+        <div class="event-icon" aria-hidden="true">${loc.icon}</div>
+        <h3 class="font-serif">${loc.title}</h3>
+        <p><strong>${loc.timeText}</strong></p>
+        <p>${loc.dateText}</p>
+        <p style="color: var(--navy-deep); font-weight: 700; margin-top: 6px;">${loc.placeName}</p>
+        <p style="font-size: 12.5px;">${loc.address}</p>
+        <a href="${loc.mapUrl}" target="_blank" rel="noopener noreferrer" class="btn-map">Xem Bản Đồ</a>
+      </div>
+    `).join('');
+
+    // --- RENDER THƯỚC PHIM CUỘN ---
+    document.getElementById('uiRightAlbumPhoto').src = TEMPLATE_CONFIG.filmstrip.rightFeaturedPhoto;
+    const filmTrack = document.getElementById('filmTrack');
+    const photos = TEMPLATE_CONFIG.filmstrip.rollingPhotos;
+    const seamlessList = [...photos, ...photos];
+    filmTrack.innerHTML = seamlessList.map((url, idx) => `
+      <div class="film-frame">
+        <img src="${url}" alt="Film memory ${idx+1}" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    `).join('');
+
+    // --- RENDER PHẦN LƯU BÚT VĂN HỌC ---
+    const luubutBody = document.getElementById('uiLuubutBody');
+    luubutBody.innerHTML = TEMPLATE_CONFIG.luubut.paragraphs.map(pText => `
+      <p class="luubut-paragraph">${pText}</p>
+    `).join('');
+    document.getElementById('uiLuubutSign').innerText = TEMPLATE_CONFIG.luubut.signature;
+
+    // --- RENDER ALBUM KỶ YẾU GRID ---
+    const albumGrid = document.getElementById('albumGrid');
+    albumGrid.innerHTML = TEMPLATE_CONFIG.gallery.map(img => `
+      <div class="album-card">
+        <img src="${img.url}" alt="${img.caption}" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    `).join('');
+
+    document.getElementById('uiFooter').innerHTML = `<p class="font-serif" style="font-weight: 700; color: var(--navy-deep); margin-bottom: 4px;">${TEMPLATE_CONFIG.person.fullName.toUpperCase()} · 2026</p><p>SaaS Invitation Architecture</p>`;
+    document.getElementById('bgMusic').src = TEMPLATE_CONFIG.media.bgMusicUrl;
+  }
+
+  /* ==========================================================
+     3. COUNTDOWN TIMER
+     ========================================================== */
+  function initCountdown() {
+    const targetDate = new Date(TEMPLATE_CONFIG.event.targetDateIso).getTime();
+    const timerInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(timerInterval);
+        document.getElementById("countdownContainer").innerHTML = `<div style="font-weight:700; color:var(--navy-royal); padding: 10px 0;">🎉 Sự kiện đã diễn ra thành công!</div>`;
+        return;
+      }
+
+      document.getElementById("days").innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+      document.getElementById("hours").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+      document.getElementById("mins").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      document.getElementById("secs").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+    }, 1000);
+  }
+
+  /* ==========================================================
+     4. AUDIO PLAYER
+     ========================================================== */
+  function initAudio() {
+    const musicBtn = document.getElementById('musicBtn');
+    const bgMusic = document.getElementById('bgMusic');
+    let isPlaying = false;
+
+    musicBtn.addEventListener('click', () => {
+      if (!isPlaying) {
+        bgMusic.play().then(() => {
+          musicBtn.classList.add('playing');
+          musicBtn.innerHTML = "⏸️";
+          isPlaying = true;
+        }).catch(err => console.log("Audio play error"));
+      } else {
+        bgMusic.pause();
+        musicBtn.classList.remove('playing');
+        musicBtn.innerHTML = "🎵";
+        isPlaying = false;
+      }
+    });
+  }
+
+  /* ==========================================================
+     5. RSVP WEBHOOK API
+     ========================================================== */
+  function initRsvpForm() {
+    const form = document.getElementById('rsvpForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const feedback = document.getElementById('formFeedback');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('guestName').value.trim();
+      const status = document.getElementById('guestStatus').value;
+      const wish = document.getElementById('guestWish').value.trim();
+
+      if (!name || !status) {
+        feedback.style.display = "block";
+        feedback.style.color = "#DC2626";
+        feedback.innerText = "⚠️ Vui lòng nhập tên và chọn xác nhận tham dự!";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "ĐANG GỬI...";
+      feedback.style.display = "none";
+
+      try {
+        const res = await fetch(TEMPLATE_CONFIG.rsvp.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, status, wish, date: new Date().toISOString() })
+        });
+
+        if (res.ok || res.status === 201) {
+          feedback.style.display = "block";
+          feedback.style.color = "#16A34A";
+          feedback.innerText = "🎉 Cảm ơn bạn! Phản hồi đã được gửi thành công.";
+          form.reset();
+        } else throw new Error("Error");
+      } catch (err) {
+        feedback.style.display = "block";
+        feedback.style.color = "#DC2626";
+        feedback.innerText = "❌ Có lỗi kết nối. Vui lòng thử lại sau!";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "GỬI PHẢN HỒI";
+      }
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initTemplate();
+    initCountdown();
+    initAudio();
+    initRsvpForm();
+  });
+</script>
+
+</body>
+</html>
