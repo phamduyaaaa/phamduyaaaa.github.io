@@ -9,16 +9,19 @@
   <!-- Dynamic Open Graph & Canonical -->
   <meta property="og:title" content="Thiệp Mời Tốt Nghiệp · Phạm Đức Duy">
   <meta property="og:description" content="Tốt nghiệp Cử nhân Robot & Trí tuệ Nhân tạo - ĐH Công Nghiệp Hà Nội">
-  <meta property="og:image" id="ogImageTag" content="imgs/anh-share-link.jpg">
+  <meta property="og:image" id="ogImageTag" content="https://phamduyaaaa.github.io/invite/imgs/album-right.jpg">
   <meta property="og:type" content="website">
 
-  <link rel="canonical" id="canonicalTag" href="https://phamducduy.site/">
+  <link rel="canonical" id="canonicalTag" href="https://phamduyaaaa.github.io/invite/">
   <meta name="theme-color" content="#0C0F1A">
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- PRELOAD FONT ĐỂ TỐI ƯU LCP -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Great+Vibes&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
@@ -49,13 +52,15 @@
 
       --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
       --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
-      --ease-curtain:  cubic-bezier(0.7, 0, 0.2, 1);
+      --ease-curtain:  cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-split:    cubic-bezier(0.19, 1, 0.22, 1);
     }
 
     *, *::before, *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent; /* Xóa vệt đen chớp khi chạm trên iOS */
     }
 
     html {
@@ -71,18 +76,17 @@
       font-size: 1rem;
       line-height: 1.6;
       min-height: 100vh;
+      min-height: 100dvh; /* Khớp kích thước Safari iOS */
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
 
-    /* ACCESSIBLE FOCUS INDICATOR */
     :focus-visible {
       outline: 2px solid var(--gold) !important;
       outline-offset: 4px !important;
     }
 
-    /* System Cursor Toggle */
     body.custom-cursor-active,
     body.custom-cursor-active a, 
     body.custom-cursor-active button, 
@@ -93,9 +97,7 @@
       cursor: none !important;
     }
 
-    /* ============================================================
-       CUSTOM CURSOR
-       ============================================================ */
+    /* CUSTOM CURSOR */
     #cursor-dot {
       position: fixed; top: -20px; left: -20px;
       width: 8px; height: 8px;
@@ -123,14 +125,13 @@
       background: rgba(201,168,76,0.08);
     }
 
-    /* ============================================================
-       NOISE GRAIN, AMBIENT ORB & SHOOTING STARS
-       ============================================================ */
+    /* NOISE GRAIN, AMBIENT ORB & SHOOTING STARS */
     #grain {
       position: fixed; inset: 0;
       pointer-events: none; z-index: 100;
       opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+      /* Base64 Encoding để ngăn lỗi file:/// URL origin issues */
+      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC43NScgbnVtT2N0YXZlcz0nNCcgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWx0ZXI9J3VybCgjbiknLz48L3N2Zz4=");
       background-size: 200px 200px;
     }
 
@@ -146,19 +147,19 @@
     #shooting-stars {
       position: fixed; inset: 0;
       width: 100vw; height: 100vh;
-      pointer-events: none; z-index: 0;
+      pointer-events: none; z-index: 1;
     }
 
     /* ============================================================
-       CINEMATIC INTRO TRANSITION
+       AWWWARDS SENIOR INTRO
        ============================================================ */
     #loading {
       position: fixed; inset: 0; z-index: 2000;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       overflow: hidden;
-      background: #04060c;
-      transition: opacity 1.2s var(--ease-curtain), visibility 1.2s var(--ease-curtain);
+      background: transparent;
+      transition: visibility 1.8s var(--ease-curtain);
     }
 
     .intro-curtain {
@@ -168,277 +169,103 @@
 
     .curtain-panel {
       flex: 1; height: 100%;
-      background: linear-gradient(180deg, #090e1a 0%, #04060c 100%);
-      transition: transform 1.6s var(--ease-curtain);
-      position: relative;
+      background: #04060c;
+      transition: transform 1.5s var(--ease-curtain);
       will-change: transform;
     }
 
-    .curtain-panel.left {
-      border-right: 1.5px solid var(--gold);
-      box-shadow: 15px 0 40px rgba(201,168,76,0.25);
-    }
+    .curtain-panel.left { border-right: 1px solid rgba(201,168,76,0.1); transform-origin: left; }
+    .curtain-panel.right { border-left: 1px solid rgba(201,168,76,0.1); transform-origin: right; }
 
-    .curtain-panel.right {
-      border-left: 1.5px solid var(--gold);
-      box-shadow: -15px 0 40px rgba(201,168,76,0.25);
-    }
-
-    #loading.out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
+    #loading.out { visibility: hidden; pointer-events: none; }
     #loading.out .curtain-panel.left { transform: translate3d(-100%, 0, 0); }
     #loading.out .curtain-panel.right { transform: translate3d(100%, 0, 0); }
 
+    #introCanvas {
+      position: absolute; inset: 0; z-index: 2;
+      pointer-events: none; opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+    #loading.stage-1 #introCanvas { opacity: 0.6; }
+
     .intro-content {
-      position: relative; z-index: 2;
-      display: flex; flex-direction: column; align-items: center;
-      transition: transform 1.2s var(--ease-curtain), opacity 0.8s ease, filter 0.8s ease;
-      will-change: transform, opacity, filter;
+      position: relative; z-index: 3;
+      display: flex; flex-direction: column; 
+      justify-content: center; align-items: center;
+      width: 100%; height: 100%; padding: 40px;
+      transition: transform 1.2s var(--ease-curtain), filter 1s ease, opacity 0.8s ease;
+      will-change: transform, filter, opacity;
     }
 
-    #loading.out .intro-content {
-      transform: scale(0.92);
-      opacity: 0;
-      filter: blur(8px);
+    #loading.out .intro-content { transform: scale(1.08); filter: blur(12px); opacity: 0; }
+
+    .intro-text-wrap { text-align: center; margin-bottom: 8vh; }
+    .split-text { overflow: hidden; display: block; }
+    .split-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+    .split-char { 
+      display: inline-block; transform: translateY(110%) rotate(4deg); opacity: 0; 
+      will-change: transform, opacity; transition: transform 1.2s var(--ease-split), opacity 1s var(--ease-split);
     }
+    
+    #loading.stage-2 .split-char { transform: translateY(0) rotate(0deg); opacity: 1; }
 
-    .wax-seal {
-      width: 120px; height: 120px; position: relative; margin-bottom: 24px;
-      perspective: 1000px;
-    }
+    .intro-eyebrow { font-family: var(--ff-tech); font-size: 11px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; font-weight: 600; }
+    .intro-name { font-family: var(--ff-display); font-size: clamp(36px, 9vw, 72px); font-weight: 400; line-height: 1; color: var(--ivory); text-transform: uppercase; letter-spacing: clamp(6px, 2vw, 14px); margin-bottom: 20px; }
+    .intro-sub { font-family: var(--ff-ui); font-size: 12px; letter-spacing: 6px; color: var(--mist-dim); text-transform: uppercase; font-weight: 500; }
 
-    .wax-circle {
-      width: 120px; height: 120px; border-radius: 50%;
-      background: radial-gradient(circle at 38% 35%, #b85d32 0%, #8c3b1a 45%, #4a1e08 100%);
-      box-shadow: 
-        0 0 0 2px rgba(201,168,76,0.6), 
-        0 0 20px rgba(201,168,76,0.2),
-        0 15px 35px rgba(0,0,0,0.8);
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-      animation: sealScaleIn 1.2s var(--ease-out-expo) both;
-    }
+    .intro-progress-wrap { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 320px; opacity: 0; transform: translateY(15px); transition: opacity 1s ease, transform 1s var(--ease-out-expo); }
+    #loading.stage-3 .intro-progress-wrap { opacity: 1; transform: translateY(0); }
 
-    @keyframes sealScaleIn {
-      0%   { transform: scale(0.3) rotate(-30deg); opacity: 0; }
-      70%  { transform: scale(1.06) rotate(3deg); opacity: 1; }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    }
+    .intro-counter { font-family: var(--ff-tech); font-size: 12px; font-weight: 600; color: var(--gold-lt); letter-spacing: 2px; width: 45px; text-align: right; }
+    .intro-bar-track { flex: 1; height: 1px; background: rgba(246,242,234,0.15); position: relative; overflow: hidden; margin-left: 16px; border-radius: 2px; }
+    .intro-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: linear-gradient(90deg, var(--gold-lt), var(--gold)); will-change: width; }
 
-    .wax-stamp {
-      font-family: var(--ff-display); font-size: 13px; letter-spacing: 3px;
-      color: var(--gold-lt); text-transform: uppercase; text-align: center; line-height: 1.35;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
-      animation: fadeInText 0.8s 0.6s both;
-    }
-
-    .wax-rim-glow {
-      position: absolute; inset: -6px; border-radius: 50%;
-      border: 1px dashed rgba(201,168,76,0.4);
-      animation: rimSpin 16s linear infinite;
-    }
-
-    @keyframes rimSpin { to { transform: rotate(360deg); } }
-
-    .loading-title {
-      font-family: var(--ff-display); font-size: clamp(22px, 4vw, 28px);
-      letter-spacing: 6px; color: var(--ivory); text-transform: uppercase; margin-bottom: 6px;
-      animation: fadeInUp 0.8s 0.4s both; text-align: center;
-    }
-
-    .loading-sub {
-      font-family: var(--ff-tech); font-size: 11px; letter-spacing: 4px; color: var(--gold-lt);
-      text-transform: uppercase; animation: fadeInUp 0.8s 0.6s both; text-align: center;
-    }
-
-    .loading-bar-wrap {
-      width: 120px; height: 2px; background: rgba(246,242,234,0.12);
-      margin-top: 24px; overflow: hidden; position: relative; border-radius: 2px;
-      animation: fadeInText 0.6s 0.8s both;
-    }
-
-    .loading-bar {
-      height: 100%; width: 0;
-      background: linear-gradient(90deg, transparent, var(--gold-lt), var(--gold));
-      animation: loadProgress 1.4s var(--ease-in-out) 0.8s forwards;
-    }
-
-    @keyframes loadProgress { to { width: 100%; } }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInText { from { opacity: 0; } to { opacity: 1; } }
-
-    /* ============================================================
-       MARQUEE BAR
-       ============================================================ */
-    .marquee-wrap {
-      width: 100%; overflow: hidden;
-      border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-      padding: 10px 0; background: rgba(12,15,26,0.6);
-    }
-
+    /* MARQUEE BAR */
+    .marquee-wrap { width: 100%; overflow: hidden; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; background: rgba(12,15,26,0.6); }
     .marquee-track { display: inline-flex; animation: marqueeRun 28s linear infinite; white-space: nowrap; }
-
-    .marquee-item {
-      font-family: var(--ff-tech); font-size: 11px; letter-spacing: 2px;
-      color: var(--gold-lt); text-transform: uppercase; padding: 0 32px;
-      display: flex; align-items: center; gap: 14px; font-weight: 500;
-    }
-
+    .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+    .marquee-item { font-family: var(--ff-tech); font-size: 11px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; padding: 0 32px; display: flex; align-items: center; gap: 14px; font-weight: 500; }
     .marquee-item::after { content: '✦'; font-size: 8px; color: rgba(201,168,76,0.5); }
-
     @keyframes marqueeRun { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-    /* ============================================================
-       LAYOUT BREAKPOINTS
-       ============================================================ */
-    .page-wrap {
-      width: 100%; max-width: 580px; margin: 0 auto; position: relative;
-      transition: max-width 0.4s ease;
-    }
+    /* LAYOUT BREAKPOINTS */
+    .page-wrap { width: 100%; max-width: 580px; margin: 0 auto; position: relative; transition: max-width 0.4s ease; }
+    @media (min-width: 768px) { .page-wrap { max-width: 720px; } .section { padding: 80px 48px; } .invite-block { padding: 52px 48px; } }
+    @media (min-width: 1024px) { .page-wrap { max-width: 860px; } .hero-content { padding: 0 48px 56px; } }
 
-    @media (min-width: 768px) {
-      .page-wrap { max-width: 720px; }
-      .section { padding: 80px 48px; }
-      .invite-block { padding: 52px 48px; }
-    }
-
-    @media (min-width: 1024px) {
-      .page-wrap { max-width: 860px; }
-      .hero-content { padding: 0 48px 56px; }
-    }
-
-    /* ============================================================
-       HERO SECTION
-       ============================================================ */
-    .hero {
-      min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end;
-      position: relative; overflow: hidden; perspective: 1000px; transform-style: preserve-3d;
-    }
-
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 70% 50% at 70% 20%, rgba(30,37,64,0.4) 0%, transparent 70%),
-                  radial-gradient(ellipse 80% 60% at 20% 80%, rgba(201,168,76,0.05) 0%, transparent 60%);
-      z-index: 1;
-    }
-
-    .hero-photo-wrap {
-      position: absolute; inset: 0; overflow: hidden; z-index: 0; opacity: 0;
-      transform: scale(1.03); transition: transform 1.2s var(--ease-out-expo), opacity 1s ease;
-    }
-
+    /* HERO SECTION */
+    .hero { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; perspective: 1000px; transform-style: preserve-3d; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 70% 20%, rgba(30,37,64,0.4) 0%, transparent 70%), radial-gradient(ellipse 80% 60% at 20% 80%, rgba(201,168,76,0.05) 0%, transparent 60%); z-index: 1; }
+    .hero-photo-wrap { position: absolute; inset: 0; overflow: hidden; z-index: 0; opacity: 0; transform: scale(1.05); transition: transform 1.8s var(--ease-curtain), opacity 1.2s ease; }
     body.loaded .hero-photo-wrap { opacity: 1; transform: scale(1); }
+    .hero-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; filter: brightness(1.0) contrast(1.0); will-change: transform; }
+    .hero-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, transparent 65%, rgba(12,15,26,0.65) 85%, rgba(12,15,26,0.98) 100%); }
 
-    .hero-photo-wrap img {
-      width: 100%; height: 100%; object-fit: cover; object-position: center 12%;
-      filter: brightness(1.0) contrast(1.0);
-      will-change: transform;
-    }
-
-    .hero-photo-wrap::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        transparent 65%,
-        rgba(12,15,26,0.65) 85%,
-        rgba(12,15,26,0.98) 100%
-      );
-    }
-
-    .hero-content {
-      position: relative; z-index: 2; padding: 0 32px 48px;
-      transform-style: preserve-3d; will-change: transform; transition: transform 0.2s ease-out;
-    }
-
-    .hero-tech-badge {
-      display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px;
-      background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35);
-      border-radius: 40px; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px;
-      color: var(--gold-lt); text-transform: uppercase; margin-bottom: 16px;
-      backdrop-filter: blur(8px);
-    }
-
-    .hero-eyebrow {
-      font-family: var(--ff-ui); font-size: 11px; letter-spacing: 4px;
-      color: var(--gold); text-transform: uppercase; margin-bottom: 12px;
-      display: flex; align-items: center; gap: 12px; font-weight: 500;
-    }
-
+    .hero-content { position: relative; z-index: 2; padding: 0 32px 48px; transform-style: preserve-3d; will-change: transform; transition: transform 0.2s ease-out; }
+    .hero-tech-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35); border-radius: 40px; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; margin-bottom: 16px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    .hero-eyebrow { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; font-weight: 500; }
     .hero-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
-
     .hero-name-wrap { overflow: hidden; margin-bottom: 2px; }
+    .hero-name { font-family: var(--ff-display); font-size: clamp(48px, 11vw, 80px); font-weight: 500; line-height: 1.1; letter-spacing: 0px; color: var(--ivory); display: block; }
+    .hero-name em { font-style: italic; color: var(--gold-lt); background: linear-gradient(135deg, #FFF 0%, var(--gold-lt) 50%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    .hero-name {
-      font-family: var(--ff-display); font-size: clamp(48px, 11vw, 80px);
-      font-weight: 500; line-height: 1.1; letter-spacing: 0px; color: var(--ivory); display: block;
-    }
-
-    .hero-name em {
-      font-style: italic; color: var(--gold-lt);
-      background: linear-gradient(135deg, #FFF 0%, var(--gold-lt) 50%, var(--gold) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-
-    .hero-quick-anchor {
-      margin-top: 18px; display: inline-flex; align-items: center; gap: 10px;
-      padding: 8px 16px; background: rgba(12,15,26,0.75); border: 1px solid var(--rule);
-      border-radius: 2px; backdrop-filter: blur(8px); flex-wrap: wrap;
-    }
-
-    .hero-quick-anchor .date {
-      font-family: var(--ff-tech); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--gold-lt);
-    }
-
+    .hero-quick-anchor { margin-top: 18px; display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; background: rgba(12,15,26,0.75); border: 1px solid var(--rule); border-radius: 2px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); flex-wrap: wrap; }
+    .hero-quick-anchor .date { font-family: var(--ff-tech); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--gold-lt); }
     .hero-quick-anchor .sep { color: var(--rule); font-size: 10px; }
+    .hero-quick-anchor .loc { font-family: var(--ff-ui); font-size: 12px; color: var(--ivory); font-weight: 400; }
 
-    .hero-quick-anchor .loc {
-      font-family: var(--ff-ui); font-size: 12px; color: var(--ivory); font-weight: 400;
-    }
-
-    /* ============================================================
-       SECTION SHARED
-       ============================================================ */
+    /* SECTION SHARED */
     .section { padding: 64px 32px; position: relative; }
     .section + .section { border-top: 1px solid var(--rule-light); }
-
-    .section-label {
-      font-family: var(--ff-ui); font-size: 11px; letter-spacing: 3px;
-      color: var(--gold); text-transform: uppercase; margin-bottom: 32px;
-      display: flex; align-items: center; gap: 12px; font-weight: 600;
-    }
-
+    .section-label { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 32px; display: flex; align-items: center; gap: 12px; font-weight: 600; }
     .section-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-
-    .reveal {
-      opacity: 0; transform: translateY(24px);
-      transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
-    }
-
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo); }
     .reveal.in { opacity: 1; transform: translateY(0); }
 
-    /* ============================================================
-       INVITATION CARD & LOCATION MODULE
-       ============================================================ */
-    .invite-block {
-      background: linear-gradient(160deg, rgba(30,37,64,0.6) 0%, rgba(12,15,26,0.85) 100%);
-      border: 1px solid var(--rule); border-radius: 2px; padding: 40px 28px; position: relative;
-    }
-
-    .invite-formal {
-      font-family: var(--ff-ui); font-size: 11px; letter-spacing: 4px;
-      color: var(--mist); text-transform: uppercase; text-align: center; margin-bottom: 16px; font-weight: 500;
-    }
-
-    .invite-script {
-      font-family: var(--ff-script); font-size: clamp(40px, 7vw, 50px);
-      color: var(--gold-lt); text-align: center; line-height: 1; margin-bottom: 8px;
-    }
-
+    /* INVITATION CARD & LOCATION MODULE */
+    .invite-block { background: linear-gradient(160deg, rgba(30,37,64,0.6) 0%, rgba(12,15,26,0.85) 100%); border: 1px solid var(--rule); border-radius: 2px; padding: 40px 28px; position: relative; }
+    .invite-formal { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 4px; color: var(--mist); text-transform: uppercase; text-align: center; margin-bottom: 16px; font-weight: 500; }
+    .invite-script { font-family: var(--ff-script); font-size: clamp(40px, 7vw, 50px); color: var(--gold-lt); text-align: center; line-height: 1; margin-bottom: 8px; }
     .invite-divider { display: flex; align-items: center; gap: 16px; margin: 20px 0; }
     .invite-divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--rule)); }
     .invite-divider-line.r { background: linear-gradient(90deg, var(--rule), transparent); }
@@ -447,726 +274,381 @@
     .invite-date-row { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 0 0 20px; }
     .invite-date-side .lbl { font-family: var(--ff-ui); font-size: 10px; letter-spacing: 2px; color: var(--mist); text-transform: uppercase; }
     .invite-date-side .val { font-family: var(--ff-display); font-size: 20px; font-weight: 500; color: var(--ivory); }
+    .invite-date-big { font-family: var(--ff-display); font-size: clamp(72px, 14vw, 92px); font-weight: 500; color: var(--ivory); line-height: 0.85; letter-spacing: 0px; }
 
-    .invite-date-big {
-      font-family: var(--ff-display); font-size: clamp(72px, 14vw, 92px);
-      font-weight: 500; color: var(--ivory); line-height: 0.85; letter-spacing: 0px;
-    }
-
-    .invite-info-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-      border: 1px solid var(--rule); border-radius: 1px; overflow: hidden; margin-top: 12px;
-    }
-
+    .invite-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 1px; overflow: hidden; margin-top: 12px; }
     .invite-info-cell { padding: 16px 18px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
     .invite-info-cell:nth-child(even) { border-right: none; }
-    
     .invite-info-lbl { font-family: var(--ff-tech); font-size: 11px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
     .invite-info-val { font-family: var(--ff-display); font-size: 17px; font-weight: 500; color: var(--ivory); }
 
-    .invite-address-block { padding: 18px; border-top: 1px solid var(--rule); grid-column: 1 / -1; background: rgba(12,15,26,0.4); }
+    .invite-address-block { padding: 18px; border-top: 1px solid var(--rule); grid-column: 1 / -1; background: rgba(12,15,26,0.4); border-right: none !important; border-bottom: none !important; }
     .venue-item { margin-bottom: 10px; }
     .venue-item:last-child { margin-bottom: 0; }
-    .venue-badge {
-      display: inline-block; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 1.5px;
-      color: var(--gold-lt); text-transform: uppercase; padding: 2px 8px; background: rgba(201,168,76,0.15);
-      border: 1px solid rgba(201,168,76,0.3); border-radius: 2px; margin-bottom: 4px; font-weight: 600;
-    }
+    .venue-badge { display: inline-block; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 1.5px; color: var(--gold-lt); text-transform: uppercase; padding: 2px 8px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3); border-radius: 2px; margin-bottom: 4px; font-weight: 600; }
     .venue-desc { font-family: var(--ff-ui); font-size: 14px; color: var(--mist); line-height: 1.5; }
 
     .location-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
-
-    .action-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 16px; border: 1px solid rgba(201,168,76,0.45); background: transparent;
-      color: var(--gold-lt); font-family: var(--ff-ui); font-size: 11px; letter-spacing: 2px;
-      text-transform: uppercase; text-decoration: none; font-weight: 500; cursor: pointer;
-      transition: background 0.3s, border-color 0.3s, color 0.3s;
-    }
-
+    .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 16px; border: 1px solid rgba(201,168,76,0.45); background: transparent; color: var(--gold-lt); font-family: var(--ff-ui); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; cursor: pointer; transition: background 0.3s, border-color 0.3s, color 0.3s; }
     .action-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--gold); }
     .action-btn svg { width: 15px; height: 15px; fill: currentColor; }
 
-    /* ============================================================
-       CHƯƠNG TRÌNH LỄ BẾ GIẢNG
-       ============================================================ */
-    .agenda-card {
-      background: linear-gradient(160deg, rgba(20,25,41,0.85) 0%, rgba(12,15,26,0.95) 100%);
-      border: 1px solid var(--rule); border-radius: 2px; padding: 32px 24px; position: relative;
-    }
-
-    .agenda-header {
-      text-align: center; margin-bottom: 28px; border-bottom: 1px solid var(--rule-light); padding-bottom: 16px;
-    }
-
-    .agenda-header-title {
-      font-family: var(--ff-display); font-size: 22px; font-weight: 600; color: var(--gold-lt);
-      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;
-    }
-
-    .agenda-header-sub {
-      font-family: var(--ff-tech); font-size: 11px; color: var(--mist-dim); font-style: italic;
-    }
-
-    .agenda-timeline {
-      display: flex; flex-direction: column; gap: 16px; position: relative;
-    }
-
-    .agenda-timeline::before {
-      content: ''; position: absolute; top: 12px; bottom: 12px; left: 62px;
-      width: 1px; background: linear-gradient(180deg, var(--gold), rgba(201,168,76,0.1));
-    }
-
-    .agenda-item {
-      display: grid; grid-template-columns: 80px 1fr; gap: 16px;
-      align-items: flex-start; position: relative; z-index: 2;
-    }
-
-    .agenda-time {
-      font-family: var(--ff-tech); font-size: 11px; font-weight: 600; color: var(--gold-lt);
-      background: rgba(12,15,26,0.9); padding: 4px 6px; border: 1px solid var(--rule);
-      border-radius: 2px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
-    .agenda-body {
-      background: rgba(246,242,234,0.03); border: 1px solid rgba(246,242,234,0.08);
-      padding: 12px 16px; border-radius: 2px; transition: border-color 0.3s, background 0.3s;
-    }
-
-    .agenda-item:hover .agenda-body {
-      border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05);
-    }
-
-    .agenda-title {
-      font-family: var(--ff-ui); font-size: 14px; font-weight: 600; color: var(--ivory);
-      line-height: 1.4; margin-bottom: 4px;
-    }
-
-    .agenda-role {
-      font-family: var(--ff-tech); font-size: 11px; color: var(--gold);
-      display: flex; align-items: center; gap: 6px;
-    }
-
+    /* AGENDA */
+    .agenda-card { background: linear-gradient(160deg, rgba(20,25,41,0.85) 0%, rgba(12,15,26,0.95) 100%); border: 1px solid var(--rule); border-radius: 2px; padding: 32px 24px; position: relative; }
+    .agenda-header { text-align: center; margin-bottom: 28px; border-bottom: 1px solid var(--rule-light); padding-bottom: 16px; }
+    .agenda-header-title { font-family: var(--ff-display); font-size: 22px; font-weight: 600; color: var(--gold-lt); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+    .agenda-header-sub { font-family: var(--ff-tech); font-size: 11px; color: var(--mist-dim); font-style: italic; }
+    .agenda-timeline { display: flex; flex-direction: column; gap: 16px; position: relative; }
+    .agenda-timeline::before { content: ''; position: absolute; top: 12px; bottom: 12px; left: 62px; width: 1px; background: linear-gradient(180deg, var(--gold), rgba(201,168,76,0.1)); }
+    .agenda-item { display: grid; grid-template-columns: 80px 1fr; gap: 16px; align-items: flex-start; position: relative; z-index: 2; opacity: 0; transform: translateX(-12px); transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo); }
+    .agenda-card.in .agenda-item { opacity: 1; transform: translateX(0); }
+    .agenda-item.active-now .agenda-time { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.25); }
+    .agenda-item.active-now .agenda-body { border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06); }
+    .agenda-time { font-family: var(--ff-tech); font-size: 11px; font-weight: 600; color: var(--gold-lt); background: rgba(12,15,26,0.9); padding: 4px 6px; border: 1px solid var(--rule); border-radius: 2px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .agenda-body { background: rgba(246,242,234,0.03); border: 1px solid rgba(246,242,234,0.08); padding: 12px 16px; border-radius: 2px; transition: border-color 0.3s, background 0.3s; }
+    .agenda-item:hover .agenda-body { border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
+    .agenda-title { font-family: var(--ff-ui); font-size: 14px; font-weight: 600; color: var(--ivory); line-height: 1.4; margin-bottom: 4px; }
+    .agenda-role { font-family: var(--ff-tech); font-size: 11px; color: var(--gold); display: flex; align-items: center; gap: 6px; }
     .agenda-role::before { content: '▸'; font-size: 9px; opacity: 0.8; }
+    @media (max-width: 480px) { .agenda-timeline::before { left: 52px; } .agenda-item { grid-template-columns: 70px 1fr; gap: 10px; } .agenda-time { font-size: 10px; padding: 4px 2px; } .agenda-body { padding: 10px 12px; } .agenda-title { font-size: 13px; } }
 
-    @media (max-width: 480px) {
-      .agenda-timeline::before { left: 52px; }
-      .agenda-item { grid-template-columns: 70px 1fr; gap: 10px; }
-      .agenda-time { font-size: 10px; padding: 4px 2px; }
-      .agenda-body { padding: 10px 12px; }
-      .agenda-title { font-size: 13px; }
-    }
+    .venue-art-card { position: relative; width: 100%; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; background: #080c16; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+    .venue-art-frame { position: relative; width: 100%; height: clamp(320px, 55vh, 480px); overflow: hidden; }
+    .venue-art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; filter: brightness(1.0) contrast(1.02) saturate(1.05); transition: transform 0.8s var(--ease-out-expo); }
+    .venue-art-card:hover .venue-art-frame img { transform: scale(1.03); }
+    .venue-art-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px 24px 20px; background: linear-gradient(to top, rgba(12,15,26,0.9) 0%, transparent 100%); pointer-events: none; }
+    .venue-art-caption .cap-name { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2.5px; color: var(--gold-lt); text-transform: uppercase; font-weight: 600; }
+    .venue-art-caption .cap-detail { font-family: var(--ff-display); font-size: 15px; font-style: italic; color: rgba(246,242,234,0.75); margin-top: 2px; }
 
-    /* ============================================================
-       VENUE PHOTO CARD
-       ============================================================ */
-    .venue-art-card {
-      position: relative;
-      width: 100%;
-      border: 1px solid var(--rule);
-      border-radius: 2px;
-      overflow: hidden;
-      background: #080c16;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-    }
-
-    .venue-art-frame {
-      position: relative;
-      width: 100%;
-      height: clamp(320px, 55vh, 480px);
-      overflow: hidden;
-    }
-
-    .venue-art-frame img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: center 35%;
-      filter: brightness(1.0) contrast(1.02) saturate(1.05);
-      transition: transform 0.8s var(--ease-out-expo);
-    }
-
-    .venue-art-card:hover .venue-art-frame img {
-      transform: scale(1.03);
-    }
-
-    /* ============================================================
-       FILMSTRIP GALLERY
-       ============================================================ */
+    /* FILMSTRIP GALLERY */
     .film-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
     .film-title { font-family: var(--ff-display); font-size: 36px; font-weight: 400; font-style: italic; color: var(--ivory); }
     .film-count { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; }
-
     .film-layout { display: grid; grid-template-columns: 46% 1fr; gap: 12px; height: 480px; }
-
-    .film-scroll-col {
-      overflow: hidden; position: relative; border-radius: 2px; background: #060810;
-    }
-
-    .film-scroll-col::before, .film-scroll-col::after {
-      content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none;
-    }
+    .film-scroll-col { overflow: hidden; position: relative; border-radius: 2px; background: #060810; padding: 10px 8px; }
+    .film-scroll-col::before, .film-scroll-col::after { content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none; }
     .film-scroll-col::before { top: 0; background: linear-gradient(to bottom, #060810, transparent); }
     .film-scroll-col::after { bottom: 0; background: linear-gradient(to top, #060810, transparent); }
-
-    .film-strip-inner {
-      display: flex; flex-direction: column; gap: 10px; padding: 10px 8px;
-      animation: filmAutoScroll 22s linear infinite;
-    }
-
-    .film-scroll-col:hover .film-strip-inner {
-      animation-play-state: paused;
-    }
-
-    @keyframes filmAutoScroll {
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(-50%); }
-    }
-
-    .film-frame {
-      width: 100%; aspect-ratio: 4/3; border-radius: 2px; overflow: hidden; flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,0.08); background: #0d1425; position: relative; cursor: pointer;
-    }
-
-    .film-frame img { 
-      width: 100%; height: 100%; 
-      object-fit: cover; 
-      filter: brightness(1.1) contrast(1.02);
-      transition: transform 0.4s ease, filter 0.4s ease; 
-    }
+    .film-strip-inner { display: flex; flex-direction: column; animation: filmAutoScroll 28s linear infinite; will-change: transform; }
+    @keyframes filmAutoScroll { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+    .film-frame { width: 100%; aspect-ratio: 4/3; border-radius: 2px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.08); background: #0d1425; position: relative; cursor: pointer; margin-bottom: 10px; }
+    .film-frame img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) contrast(1.02); transition: transform 0.4s ease, filter 0.4s ease; }
     .film-frame:hover img { transform: scale(1.05); }
-
     .film-feature-col { border-radius: 2px; overflow: hidden; position: relative; background: #0d1425; height: 100%; cursor: pointer; }
     .film-feature-col img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transition: transform 0.6s var(--ease-out-expo); }
     .film-feature-col:hover img { transform: scale(1.03); }
-
-    .film-feature-overlay {
-      position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 16px 14px;
-      background: linear-gradient(to top, rgba(12,15,26,0.85) 0%, transparent 100%); pointer-events: none;
-    }
-
+    .film-feature-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 16px 14px; background: linear-gradient(to top, rgba(12,15,26,0.85) 0%, transparent 100%); pointer-events: none; }
     .film-feature-label { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; font-weight: 500; }
 
-    /* ============================================================
-       HIỆU ỨNG CHỮ LƯU BÚT
-       ============================================================ */
-    .luubut-quote-mark {
-      font-family: var(--ff-display);
-      font-size: 90px; font-weight: 300;
-      color: rgba(201,168,76,0.18);
-      line-height: 0.6; margin-bottom: 12px; display: block;
-    }
+    /* LƯU BÚT */
+    .luubut-quote-mark { font-family: var(--ff-display); font-size: 90px; font-weight: 300; color: rgba(201,168,76,0.18); line-height: 0.6; margin-bottom: 12px; display: block; }
+    .luubut-text-wrap { display: flex; flex-direction: column; gap: 20px; }
+    .luubut-p { font-family: var(--ff-display); font-size: clamp(18px, 3.5vw, 21px); font-weight: 400; font-style: italic; line-height: 1.8; color: rgba(246,242,234,0.92); opacity: 0; transform: translateY(20px); transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo); }
+    .reveal-luubut.in .luubut-p:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+    .reveal-luubut.in .luubut-p:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+    .luubut-sig { font-family: var(--ff-script); font-size: clamp(52px, 10vw, 64px); color: var(--gold-lt); margin-top: 28px; text-shadow: 0 2px 18px rgba(201,168,76,0.25); opacity: 0; transform: translateY(15px) scale(0.95); transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo); }
+    .reveal-luubut.in .luubut-sig { opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.55s; }
 
-    .luubut-text-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .luubut-p {
-      font-family: var(--ff-display);
-      font-size: clamp(18px, 3.5vw, 21px);
-      font-weight: 400;
-      font-style: italic;
-      line-height: 1.8;
-      color: rgba(246,242,234,0.92);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
-    }
-
-    .reveal-luubut.in .luubut-p:nth-child(1) {
-      opacity: 1; transform: translateY(0); transition-delay: 0.1s;
-    }
-
-    .reveal-luubut.in .luubut-p:nth-child(2) {
-      opacity: 1; transform: translateY(0); transition-delay: 0.3s;
-    }
-
-    .luubut-sig {
-      font-family: var(--ff-script);
-      font-size: clamp(52px, 10vw, 64px);
-      color: var(--gold-lt);
-      margin-top: 28px;
-      text-shadow: 0 2px 18px rgba(201,168,76,0.25);
-      opacity: 0;
-      transform: translateY(15px) scale(0.95);
-      transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
-    }
-
-    .reveal-luubut.in .luubut-sig {
-      opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.55s;
-    }
-
-    /* ============================================================
-       ALBUM GRID
-       ============================================================ */
+    /* ALBUM GRID CŨ */
     .album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .album-item { aspect-ratio: 3/4; overflow: hidden; border-radius: 2px; position: relative; background: #0d1425; cursor: pointer; }
     .album-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease-out-expo); filter: brightness(0.85); }
     .album-item:hover img { transform: scale(1.05); filter: brightness(0.95); }
 
-    /* ============================================================
-       LIGHTBOX ACCESSIBLE MODAL
-       ============================================================ */
-    #lightbox {
-      position: fixed; inset: 0; z-index: 10000;
-      background: rgba(8, 11, 20, 0.94); backdrop-filter: blur(12px);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 24px;
-    }
+    /* EVENT MEDIA (CHỦ NHẬT) */
+    .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    @media (min-width: 768px) { .event-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+    .event-item { aspect-ratio: 1; border-radius: 2px; overflow: hidden; background: #060810; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); }
+    .event-item img, .event-item video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease-out-expo), filter 0.6s ease; filter: brightness(0.9); }
+    .event-item:hover img, .event-item:hover video { transform: scale(1.05); filter: brightness(1.05); }
+    .play-icon-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(12,15,26,0.3); pointer-events: none; }
+    .play-icon-overlay svg { width: 36px; height: 36px; fill: var(--gold-lt); filter: drop-shadow(0 2px 12px rgba(0,0,0,0.8)); opacity: 0.85; transition: opacity 0.3s; }
+    .event-item:hover .play-icon-overlay svg { opacity: 1; }
+    
+    .empty-album-msg { padding: 40px 20px; text-align: center; border: 1px dashed var(--rule); border-radius: 2px; background: rgba(201,168,76,0.03); }
+    .empty-album-msg svg { width: 40px; height: 40px; fill: var(--gold-dim); margin-bottom: 16px; }
+    .empty-album-msg p { font-family: var(--ff-ui); font-size: 13px; color: var(--mist-dim); line-height: 1.6; }
 
+    /* MULTIMEDIA LIGHTBOX ACCESSIBLE MODAL */
+    #lightbox { position: fixed; inset: 0; z-index: 10000; background: rgba(8, 11, 20, 0.96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 24px; }
     #lightbox.active { opacity: 1; pointer-events: auto; }
+    
+    #lightboxContentWrap { position: relative; max-width: 92vw; max-height: 88vh; display: flex; align-items: center; justify-content: center; }
+    #lightboxContentWrap img, #lightboxContentWrap video { max-width: 100%; max-height: 88vh; object-fit: contain; border: 1px solid var(--rule); box-shadow: 0 20px 60px rgba(0,0,0,0.8); border-radius: 2px; animation: lbFadeIn 0.25s ease; outline: none; }
+    @keyframes lbFadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 
-    #lightbox img {
-      max-width: 92vw; max-height: 88vh; object-fit: contain;
-      border: 1px solid var(--rule); box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-    }
+    .lightbox-close { position: absolute; top: 24px; right: 28px; color: var(--gold-lt); font-size: 32px; font-family: var(--ff-ui); background: none; border: none; cursor: pointer; padding: 8px; z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+    .lightbox-hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: rgba(246,242,234,0.35); text-transform: uppercase; pointer-events: none; z-index: 2; text-shadow: 0 2px 6px rgba(0,0,0,0.8); }
 
-    .lightbox-close {
-      position: absolute; top: 24px; right: 28px; color: var(--gold-lt); font-size: 32px;
-      font-family: var(--ff-ui); background: none; border: none; cursor: pointer; padding: 8px;
-    }
-
-    /* ============================================================
-       RSVP SECTION & SEGMENTED CHOICE
-       ============================================================ */
-    .rsvp-outer {
-      border: 1px solid var(--rule); padding: 36px 28px; position: relative;
-      background: linear-gradient(160deg, rgba(20,25,41,0.85) 0%, rgba(12,15,26,0.95) 100%);
-    }
-
-    .rsvp-note {
-      font-family: var(--ff-display); font-size: 18px; font-weight: 400; font-style: italic;
-      color: var(--mist); line-height: 1.6; text-align: center; margin-bottom: 28px;
-    }
-
+    /* RSVP SECTION */
+    .rsvp-outer { border: 1px solid var(--rule); padding: 36px 28px; position: relative; background: linear-gradient(160deg, rgba(20,25,41,0.85) 0%, rgba(12,15,26,0.95) 100%); }
+    .rsvp-note { font-family: var(--ff-display); font-size: 18px; font-weight: 400; font-style: italic; color: var(--mist); line-height: 1.6; text-align: center; margin-bottom: 28px; }
     .rsvp-form { display: flex; flex-direction: column; gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 8px; }
-
-    .form-label {
-      font-family: var(--ff-ui); font-size: 11px; letter-spacing: 2px;
-      color: var(--gold); text-transform: uppercase; font-weight: 600;
-    }
-
-    .form-input {
-      background: rgba(246,242,234,0.05); border: 1px solid rgba(246,242,234,0.14);
-      color: var(--ivory); font-family: var(--ff-ui); font-size: 15px; padding: 14px 16px;
-      border-radius: 1px; transition: border-color 0.3s, background 0.3s; width: 100%; outline: none;
-    }
-
+    .form-label { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; font-weight: 600; }
+    .form-input { background: rgba(246,242,234,0.05); border: 1px solid rgba(246,242,234,0.14); color: var(--ivory); font-family: var(--ff-ui); font-size: 15px; padding: 14px 16px; border-radius: 1px; transition: border-color 0.3s, background 0.3s; width: 100%; outline: none; }
     .form-input:focus { border-color: rgba(201,168,76,0.6); background: rgba(201,168,76,0.04); }
-
     .segmented-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 2px; }
-
     .segmented-card { position: relative; cursor: pointer; }
     .segmented-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-
-    .segmented-label {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 12px; background: rgba(246,242,234,0.04); border: 1px solid rgba(246,242,234,0.14);
-      border-radius: 1px; font-family: var(--ff-ui); font-size: 13px; font-weight: 500;
-      color: var(--mist); text-align: center; transition: all 0.25s ease;
-    }
-
-    .segmented-card input[type="radio"]:checked + .segmented-label {
-      border-color: var(--gold); background: rgba(201,168,76,0.12); color: var(--gold-lt); font-weight: 600;
-      box-shadow: 0 0 16px rgba(201,168,76,0.15);
-    }
-
-    .segmented-card input[type="radio"]:focus-visible + .segmented-label {
-      outline: 2px solid var(--gold); outline-offset: 2px;
-    }
-
-    .submit-btn {
-      margin-top: 8px; padding: 16px 28px;
-      background: linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.08) 100%);
-      border: 1px solid rgba(201,168,76,0.6); color: var(--gold-lt); font-family: var(--ff-ui);
-      font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;
-      cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-
-    .btn-spinner {
-      display: none; width: 14px; height: 14px;
-      border: 2px solid rgba(232, 213, 163, 0.3); border-top-color: var(--gold-lt); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
+    .segmented-label { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 12px; background: rgba(246,242,234,0.04); border: 1px solid rgba(246,242,234,0.14); border-radius: 1px; font-family: var(--ff-ui); font-size: 13px; font-weight: 500; color: var(--mist); text-align: center; transition: all 0.25s ease; }
+    .segmented-card input[type="radio"]:checked + .segmented-label { border-color: var(--gold); background: rgba(201,168,76,0.12); color: var(--gold-lt); font-weight: 600; box-shadow: 0 0 16px rgba(201,168,76,0.15); }
+    .segmented-card input[type="radio"]:focus-visible + .segmented-label { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .submit-btn { margin-top: 8px; padding: 16px 28px; background: linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.08) 100%); border: 1px solid rgba(201,168,76,0.6); color: var(--gold-lt); font-family: var(--ff-ui); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-spinner { display: none; width: 14px; height: 14px; border: 2px solid rgba(232, 213, 163, 0.3); border-top-color: var(--gold-lt); border-radius: 50%; animation: spin 0.8s linear infinite; }
     .submit-btn.loading .btn-spinner { display: inline-block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
     .submit-btn:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 24px rgba(201,168,76,0.2); }
     .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
     .form-msg { display: none; font-family: var(--ff-display); font-size: 16px; font-style: italic; text-align: center; padding: 12px; line-height: 1.5; }
     .form-msg.ok { display: block; color: rgba(200,232,163,0.95); }
     .form-msg.err { display: block; color: rgba(232,163,163,0.95); }
+    .rsvp-success-state { text-align: center; padding: 32px 16px; display: none; flex-direction: column; align-items: center; gap: 16px; }
+    .rsvp-success-state.show { display: flex; }
+    .rsvp-success-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(200,232,163,0.1); border: 1px solid rgba(200,232,163,0.35); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .rsvp-success-msg { font-family: var(--ff-display); font-size: 18px; font-style: italic; color: rgba(200,232,163,0.9); line-height: 1.6; }
+    .rsvp-success-sub { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; }
 
-    /* ============================================================
-       FOOTER
-       ============================================================ */
+    /* FOOTER */
     .site-footer { padding: 48px 32px 56px; text-align: center; border-top: 1px solid var(--rule-light); }
     .footer-script { font-family: var(--ff-script); font-size: 42px; color: rgba(201,168,76,0.4); display: block; margin-bottom: 8px; }
     .footer-text { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--footer-text-color); text-transform: uppercase; line-height: 1.8; }
+    .footer-share { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; }
+    .share-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1px solid var(--rule); background: transparent; color: var(--mist-dim); font-family: var(--ff-tech); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; cursor: pointer; transition: border-color 0.25s, color 0.25s, background 0.25s; border-radius: 2px; }
+    .share-btn:hover { border-color: var(--gold); color: var(--gold-lt); background: rgba(201,168,76,0.07); }
+    .share-btn svg { width: 13px; height: 13px; fill: currentColor; }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-      #grain, #loading, .marquee-track, .film-strip-inner, #shooting-stars { animation: none !important; display: none !important; }
-      #loading { display: none !important; }
-      .reveal, .luubut-p, .luubut-sig { opacity: 1 !important; transform: none !important; }
-    }
+    /* SCROLL BAR & CONTROLS */
+    #progress-bar { position: fixed; top: 0; left: 0; z-index: 9999; height: 2px; width: 0%; background: linear-gradient(90deg, var(--gold) 0%, var(--gold-lt) 60%, #fff 100%); box-shadow: 0 0 8px rgba(201,168,76,0.6); transition: width 0.1s linear; pointer-events: none; transform-origin: left center; will-change: width; }
+    .skip-link { position: fixed; top: -100%; left: 16px; background: var(--gold); color: var(--ink); font-family: var(--ff-ui); font-size: 13px; font-weight: 700; padding: 8px 16px; z-index: 99999; text-decoration: none; border-radius: 0 0 4px 4px; transition: top 0.2s ease; }
+    .skip-link:focus { top: 0; }
+    #backToTop { position: fixed; bottom: 28px; right: 24px; z-index: 500; width: 44px; height: 44px; background: rgba(12,15,26,0.85); border: 1px solid rgba(201,168,76,0.4); color: var(--gold-lt); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: 0; transform: translateY(12px); transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.3s, background 0.3s; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; }
+    #backToTop.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #backToTop:hover { border-color: var(--gold); background: rgba(201,168,76,0.12); }
+    #backToTop svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    #audioToggleBtn { position: fixed; bottom: 28px; left: 24px; z-index: 500; width: 44px; height: 44px; background: rgba(12,15,26,0.85); border: 1px solid rgba(201,168,76,0.4); color: var(--gold-lt); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: border-color 0.3s, background 0.3s, transform 0.3s; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    #audioToggleBtn:hover { border-color: var(--gold); background: rgba(201,168,76,0.12); transform: scale(1.05); }
+    .audio-icon { width: 18px; height: 18px; fill: currentColor; }
+
+    @media (max-width: 520px) { .film-layout { grid-template-columns: 1fr; height: auto; } .film-scroll-col { height: 280px; } .film-feature-col { height: 260px; } }
   </style>
 </head>
 <body>
 
-  <!-- PROGRESS BAR -->
-  <div id="progress-bar"></div>
+  <audio id="bgMusic" loop preload="auto">
+    <source src="music/thinh_vuong_viet_nam_instrumental_music.mp3" type="audio/mpeg">
+  </audio>
 
-  <!-- CUSTOM CURSOR -->
+  <button id="audioToggleBtn" class="audio-toggle-btn js-hoverable" aria-label="Bật/Tắt nhạc nền" title="Bật/Tắt nhạc nền">
+    <svg id="icon-sound-on" class="audio-icon" viewBox="0 0 24 24" style="display:none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    <svg id="icon-sound-off" class="audio-icon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+  </button>
+
+  <a href="#heroSection" class="skip-link">Bỏ qua điều hướng, đến nội dung chính</a>
+  <div id="progress-bar" role="progressbar" aria-hidden="true"></div>
+  <button id="backToTop" aria-label="Cuộn lên đầu trang" title="Về đầu trang"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></button>
+
   <div id="cursor-dot"></div>
   <div id="cursor-ring"></div>
-
-  <!-- NOISE GRAIN, AMBIENT ORB & SHOOTING STARS -->
   <div id="grain" aria-hidden="true"></div>
   <div id="ambient-orb" aria-hidden="true"></div>
   <canvas id="shooting-stars" aria-hidden="true"></canvas>
 
-  <!-- LIGHTBOX ACCESSIBLE MODAL -->
-  <div id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Xem ảnh phóng to">
+  <div id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Xem chi tiết">
     <button class="lightbox-close js-hoverable" id="lightboxClose" aria-label="Đóng cửa sổ">&times;</button>
-    <img id="lightboxImg" src="" alt="Hình ảnh phóng to chi tiết">
+    <div id="lightboxContentWrap"></div>
+    <div class="lightbox-hint">ESC để đóng</div>
   </div>
 
-  <!-- INTRO TRANSITION -->
+  <!-- INTRO -->
   <div id="loading" role="status" aria-label="Đang tải thiệp mời">
-    <div class="intro-curtain">
-      <div class="curtain-panel left"></div>
-      <div class="curtain-panel right"></div>
-    </div>
+    <canvas id="introCanvas" aria-hidden="true"></canvas>
+    <div class="intro-curtain"><div class="curtain-panel left"></div><div class="curtain-panel right"></div></div>
     <div class="intro-content">
-      <div class="wax-seal">
-        <div class="wax-circle">
-          <div class="wax-stamp">Phạm<br>Đức Duy<br>2026</div>
-          <div class="wax-rim-glow"></div>
-        </div>
+      <div class="intro-text-wrap">
+        <div class="intro-eyebrow split-text">LỄ TỐT NGHIỆP CỬ NHÂN</div>
+        <div class="intro-name split-text">PHẠM ĐỨC DUY</div>
+        <div class="intro-sub split-text">ROBOTICS & AI · 2026</div>
       </div>
-      <div class="loading-title">Lễ Tốt Nghiệp Cử Nhân</div>
-      <div class="loading-sub">Robot & Trí Tuệ Nhân Tạo</div>
-      <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+      <div class="intro-progress-wrap">
+        <div class="intro-counter" id="introCounter">0%</div>
+        <div class="intro-bar-track"><div class="intro-bar-fill" id="introBarFill"></div></div>
+      </div>
     </div>
   </div>
 
-  <!-- MARQUEE BAR -->
   <div class="marquee-wrap" aria-hidden="true">
     <div class="marquee-track">
-      <span class="marquee-item">Lễ Tốt Nghiệp 2026</span>
-      <span class="marquee-item">Phạm Đức Duy</span>
-      <span class="marquee-item">Cử Nhân Robot & AI</span>
-      <span class="marquee-item">ĐH Công Nghiệp HN</span>
-      <span class="marquee-item">16 · 08 · 2026</span>
-      <span class="marquee-item">Lễ Tốt Nghiệp 2026</span>
-      <span class="marquee-item">Phạm Đức Duy</span>
-      <span class="marquee-item">Cử Nhân Robot & AI</span>
-      <span class="marquee-item">ĐH Công Nghiệp HN</span>
-      <span class="marquee-item">16 · 08 · 2026</span>
+      <span class="marquee-item">Lễ Tốt Nghiệp 2026</span><span class="marquee-item">Phạm Đức Duy</span><span class="marquee-item">Cử Nhân Robot & AI</span><span class="marquee-item">ĐH Công Nghiệp HN</span><span class="marquee-item">16 · 08 · 2026</span>
+      <span class="marquee-item">Lễ Tốt Nghiệp 2026</span><span class="marquee-item">Phạm Đức Duy</span><span class="marquee-item">Cử Nhân Robot & AI</span><span class="marquee-item">ĐH Công Nghiệp HN</span><span class="marquee-item">16 · 08 · 2026</span>
     </div>
   </div>
 
-  <!-- MAIN PAGE WRAPPER -->
   <div class="page-wrap">
     
-    <!-- HERO SECTION -->
     <section class="hero" id="heroSection">
       <div class="hero-photo-wrap">
-        <img id="heroPhoto" 
-             src="imgs/anh-chan-dung-chinh.jpg" 
-             alt="Chân dung cử nhân Phạm Đức Duy trong trang phục cử nhân"
-             fetchpriority="high"
-             loading="eager"
-             onerror="this.style.display='none';document.getElementById('heroPh').style.display='flex'">
-        <div class="hero-photo-placeholder" id="heroPh" style="display:none">
-          <span style="font-family:var(--ff-display);color:rgba(201,168,76,0.4)">PORTRAIT PHOTO</span>
-        </div>
+        <img id="heroPhoto" src="imgs/anh-chan-dung-chinh.jpg" alt="Chân dung cử nhân Phạm Đức Duy trong trang phục cử nhân" fetchpriority="high" loading="eager" onerror="this.style.display='none';document.getElementById('heroPh').style.display='flex'">
+        <div class="hero-photo-placeholder" id="heroPh" style="display:none"><span style="font-family:var(--ff-display);color:rgba(201,168,76,0.4)">PORTRAIT PHOTO</span></div>
       </div>
       <div class="hero-bg" aria-hidden="true"></div>
-
-      <!-- HERO CONTENT -->
       <div class="hero-content" id="heroContent">
         <div class="hero-tech-badge">Robotics & Artificial Intelligence</div>
         <div class="hero-eyebrow">Kính mời tham dự</div>
         <div class="hero-name-wrap"><span class="hero-name">Phạm <em>Đức</em></span></div>
         <div class="hero-name-wrap"><span class="hero-name">Duy</span></div>
-        
         <div class="hero-quick-anchor">
-          <span class="date">16.08.2026 · 08:00 AM</span>
-          <span class="sep">✦</span>
-          <span class="loc">Hội trường Tầng 3 - A11 · ĐH Công Nghiệp HN</span>
+          <span class="date">16.08.2026 · 08:00 AM</span><span class="sep">✦</span><span class="loc">Hội trường Tầng 3 - A11 · ĐH Công Nghiệp HN</span>
         </div>
       </div>
     </section>
 
-    <!-- INVITATION DETAILS CARD -->
     <section class="section">
       <div class="section-label reveal">Thiệp Mời</div>
       <div class="invite-block reveal">
         <div class="invite-formal">Trân trọng kính mời</div>
         <div class="invite-script">Thân Mời</div>
-
-        <div class="invite-divider" aria-hidden="true">
-          <div class="invite-divider-line"></div>
-          <div class="invite-divider-gem"></div>
-          <div class="invite-divider-line r"></div>
-        </div>
-
+        <div class="invite-divider" aria-hidden="true"><div class="invite-divider-line"></div><div class="invite-divider-gem"></div><div class="invite-divider-line r"></div></div>
         <div class="invite-date-row">
           <div class="invite-date-side"><div class="lbl">Tháng</div><div class="val">08</div></div>
           <div class="invite-date-big">16</div>
           <div class="invite-date-side"><div class="lbl">Năm</div><div class="val">2026</div></div>
         </div>
-
-        <div class="invite-divider" aria-hidden="true">
-          <div class="invite-divider-line"></div>
-          <div class="invite-divider-gem"></div>
-          <div class="invite-divider-line r"></div>
-        </div>
-
+        <div class="invite-divider" aria-hidden="true"><div class="invite-divider-line"></div><div class="invite-divider-gem"></div><div class="invite-divider-line r"></div></div>
         <div class="invite-info-grid">
           <div class="invite-info-cell"><div class="invite-info-lbl">Giờ</div><div class="invite-info-val">08:00 Sáng</div></div>
           <div class="invite-info-cell"><div class="invite-info-lbl">Thứ</div><div class="invite-info-val">Chủ Nhật</div></div>
           <div class="invite-info-cell"><div class="invite-info-lbl">Bằng cấp</div><div class="invite-info-val">Cử Nhân</div></div>
           <div class="invite-info-cell"><div class="invite-info-lbl">Chuyên ngành</div><div class="invite-info-val">Robot & AI</div></div>
           <div class="invite-info-cell" style="border-bottom:none; grid-column: 1 / -1;"><div class="invite-info-lbl">Trường</div><div class="invite-info-val">Đại Học Công Nghiệp Hà Nội</div></div>
-          
           <div class="invite-address-block">
-            <div class="venue-item">
-              <span class="venue-badge">✦ Trực Tiếp</span>
-              <p class="venue-desc"><strong style="color:var(--ivory);">Hội trường tầng 3 - A11</strong></p>
-            </div>
-            <div class="venue-item" style="margin-top:12px;">
-              <span class="venue-badge">✦ Trực Tuyến</span>
-              <p class="venue-desc"><strong style="color:var(--ivory);">Tại Nhà Đa Năng</strong></p>
-            </div>
+            <div class="venue-item"><span class="venue-badge">✦ Trực Tiếp</span><p class="venue-desc"><strong style="color:var(--ivory);">Hội trường tầng 3 - A11</strong></p></div>
+            <div class="venue-item" style="margin-top:12px;"><span class="venue-badge">✦ Trực Tuyến</span><p class="venue-desc"><strong style="color:var(--ivory);">Tại Nhà Đa Năng</strong></p></div>
             <p class="invite-address-text" id="addressText" style="margin-top:12px; font-size:13px; opacity:0.8;">Số 298 Cầu Diễn, quận Bắc Từ Liêm, Hà Nội</p>
           </div>
         </div>
-
         <div class="location-actions">
-          <a href="https://www.google.com/maps/search/?api=1&query=%C4%90%E1%BA%A1i+H%E1%BB%8Dc+C%C3%B4ng+Nghi%E1%BB%87p+H%C3%A0+N%E1%BB%99i+298+C%E1%BA%A7u+Di%E1%BB%85n" target="_blank" rel="noopener noreferrer" class="action-btn js-hoverable">
-            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            Xem Bản Đồ
-          </a>
-          <button type="button" class="action-btn js-hoverable" id="copyAddressBtn">
-            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <span id="copyBtnText">Sao Chép Địa Chỉ</span>
-          </button>
+          <a href="https://www.google.com/maps/search/?api=1&query=%C4%90%E1%BA%A1i+H%E1%BB%8Dc+C%C3%B4ng+Nghi%E1%BB%87p+H%C3%A0+N%E1%BB%99i+298+C%E1%BA%A7u+Di%E1%BB%85n" target="_blank" rel="noopener noreferrer" class="action-btn js-hoverable"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Xem Bản Đồ</a>
+          <button type="button" class="action-btn js-hoverable" id="copyAddressBtn"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg><span id="copyBtnText">Sao Chép Địa Chỉ</span></button>
         </div>
       </div>
     </section>
 
-    <!-- SECTION CHƯƠNG TRÌNH LỄ BẾ GIẢNG -->
     <section class="section">
       <div class="section-label reveal">Chương Trình</div>
       <div class="agenda-card reveal">
-        <div class="agenda-header">
-          <div class="agenda-header-title">Nội Dung Chương Trình</div>
-          <div class="agenda-header-sub">Lễ Bế Giảng & Trao Bằng Tốt Nghiệp 2026</div>
-        </div>
-
+        <div class="agenda-header"><div class="agenda-header-title">Nội Dung Chương Trình</div><div class="agenda-header-sub">Lễ Bế Giảng & Trao Bằng Tốt Nghiệp 2026</div></div>
         <div class="agenda-timeline">
-          <div class="agenda-item">
-            <div class="agenda-time">07:30 - 07:45</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Đón tiếp đại biểu, ổn định tổ chức</div>
-              <div class="agenda-role">Ban tổ chức</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">07:45 - 08:00</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Văn nghệ chào mừng (01 tiết mục nhảy, 02 tiết mục hát)</div>
-              <div class="agenda-role">MC, Đội văn nghệ</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:00 - 08:10</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Chào cờ, tuyên bố lý do, giới thiệu đại biểu</div>
-              <div class="agenda-role">MC</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:10 - 08:25</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Báo cáo tổng kết khóa học và công bố quyết định tốt nghiệp</div>
-              <div class="agenda-role">Đại diện Phòng Tổng hợp trường Cơ khí - Ô tô</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:25 - 08:35</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Phát biểu của Lãnh đạo trường Đại học Công nghiệp Hà Nội</div>
-              <div class="agenda-role">Đại diện lãnh đạo ĐHCNHN</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:35 - 08:45</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Đại diện sinh viên tốt nghiệp phát biểu tri ân</div>
-              <div class="agenda-role">Đại diện sinh viên K17 tốt nghiệp</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:45 - 08:55</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Ra mắt Ban liên lạc Cựu sinh viên ĐH K17 và kỹ sư K3</div>
-              <div class="agenda-role">Ban giám hiệu, Ban liên lạc cựu SV</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">08:55 - 09:00</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Tuyên dương và vinh danh thủ khoa các ngành</div>
-              <div class="agenda-role">Đại diện BGĐ ĐHCN; BGH CK-ÔTO; Thủ khoa các ngành</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">09:00 - 09:05</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Tuyên dương khen thưởng các sinh viên tiêu biểu</div>
-              <div class="agenda-role">Ban giám hiệu, Các sinh viên tiêu biểu</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">09:05 - 12:00</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Trao bằng tốt nghiệp trên sân khấu và chụp ảnh lưu niệm</div>
-              <div class="agenda-role">BGH, Trưởng đơn vị, Sinh viên tốt nghiệp</div>
-            </div>
-          </div>
-
-          <div class="agenda-item">
-            <div class="agenda-time">09:05 - 12:00</div>
-            <div class="agenda-body">
-              <div class="agenda-title">Phát bằng tốt nghiệp tại phòng đọc A3 thư viện</div>
-              <div class="agenda-role">Cố vấn học tập / Cán bộ nhà trường</div>
-            </div>
-          </div>
+          <div class="agenda-item"><div class="agenda-time">07:30 - 07:45</div><div class="agenda-body"><div class="agenda-title">Đón tiếp đại biểu, ổn định tổ chức</div><div class="agenda-role">Ban tổ chức</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">07:45 - 08:00</div><div class="agenda-body"><div class="agenda-title">Văn nghệ chào mừng</div><div class="agenda-role">MC, Đội văn nghệ</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:00 - 08:10</div><div class="agenda-body"><div class="agenda-title">Chào cờ, tuyên bố lý do</div><div class="agenda-role">MC</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:10 - 08:25</div><div class="agenda-body"><div class="agenda-title">Báo cáo tổng kết khóa học</div><div class="agenda-role">Đại diện trường</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:25 - 08:35</div><div class="agenda-body"><div class="agenda-title">Phát biểu của Lãnh đạo</div><div class="agenda-role">Đại diện lãnh đạo ĐHCNHN</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:35 - 08:45</div><div class="agenda-body"><div class="agenda-title">Đại diện sinh viên phát biểu</div><div class="agenda-role">SV K17 tốt nghiệp</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:45 - 08:55</div><div class="agenda-body"><div class="agenda-title">Ra mắt Ban liên lạc Cựu SV</div><div class="agenda-role">Ban liên lạc</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">08:55 - 09:00</div><div class="agenda-body"><div class="agenda-title">Vinh danh thủ khoa</div><div class="agenda-role">Thủ khoa các ngành</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">09:00 - 09:05</div><div class="agenda-body"><div class="agenda-title">Khen thưởng SV tiêu biểu</div><div class="agenda-role">Sinh viên tiêu biểu</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">09:05 - 12:00</div><div class="agenda-body"><div class="agenda-title">Trao bằng trên sân khấu</div><div class="agenda-role">SV tốt nghiệp</div></div></div>
+          <div class="agenda-item"><div class="agenda-time">09:05 - 12:00</div><div class="agenda-body"><div class="agenda-title">Phát bằng tại A3 thư viện</div><div class="agenda-role">Cán bộ nhà trường</div></div></div>
         </div>
       </div>
     </section>
 
-    <!-- VENUE PHOTO CARD -->
     <div class="venue-art-card reveal">
-      <div class="venue-art-frame">
-        <img src="imgs/anh-truong-hoc.jpg" alt="Biểu tượng khối đá Đại Học Công Nghiệp Hà Nội" onerror="this.style.display='none'">
-      </div>
+      <div class="venue-art-frame"><img src="imgs/anh-truong-hoc.jpg" alt="Đại Học Công Nghiệp Hà Nội" onerror="this.style.display='none'"></div>
+      <div class="venue-art-caption" aria-hidden="true"><div class="cap-name">Địa Điểm Tổ Chức</div><div class="cap-detail">Đại Học Công Nghiệp Hà Nội · 298 Cầu Diễn</div></div>
     </div>
 
-    <!-- FILMSTRIP GALLERY -->
+    <!-- KỶ YẾU TRƯỚC SỰ KIỆN -->
     <section class="section">
       <div class="section-label reveal">Lưu Giữ Kỷ Niệm</div>
-      <div class="film-section-header reveal">
-        <span class="film-title">Album <em style="color:var(--gold-lt)">Ký Ức</em></span>
-        <span class="film-count" id="filmCountText">07 khoảnh khắc</span>
-      </div>
+      <div class="film-section-header reveal"><span class="film-title">Album <em style="color:var(--gold-lt)">Ký Ức</em></span><span class="film-count" id="filmCountText">07 khoảnh khắc</span></div>
       <div class="film-layout reveal">
-        <div class="film-scroll-col" aria-label="Thước phim tự động cuộn kỷ yếu">
-          <div class="film-strip-inner" id="filmStrip"></div>
-        </div>
+        <div class="film-scroll-col" aria-label="Thước phim tự động cuộn kỷ yếu"><div class="film-strip-inner" id="filmStrip"></div></div>
         <div class="film-feature-col js-hoverable" id="filmFeatureCol" tabindex="0" role="button" aria-label="Xem ảnh nổi bật">
           <img id="featureImg" src="imgs/album-right.jpg" alt="Khoảnh khắc kỷ yếu nổi bật" onerror="this.style.display='none'">
-          <div class="film-feature-overlay">
-            <div class="film-feature-label">Kỷ yếu 2026</div>
-          </div>
+          <div class="film-feature-overlay"><div class="film-feature-label">Kỷ yếu 2026</div></div>
         </div>
       </div>
     </section>
 
-    <!-- LƯU BÚT SECTION -->
+    <!-- NEW MULTIMEDIA SECTION (ALBUM CHỦ NHẬT) -->
+    <section class="section" id="eventAlbumSection">
+      <div class="section-label reveal">Dấu Ấn Chủ Nhật</div>
+      <div class="reveal">
+        <div class="agenda-header" style="text-align:left; border:none; margin-bottom: 24px; padding-bottom: 0;">
+          <div class="agenda-header-title">Khoảnh Khắc Ngày Vui</div>
+          <div class="agenda-header-sub">Những hình ảnh & video đáng nhớ trong ngày lễ 16.08.2026</div>
+        </div>
+        <div class="event-grid" id="eventGrid"></div>
+      </div>
+    </section>
+
     <section class="section">
       <div class="section-label reveal">Lưu Bút</div>
       <div class="reveal reveal-luubut">
         <span class="luubut-quote-mark" aria-hidden="true">"</span>
         <div class="luubut-text-wrap">
-          <p class="luubut-p">
-            Hành trình học tập ngành Robot & Trí tuệ Nhân tạo tại ĐH Công Nghiệp Hà Nội đã chính thức cán đích. Đây là cột mốc đánh dấu sự trưởng thành và mở ra những chặng đường mới phía trước.
-          </p>
-          <p class="luubut-p">
-            Mình thân mời gia đình, người thân và bạn bè đến tham dự lễ tốt nghiệp, cùng mình chia sẻ niềm vui và lưu giữ những khoảnh khắc thật đáng nhớ. Sự hiện diện của mọi người là niềm vinh hạnh lớn nhất đối với mình.
-          </p>
+          <p class="luubut-p">Hành trình học tập ngành Robot & Trí tuệ Nhân tạo tại ĐH Công Nghiệp Hà Nội đã chính thức cán đích. Đây là cột mốc đánh dấu sự trưởng thành và mở ra những chặng đường mới phía trước.</p>
+          <p class="luubut-p">Mình thân mời gia đình, người thân và bạn bè đến tham dự lễ tốt nghiệp, cùng mình chia sẻ niềm vui và lưu giữ những khoảnh khắc thật đáng nhớ. Sự hiện diện của mọi người là niềm vinh hạnh lớn nhất đối với mình.</p>
         </div>
         <div class="luubut-sig">Đức Duy</div>
       </div>
     </section>
 
-    <!-- ALBUM GRID -->
+    <!-- ALBUM CŨ -->
     <section class="section" style="padding-top:0">
       <div class="section-label reveal">Album Kỷ Yếu</div>
       <div class="album-grid reveal" id="albumGrid"></div>
     </section>
 
-    <!-- RSVP SECTION -->
     <section class="section">
       <div class="section-label reveal">Xác Nhận Tham Dự</div>
       <div class="rsvp-outer reveal">
-        <p class="rsvp-note">
-          Vui lòng xác nhận sự hiện diện trước ngày <strong style="color:var(--gold-lt);font-weight:500">16 / 08 / 2026</strong><br>
-          để mình chuẩn bị đón tiếp chu đáo nhất nhé.
-        </p>
-        <form class="rsvp-form" id="rsvpForm" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="guestName">Họ và tên</label>
-            <input class="form-input" type="text" id="guestName" placeholder="Tên của bạn..." aria-required="true">
-          </div>
-          
-          <div class="form-group">
-            <span class="form-label" id="statusGroupLabel">Xác nhận tham dự</span>
-            <div class="segmented-group" role="radiogroup" aria-labelledby="statusGroupLabel">
-              <label class="segmented-card">
-                <input type="radio" name="guestStatus" value="yes">
-                <span class="segmented-label">✓ Sẽ Tham Dự</span>
-              </label>
-              <label class="segmented-card">
-                <input type="radio" name="guestStatus" value="no">
-                <span class="segmented-label">✕ Rất Tiếc Vắng Mặt</span>
-              </label>
+        <div class="rsvp-success-state" id="rsvpSuccess" aria-live="polite">
+          <div class="rsvp-success-icon" aria-hidden="true">✦</div>
+          <div class="rsvp-success-msg" id="rsvpSuccessMsg">Cảm ơn bạn rất nhiều!<br>Phản hồi của bạn đã được ghi nhận.</div>
+          <div class="rsvp-success-sub">Hẹn gặp nhau ngày 16 · 08 · 2026</div>
+        </div>
+        <div id="rsvpFormWrap">
+          <p class="rsvp-note">Vui lòng xác nhận sự hiện diện trước ngày <strong style="color:var(--gold-lt);font-weight:500">16 / 08 / 2026</strong><br>để mình chuẩn bị đón tiếp chu đáo nhất nhé.</p>
+          <form class="rsvp-form" id="rsvpForm" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="guestName">Họ và tên <span aria-hidden="true" style="color:var(--gold)">*</span></label>
+              <input class="form-input" type="text" id="guestName" placeholder="Tên của bạn..." aria-required="true" autocomplete="name">
             </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="guestWish">Lời chúc</label>
-            <textarea class="form-input" id="guestWish" rows="3" placeholder="Gửi vài lời chúc tốt đẹp..."></textarea>
-          </div>
-
-          <button type="submit" class="submit-btn js-hoverable" id="submitBtn">
-            <span class="btn-spinner"></span>
-            <span class="btn-text">Gửi Phản Hồi</span>
-          </button>
-          <div class="form-msg" id="formMsg" role="alert" aria-live="polite"></div>
-        </form>
+            <div class="form-group">
+              <span class="form-label" id="statusGroupLabel">Xác nhận tham dự <span aria-hidden="true" style="color:var(--gold)">*</span></span>
+              <div class="segmented-group" role="radiogroup" aria-labelledby="statusGroupLabel">
+                <label class="segmented-card"><input type="radio" name="guestStatus" value="yes"><span class="segmented-label">✓ Sẽ Tham Dự</span></label>
+                <label class="segmented-card"><input type="radio" name="guestStatus" value="no"><span class="segmented-label">✕ Rất Tiếc Vắng Mặt</span></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="guestWish">Lời chúc <span style="font-weight:400;opacity:0.5;letter-spacing:1px;text-transform:none">(tùy chọn)</span></label>
+              <textarea class="form-input" id="guestWish" rows="3" placeholder="Gửi vài lời chúc tốt đẹp..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn js-hoverable" id="submitBtn"><span class="btn-spinner" aria-hidden="true"></span><span class="btn-text">Gửi Phản Hồi</span></button>
+            <div class="form-msg" id="formMsg" role="alert" aria-live="polite"></div>
+          </form>
+        </div>
       </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="site-footer">
       <span class="footer-script" aria-hidden="true">Phạm Đức Duy</span>
+      <div class="footer-share">
+        <button class="share-btn js-hoverable" id="shareWebBtn" aria-label="Chia sẻ trang"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Chia Sẻ</button>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https://phamduyaaaa.github.io/invite/" target="_blank" rel="noopener noreferrer" class="share-btn js-hoverable" aria-label="Chia sẻ lên Facebook"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a>
+      </div>
       <div class="footer-text">
-        Cử Nhân Robot & Trí Tuệ Nhân Tạo<br>
-        Đại Học Công Nghiệp Hà Nội · 2026
+        Cử Nhân Robot & Trí Tuệ Nhân Tạo<br>Đại Học Công Nghiệp Hà Nội · 2026<br>
+        <span style="opacity:0.4;font-size:9px;letter-spacing:1px">✦ Thiết kế với tình yêu · 2026 ✦</span>
       </div>
     </footer>
 
-  </div><!-- /.page-wrap -->
+  </div>
 
-  <!-- INTERACTIVE JAVASCRIPT -->
   <script>
     const CFG = {
       person: { fullName: "Phạm Đức Duy", signName: "Đức Duy" },
@@ -1188,171 +670,183 @@
         { url: "imgs/album-3.jpg", alt: "Tung mũ cử nhân" },
         { url: "imgs/album-4.jpg", alt: "Kỷ niệm ngày nhận bằng" }
       ],
+      /* EVENT MEDIA: Sau chủ nhật upload hình/video và bỏ comment để dùng */
+      eventMedia: [
+        // { type: 'video', url: 'imgs/demo-video.mp4', alt: 'Video sự kiện' },
+        // { type: 'image', url: 'imgs/anh-su-kien-1.jpg', alt: 'Hình ảnh sự kiện' },
+      ],
       rsvp: { webhookUrl: "https://formspree.io/f/xyzzlgyp" }
     };
 
-    /* ============================================================
-       SHOOTING STARS ANIMATION SYSTEM (CHẬM RÃI, MỜ DỊU, BÙNG SÁNG TỰ NHIÊN)
-       ============================================================ */
-    (function initShootingStars() {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    /* BACKGROUND MUSIC HANDLER */
+    const bgMusic = document.getElementById('bgMusic');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
+    const iconOn = document.getElementById('icon-sound-on');
+    const iconOff = document.getElementById('icon-sound-off');
+    let isMusicPlaying = false;
+    let fallbackAttached = false;
+    const unlockEvents = ['click', 'touchstart', 'keydown'];
 
+    function initAudioFallback(e) {
+      if (isMusicPlaying) return;
+      bgMusic.volume = 0.5;
+      bgMusic.play().then(() => {
+        isMusicPlaying = true;
+        iconOff.style.display = 'none';
+        iconOn.style.display = 'block';
+        unlockEvents.forEach(evt => document.removeEventListener(evt, initAudioFallback));
+      }).catch(() => {});
+    }
+
+    audioToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isMusicPlaying) {
+        bgMusic.pause();
+        iconOn.style.display = 'none';
+        iconOff.style.display = 'block';
+      } else {
+        bgMusic.play().then(() => {
+            iconOff.style.display = 'none';
+            iconOn.style.display = 'block';
+        }).catch(() => {});
+      }
+      isMusicPlaying = !isMusicPlaying;
+    });
+
+    /* INTRO SEQUENCE */
+    const loadingEl = document.getElementById('loading');
+    function initIntroCanvas() {
+      const canvas = document.getElementById('introCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+      const particles = [];
+      for (let i = 0; i < (window.innerWidth < 768 ? 20 : 40); i++) {
+        particles.push({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: Math.random() * -0.5 - 0.2, opacity: Math.random() * 0.5 + 0.1 });
+      }
+      function draw() {
+        if(loadingEl.classList.contains('out')) return; 
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = `rgba(201, 168, 76, ${p.opacity})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+    function setupSplitText() {
+      document.querySelectorAll('.split-text').forEach(el => {
+        let charIndex = 0;
+        el.innerHTML = el.innerText.trim().split(' ').map(word => `<span class="split-word">` + word.split('').map(char => {
+            const delay = charIndex * 0.035; charIndex++;
+            return `<span class="split-char" style="transition-delay: ${delay}s">${char}</span>`;
+          }).join('') + `</span>` + (charIndex++, '')).join('<span class="split-word" style="width:0.25em;">&nbsp;</span>');
+      });
+    }
+    function startIntroSequence() {
+      if(!loadingEl) return;
+      initIntroCanvas(); setupSplitText();
+      requestAnimationFrame(() => loadingEl.classList.add('stage-1'));
+      setTimeout(() => loadingEl.classList.add('stage-2'), 200);
+      setTimeout(() => { loadingEl.classList.add('stage-3'); startCounter(); }, 1400);
+    }
+    function startCounter() {
+      const duration = 1600; let startTime = null;
+      const counterEl = document.getElementById('introCounter'), barEl = document.getElementById('introBarFill');
+      function update(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const val = Math.floor(ease * 100);
+        if (counterEl) counterEl.textContent = val < 10 ? `0${val}%` : `${val}%`;
+        if (barEl) barEl.style.width = `${val}%`;
+        if (progress < 1) requestAnimationFrame(update); else setTimeout(exitIntro, 300);
+      }
+      requestAnimationFrame(update);
+    }
+    function exitIntro() {
+      if(loadingEl) loadingEl.classList.add('out'); document.body.classList.add('loaded');
+      bgMusic.volume = 0.5;
+      bgMusic.play().then(() => {
+        isMusicPlaying = true; iconOff.style.display = 'none'; iconOn.style.display = 'block';
+      }).catch(err => {
+        if (!fallbackAttached) { unlockEvents.forEach(evt => document.addEventListener(evt, initAudioFallback, { passive: true })); fallbackAttached = true; }
+      });
+      setTimeout(() => { if(loadingEl) loadingEl.remove(); }, 2000);
+    }
+    
+    /* ĐÃ FIX: CHẠY INTRO NGAY LẬP TỨC CHO LCP XANH */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startIntroSequence);
+    } else {
+      startIntroSequence();
+    }
+
+    /* SHOOTING STARS */
+    (function initShootingStars() {
       const canvas = document.getElementById('shooting-stars');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-
-      let width = (canvas.width = window.innerWidth);
-      let height = (canvas.height = window.innerHeight);
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
-
+      let width = (canvas.width = window.innerWidth), height = (canvas.height = window.innerHeight);
+      window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
       const stars = [];
-
       class ShootingStar {
-        constructor() {
-          this.reset();
-        }
-
+        constructor() { this.reset(); }
         reset() {
-          this.x = Math.random() * (width * 1.3) - width * 0.1;
-          this.y = -Math.random() * 100;
-          
-          // Tốc độ bay chậm rãi, thư thái (1.8 - 3.0 px/frame)
-          this.speed = Math.random() * 1.2 + 1.8;
-          this.angle = Math.PI / 4; // Góc nghiêng 45 độ
-          
-          this.length = Math.random() * 70 + 90;
-          this.size = Math.random() * 0.8 + 1.0;
-          
-          // Độ sáng bình thường mờ dịu, nhẹ nhàng (0.3 - 0.5)
-          this.baseOpacity = Math.random() * 0.2 + 0.35;
-          this.currentOpacity = 0;
-          
-          // Tính năng phát sáng thi thoảng (Flare/Pulse)
-          this.flareProgress = 0;
-          this.isFlaring = false;
-          this.flareTriggerPoint = Math.random() * 120 + 80; // Điểm ngẫu nhiên bùng sáng
-          
-          this.active = true;
-          this.traveled = 0;
-          this.totalDistance = Math.random() * 300 + 420;
+          this.x = Math.random() * (width * 1.3) - width * 0.1; this.y = -Math.random() * 100;
+          this.speed = Math.random() * 1.2 + 1.8; this.angle = Math.PI / 4;
+          this.length = Math.random() * 70 + 90; this.size = Math.random() * 0.8 + 1.0;
+          this.baseOpacity = Math.random() * 0.2 + 0.35; this.currentOpacity = 0;
+          this.flareProgress = 0; this.isFlaring = false; this.flareTriggerPoint = Math.random() * 120 + 80;
+          this.active = true; this.traveled = 0; this.totalDistance = Math.random() * 300 + 420;
         }
-
         update() {
-          this.x -= this.speed * Math.cos(this.angle);
-          this.y += this.speed * Math.sin(this.angle);
-          this.traveled += this.speed;
-
-          // Xử lý mờ dần ở đầu và cuối đường bay
-          const fadeDist = 70;
-          let lifecycleOpacity = 1;
-          if (this.traveled < fadeDist) {
-            lifecycleOpacity = this.traveled / fadeDist;
-          } else if (this.traveled > this.totalDistance - fadeDist) {
-            lifecycleOpacity = Math.max(0, (this.totalDistance - this.traveled) / fadeDist);
-          }
-
-          // Kích hoạt bùng sáng ngẫu nhiên khi bay qua quãng đường nhất định
-          if (!this.isFlaring && this.traveled > this.flareTriggerPoint && Math.random() < 0.08) {
-            this.isFlaring = true;
-          }
-
-          if (this.isFlaring) {
-            this.flareProgress += 0.045;
-            if (this.flareProgress >= Math.PI) {
-              this.isFlaring = false;
-              this.flareProgress = 0;
-            }
-          }
-
+          this.x -= this.speed * Math.cos(this.angle); this.y += this.speed * Math.sin(this.angle); this.traveled += this.speed;
+          const fadeDist = 70; let lifecycleOpacity = 1;
+          if (this.traveled < fadeDist) lifecycleOpacity = this.traveled / fadeDist;
+          else if (this.traveled > this.totalDistance - fadeDist) lifecycleOpacity = Math.max(0, (this.totalDistance - this.traveled) / fadeDist);
+          if (!this.isFlaring && this.traveled > this.flareTriggerPoint && Math.random() < 0.08) this.isFlaring = true;
+          if (this.isFlaring) { this.flareProgress += 0.045; if (this.flareProgress >= Math.PI) { this.isFlaring = false; this.flareProgress = 0; } }
           const flareBonus = this.isFlaring ? Math.sin(this.flareProgress) * 0.55 : 0;
           this.currentOpacity = Math.min(1, (this.baseOpacity + flareBonus) * lifecycleOpacity);
-
-          if (this.traveled >= this.totalDistance || this.x < -this.length || this.y > height + this.length) {
-            this.active = false;
-          }
+          if (this.traveled >= this.totalDistance || this.x < -this.length || this.y > height + this.length) this.active = false;
         }
-
         draw() {
           if (!this.active || this.currentOpacity <= 0) return;
-
-          const tailX = this.x + this.length * Math.cos(this.angle);
-          const tailY = this.y - this.length * Math.sin(this.angle);
-
-          // Vệt đuôi mờ dịu
+          const tailX = this.x + this.length * Math.cos(this.angle), tailY = this.y - this.length * Math.sin(this.angle);
           const gradient = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
-          gradient.addColorStop(0, `rgba(246, 242, 234, ${this.currentOpacity})`);
-          gradient.addColorStop(0.2, `rgba(232, 213, 163, ${this.currentOpacity * 0.75})`);
-          gradient.addColorStop(0.6, `rgba(201, 168, 76, ${this.currentOpacity * 0.25})`);
-          gradient.addColorStop(1, 'rgba(201, 168, 76, 0)');
-
-          ctx.beginPath();
-          ctx.moveTo(this.x, this.y);
-          ctx.lineTo(tailX, tailY);
-          ctx.strokeStyle = gradient;
-          ctx.lineWidth = this.size * (1 + (this.isFlaring ? Math.sin(this.flareProgress) * 0.4 : 0));
-          ctx.lineCap = 'round';
-          ctx.stroke();
-
-          // Đầu sao: khi bình thường dịu nhẹ, khi bùng sáng mới lan quầng sáng mờ
+          gradient.addColorStop(0, `rgba(246, 242, 234, ${this.currentOpacity})`); gradient.addColorStop(0.2, `rgba(232, 213, 163, ${this.currentOpacity * 0.75})`); gradient.addColorStop(0.6, `rgba(201, 168, 76, ${this.currentOpacity * 0.25})`); gradient.addColorStop(1, 'rgba(201, 168, 76, 0)');
+          ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(tailX, tailY); ctx.strokeStyle = gradient; ctx.lineWidth = this.size * (1 + (this.isFlaring ? Math.sin(this.flareProgress) * 0.4 : 0)); ctx.lineCap = 'round'; ctx.stroke();
           const currentGlow = this.isFlaring ? 14 * Math.sin(this.flareProgress) : 3;
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size * (1 + (this.isFlaring ? Math.sin(this.flareProgress) * 0.4 : 0)), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${this.currentOpacity})`;
-          if (currentGlow > 0) {
-            ctx.shadowBlur = currentGlow;
-            ctx.shadowColor = 'rgba(232, 213, 163, 0.85)';
-          }
-          ctx.fill();
-          ctx.restore();
+          ctx.save(); ctx.beginPath(); ctx.arc(this.x, this.y, this.size * (1 + (this.isFlaring ? Math.sin(this.flareProgress) * 0.4 : 0)), 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 255, 255, ${this.currentOpacity})`;
+          if (currentGlow > 0) { ctx.shadowBlur = currentGlow; ctx.shadowColor = 'rgba(232, 213, 163, 0.85)'; }
+          ctx.fill(); ctx.restore();
         }
       }
-
-      function spawnStars() {
-        stars.push(new ShootingStar());
-        
-        if (Math.random() < 0.6) {
-          setTimeout(() => stars.push(new ShootingStar()), Math.random() * 400 + 200);
-        }
-
-        const nextTime = Math.random() * 800 + 600;
-        setTimeout(spawnStars, nextTime);
-      }
-
-      function render() {
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = stars.length - 1; i >= 0; i--) {
-          stars[i].update();
-          stars[i].draw();
-          if (!stars[i].active) {
-            stars.splice(i, 1);
-          }
-        }
-
-        requestAnimationFrame(render);
-      }
-
-      stars.push(new ShootingStar());
-      stars.push(new ShootingStar());
-      spawnStars();
-      render();
+      function spawnStars() { stars.push(new ShootingStar()); if (Math.random() < 0.6) setTimeout(() => stars.push(new ShootingStar()), Math.random() * 400 + 200); setTimeout(spawnStars, Math.random() * 800 + 600); }
+      function render() { ctx.clearRect(0, 0, width, height); for (let i = stars.length - 1; i >= 0; i--) { stars[i].update(); stars[i].draw(); if (!stars[i].active) stars.splice(i, 1); } requestAnimationFrame(render); }
+      stars.push(new ShootingStar()); stars.push(new ShootingStar()); spawnStars(); render();
     })();
 
-    /* LIGHTBOX ACCESSIBLE MODAL */
+    /* NÂNG CẤP MEDIA LIGHTBOX (ẢNH & VIDEO) */
     const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxWrap = document.getElementById('lightboxContentWrap');
     const lightboxClose = document.getElementById('lightboxClose');
     let previouslyFocusedElement = null;
 
-    function openLightbox(url, triggerEl) {
+    function openMediaLightbox(type, url, triggerEl) {
       if (!url) return;
       previouslyFocusedElement = triggerEl || document.activeElement;
-      lightboxImg.src = url;
+      lightboxWrap.innerHTML = '';
+      if (type === 'video') {
+        lightboxWrap.innerHTML = `<video controls autoplay playsinline><source src="${url}" type="video/mp4"></video>`;
+      } else {
+        lightboxWrap.innerHTML = `<img src="${url}" alt="Chi tiết">`;
+      }
       lightbox.classList.add('active');
       lightbox.setAttribute('aria-hidden', 'false');
       lightboxClose.focus();
@@ -1361,213 +855,159 @@
     function closeLightbox() {
       lightbox.classList.remove('active');
       lightbox.setAttribute('aria-hidden', 'true');
-      if (previouslyFocusedElement) previouslyFocusedElement.focus();
+      lightboxWrap.innerHTML = ''; 
+      /* ĐÃ FIX: Không gọi focus() trên mobile để tránh vệt đen */
+      if (previouslyFocusedElement && !touchActiveFlag) {
+        previouslyFocusedElement.focus({ preventScroll: true });
+      }
     }
 
     if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
-    if (lightbox) {
-      lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    if (lightbox) { lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); }); }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); if (e.key === 'Tab' && lightbox.classList.contains('active')) { e.preventDefault(); lightboxClose.focus(); } });
+
+    /* SCROLL PROGRESS BAR & BACK TO TOP */
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          if (document.getElementById('progress-bar')) document.getElementById('progress-bar').style.width = (docHeight > 0 ? Math.min((window.scrollY / docHeight) * 100, 100) : 0) + '%';
+          if (document.getElementById('backToTop')) { if (window.scrollY > 400) document.getElementById('backToTop').classList.add('visible'); else document.getElementById('backToTop').classList.remove('visible'); }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    if (document.getElementById('backToTop')) document.getElementById('backToTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    /* ACTIVE AGENDA ITEM HIGHLIGHT */
+    function highlightCurrentAgendaItem() {
+      const eventDate = new Date('2026-08-16');
+      const today = new Date();
+      if (today.toDateString() !== eventDate.toDateString()) return;
+      const now = today.getHours() * 60 + today.getMinutes();
+      const timeRanges = [ [450,465], [465,480], [480,490], [490,505], [505,515], [515,525], [525,535], [535,540], [540,545], [545,720], [545,720] ];
+      document.querySelectorAll('.agenda-item').forEach((item, i) => {
+        if (timeRanges[i] && now >= timeRanges[i][0] && now < timeRanges[i][1]) { item.classList.add('active-now'); item.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      });
+    }
+    highlightCurrentAgendaItem();
+
+    /* WEB SHARE API */
+    const shareWebBtn = document.getElementById('shareWebBtn');
+    if (shareWebBtn) {
+      if (navigator.share) {
+        shareWebBtn.addEventListener('click', async () => { try { await navigator.share({ title: 'Thiệp Mời Tốt Nghiệp · Phạm Đức Duy · 2026', text: 'Mình trân trọng kính mời bạn đến dự lễ tốt nghiệp Cử nhân Robot & AI của mình!', url: window.location.href }); } catch (err) {} });
+      } else {
+        shareWebBtn.addEventListener('click', () => { navigator.clipboard.writeText(window.location.href).then(() => { shareWebBtn.querySelector('span') && (shareWebBtn.lastChild.textContent = 'Đã Sao Chép!'); setTimeout(() => { if (shareWebBtn.lastChild) shareWebBtn.lastChild.textContent = ' Chia Sẻ'; }, 2000); }); });
+      }
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
-      if (e.key === 'Tab' && lightbox.classList.contains('active')) {
-        e.preventDefault();
-        lightboxClose.focus();
-      }
-    });
-
-    /* HYBRID DEVICE CURSOR & SUBTLE TILT */
-    const dot = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-    let mx = -100, my = -100, rx = -100, ry = -100;
-    let isCursorActive = false, touchActiveFlag = false;
-
-    document.addEventListener('touchstart', () => {
-      touchActiveFlag = true;
-      document.body.classList.remove('custom-cursor-active');
-      if (dot) dot.style.display = 'none';
-      if (ring) ring.style.display = 'none';
-      isCursorActive = false;
-    }, { passive: true });
-
+    /* HYBRID DEVICE CURSOR */
+    const dot = document.getElementById('cursor-dot'), ring = document.getElementById('cursor-ring');
+    let mx = -100, my = -100, rx = -100, ry = -100, isCursorActive = false, touchActiveFlag = false;
+    document.addEventListener('touchstart', () => { touchActiveFlag = true; document.body.classList.remove('custom-cursor-active'); if (dot) dot.style.display = 'none'; if (ring) ring.style.display = 'none'; isCursorActive = false; }, { passive: true });
     document.addEventListener('touchend', () => { setTimeout(() => { touchActiveFlag = false; }, 1000); }, { passive: true });
-
     document.addEventListener('mousemove', e => {
       if (touchActiveFlag) return;
       mx = e.clientX; my = e.clientY;
-
-      if (!isCursorActive && window.matchMedia('(pointer: fine)').matches) {
-        document.body.classList.add('custom-cursor-active');
-        if (dot) dot.style.display = 'block';
-        if (ring) ring.style.display = 'block';
-        rx = mx; ry = my; isCursorActive = true;
-      }
-
+      if (!isCursorActive && window.matchMedia('(pointer: fine)').matches) { document.body.classList.add('custom-cursor-active'); if (dot) dot.style.display = 'block'; if (ring) ring.style.display = 'block'; rx = mx; ry = my; isCursorActive = true; }
       if (dot && isCursorActive) { dot.style.left = mx + 'px'; dot.style.top = my + 'px'; }
     }, { passive: true });
+    (function animRing() { if (isCursorActive && ring) { rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15; ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; } requestAnimationFrame(animRing); })();
 
-    (function animRing() {
-      if (isCursorActive && ring) {
-        rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
-        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      }
-      requestAnimationFrame(animRing);
-    })();
-
-    const heroContent = document.getElementById('heroContent');
-    const heroSection = document.getElementById('heroSection');
-
+    const heroContent = document.getElementById('heroContent'), heroSection = document.getElementById('heroSection');
     if (heroSection && heroContent) {
-      heroSection.addEventListener('mousemove', e => {
-        if (touchActiveFlag) return;
-        const rect = heroSection.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        heroContent.style.transform = `rotateY(${x * 3.5}deg) rotateX(${-y * 3.5}deg)`;
-      }, { passive: true });
-
+      heroSection.addEventListener('mousemove', e => { if (touchActiveFlag) return; const rect = heroSection.getBoundingClientRect(); heroContent.style.transform = `rotateY(${((e.clientX - rect.left) / rect.width - 0.5) * 3.5}deg) rotateX(${(-(e.clientY - rect.top) / rect.height + 0.5) * 3.5}deg)`; }, { passive: true });
       heroSection.addEventListener('mouseleave', () => { heroContent.style.transform = 'rotateY(0deg) rotateX(0deg)'; });
     }
 
-    /* COPY ADDRESS TO CLIPBOARD */
-    const copyBtn = document.getElementById('copyAddressBtn');
-    const copyBtnText = document.getElementById('copyBtnText');
-
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        const address = "Hội trường tầng 3 - A11, ĐH Công Nghiệp Hà Nội, 298 Cầu Diễn, Bắc Từ Liêm, Hà Nội";
-        navigator.clipboard.writeText(address).then(() => {
-          copyBtnText.textContent = "Đã Sao Chép!";
-          setTimeout(() => { copyBtnText.textContent = "Sao Chép Địa Chỉ"; }, 2000);
-        });
-      });
+    /* COPY ADDRESS */
+    if (document.getElementById('copyAddressBtn')) {
+      document.getElementById('copyAddressBtn').addEventListener('click', () => { navigator.clipboard.writeText("Hội trường tầng 3 - A11, ĐH Công Nghiệp Hà Nội, 298 Cầu Diễn, Bắc Từ Liêm, Hà Nội").then(() => { const t = document.getElementById('copyBtnText'); t.textContent = "Đã Sao Chép!"; setTimeout(() => { t.textContent = "Sao Chép Địa Chỉ"; }, 2000); }); });
     }
 
     /* BUILD DYNAMIC GALLERIES */
     function buildFilmstrip() {
-      const strip = document.getElementById('filmStrip');
-      const featureImg = document.getElementById('featureImg');
-      const featureCol = document.getElementById('filmFeatureCol');
-
-      if (featureImg && featureCol) {
-        featureImg.src = CFG.filmstrip.featuredPhoto;
-        featureCol.onclick = (e) => openLightbox(CFG.filmstrip.featuredPhoto, e.currentTarget);
-      }
-
+      const strip = document.getElementById('filmStrip'), featureImg = document.getElementById('featureImg'), featureCol = document.getElementById('filmFeatureCol');
+      if (featureImg && featureCol) { featureImg.src = CFG.filmstrip.featuredPhoto; featureCol.onclick = (e) => openMediaLightbox('image', CFG.filmstrip.featuredPhoto, e.currentTarget); }
       if (!strip) return;
-      const items = CFG.filmstrip.rolling;
-      const seamlessItems = [...items, ...items];
-      
-      strip.innerHTML = seamlessItems.map((item) => `
-        <div class="film-frame js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openLightbox('${item.url}', this)">
-          <img src="${item.url}" alt="${item.alt}" loading="lazy">
-        </div>
-      `).join('');
+      const setHTML = CFG.filmstrip.rolling.map((item) => `<div class="film-frame js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}"></div>`).join('');
+      strip.innerHTML = setHTML + setHTML;
     }
 
     function buildAlbum() {
-      const grid = document.getElementById('albumGrid');
-      if (!grid) return;
-      grid.innerHTML = CFG.gallery.map((item) => `
-        <div class="album-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openLightbox('${item.url}', this)">
-          <img src="${item.url}" alt="${item.alt}" loading="lazy">
-        </div>
-      `).join('');
+      if (document.getElementById('albumGrid')) document.getElementById('albumGrid').innerHTML = CFG.gallery.map((item) => `<div class="album-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}" loading="lazy"></div>`).join('');
     }
 
-    /* INTRO CONTROL MƯỢT MÀ CHUẨN CINEMATIC FADE-OUT */
-    const loadingEl = document.getElementById('loading');
-    let isIntroFinished = false;
+    function buildEventAlbum() {
+      const grid = document.getElementById('eventGrid');
+      const section = document.getElementById('eventAlbumSection');
+      if (!grid || !section) return;
 
-    function triggerIntroTransition() {
-      if (isIntroFinished) return;
-      isIntroFinished = true;
-      
-      setTimeout(() => {
-        if (loadingEl) loadingEl.classList.add('out');
-        document.body.classList.add('loaded');
-      }, 1600);
+      if (!CFG.eventMedia || CFG.eventMedia.length === 0) {
+        grid.style.display = 'block';
+        grid.innerHTML = `
+          <div class="empty-album-msg">
+            <svg viewBox="0 0 24 24"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM12 18c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zm0-2c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+            <p>Toàn bộ ảnh và video trong buổi lễ chủ nhật 16.08<br>sẽ được Duy upload và cập nhật trực tiếp tại đây.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = CFG.eventMedia.map((item) => {
+        if (item.type === 'video') {
+          return `
+            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('video', '${item.url}', this)">
+              <video src="${item.url}" muted playsinline loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+              <div class="play-icon-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)">
+              <img src="${item.url}" alt="${item.alt}" loading="lazy">
+            </div>
+          `;
+        }
+      }).join('');
     }
 
-    window.addEventListener('load', triggerIntroTransition);
-    setTimeout(triggerIntroTransition, 2600);
-
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); }
-      });
-    }, { threshold: 0.1 });
-
+    const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); } }); }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    /* RSVP FORM HANDLER */
+    /* RSVP FORM */
     document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      
-      const nameInput = document.getElementById('guestName');
-      const statusInput = document.querySelector('input[name="guestStatus"]:checked');
-      const name = nameInput.value.trim();
-      
-      const btn = document.getElementById('submitBtn');
-      const btnText = btn.querySelector('.btn-text');
-      const msg = document.getElementById('formMsg');
-
+      const nameInput = document.getElementById('guestName'), statusInput = document.querySelector('input[name="guestStatus"]:checked'), btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
       nameInput.removeAttribute('aria-invalid');
+      if (!nameInput.value.trim()) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng nhập họ và tên của bạn.'; nameInput.setAttribute('aria-invalid', 'true'); nameInput.focus(); return; }
+      if (!statusInput) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng chọn xác nhận bạn có thể tham dự hay không.'; return; }
       
-      if (!name) {
-        msg.className = 'form-msg err';
-        msg.textContent = 'Vui lòng nhập họ và tên của bạn.';
-        nameInput.setAttribute('aria-invalid', 'true');
-        nameInput.focus();
-        return;
-      }
-
-      if (!statusInput) {
-        msg.className = 'form-msg err';
-        msg.textContent = 'Vui lòng chọn xác nhận bạn có thể tham dự hay không.';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.classList.add('loading');
-      btnText.textContent = 'Đang gửi...';
-      msg.className = 'form-msg';
-
-      const payload = { 
-        name: name, 
-        status: statusInput.value === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', 
-        wish: document.getElementById('guestWish').value.trim(), 
-        timestamp: new Date().toLocaleString('vi-VN') 
-      };
+      btn.disabled = true; btn.classList.add('loading'); btn.querySelector('.btn-text').textContent = 'Đang gửi...'; msg.className = 'form-msg';
+      const payload = { name: nameInput.value.trim(), status: statusInput.value === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: document.getElementById('guestWish').value.trim(), timestamp: new Date().toLocaleString('vi-VN') };
 
       try {
-        const res = await fetch(CFG.rsvp.webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
+        const res = await fetch(CFG.rsvp.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok || res.status === 200 || res.status === 201) {
-          msg.className = 'form-msg ok';
-          msg.textContent = '✦ Cảm ơn bạn! Phản hồi của bạn đã được ghi nhận thành công.';
+          document.getElementById('rsvpFormWrap').style.display = 'none';
+          document.getElementById('rsvpSuccess').classList.add('show');
           this.reset();
-        } else {
-          throw new Error();
-        }
+        } else throw new Error();
       } catch (err) {
-        msg.className = 'form-msg err';
-        msg.innerHTML = 'Gửi chưa thành công do lỗi kết nối.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
+        msg.className = 'form-msg err'; msg.innerHTML = 'Gửi chưa thành công do lỗi kết nối.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
       } finally {
-        btn.disabled = false;
-        btn.classList.remove('loading');
-        btnText.textContent = 'Gửi Phản Hồi';
+        btn.disabled = false; btn.classList.remove('loading'); btn.querySelector('.btn-text').textContent = 'Gửi Phản Hồi';
       }
     });
 
     window.addEventListener('DOMContentLoaded', () => {
       buildFilmstrip();
       buildAlbum();
+      buildEventAlbum();
     });
   </script>
 </body>
