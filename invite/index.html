@@ -60,161 +60,55 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent; /* Xóa vệt đen chớp khi chạm trên iOS */
+      -webkit-tap-highlight-color: transparent;
     }
 
-    html {
-      scroll-behavior: smooth;
-      font-size: 16px;
-      color-scheme: dark;
-    }
+    html { scroll-behavior: smooth; font-size: 16px; color-scheme: dark; }
 
     body {
-      background: var(--ink);
-      color: var(--ivory);
-      font-family: var(--ff-ui);
-      font-size: 1rem;
-      line-height: 1.6;
-      min-height: 100vh;
-      min-height: 100dvh; /* Khớp kích thước Safari iOS */
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
+      background: var(--ink); color: var(--ivory); font-family: var(--ff-ui); font-size: 1rem; line-height: 1.6;
+      min-height: 100vh; min-height: 100dvh; overflow-x: hidden; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
     }
 
-    :focus-visible {
-      outline: 2px solid var(--gold) !important;
-      outline-offset: 4px !important;
-    }
+    :focus-visible { outline: 2px solid var(--gold) !important; outline-offset: 4px !important; }
 
-    body.custom-cursor-active,
-    body.custom-cursor-active a, 
-    body.custom-cursor-active button, 
-    body.custom-cursor-active .js-hoverable,
-    body.custom-cursor-active input,
-    body.custom-cursor-active select,
-    body.custom-cursor-active textarea {
-      cursor: none !important;
-    }
+    body.custom-cursor-active, body.custom-cursor-active a, body.custom-cursor-active button, 
+    body.custom-cursor-active .js-hoverable, body.custom-cursor-active input, 
+    body.custom-cursor-active select, body.custom-cursor-active textarea { cursor: none !important; }
 
     /* CUSTOM CURSOR */
-    #cursor-dot {
-      position: fixed; top: -20px; left: -20px;
-      width: 8px; height: 8px;
-      background: var(--gold); border-radius: 50%;
-      pointer-events: none; z-index: 99999;
-      transform: translate(-50%, -50%);
-      display: none;
-      box-shadow: 0 0 10px rgba(201, 168, 76, 0.8);
-    }
-
-    #cursor-ring {
-      position: fixed; top: -50px; left: -50px;
-      width: 40px; height: 40px;
-      border: 1px solid rgba(201,168,76,0.6);
-      border-radius: 50%;
-      pointer-events: none; z-index: 99998;
-      transform: translate(-50%, -50%);
-      transition: width 0.3s var(--ease-out-expo), height 0.3s var(--ease-out-expo), border-color 0.3s;
-      display: none;
-    }
-
-    #cursor-ring.hovering {
-      width: 56px; height: 56px;
-      border-color: var(--gold);
-      background: rgba(201,168,76,0.08);
-    }
+    #cursor-dot { position: fixed; top: -20px; left: -20px; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 99999; transform: translate(-50%, -50%); display: none; box-shadow: 0 0 10px rgba(201, 168, 76, 0.8); }
+    #cursor-ring { position: fixed; top: -50px; left: -50px; width: 40px; height: 40px; border: 1px solid rgba(201,168,76,0.6); border-radius: 50%; pointer-events: none; z-index: 99998; transform: translate(-50%, -50%); transition: width 0.3s var(--ease-out-expo), height 0.3s var(--ease-out-expo), border-color 0.3s; display: none; }
+    #cursor-ring.hovering { width: 56px; height: 56px; border-color: var(--gold); background: rgba(201,168,76,0.08); }
 
     /* NOISE GRAIN, AMBIENT ORB & SHOOTING STARS */
-    #grain {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 100;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC43NScgbnVtT2N0YXZlcz0nNCcgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWx0ZXI9J3VybCgjbiknLz48L3N2Zz4=");
-      background-size: 200px 200px;
-    }
+    #grain { position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: 0.035; background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC43NScgbnVtT2N0YXZlcz0nNCcgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWx0ZXI9J3VybCgjbiknLz48L3N2Zz4="); background-size: 200px 200px; }
+    #ambient-orb { position: fixed; top: 30%; left: 20%; pointer-events: none; z-index: 0; opacity: 0.6; filter: blur(90px); width: 320px; height: 320px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); border-radius: 50%; }
+    #shooting-stars { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; }
 
-    #ambient-orb {
-      position: fixed; top: 30%; left: 20%;
-      pointer-events: none; z-index: 0;
-      opacity: 0.6; filter: blur(90px);
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    #shooting-stars {
-      position: fixed; inset: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none; z-index: 1;
-    }
-
-    /* ============================================================
-       AWWWARDS SENIOR INTRO
-       ============================================================ */
-    #loading {
-      position: fixed; inset: 0; z-index: 2000;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      overflow: hidden;
-      background: transparent;
-      transition: visibility 1.8s var(--ease-curtain);
-    }
-
-    .intro-curtain {
-      position: absolute; inset: 0; display: flex;
-      z-index: 1; pointer-events: none;
-    }
-
-    .curtain-panel {
-      flex: 1; height: 100%;
-      background: #04060c;
-      transition: transform 1.5s var(--ease-curtain);
-      will-change: transform;
-    }
-
+    /* INTRO */
+    #loading { position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: transparent; transition: visibility 1.8s var(--ease-curtain); }
+    .intro-curtain { position: absolute; inset: 0; display: flex; z-index: 1; pointer-events: none; }
+    .curtain-panel { flex: 1; height: 100%; background: #04060c; transition: transform 1.5s var(--ease-curtain); will-change: transform; }
     .curtain-panel.left { border-right: 1px solid rgba(201,168,76,0.1); transform-origin: left; }
     .curtain-panel.right { border-left: 1px solid rgba(201,168,76,0.1); transform-origin: right; }
-
     #loading.out { visibility: hidden; pointer-events: none; }
     #loading.out .curtain-panel.left { transform: translate3d(-100%, 0, 0); }
     #loading.out .curtain-panel.right { transform: translate3d(100%, 0, 0); }
-
-    #introCanvas {
-      position: absolute; inset: 0; z-index: 2;
-      pointer-events: none; opacity: 0;
-      transition: opacity 1.5s ease;
-    }
+    #introCanvas { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; }
     #loading.stage-1 #introCanvas { opacity: 0.6; }
-
-    .intro-content {
-      position: relative; z-index: 3;
-      display: flex; flex-direction: column; 
-      justify-content: center; align-items: center;
-      width: 100%; height: 100%; padding: 40px;
-      transition: transform 1.2s var(--ease-curtain), filter 1s ease, opacity 0.8s ease;
-      will-change: transform, filter, opacity;
-    }
-
+    .intro-content { position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 40px; transition: transform 1.2s var(--ease-curtain), filter 1s ease, opacity 0.8s ease; will-change: transform, filter, opacity; }
     #loading.out .intro-content { transform: scale(1.08); filter: blur(12px); opacity: 0; }
-
     .intro-text-wrap { text-align: center; margin-bottom: 8vh; }
     .split-text { overflow: hidden; display: block; }
     .split-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
-    .split-char { 
-      display: inline-block; transform: translateY(110%) rotate(4deg); opacity: 0; 
-      will-change: transform, opacity; transition: transform 1.2s var(--ease-split), opacity 1s var(--ease-split);
-    }
-    
+    .split-char { display: inline-block; transform: translateY(110%) rotate(4deg); opacity: 0; will-change: transform, opacity; transition: transform 1.2s var(--ease-split), opacity 1s var(--ease-split); }
     #loading.stage-2 .split-char { transform: translateY(0) rotate(0deg); opacity: 1; }
-
     .intro-eyebrow { font-family: var(--ff-tech); font-size: 11px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; font-weight: 600; }
     .intro-name { font-family: var(--ff-display); font-size: clamp(36px, 9vw, 72px); font-weight: 400; line-height: 1; color: var(--ivory); text-transform: uppercase; letter-spacing: clamp(6px, 2vw, 14px); margin-bottom: 20px; }
     .intro-sub { font-family: var(--ff-ui); font-size: 12px; letter-spacing: 6px; color: var(--mist-dim); text-transform: uppercase; font-weight: 500; }
-
     .intro-progress-wrap { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 320px; opacity: 0; transform: translateY(15px); transition: opacity 1s ease, transform 1s var(--ease-out-expo); }
     #loading.stage-3 .intro-progress-wrap { opacity: 1; transform: translateY(0); }
-
     .intro-counter { font-family: var(--ff-tech); font-size: 12px; font-weight: 600; color: var(--gold-lt); letter-spacing: 2px; width: 45px; text-align: right; }
     .intro-bar-track { flex: 1; height: 1px; background: rgba(246,242,234,0.15); position: relative; overflow: hidden; margin-left: 16px; border-radius: 2px; }
     .intro-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: linear-gradient(90deg, var(--gold-lt), var(--gold)); will-change: width; }
@@ -239,7 +133,6 @@
     body.loaded .hero-photo-wrap { opacity: 1; transform: scale(1); }
     .hero-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; filter: brightness(1.0) contrast(1.0); will-change: transform; }
     .hero-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, transparent 65%, rgba(12,15,26,0.65) 85%, rgba(12,15,26,0.98) 100%); }
-
     .hero-content { position: relative; z-index: 2; padding: 0 32px 48px; transform-style: preserve-3d; will-change: transform; transition: transform 0.2s ease-out; }
     .hero-tech-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35); border-radius: 40px; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; margin-bottom: 16px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
     .hero-eyebrow { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; font-weight: 500; }
@@ -247,7 +140,6 @@
     .hero-name-wrap { overflow: hidden; margin-bottom: 2px; }
     .hero-name { font-family: var(--ff-display); font-size: clamp(48px, 11vw, 80px); font-weight: 500; line-height: 1.1; letter-spacing: 0px; color: var(--ivory); display: block; }
     .hero-name em { font-style: italic; color: var(--gold-lt); background: linear-gradient(135deg, #FFF 0%, var(--gold-lt) 50%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
     .hero-quick-anchor { margin-top: 18px; display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; background: rgba(12,15,26,0.75); border: 1px solid var(--rule); border-radius: 2px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); flex-wrap: wrap; }
     .hero-quick-anchor .date { font-family: var(--ff-tech); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--gold-lt); }
     .hero-quick-anchor .sep { color: var(--rule); font-size: 10px; }
@@ -258,6 +150,8 @@
     .section + .section { border-top: 1px solid var(--rule-light); }
     .section-label { font-family: var(--ff-ui); font-size: 11px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 32px; display: flex; align-items: center; gap: 12px; font-weight: 600; }
     .section-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+    
+    /* CLASS REVEAL - NỀN TẢNG CHO HIỆU ỨNG HIỂN THỊ NỘI DUNG */
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo); }
     .reveal.in { opacity: 1; transform: translateY(0); }
 
@@ -269,24 +163,20 @@
     .invite-divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--rule)); }
     .invite-divider-line.r { background: linear-gradient(90deg, var(--rule), transparent); }
     .invite-divider-gem { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
-
     .invite-date-row { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 0 0 20px; }
     .invite-date-side .lbl { font-family: var(--ff-ui); font-size: 10px; letter-spacing: 2px; color: var(--mist); text-transform: uppercase; }
     .invite-date-side .val { font-family: var(--ff-display); font-size: 20px; font-weight: 500; color: var(--ivory); }
     .invite-date-big { font-family: var(--ff-display); font-size: clamp(72px, 14vw, 92px); font-weight: 500; color: var(--ivory); line-height: 0.85; letter-spacing: 0px; }
-
     .invite-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 1px; overflow: hidden; margin-top: 12px; }
     .invite-info-cell { padding: 16px 18px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
     .invite-info-cell:nth-child(even) { border-right: none; }
     .invite-info-lbl { font-family: var(--ff-tech); font-size: 11px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
     .invite-info-val { font-family: var(--ff-display); font-size: 17px; font-weight: 500; color: var(--ivory); }
-
     .invite-address-block { padding: 18px; border-top: 1px solid var(--rule); grid-column: 1 / -1; background: rgba(12,15,26,0.4); border-right: none !important; border-bottom: none !important; }
     .venue-item { margin-bottom: 10px; }
     .venue-item:last-child { margin-bottom: 0; }
     .venue-badge { display: inline-block; font-family: var(--ff-tech); font-size: 10px; letter-spacing: 1.5px; color: var(--gold-lt); text-transform: uppercase; padding: 2px 8px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3); border-radius: 2px; margin-bottom: 4px; font-weight: 600; }
     .venue-desc { font-family: var(--ff-ui); font-size: 14px; color: var(--mist); line-height: 1.5; }
-
     .location-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
     .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 16px; border: 1px solid rgba(201,168,76,0.45); background: transparent; color: var(--gold-lt); font-family: var(--ff-ui); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; cursor: pointer; transition: background 0.3s, border-color 0.3s, color 0.3s; }
     .action-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--gold); }
@@ -407,7 +297,7 @@
     .rsvp-success-msg { font-family: var(--ff-display); font-size: 18px; font-style: italic; color: rgba(200,232,163,0.9); line-height: 1.6; }
     .rsvp-success-sub { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; }
 
-    /* CSS CHO SỔ LƯU BÚT (GUESTBOOK) */
+    /* SỔ LƯU BÚT (GUESTBOOK) */
     .guestbook-section { margin-top: 40px; padding-top: 32px; border-top: 1px dashed var(--rule); }
     .guestbook-title { font-family: var(--ff-display); font-size: 24px; color: var(--gold-lt); text-align: center; margin-bottom: 24px; font-style: italic; }
     .guestbook-list { display: flex; flex-direction: column; gap: 16px; max-height: 360px; overflow-y: auto; padding-right: 8px; }
@@ -671,28 +561,8 @@
 
   </div>
 
-  <!-- SỬ DỤNG MODULE ĐỂ IMPORT FIREBASE -->
-  <script type="module">
-    // IMPORT FIREBASE SDK v10 (ES Modules)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-    // FIREBASE CONFIG CỦA BẠN
-    const firebaseConfig = {
-      apiKey: "AIzaSyBwgEqbmurKxrxVjeGrrFZoeqCLpIgNYuo",
-      authDomain: "duy-graduation.firebaseapp.com",
-      databaseURL: "https://duy-graduation-default-rtdb.firebaseio.com",
-      projectId: "duy-graduation",
-      storageBucket: "duy-graduation.firebasestorage.app",
-      messagingSenderId: "459903101141",
-      appId: "1:459903101141:web:8b7235aaf3c19e5c515a5c",
-      measurementId: "G-DYS48DFG1H"
-    };
-
-    // KHỞI TẠO FIREBASE VÀ FIRESTORE
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
+  <!-- SCRIPT 1: TÁCH RIÊNG KHỐI GIAO DIỆN (CHỐNG SẬP WEB) -->
+  <script>
     const CFG = {
       person: { fullName: "Phạm Đức Duy", signName: "Đức Duy" },
       filmstrip: {
@@ -720,38 +590,6 @@
       rsvp: { webhookUrl: "https://formspree.io/f/xyzzlgyp" }
     };
 
-    /* ============================================================
-       LẮNG NGHE VÀ HIỂN THỊ SỔ LƯU BÚT TỪ FIREBASE (REAL-TIME)
-       ============================================================ */
-    const listEl = document.getElementById('guestbookList');
-    if (listEl) {
-      const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
-      onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-          listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Chưa có lời chúc nào. Hãy là người đầu tiên nhé!</div>`;
-          return;
-        }
-
-        let html = "";
-        snapshot.forEach((doc) => {
-          const w = doc.data();
-          html += `
-            <div class="guestbook-item">
-              <div class="guestbook-meta">
-                <span class="guestbook-name">${w.name || 'Khách'}</span>
-                <span class="guestbook-time">${w.time || ''}</span>
-              </div>
-              <div class="guestbook-msg">"${w.msg || ''}"</div>
-            </div>
-          `;
-        });
-        listEl.innerHTML = html;
-      }, (error) => {
-        console.error("Lỗi tải Firestore:", error);
-        listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Đang bảo trì kết nối...</div>`;
-      });
-    }
-
     /* BACKGROUND MUSIC HANDLER */
     const bgMusic = document.getElementById('bgMusic');
     const audioToggleBtn = document.getElementById('audioToggleBtn');
@@ -765,9 +603,7 @@
       if (isMusicPlaying) return;
       bgMusic.volume = 0.5;
       bgMusic.play().then(() => {
-        isMusicPlaying = true;
-        iconOff.style.display = 'none';
-        iconOn.style.display = 'block';
+        isMusicPlaying = true; iconOff.style.display = 'none'; iconOn.style.display = 'block';
         unlockEvents.forEach(evt => document.removeEventListener(evt, initAudioFallback));
       }).catch(() => {});
     }
@@ -775,14 +611,9 @@
     audioToggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (isMusicPlaying) {
-        bgMusic.pause();
-        iconOn.style.display = 'none';
-        iconOff.style.display = 'block';
+        bgMusic.pause(); iconOn.style.display = 'none'; iconOff.style.display = 'block';
       } else {
-        bgMusic.play().then(() => {
-            iconOff.style.display = 'none';
-            iconOn.style.display = 'block';
-        }).catch(() => {});
+        bgMusic.play().then(() => { iconOff.style.display = 'none'; iconOn.style.display = 'block'; }).catch(() => {});
       }
       isMusicPlaying = !isMusicPlaying;
     });
@@ -905,7 +736,7 @@
       stars.push(new ShootingStar()); stars.push(new ShootingStar()); spawnStars(); render();
     })();
 
-    /* NÂNG CẤP MEDIA LIGHTBOX - Đã đưa ra phạm vi window để Inline HTML có thể sử dụng được */
+    /* NÂNG CẤP MEDIA LIGHTBOX */
     const lightbox = document.getElementById('lightbox');
     const lightboxWrap = document.getElementById('lightboxContentWrap');
     const lightboxClose = document.getElementById('lightboxClose');
@@ -929,9 +760,7 @@
       lightbox.classList.remove('active');
       lightbox.setAttribute('aria-hidden', 'true');
       lightboxWrap.innerHTML = ''; 
-      if (previouslyFocusedElement && !touchActiveFlag) {
-        previouslyFocusedElement.focus({ preventScroll: true });
-      }
+      if (previouslyFocusedElement && !touchActiveFlag) { previouslyFocusedElement.focus({ preventScroll: true }); }
     }
 
     if (lightboxClose) lightboxClose.addEventListener('click', window.closeLightbox);
@@ -1048,7 +877,10 @@
       }).join('');
     }
 
-    /* GHI VÀO FIREBASE VÀ GỬI THÔNG BÁO VỀ FORMSPREE */
+    const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); } }); }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* KÍCH HOẠT SỰ KIỆN GỬI FORM XUYÊN SCRIPT */
     document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const nameInput = document.getElementById('guestName'), statusInput = document.querySelector('input[name="guestStatus"]:checked'), wishInput = document.getElementById('guestWish');
@@ -1064,42 +896,102 @@
       
       btn.disabled = true; btn.classList.add('loading'); btn.querySelector('.btn-text').textContent = 'Đang gửi...'; msg.className = 'form-msg';
 
+      const payload = { name: name, status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: wishText, timestamp: new Date().toLocaleString('vi-VN') };
+
       try {
-        // 1. Lưu lời chúc vào Cloud Firestore
-        if (wishText) {
-          await addDoc(collection(db, "guestbook"), {
-            name: name,
-            msg: wishText,
-            status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt',
-            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
-            timestamp: Date.now()
-          });
-        }
-
-        // 2. Chạy Formspree ở background để gửi Email thông báo (không chặn luồng UI)
-        const payload = { name: name, status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: wishText, timestamp: new Date().toLocaleString('vi-VN') };
-        fetch(CFG.rsvp.webhookUrl, { 
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) 
-        }).catch(e => console.log('Lỗi gửi Formspree', e));
-
-        // 3. Hiển thị UI thành công
-        document.getElementById('rsvpFormWrap').style.display = 'none';
-        document.getElementById('rsvpSuccess').classList.add('show');
-        this.reset();
+        // Gửi sang Formspree (chống lỗi)
+        const res = await fetch(CFG.rsvp.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) });
+        if (res.ok || res.status === 200 || res.status === 201) {
+          document.getElementById('rsvpFormWrap').style.display = 'none';
+          document.getElementById('rsvpSuccess').classList.add('show');
+          
+          // Phát tín hiệu cho Script Firebase bắt lấy để đẩy lên Firestore
+          window.dispatchEvent(new CustomEvent('rsvpSuccessFire', { detail: payload }));
+          this.reset();
+        } else throw new Error();
       } catch (err) {
-        console.error("Lỗi Firestore:", err);
         msg.className = 'form-msg err'; msg.innerHTML = 'Gửi chưa thành công do lỗi mạng.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
       } finally {
         btn.disabled = false; btn.classList.remove('loading'); btn.querySelector('.btn-text').textContent = 'Gửi Phản Hồi';
       }
     });
 
-    // Khởi chạy khi DOM tải xong
     window.addEventListener('DOMContentLoaded', () => {
       buildFilmstrip();
       buildAlbum();
       buildEventAlbum();
     });
+  </script>
+
+  <!-- SCRIPT 2: TÁCH RIÊNG KHỐI FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBwgEqbmurKxrxVjeGrrFZoeqCLpIgNYuo",
+        authDomain: "duy-graduation.firebaseapp.com",
+        databaseURL: "https://duy-graduation-default-rtdb.firebaseio.com",
+        projectId: "duy-graduation",
+        storageBucket: "duy-graduation.firebasestorage.app",
+        messagingSenderId: "459903101141",
+        appId: "1:459903101141:web:8b7235aaf3c19e5c515a5c",
+        measurementId: "G-DYS48DFG1H"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      /* LẮNG NGHE DATABASE VÀ ĐỔ RA HTML */
+      const listEl = document.getElementById('guestbookList');
+      if (listEl) {
+        const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+          if (snapshot.empty) {
+            listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Chưa có lời chúc nào. Hãy là người đầu tiên nhé!</div>`;
+            return;
+          }
+          let html = "";
+          snapshot.forEach((doc) => {
+            const w = doc.data();
+            html += `
+              <div class="guestbook-item">
+                <div class="guestbook-meta">
+                  <span class="guestbook-name">${w.name || 'Khách'}</span>
+                  <span class="guestbook-time">${w.time || ''}</span>
+                </div>
+                <div class="guestbook-msg">"${w.msg || ''}"</div>
+              </div>
+            `;
+          });
+          listEl.innerHTML = html;
+        }, (err) => {
+          console.error("Firebase Read Error:", err);
+          listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:rgba(232,163,163,0.9); font-style:italic; padding: 20px;">Đang bảo trì sổ lưu bút...</div>`;
+        });
+      }
+
+      /* BẮT TÍN HIỆU TỪ GIAO DIỆN CHÍNH (SAU KHI FORMSPREE XONG) ĐỂ ĐẨY LÊN DATABASE */
+      window.addEventListener('rsvpSuccessFire', async (e) => {
+        const data = e.detail;
+        if (data.wish) {
+          try {
+            await addDoc(collection(db, "guestbook"), {
+              name: data.name,
+              msg: data.wish,
+              status: data.status,
+              time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
+              timestamp: Date.now()
+            });
+          } catch (err) {
+            console.error("Firebase Write Error:", err);
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Lỗi cấu hình Firebase nhưng giao diện vẫn sẽ hoạt động:", error);
+    }
   </script>
 </body>
 </html>
