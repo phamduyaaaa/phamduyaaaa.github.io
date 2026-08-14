@@ -130,7 +130,6 @@
       position: fixed; inset: 0;
       pointer-events: none; z-index: 100;
       opacity: 0.035;
-      /* Base64 Encoding để ngăn lỗi file:/// URL origin issues */
       background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC43NScgbnVtT2N0YXZlcz0nNCcgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWx0ZXI9J3VybCgjbiknLz48L3N2Zz4=");
       background-size: 200px 200px;
     }
@@ -408,6 +407,20 @@
     .rsvp-success-msg { font-family: var(--ff-display); font-size: 18px; font-style: italic; color: rgba(200,232,163,0.9); line-height: 1.6; }
     .rsvp-success-sub { font-family: var(--ff-tech); font-size: 10px; letter-spacing: 2px; color: var(--gold-lt); text-transform: uppercase; }
 
+    /* CSS CHO SỔ LƯU BÚT (GUESTBOOK) */
+    .guestbook-section { margin-top: 40px; padding-top: 32px; border-top: 1px dashed var(--rule); }
+    .guestbook-title { font-family: var(--ff-display); font-size: 24px; color: var(--gold-lt); text-align: center; margin-bottom: 24px; font-style: italic; }
+    .guestbook-list { display: flex; flex-direction: column; gap: 16px; max-height: 360px; overflow-y: auto; padding-right: 8px; }
+    .guestbook-list::-webkit-scrollbar { width: 4px; }
+    .guestbook-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+    .guestbook-list::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+    .guestbook-item { background: rgba(246,242,234,0.03); border: 1px solid rgba(246,242,234,0.08); padding: 16px; border-radius: 2px; transition: border-color 0.3s, background 0.3s; animation: fadeInText 0.5s ease; }
+    .guestbook-item:hover { border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
+    .guestbook-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(246,242,234,0.05); padding-bottom: 8px; }
+    .guestbook-name { font-family: var(--ff-ui); font-size: 13px; font-weight: 600; color: var(--ivory); }
+    .guestbook-time { font-family: var(--ff-tech); font-size: 10px; color: var(--gold); letter-spacing: 1px; }
+    .guestbook-msg { font-family: var(--ff-ui); font-size: 14px; color: var(--mist); line-height: 1.6; font-style: italic; white-space: pre-wrap; }
+
     /* FOOTER */
     .site-footer { padding: 48px 32px 56px; text-align: center; border-top: 1px solid var(--rule-light); }
     .footer-script { font-family: var(--ff-script); font-size: 42px; color: rgba(201,168,76,0.4); display: block; margin-bottom: 8px; }
@@ -632,6 +645,15 @@
             <div class="form-msg" id="formMsg" role="alert" aria-live="polite"></div>
           </form>
         </div>
+
+        <!-- SỔ LƯU BÚT CÔNG KHAI (GUESTBOOK) -->
+        <div class="guestbook-section" id="guestbookSection">
+          <div class="guestbook-title">Sổ Lưu Bút</div>
+          <div class="guestbook-list" id="guestbookList">
+            <div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Đang tải lời chúc...</div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -649,7 +671,28 @@
 
   </div>
 
-  <script>
+  <!-- SỬ DỤNG MODULE ĐỂ IMPORT FIREBASE -->
+  <script type="module">
+    // IMPORT FIREBASE SDK v10 (ES Modules)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // FIREBASE CONFIG CỦA BẠN
+    const firebaseConfig = {
+      apiKey: "AIzaSyBwgEqbmurKxrxVjeGrrFZoeqCLpIgNYuo",
+      authDomain: "duy-graduation.firebaseapp.com",
+      databaseURL: "https://duy-graduation-default-rtdb.firebaseio.com",
+      projectId: "duy-graduation",
+      storageBucket: "duy-graduation.firebasestorage.app",
+      messagingSenderId: "459903101141",
+      appId: "1:459903101141:web:8b7235aaf3c19e5c515a5c",
+      measurementId: "G-DYS48DFG1H"
+    };
+
+    // KHỞI TẠO FIREBASE VÀ FIRESTORE
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const CFG = {
       person: { fullName: "Phạm Đức Duy", signName: "Đức Duy" },
       filmstrip: {
@@ -670,13 +713,44 @@
         { url: "imgs/album-3.jpg", alt: "Tung mũ cử nhân" },
         { url: "imgs/album-4.jpg", alt: "Kỷ niệm ngày nhận bằng" }
       ],
-      /* EVENT MEDIA: Sau chủ nhật upload hình/video và bỏ comment để dùng */
       eventMedia: [
         // { type: 'video', url: 'imgs/demo-video.mp4', alt: 'Video sự kiện' },
         // { type: 'image', url: 'imgs/anh-su-kien-1.jpg', alt: 'Hình ảnh sự kiện' },
       ],
       rsvp: { webhookUrl: "https://formspree.io/f/xyzzlgyp" }
     };
+
+    /* ============================================================
+       LẮNG NGHE VÀ HIỂN THỊ SỔ LƯU BÚT TỪ FIREBASE (REAL-TIME)
+       ============================================================ */
+    const listEl = document.getElementById('guestbookList');
+    if (listEl) {
+      const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
+      onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Chưa có lời chúc nào. Hãy là người đầu tiên nhé!</div>`;
+          return;
+        }
+
+        let html = "";
+        snapshot.forEach((doc) => {
+          const w = doc.data();
+          html += `
+            <div class="guestbook-item">
+              <div class="guestbook-meta">
+                <span class="guestbook-name">${w.name || 'Khách'}</span>
+                <span class="guestbook-time">${w.time || ''}</span>
+              </div>
+              <div class="guestbook-msg">"${w.msg || ''}"</div>
+            </div>
+          `;
+        });
+        listEl.innerHTML = html;
+      }, (error) => {
+        console.error("Lỗi tải Firestore:", error);
+        listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Đang bảo trì kết nối...</div>`;
+      });
+    }
 
     /* BACKGROUND MUSIC HANDLER */
     const bgMusic = document.getElementById('bgMusic');
@@ -779,7 +853,6 @@
       setTimeout(() => { if(loadingEl) loadingEl.remove(); }, 2000);
     }
     
-    /* ĐÃ FIX: CHẠY INTRO NGAY LẬP TỨC CHO LCP XANH */
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', startIntroSequence);
     } else {
@@ -832,13 +905,13 @@
       stars.push(new ShootingStar()); stars.push(new ShootingStar()); spawnStars(); render();
     })();
 
-    /* NÂNG CẤP MEDIA LIGHTBOX (ẢNH & VIDEO) */
+    /* NÂNG CẤP MEDIA LIGHTBOX - Đã đưa ra phạm vi window để Inline HTML có thể sử dụng được */
     const lightbox = document.getElementById('lightbox');
     const lightboxWrap = document.getElementById('lightboxContentWrap');
     const lightboxClose = document.getElementById('lightboxClose');
     let previouslyFocusedElement = null;
 
-    function openMediaLightbox(type, url, triggerEl) {
+    window.openMediaLightbox = function(type, url, triggerEl) {
       if (!url) return;
       previouslyFocusedElement = triggerEl || document.activeElement;
       lightboxWrap.innerHTML = '';
@@ -852,19 +925,18 @@
       lightboxClose.focus();
     }
 
-    function closeLightbox() {
+    window.closeLightbox = function() {
       lightbox.classList.remove('active');
       lightbox.setAttribute('aria-hidden', 'true');
       lightboxWrap.innerHTML = ''; 
-      /* ĐÃ FIX: Không gọi focus() trên mobile để tránh vệt đen */
       if (previouslyFocusedElement && !touchActiveFlag) {
         previouslyFocusedElement.focus({ preventScroll: true });
       }
     }
 
-    if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
-    if (lightbox) { lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); }); }
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); if (e.key === 'Tab' && lightbox.classList.contains('active')) { e.preventDefault(); lightboxClose.focus(); } });
+    if (lightboxClose) lightboxClose.addEventListener('click', window.closeLightbox);
+    if (lightbox) { lightbox.addEventListener('click', (e) => { if (e.target === lightbox) window.closeLightbox(); }); }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('active')) window.closeLightbox(); if (e.key === 'Tab' && lightbox.classList.contains('active')) { e.preventDefault(); lightboxClose.focus(); } });
 
     /* SCROLL PROGRESS BAR & BACK TO TOP */
     let ticking = false;
@@ -932,14 +1004,14 @@
     /* BUILD DYNAMIC GALLERIES */
     function buildFilmstrip() {
       const strip = document.getElementById('filmStrip'), featureImg = document.getElementById('featureImg'), featureCol = document.getElementById('filmFeatureCol');
-      if (featureImg && featureCol) { featureImg.src = CFG.filmstrip.featuredPhoto; featureCol.onclick = (e) => openMediaLightbox('image', CFG.filmstrip.featuredPhoto, e.currentTarget); }
+      if (featureImg && featureCol) { featureImg.src = CFG.filmstrip.featuredPhoto; featureCol.onclick = (e) => window.openMediaLightbox('image', CFG.filmstrip.featuredPhoto, e.currentTarget); }
       if (!strip) return;
-      const setHTML = CFG.filmstrip.rolling.map((item) => `<div class="film-frame js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}"></div>`).join('');
+      const setHTML = CFG.filmstrip.rolling.map((item) => `<div class="film-frame js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="window.openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}"></div>`).join('');
       strip.innerHTML = setHTML + setHTML;
     }
 
     function buildAlbum() {
-      if (document.getElementById('albumGrid')) document.getElementById('albumGrid').innerHTML = CFG.gallery.map((item) => `<div class="album-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}" loading="lazy"></div>`).join('');
+      if (document.getElementById('albumGrid')) document.getElementById('albumGrid').innerHTML = CFG.gallery.map((item) => `<div class="album-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="window.openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}" loading="lazy"></div>`).join('');
     }
 
     function buildEventAlbum() {
@@ -961,14 +1033,14 @@
       grid.innerHTML = CFG.eventMedia.map((item) => {
         if (item.type === 'video') {
           return `
-            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('video', '${item.url}', this)">
+            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="window.openMediaLightbox('video', '${item.url}', this)">
               <video src="${item.url}" muted playsinline loop onmouseover="this.play()" onmouseout="this.pause()"></video>
               <div class="play-icon-overlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
             </div>
           `;
         } else {
           return `
-            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="openMediaLightbox('image', '${item.url}', this)">
+            <div class="event-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="window.openMediaLightbox('image', '${item.url}', this)">
               <img src="${item.url}" alt="${item.alt}" loading="lazy">
             </div>
           `;
@@ -976,34 +1048,53 @@
       }).join('');
     }
 
-    const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); } }); }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-    /* RSVP FORM */
+    /* GHI VÀO FIREBASE VÀ GỬI THÔNG BÁO VỀ FORMSPREE */
     document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const nameInput = document.getElementById('guestName'), statusInput = document.querySelector('input[name="guestStatus"]:checked'), btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
+      const nameInput = document.getElementById('guestName'), statusInput = document.querySelector('input[name="guestStatus"]:checked'), wishInput = document.getElementById('guestWish');
+      const btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
+      
+      const name = nameInput.value.trim();
+      const wishText = wishInput.value.trim();
+      const status = statusInput ? statusInput.value : '';
+
       nameInput.removeAttribute('aria-invalid');
-      if (!nameInput.value.trim()) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng nhập họ và tên của bạn.'; nameInput.setAttribute('aria-invalid', 'true'); nameInput.focus(); return; }
-      if (!statusInput) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng chọn xác nhận bạn có thể tham dự hay không.'; return; }
+      if (!name) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng nhập họ và tên của bạn.'; nameInput.setAttribute('aria-invalid', 'true'); nameInput.focus(); return; }
+      if (!status) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng chọn xác nhận tham dự.'; return; }
       
       btn.disabled = true; btn.classList.add('loading'); btn.querySelector('.btn-text').textContent = 'Đang gửi...'; msg.className = 'form-msg';
-      const payload = { name: nameInput.value.trim(), status: statusInput.value === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: document.getElementById('guestWish').value.trim(), timestamp: new Date().toLocaleString('vi-VN') };
 
       try {
-        const res = await fetch(CFG.rsvp.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok || res.status === 200 || res.status === 201) {
-          document.getElementById('rsvpFormWrap').style.display = 'none';
-          document.getElementById('rsvpSuccess').classList.add('show');
-          this.reset();
-        } else throw new Error();
+        // 1. Lưu lời chúc vào Cloud Firestore
+        if (wishText) {
+          await addDoc(collection(db, "guestbook"), {
+            name: name,
+            msg: wishText,
+            status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt',
+            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
+            timestamp: Date.now()
+          });
+        }
+
+        // 2. Chạy Formspree ở background để gửi Email thông báo (không chặn luồng UI)
+        const payload = { name: name, status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: wishText, timestamp: new Date().toLocaleString('vi-VN') };
+        fetch(CFG.rsvp.webhookUrl, { 
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) 
+        }).catch(e => console.log('Lỗi gửi Formspree', e));
+
+        // 3. Hiển thị UI thành công
+        document.getElementById('rsvpFormWrap').style.display = 'none';
+        document.getElementById('rsvpSuccess').classList.add('show');
+        this.reset();
       } catch (err) {
-        msg.className = 'form-msg err'; msg.innerHTML = 'Gửi chưa thành công do lỗi kết nối.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
+        console.error("Lỗi Firestore:", err);
+        msg.className = 'form-msg err'; msg.innerHTML = 'Gửi chưa thành công do lỗi mạng.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
       } finally {
         btn.disabled = false; btn.classList.remove('loading'); btn.querySelector('.btn-text').textContent = 'Gửi Phản Hồi';
       }
     });
 
+    // Khởi chạy khi DOM tải xong
     window.addEventListener('DOMContentLoaded', () => {
       buildFilmstrip();
       buildAlbum();
