@@ -923,7 +923,50 @@
     });
   </script>
 
-  <!-- SCRIPT 2: TÁCH RIÊNG KHỐI FIREBASE -->
+/* KÍCH HOẠT SỰ KIỆN GỬI FORM CHỈ DÙNG FIREBASE (ĐÃ GỠ BỎ FORMSPREE LỖI 404) */
+    document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('guestName'), statusInput = document.querySelector('input[name="guestStatus"]:checked'), wishInput = document.getElementById('guestWish');
+      const btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
+      
+      const name = nameInput.value.trim();
+      const wishText = wishInput.value.trim();
+      const status = statusInput ? statusInput.value : '';
+
+      nameInput.removeAttribute('aria-invalid');
+      if (!name) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng nhập họ và tên của bạn.'; nameInput.setAttribute('aria-invalid', 'true'); nameInput.focus(); return; }
+      if (!status) { msg.className = 'form-msg err'; msg.textContent = 'Vui lòng chọn xác nhận tham dự.'; return; }
+      
+      btn.disabled = true; btn.classList.add('loading'); btn.querySelector('.btn-text').textContent = 'Đang gửi...'; msg.className = 'form-msg';
+
+      const payload = { name: name, status: status === 'yes' ? 'Chắc chắn tham dự' : 'Rất tiếc vắng mặt', wish: wishText, timestamp: new Date().toLocaleString('vi-VN') };
+
+      try {
+        // Giả lập thời gian chờ loading cho mượt UI (0.8 giây)
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Phát tín hiệu cho Script Firebase bắt lấy để đẩy lên Firestore
+        window.dispatchEvent(new CustomEvent('rsvpSuccessFire', { detail: payload }));
+        
+        // Hiển thị giao diện thành công ngay lập tức
+        document.getElementById('rsvpFormWrap').style.display = 'none';
+        document.getElementById('rsvpSuccess').classList.add('show');
+        this.reset();
+      } catch (err) {
+        msg.className = 'form-msg err'; msg.innerHTML = 'Gửi chưa thành công do lỗi hệ thống.<br>Vui lòng thử lại sau hoặc nhắn tin trực tiếp cho Duy nhé!';
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading'); btn.querySelector('.btn-text').textContent = 'Gửi Phản Hồi';
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildFilmstrip();
+      buildAlbum();
+      buildEventAlbum();
+    });
+  </script>
+
+  <!-- SCRIPT 2: TÁCH RIÊNG KHỐI FIREBASE ĐÃ CHUẨN HÓA -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -943,54 +986,60 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      /* LẮNG NGHE DATABASE VÀ ĐỔ RA HTML */
+      /* LẮNG NGHE DATABASE VÀ ĐỔ RA SỔ LƯU BÚT TRÊN WEB */
       const listEl = document.getElementById('guestbookList');
       if (listEl) {
         const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
-          if (snapshot.empty) {
-            listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Chưa có lời chúc nào. Hãy là người đầu tiên nhé!</div>`;
-            return;
-          }
           let html = "";
+          let countMsg = 0;
+          
           snapshot.forEach((doc) => {
             const w = doc.data();
-            html += `
-              <div class="guestbook-item">
-                <div class="guestbook-meta">
-                  <span class="guestbook-name">${w.name || 'Khách'}</span>
-                  <span class="guestbook-time">${w.time || ''}</span>
+            // Lọc: Chỉ in ra giao diện Sổ Lưu Bút những ai có ghi lời chúc
+            if (w.msg && w.msg.trim() !== "") {
+              countMsg++;
+              html += `
+                <div class="guestbook-item">
+                  <div class="guestbook-meta">
+                    <span class="guestbook-name">${w.name || 'Khách'}</span>
+                    <span class="guestbook-time">${w.time || ''}</span>
+                  </div>
+                  <div class="guestbook-msg">"${w.msg}"</div>
                 </div>
-                <div class="guestbook-msg">"${w.msg || ''}"</div>
-              </div>
-            `;
+              `;
+            }
           });
-          listEl.innerHTML = html;
+
+          if (countMsg === 0) {
+            listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--mist-dim); font-style:italic; padding: 20px;">Chưa có lời chúc nào. Hãy là người đầu tiên nhé!</div>`;
+          } else {
+            listEl.innerHTML = html;
+          }
         }, (err) => {
           console.error("Firebase Read Error:", err);
           listEl.innerHTML = `<div style="text-align:center; font-size:13px; color:rgba(232,163,163,0.9); font-style:italic; padding: 20px;">Đang bảo trì sổ lưu bút...</div>`;
         });
       }
 
-      /* BẮT TÍN HIỆU TỪ GIAO DIỆN CHÍNH (SAU KHI FORMSPREE XONG) ĐỂ ĐẨY LÊN DATABASE */
+      /* BẮT TÍN HIỆU GỬI TỪ FORM ĐỂ LƯU VÀO DATABASE */
       window.addEventListener('rsvpSuccessFire', async (e) => {
         const data = e.detail;
-        if (data.wish) {
-          try {
-            await addDoc(collection(db, "guestbook"), {
-              name: data.name,
-              msg: data.wish,
-              status: data.status,
-              time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
-              timestamp: Date.now()
-            });
-          } catch (err) {
-            console.error("Firebase Write Error:", err);
-          }
+        try {
+          // Lưu tất cả dữ liệu (Gồm người có lời chúc VÀ người không có lời chúc để bạn thống kê)
+          await addDoc(collection(db, "guestbook"), {
+            name: data.name,
+            msg: data.wish || "",
+            status: data.status,
+            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
+            timestamp: Date.now()
+          });
+        } catch (err) {
+          console.error("Firebase Write Error:", err);
         }
       });
     } catch (error) {
-      console.error("Lỗi cấu hình Firebase nhưng giao diện vẫn sẽ hoạt động:", error);
+      console.error("Lỗi cấu hình Firebase nhưng giao diện chính vẫn sẽ hoạt động:", error);
     }
   </script>
 </body>
