@@ -1,24 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="ink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#262622"/>
-      <stop offset="100%" stop-color="#11110F"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Background -->
-  <rect width="64" height="64" rx="14" fill="url(#ink-grad)"/>
-
-  <!-- Monogram D -->
-  <text
-    x="32" y="46"
-    font-family="Lora, Georgia, serif"
-    font-size="38"
-    font-weight="700"
-    text-anchor="middle"
-    fill="#F7F5F0"
-  >D</text>
-
-  <!-- Amber accent dot, echoing nav-dot -->
-  <circle cx="48" cy="18" r="4" fill="#B8924A"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Cubist D monogram</title>
+  <rect width="64" height="64" fill="#eee9dc"/>
+  <polygon points="0,0 35,0 20,23 0,34" fill="#171717"/>
+  <polygon points="35,0 64,0 64,22 43,31 20,23" fill="#315f68"/>
+  <polygon points="0,34 20,23 43,31 29,64 0,64" fill="#c54b32"/>
+  <polygon points="43,31 64,22 64,64 29,64" fill="#a56b32"/>
+  <path d="M19 13h14c13 0 22 8 22 19s-9 19-22 19H19V13Zm11 9v20h3c7 0 11-4 11-10s-4-10-11-10h-3Z" fill="#eee9dc"/>
+  <path d="m19 13 11 9v20l-11 9" fill="none" stroke="#171717" stroke-width="2"/>
+  <path d="M19 13v38M30 22h3c7 0 11 4 11 10s-4 10-11 10h-3" fill="none" stroke="#171717" stroke-width="2"/>
 </svg>
