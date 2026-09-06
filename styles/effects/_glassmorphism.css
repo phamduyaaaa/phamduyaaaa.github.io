@@ -1,0 +1,24 @@
+   ============================================================ */
+@supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    
+    .project-card, .pub-card, .cert-card, .rl-container {
+        background: rgba(var(--cream-rgb), 0.92) !important; 
+        
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        
+        border-top: 2px solid var(--cyan) !important;
+        border-left: 2px solid var(--amber) !important;
+        border-radius: 0 !important;
+    }
+
+    .project-card.featured {
+         background: linear-gradient(to right, rgba(var(--cream-rgb), 0.6) 60%, rgba(var(--cream-rgb), 0.3)) !important;
+    }
+
+    .project-card:hover, .pub-card:hover, .cert-card:hover {
+        background: rgba(var(--cream-rgb), 0.6) !important;
+        border-color: var(--amber) !important;
+        box-shadow: 0 24px 48px -12px rgba(var(--amber-rgb), 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+    }
+}
