@@ -1,0 +1,36 @@
+/* ============================================================
+   RESPONSIVE DESIGN UPGRADES
+   ============================================================ */
+@media (max-width: 1024px) {
+  .hero-orbit { inset: 12% -12% auto 12%; width: 100%; opacity: 0.45; }
+  .hero-layout { grid-template-columns: 1fr; gap: var(--sp-12); }
+  .hero-text { max-width: 680px; margin: 0 auto; text-align: center; }
+  .hero-text::before { left: 50%; transform: translateX(-50%); }
+  .hero-eyebrow { margin-bottom: var(--sp-4); }
+  .hero-rule-line { margin: var(--sp-6) auto; }
+  .btn-group { justify-content: center; }
+  .rl-container { max-width: 540px; margin: 0 auto; }
+  .about-grid, .contact-layout { grid-template-columns: 1fr; gap: var(--sp-12); }
+  .contact-intro { text-align: center; }
+  .contact-note { text-align: center; }
+  .contact-layout .btn { width: 100%; justify-content: center; }
+}
+@media (max-width: 768px) {
+  .project-card.featured { flex-direction: column; }
+  .project-card.featured .project-thumb { width: 100%; min-height: 240px; border-right: none; border-bottom: 2px solid var(--ink); border-radius: 0; }
+  .metrics-bar { grid-template-columns: repeat(2, 1fr); border-radius: 0; }
+  .metric-cell:nth-child(2n+1) { border-left: none; }
+  .metric-cell:first-child, .metric-cell:nth-child(2), .metric-cell:nth-child(3), .metric-cell:last-child { border-radius: 0; }
+  .metric-cell:nth-child(3), .metric-cell:last-child { border-top: 1.5px solid var(--border); }
+  .nav-links, .nav-cta { display: none; }
+  .nav-mobile-btn { display: flex; }
+}
+@media (max-width: 480px) {
+  .btn-group { flex-direction: column; }
+  .btn { width: 100%; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .xp-item { grid-template-columns: 1fr; gap: var(--sp-2); margin: 0; padding-left: 0; padding-right: 0; border-radius: 0; }
+  .xp-item:hover { background: transparent; }
+  .nav-inner { padding: 0 var(--sp-4); }
+  .nav-logo { font-size: 14px; }
+}

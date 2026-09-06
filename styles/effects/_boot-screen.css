@@ -1,0 +1,51 @@
+#ros-boot-screen {
+    position: fixed;
+    inset: 0;
+    background-color: #050505;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem;
+    font-family: var(--font-mono), Consolas, monospace;
+    font-size: 13px;
+    color: #38bdf8;
+    overflow: hidden;
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s ease;
+}
+
+#ros-boot-screen.boot-complete {
+    opacity: 0;
+    filter: blur(10px);
+    pointer-events: none;
+}
+
+.terminal-line {
+    margin: 4px 0;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+    opacity: 0;
+    animation: typeLine 0.1s forwards;
+}
+
+.terminal-line .timestamp { color: #64748b; margin-right: 12px; }
+.terminal-line .info { color: #22c55e; margin-right: 12px; font-weight: bold; }
+.terminal-line .warn { color: #eab308; margin-right: 12px; font-weight: bold; }
+.terminal-line .highlight { color: #f8fafc; }
+
+@keyframes typeLine {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.scanline {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.25) 51%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.cypher-text {
+    font-variant-numeric: tabular-nums;
+}
