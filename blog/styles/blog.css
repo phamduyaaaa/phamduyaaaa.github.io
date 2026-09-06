@@ -1,9 +1,8 @@
 /* ============================================================
    BLOG STYLESHEET
-   Kế thừa toàn bộ design tokens từ trang gốc (index.html):
-   --cream / --ink / --amber, Lora + Inter + JetBrains Mono,
-   squircle radius (--r-lg), glass-morphism cards, glow orbs.
-   File này CHỈ thêm phần dành riêng cho ngữ cảnh đọc blog.
+   Inherits the shared Cubism tokens from the main portfolio:
+   paper palette, Syne, Space Grotesk, IBM Plex Mono, and square geometry.
+   This file only contains blog-specific reading styles.
    ============================================================ */
 
 /* ----------------------------------------------------------
