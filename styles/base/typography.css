@@ -60,10 +60,12 @@ p, .hero-bio, .project-desc, .pub-desc, .xp-bullets li {
 }
 
 .metrics-bar {
-  border-radius: 24px;
+  border-radius: 0;
 }
-.metric-cell:first-child { border-radius: 24px 0 0 24px; }
-.metric-cell:last-child { border-radius: 0 24px 24px 0; }
+.metric-cell:first-child,
+.metric-cell:last-child {
+  border-radius: 0;
+}
 
 body {
   -webkit-font-smoothing: antialiased;

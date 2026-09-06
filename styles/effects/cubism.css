@@ -1,0 +1,135 @@
+/* Cubism visual language: analytical structure and synthetic collage. */
+:root {
+  --cubist-paper: #eee9dc;
+  --cubist-graphite: #36342e;
+  --cubist-ochre: #a56b32;
+  --cubist-vermilion: #c54b32;
+  --cubist-blue: #315f68;
+  --cubist-line: rgba(54, 52, 46, 0.34);
+}
+
+body {
+  background-color: var(--cream);
+  background-image:
+    linear-gradient(90deg, rgba(54, 52, 46, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(54, 52, 46, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+#top,
+#about,
+#experience,
+#publications,
+#certifications {
+  background:
+    repeating-linear-gradient(117deg, transparent 0 92px, rgba(54, 52, 46, 0.045) 93px 94px, transparent 95px 156px),
+    var(--cream);
+}
+
+#top::after,
+#about::after,
+#experience::after,
+#publications::after,
+#certifications::after {
+  content: 'ANALYTICAL / 1908—1912';
+  position: absolute;
+  top: var(--sp-6);
+  right: 0;
+  color: var(--cubist-graphite);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  opacity: 0.58;
+}
+
+#projects,
+#contact {
+  background:
+    linear-gradient(103deg, transparent 0 22%, rgba(197, 75, 50, 0.08) 22% 47%, transparent 47%),
+    linear-gradient(166deg, transparent 0 54%, rgba(49, 95, 104, 0.1) 54% 72%, transparent 72%),
+    var(--cubist-paper);
+}
+
+#projects::before,
+#contact::before {
+  content: 'SYNTHETIC / 1912—1914';
+  position: absolute;
+  top: var(--sp-6);
+  right: 0;
+  color: var(--cubist-vermilion);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  opacity: 0.72;
+}
+
+.hero-orbit {
+  filter: saturate(0.72) contrast(1.08);
+}
+
+.hero-rules {
+  background-image:
+    linear-gradient(90deg, transparent 49.5%, var(--cubist-line) 49.5% 50.5%, transparent 50.5%),
+    repeating-linear-gradient(135deg, transparent 0 48px, rgba(54, 52, 46, 0.1) 49px 50px);
+}
+
+.metrics-bar {
+  background: var(--cubist-paper);
+  box-shadow: 8px 8px 0 var(--cubist-blue);
+  transform: skewX(-2deg);
+}
+
+.project-card,
+.pub-card,
+.cert-card {
+  background: var(--cubist-paper);
+  box-shadow: 7px 7px 0 var(--cubist-graphite);
+}
+
+.project-card:nth-child(2n),
+.pub-card:nth-child(2n) {
+  transform: translateY(10px) rotate(-0.7deg);
+}
+
+.project-card:nth-child(3n),
+.pub-card:nth-child(3n) {
+  transform: translateY(-6px) rotate(0.5deg);
+}
+
+.project-card:hover,
+.pub-card:hover,
+.cert-card:hover {
+  box-shadow: 11px 11px 0 var(--cubist-vermilion);
+}
+
+.project-thumb {
+  background:
+    linear-gradient(135deg, transparent 0 38%, rgba(238, 233, 220, 0.18) 38% 39%, transparent 39%),
+    var(--code-bg);
+}
+
+.contact-link {
+  background: var(--cubist-paper);
+  box-shadow: 5px 5px 0 var(--cubist-blue);
+}
+
+.contact-link:hover {
+  box-shadow: 9px 9px 0 var(--cubist-vermilion);
+}
+
+@media (max-width: 768px) {
+  #top::after,
+  #about::after,
+  #experience::after,
+  #publications::after,
+  #certifications::after,
+  #projects::before,
+  #contact::before {
+    display: none;
+  }
+
+  .project-card:nth-child(2n),
+  .project-card:nth-child(3n),
+  .pub-card:nth-child(2n),
+  .pub-card:nth-child(3n) {
+    transform: none;
+  }
+}
