@@ -1,0 +1,131 @@
+body {
+  background:
+    linear-gradient(90deg, rgba(54, 52, 46, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(54, 52, 46, 0.025) 1px, transparent 1px),
+    var(--cream);
+  background-size: 32px 32px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0.07;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(54, 52, 46, 0.22) 4px);
+  mix-blend-mode: multiply;
+}
+
+.lang-toggle {
+  border-radius: 0;
+  background: var(--cream-2);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--cyan);
+}
+
+.lang-btn {
+  border-radius: 0;
+}
+
+.lang-btn.active {
+  background: var(--ink);
+  box-shadow: none;
+}
+
+.blog-hero {
+  position: relative;
+  padding-top: var(--sp-20);
+  border-bottom: 2px solid var(--ink);
+}
+
+.blog-hero::after {
+  content: 'SYNTHETIC / NOTES + SIGNS';
+  position: absolute;
+  top: var(--sp-6);
+  right: 0;
+  color: var(--amber-a11y);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+.blog-hero h1 {
+  max-width: 720px;
+  text-transform: uppercase;
+  letter-spacing: -0.07em;
+}
+
+.post-list {
+  position: relative;
+  padding-top: var(--sp-10);
+}
+
+.post-list::before {
+  content: 'ANALYTICAL / FIELD LOG';
+  position: absolute;
+  top: var(--sp-4);
+  left: 0;
+  color: var(--ink-4);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+.post-card {
+  background: var(--cream-2);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  box-shadow: 7px 7px 0 var(--ink);
+}
+
+.post-card:nth-child(2n) {
+  transform: translateX(12px) rotate(-0.5deg);
+}
+
+.post-card:nth-child(3n) {
+  transform: translateX(-6px) rotate(0.45deg);
+}
+
+.post-card:hover {
+  transform: translate(4px, -4px);
+  border-color: var(--ink);
+  box-shadow: 10px 10px 0 var(--amber);
+}
+
+.post-date,
+.post-arrow,
+.post-meta-date,
+.post-meta-read {
+  color: var(--amber-a11y);
+}
+
+.post-tags .tag {
+  border-radius: 0;
+  border: 1px solid var(--ink);
+  background: var(--cream);
+}
+
+.post-body blockquote {
+  border-left: 0;
+  border-top: 3px solid var(--amber);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-4) 0;
+  transform: rotate(-0.5deg);
+}
+
+.post-body img {
+  border-radius: 0;
+  border: 2px solid var(--ink);
+  box-shadow: 7px 7px 0 var(--cyan);
+}
+
+@media (max-width: 640px) {
+  .blog-hero::after,
+  .post-list::before {
+    display: none;
+  }
+
+  .post-card:nth-child(2n),
+  .post-card:nth-child(3n) {
+    transform: none;
+  }
+}
