@@ -250,11 +250,8 @@
     .luubut-sig { font-family: var(--ff-script); font-size: clamp(52px, 10vw, 64px); color: var(--gold-lt); margin-top: 28px; text-shadow: 0 2px 18px rgba(201,168,76,0.25); opacity: 0; transform: translateY(15px) scale(0.95); transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo); }
     .reveal-luubut.in .luubut-sig { opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.55s; }
 
-    /* ALBUM GRID CŨ */
-    .album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .album-item { aspect-ratio: 3/4; overflow: hidden; border-radius: 2px; position: relative; background: #0d1425; cursor: pointer; }
-    .album-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease-out-expo); filter: brightness(0.85); }
-    .album-item:hover img { transform: scale(1.05); filter: brightness(0.95); }
+    .gallery-open-link { display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; border: 1px solid var(--gold); border-radius: 2px; background: rgba(201,168,76,0.1); color: var(--gold-lt); font-family: var(--ff-ui); font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.25s, transform 0.25s; }
+    .gallery-open-link:hover { background: rgba(201,168,76,0.2); transform: translateY(-2px); }
 
     /* EVENT MEDIA (CHỦ NHẬT) */
     .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
@@ -511,10 +508,12 @@
       </div>
     </section>
 
-    <!-- ALBUM CŨ -->
     <section class="section" style="padding-top:0">
       <div class="section-label reveal">Album Kỷ Yếu</div>
-      <div class="album-grid reveal" id="albumGrid"></div>
+      <div class="reveal" style="text-align:center">
+        <p style="color:var(--mist-dim);font-size:14px;line-height:1.7;margin:0 0 20px">Xem toàn bộ ảnh kỷ niệm trong một trang riêng.</p>
+        <a class="gallery-open-link" href="memory-gallery.html" target="_blank" rel="noopener">Mở album ảnh trong tab mới ↗</a>
+      </div>
     </section>
 
     <section class="section">
@@ -574,6 +573,7 @@
   </div>
 
   <!-- SCRIPT 1: GIAO DIỆN CHÍNH -->
+  <script src="imgs/memory_imgs.js"></script>
   <script>
     const CFG = {
       person: { fullName: "Phạm Đức Duy", signName: "Đức Duy" },
@@ -593,7 +593,11 @@
         { url: "imgs/album-1.jpg", alt: "Rạng rỡ ngày tốt nghiệp" },
         { url: "imgs/album-2.jpg", alt: "Thanh xuân HaUI" },
         { url: "imgs/album-3.jpg", alt: "Tung mũ cử nhân" },
-        { url: "imgs/album-4.jpg", alt: "Kỷ niệm ngày nhận bằng" }
+        { url: "imgs/album-4.jpg", alt: "Kỷ niệm ngày nhận bằng" },
+        ...window.MEMORY_IMAGE_FILES.map((filename, index) => ({
+          url: `imgs/memory_imgs/${filename}`,
+          alt: `Kỷ niệm tốt nghiệp ${index + 1}`
+        }))
       ],
       eventMedia: []
     };
@@ -847,10 +851,6 @@
       strip.innerHTML = setHTML + setHTML;
     }
 
-    function buildAlbum() {
-      if (document.getElementById('albumGrid')) document.getElementById('albumGrid').innerHTML = CFG.gallery.map((item) => `<div class="album-item js-hoverable" tabindex="0" role="button" aria-label="${item.alt}" onclick="window.openMediaLightbox('image', '${item.url}', this)"><img src="${item.url}" alt="${item.alt}" loading="lazy"></div>`).join('');
-    }
-
     function buildEventAlbum() {
       const grid = document.getElementById('eventGrid');
       const section = document.getElementById('eventAlbumSection');
@@ -930,7 +930,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       buildFilmstrip();
-      buildAlbum();
       buildEventAlbum();
     });
   </script>

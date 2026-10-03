@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0C0F1A">
+  <title>Album Kỷ Yếu · Phạm Đức Duy</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #0c0f1a;
+      color: #f6f2ea;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    header { max-width: 1440px; margin: 0 auto; padding: 36px 24px 24px; }
+    .back-link { color: #e8d5a3; font-size: 14px; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    h1 { margin: 28px 0 8px; color: #e8d5a3; font-family: Georgia, serif; font-size: clamp(30px, 5vw, 48px); font-weight: 400; }
+    .subtitle { margin: 0; color: rgba(246,242,234,.72); font-size: 15px; line-height: 1.6; }
+    #photoCount { color: #e8d5a3; }
+    main { max-width: 1440px; margin: 0 auto; padding: 0 24px 48px; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 16px; }
+    .photo-card { display: flex; min-height: 220px; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(232,213,163,.2); border-radius: 4px; background: #141929; }
+    .photo-card img { display: block; width: 100%; height: 100%; min-height: 220px; max-height: 380px; object-fit: contain; transition: transform .25s ease; }
+    .photo-card:hover img { transform: scale(1.025); }
+    .status { padding: 24px 0; color: rgba(246,242,234,.72); }
+    :focus-visible { outline: 2px solid #e8d5a3; outline-offset: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back-link" href="./">← Quay lại thiệp mời</a>
+    <h1>Album Kỷ Yếu</h1>
+    <p class="subtitle"><span id="photoCount">Đang tải ảnh...</span> · Nhấn vào ảnh để mở ảnh gốc ở tab mới.</p>
+  </header>
+  <main>
+    <div class="photo-grid" id="photoGrid" aria-label="Ảnh kỷ niệm tốt nghiệp"></div>
+    <p class="status" id="galleryStatus" role="status" hidden></p>
+  </main>
+  <script src="imgs/memory_imgs.js"></script>
+  <script>
+    const photoGrid = document.getElementById('photoGrid');
+    const photoCount = document.getElementById('photoCount');
+    const galleryStatus = document.getElementById('galleryStatus');
+
+    if (!Array.isArray(window.MEMORY_IMAGE_FILES) || window.MEMORY_IMAGE_FILES.length === 0) {
+      photoCount.textContent = 'Không tải được danh sách ảnh.';
+      galleryStatus.textContent = 'Kiểm tra lại thư mục imgs/memory_imgs và tệp imgs/memory_imgs.js.';
+      galleryStatus.hidden = false;
+    } else {
+      photoCount.textContent = `${window.MEMORY_IMAGE_FILES.length} ảnh`;
+      photoGrid.innerHTML = window.MEMORY_IMAGE_FILES.map((filename, index) => {
+        const imageUrl = `imgs/memory_imgs/${encodeURIComponent(filename)}`;
+        const altText = `Kỷ niệm tốt nghiệp ${index + 1}`;
+        return `<a class="photo-card" href="${imageUrl}" target="_blank" rel="noopener" aria-label="Mở ${altText} ở tab mới"><img src="${imageUrl}" alt="${altText}" loading="lazy"></a>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>
