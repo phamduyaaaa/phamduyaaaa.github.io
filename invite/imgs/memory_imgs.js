@@ -302,6 +302,15 @@ window.MEMORY_MEDIA = [
   },
   {
     type: 'image',
+    filename: 'k17_4ae.jpg',
+    src: 'imgs/memory_imgs/k17_4ae.jpg',
+    title: 'Bốn anh em thân thiết K17',
+    caption: 'Hội bạn thân cùng sát cánh qua những năm tháng đại học',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
     filename: 'k17_minh_gay.jpg',
     src: 'imgs/memory_imgs/k17_minh_gay.jpg',
     title: 'Cùng bạn Minh K17',
