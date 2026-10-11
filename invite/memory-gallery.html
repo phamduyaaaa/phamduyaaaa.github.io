@@ -4,21 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0C0F1A">
-  <meta name="description" content="Album ảnh kỷ niệm tốt nghiệp của Phạm Đức Duy, năm 2026.">
-  <title>Album Kỷ Yếu · Phạm Đức Duy</title>
+  <meta name="description" content="Album ảnh & video kỷ niệm lễ tốt nghiệp Cử nhân Robot & AI của Phạm Đức Duy, năm 2026.">
+  <title>Album Kỷ Yếu · Phạm Đức Duy · 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       color-scheme: dark;
       --ink: #0c0f1a;
       --ink-soft: #141929;
+      --ink-card: #101524;
       --gold: #c9a84c;
       --gold-light: #e8d5a3;
+      --gold-dim: rgba(201,168,76,.18);
       --ivory: #f6f2ea;
-      --muted: rgba(246,242,234,.64);
+      --muted: rgba(246,242,234,.68);
       --line: rgba(201,168,76,.24);
+      --line-subtle: rgba(232,213,163,.14);
       --display: "Cormorant Garamond", Georgia, serif;
       --ui: "DM Sans", system-ui, sans-serif;
       --tech: "Space Grotesk", monospace;
@@ -30,79 +33,171 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { min-width: 320px; scroll-behavior: smooth; }
     body {
       min-width: 320px;
       min-height: 100vh;
-      margin: 0;
       background:
-        radial-gradient(ellipse at 50% -20%, rgba(201,168,76,.14), transparent 50%),
+        radial-gradient(ellipse at 50% -10%, rgba(201,168,76,.12), transparent 50%),
+        radial-gradient(circle at 10% 40%, rgba(30,37,64,.35), transparent 40%),
+        radial-gradient(circle at 90% 70%, rgba(201,168,76,.05), transparent 45%),
         var(--ink);
+      background-attachment: fixed;
+      line-height: 1.5;
     }
 
-    a { color: inherit; }
-    button { font: inherit; }
-    :focus-visible { outline: 2px solid var(--gold-light); outline-offset: 4px; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; background: none; border: none; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; }
 
-    .page-shell { width: min(1440px, 100%); margin: 0 auto; padding: 28px 44px 80px; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .page-shell { width: min(1440px, 100%); margin: 0 auto; padding: 24px 36px 90px; }
+
+    /* TOPBAR */
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line-subtle); }
     .back-link {
       display: inline-flex;
-      min-height: 42px;
+      min-height: 40px;
       align-items: center;
       gap: 10px;
       color: var(--muted);
       font-size: 13px;
-      text-decoration: none;
-      transition: color .2s ease;
+      font-weight: 500;
+      padding: 6px 14px;
+      border: 1px solid rgba(232,213,163,.15);
+      border-radius: 40px;
+      background: rgba(20,25,41,.4);
+      transition: all .25s ease;
     }
-    .back-link:hover { color: var(--gold-light); }
-    .back-arrow { color: var(--gold); font-size: 18px; }
-    .top-mark { color: rgba(232,213,163,.62); font: 500 10px var(--tech); letter-spacing: 2px; }
+    .back-link:hover { color: var(--gold-light); border-color: var(--gold); background: rgba(201,168,76,.1); transform: translateX(-3px); }
+    .back-arrow { color: var(--gold); font-size: 16px; }
+    .top-mark { color: rgba(232,213,163,.75); font: 500 11px var(--tech); letter-spacing: 2px; }
 
-    .hero { max-width: 760px; margin: clamp(54px, 9vw, 108px) auto 56px; text-align: center; }
+    /* HERO */
+    .hero { max-width: 820px; margin: clamp(40px, 7vw, 84px) auto 44px; text-align: center; }
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 12px;
       color: var(--gold);
-      font: 600 10px var(--tech);
+      font: 600 11px var(--tech);
       letter-spacing: 3px;
       text-transform: uppercase;
+      margin-bottom: 14px;
     }
-    .eyebrow::before, .eyebrow::after { width: 30px; height: 1px; background: var(--line); content: ""; }
+    .eyebrow::before, .eyebrow::after { width: 32px; height: 1px; background: var(--line); content: ""; }
     h1 {
-      margin: 18px 0 10px;
+      margin: 8px 0 14px;
       color: var(--ivory);
-      font: 400 clamp(48px, 8vw, 82px)/.95 var(--display);
-      letter-spacing: -.025em;
+      font: 400 clamp(42px, 7vw, 76px)/1.02 var(--display);
+      letter-spacing: -.02em;
     }
-    .hero-copy { max-width: 490px; margin: 18px auto 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
-    .hero-copy strong { color: var(--gold-light); font-weight: 500; }
-    .hero-rule { display: flex; align-items: center; gap: 12px; width: 156px; margin: 28px auto 0; color: var(--gold); }
-    .hero-rule::before, .hero-rule::after { height: 1px; flex: 1; background: var(--line); content: ""; }
+    h1 em { font-style: italic; color: var(--gold-light); }
+    .hero-copy { max-width: 540px; margin: 0 auto; color: var(--muted); font-size: 14.5px; line-height: 1.75; }
+    .hero-meta-badges {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 30px;
+      border: 1px solid rgba(201,168,76,.28);
+      background: rgba(20,25,41,.6);
+      font: 500 11px var(--tech);
+      letter-spacing: 1px;
+      color: var(--gold-light);
+    }
 
-    .gallery-bar {
+    /* FILTER TABS & CONTROL BAR */
+    .filter-sticky-wrap {
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 20;
+      margin-bottom: 24px;
+      padding: 12px 0;
+      background: rgba(12,15,26,.88);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .filter-bar {
       display: flex;
-      min-height: 62px;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 20px;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      background: rgba(12,15,26,.88);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
+      flex-wrap: wrap;
     }
-    .photo-count { color: var(--gold-light); font: 500 12px var(--tech); letter-spacing: .08em; }
-    .gallery-hint { color: var(--muted); font-size: 12px; }
-    .photo-grid { columns: 4 230px; column-gap: 16px; }
-    .photo-card {
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+      max-width: 100%;
+    }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 40px;
+      border: 1px solid rgba(232,213,163,.18);
+      background: rgba(20,25,41,.6);
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: all .25s ease;
+    }
+    .tab-btn:hover {
+      color: var(--gold-light);
+      border-color: var(--gold);
+      background: rgba(201,168,76,.12);
+    }
+    .tab-btn.active {
+      color: #0c0f1a;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+      border-color: var(--gold-light);
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(201,168,76,.3);
+    }
+    .tab-badge {
+      display: inline-block;
+      font: 600 10px var(--tech);
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.1);
+      color: inherit;
+    }
+    .tab-btn.active .tab-badge {
+      background: rgba(12,15,26,.25);
+      color: #0c0f1a;
+    }
+    .gallery-stats {
+      font: 500 12px var(--tech);
+      letter-spacing: .08em;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    /* PHOTO & VIDEO GRID */
+    .photo-grid {
+      columns: 4 250px;
+      column-gap: 16px;
+      min-height: 280px;
+    }
+    .media-card {
       position: relative;
       display: block;
       width: 100%;
@@ -111,90 +206,275 @@
       overflow: hidden;
       break-inside: avoid;
       border: 1px solid rgba(232,213,163,.16);
-      border-radius: 3px;
-      background: var(--ink-soft);
+      border-radius: 4px;
+      background: var(--ink-card);
       cursor: zoom-in;
       text-align: left;
-      animation: photo-appear .55s both;
+      transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .35s ease, box-shadow .35s ease;
+      animation: mediaAppear .5s cubic-bezier(.16,1,.3,1) both;
     }
-    .photo-card img {
+    .media-card:hover, .media-card:focus-visible {
+      transform: translateY(-4px);
+      border-color: rgba(201,168,76,.6);
+      box-shadow: 0 12px 36px rgba(0,0,0,.6), 0 0 20px rgba(201,168,76,.15);
+    }
+    .media-card img, .media-card video {
       display: block;
       width: 100%;
       height: auto;
-      min-height: 100px;
-      transition: transform .55s cubic-bezier(.16,1,.3,1), filter .35s ease;
+      min-height: 120px;
+      transition: transform .6s cubic-bezier(.16,1,.3,1), filter .4s ease;
     }
-    .photo-card:hover img, .photo-card:focus-visible img { transform: scale(1.025); filter: brightness(1.08); }
-    .photo-index {
+    .media-card:hover img, .media-card:focus-visible img {
+      transform: scale(1.035);
+      filter: brightness(1.06);
+    }
+    .media-card:hover video {
+      filter: brightness(1.08);
+    }
+
+    /* CARD OVERLAYS */
+    .card-tag {
       position: absolute;
-      right: 10px;
-      bottom: 10px;
+      top: 10px;
       left: 10px;
-      padding-top: 28px;
-      background: linear-gradient(transparent, rgba(4,6,12,.72));
-      color: rgba(255,255,255,.92);
-      font: 500 10px var(--tech);
-      letter-spacing: .12em;
-      opacity: 0;
-      transform: translateY(4px);
-      transition: opacity .2s ease, transform .2s ease;
+      z-index: 2;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: rgba(12,15,26,.82);
+      border: 1px solid rgba(201,168,76,.35);
+      font: 600 9px var(--tech);
+      letter-spacing: 1.5px;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
       pointer-events: none;
     }
-    .photo-card:hover .photo-index, .photo-card:focus-visible .photo-index { opacity: 1; transform: translateY(0); }
-    .status { padding: 32px 0; color: var(--muted); text-align: center; }
-    .page-footer { margin-top: 42px; color: rgba(246,242,234,.36); font: 10px var(--tech); letter-spacing: .12em; text-align: center; }
+    .card-overlay {
+      position: absolute;
+      inset: auto 0 0 0;
+      z-index: 2;
+      padding: 36px 14px 12px;
+      background: linear-gradient(to top, rgba(8,11,18,.92) 0%, rgba(8,11,18,.6) 65%, transparent 100%);
+      color: var(--ivory);
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.35;
+      text-shadow: 0 2px 8px rgba(0,0,0,.8);
+    }
+    .card-caption {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      opacity: 0.9;
+    }
 
+    /* VIDEO CARD SPECIAL */
+    .media-card.is-video {
+      border-color: rgba(201,168,76,.4);
+      background: #080c18;
+    }
+    .media-card.is-video::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 40%, rgba(8,12,22,.6) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .video-play-badge {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(201,168,76,.9);
+      color: #0c0f1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,.8), 0 0 30px rgba(201,168,76,.6);
+      transition: transform .3s ease, background .3s ease;
+    }
+    .video-play-badge svg { width: 22px; height: 22px; fill: currentColor; transform: translateX(2px); }
+    .media-card.is-video:hover .video-play-badge {
+      transform: translate(-50%, -50%) scale(1.15);
+      background: #fff;
+    }
+
+    .status-msg { padding: 48px 0; color: var(--muted); text-align: center; font-size: 14px; }
+    .page-footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line-subtle); color: rgba(246,242,234,.4); font: 11px var(--tech); letter-spacing: .12em; text-align: center; }
+
+    /* DIALOG LIGHTBOX VIEWER */
     .viewer {
-      width: min(1120px, calc(100% - 32px));
+      width: min(1200px, calc(100% - 24px));
       max-width: none;
-      max-height: min(92vh, 920px);
+      max-height: min(94vh, 960px);
       padding: 0;
       overflow: hidden;
-      border: 1px solid rgba(232,213,163,.22);
-      border-radius: 4px;
-      background: #090c14;
+      border: 1px solid rgba(232,213,163,.24);
+      border-radius: 6px;
+      background: #080b14;
       color: var(--ivory);
-      box-shadow: 0 24px 100px rgba(0,0,0,.72);
+      box-shadow: 0 30px 120px rgba(0,0,0,.9);
     }
-    .viewer::backdrop { background: rgba(3,5,10,.88); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-    .viewer-inner { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: min(92vh, 920px); }
-    .viewer-toolbar { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 16px; border-bottom: 1px solid rgba(232,213,163,.14); }
-    .viewer-count { color: var(--gold-light); font: 500 11px var(--tech); letter-spacing: .1em; }
+    .viewer::backdrop { background: rgba(3,5,10,.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+    .viewer-inner { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: min(94vh, 960px); }
+    .viewer-toolbar {
+      display: flex;
+      min-height: 56px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 18px;
+      border-bottom: 1px solid rgba(232,213,163,.14);
+      background: rgba(12,15,26,.8);
+    }
+    .viewer-info-wrap { display: flex; align-items: center; gap: 12px; }
+    .viewer-count { color: var(--gold-light); font: 600 12px var(--tech); letter-spacing: .1em; }
+    .viewer-cat-pill {
+      font: 500 10px var(--tech);
+      letter-spacing: 1px;
+      color: var(--gold);
+      padding: 2px 8px;
+      border-radius: 2px;
+      background: rgba(201,168,76,.12);
+      border: 1px solid rgba(201,168,76,.25);
+      text-transform: uppercase;
+    }
     .viewer-actions { display: flex; gap: 8px; }
-    .viewer-button {
+    .viewer-btn {
       display: inline-grid;
       width: 38px;
       height: 38px;
       place-items: center;
       border: 1px solid rgba(232,213,163,.2);
-      border-radius: 2px;
-      background: rgba(255,255,255,.03);
+      border-radius: 3px;
+      background: rgba(255,255,255,.04);
       color: var(--ivory);
-      cursor: pointer;
-      font-size: 19px;
-      transition: border-color .2s ease, background .2s ease, color .2s ease;
+      font-size: 18px;
+      transition: all .2s ease;
     }
-    .viewer-button:hover { border-color: var(--gold); background: rgba(201,168,76,.12); color: var(--gold-light); }
-    .viewer-stage { display: grid; min-height: 200px; max-height: calc(92vh - 120px); place-items: center; padding: 12px; }
-    .viewer-image { display: block; max-width: 100%; max-height: calc(92vh - 150px); object-fit: contain; }
-    .viewer-caption { min-height: 42px; padding: 10px 16px; border-top: 1px solid rgba(232,213,163,.14); color: var(--muted); font-size: 12px; text-align: center; }
-    @keyframes photo-appear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .viewer-btn:hover { border-color: var(--gold); background: rgba(201,168,76,.15); color: var(--gold-light); }
+    .viewer-stage {
+      display: grid;
+      min-height: 240px;
+      max-height: calc(94vh - 140px);
+      place-items: center;
+      padding: 16px;
+      background: #04060c;
+      overflow: hidden;
+      position: relative;
+    }
+    .viewer-stage img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(94vh - 170px);
+      object-fit: contain;
+      border-radius: 2px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.6);
+      animation: zoomFade .25s ease;
+    }
+    .viewer-stage video {
+      display: block;
+      max-width: 100%;
+      max-height: calc(94vh - 170px);
+      border-radius: 2px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.8);
+      outline: none;
+      background: #000;
+    }
+    .viewer-caption-bar {
+      padding: 12px 20px;
+      border-top: 1px solid rgba(232,213,163,.14);
+      background: rgba(12,15,26,.85);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .viewer-text { flex: 1; min-width: 240px; }
+    .viewer-title { font-size: 15px; font-weight: 600; color: var(--gold-light); }
+    .viewer-caption { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .viewer-hint { color: rgba(246,242,234,.4); font: 10.5px var(--tech); letter-spacing: 1px; text-transform: uppercase; }
 
-    @media (max-width: 700px) {
-      .page-shell { padding: 18px 18px 52px; }
-      .hero { margin: 62px auto 40px; }
-      .hero-copy { max-width: 360px; font-size: 13px; }
-      .gallery-bar { min-height: 56px; }
-      .photo-grid { columns: 2 145px; column-gap: 10px; }
-      .photo-card { margin-bottom: 10px; }
-      .photo-index { opacity: 1; transform: none; font-size: 9px; }
+    /* FLOATING BACK TO TOP */
+    #backToTop {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(12,15,26,.9);
+      border: 1px solid rgba(201,168,76,.4);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all .3s ease;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
     }
-    @media (max-width: 380px) {
-      .page-shell { padding-right: 12px; padding-left: 12px; }
-      .photo-grid { columns: 2 125px; column-gap: 8px; }
+    #backToTop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #backToTop:hover { border-color: var(--gold); background: rgba(201,168,76,.15); transform: translateY(-3px); }
+    #backToTop svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    @keyframes mediaAppear {
+      from { opacity: 0; transform: translateY(14px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes zoomFade {
+      from { opacity: 0; transform: scale(.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .page-shell { padding: 20px 20px 64px; }
+      .photo-grid { columns: 3 190px; column-gap: 12px; }
+      .media-card { margin-bottom: 12px; }
+    }
+    @media (max-width: 640px) {
+      .page-shell { padding: 16px 14px 56px; }
+      .topbar { padding-bottom: 12px; }
+      .hero { margin: 36px auto 28px; }
+      .hero-copy { font-size: 13.5px; }
+      .photo-grid { columns: 2 135px; column-gap: 10px; }
+      .media-card { margin-bottom: 10px; border-radius: 3px; }
+      .card-tag { font-size: 8px; padding: 2px 6px; top: 6px; left: 6px; }
+      .card-overlay { padding: 24px 8px 8px; }
+      .card-title { font-size: 11.5px; }
+      .card-caption { display: none; }
+      .video-play-badge { width: 42px; height: 42px; }
+      .video-play-badge svg { width: 17px; height: 17px; }
+      .viewer-caption-bar { padding: 10px 14px; }
+      .viewer-hint { display: none; }
+    }
+    @media (max-width: 360px) {
+      .photo-grid { columns: 1 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
@@ -207,110 +487,288 @@
 
     <header class="hero">
       <div class="eyebrow">A day to remember</div>
-      <h1>Album Kỷ Yếu</h1>
-      <p class="hero-copy">Một vài khoảnh khắc nhỏ, gom lại thành những ký ức thật đẹp của hành trình thanh xuân và ngày tốt nghiệp.</p>
-      <div class="hero-rule" aria-hidden="true">✦</div>
+      <h1>Album Kỷ Yếu <em>2026</em></h1>
+      <p class="hero-copy">Gom lại những khoảnh khắc quý giá cùng gia đình, thầy cô, phòng lab và bạn bè trong ngày tốt nghiệp Cử nhân Robot & AI.</p>
+      <div class="hero-meta-badges">
+        <span class="hero-pill">✦ 44 Bức Ảnh Kỷ Niệm</span>
+        <span class="hero-pill">🎬 01 Thước Phim Lễ Tốt Nghiệp</span>
+        <span class="hero-pill">🎓 ĐH Công Nghiệp Hà Nội</span>
+      </div>
     </header>
 
     <main>
-      <div class="gallery-bar">
-        <span class="photo-count" id="photoCount" aria-live="polite">Đang tải ảnh...</span>
-        <span class="gallery-hint">Chọn ảnh để xem rõ hơn</span>
-      </div>
-      <div class="photo-grid" id="photoGrid" aria-label="Ảnh kỷ niệm tốt nghiệp"></div>
-      <p class="status" id="galleryStatus" role="status" hidden></p>
-    </main>
-
-    <footer class="page-footer">✦ &nbsp; THƯƠNG NHỚ NHỮNG NGÀY THANH XUÂN &nbsp; ✦</footer>
-  </div>
-
-  <dialog class="viewer" id="photoViewer" aria-label="Xem ảnh kỷ niệm">
-    <div class="viewer-inner">
-      <div class="viewer-toolbar">
-        <span class="viewer-count" id="viewerCount"></span>
-        <div class="viewer-actions">
-          <button class="viewer-button" id="previousPhoto" type="button" aria-label="Ảnh trước">‹</button>
-          <button class="viewer-button" id="nextPhoto" type="button" aria-label="Ảnh tiếp theo">›</button>
-          <button class="viewer-button" id="closeViewer" type="button" aria-label="Đóng">×</button>
+      <!-- STICKY FILTER BAR -->
+      <div class="filter-sticky-wrap">
+        <div class="filter-bar">
+          <div class="filter-tabs" id="filterTabs" role="tablist" aria-label="Bộ lọc chủ đề ảnh"></div>
+          <span class="gallery-stats" id="galleryStats" aria-live="polite">Đang tải...</span>
         </div>
       </div>
-      <div class="viewer-stage"><img class="viewer-image" id="viewerImage" alt=""></div>
-      <div class="viewer-caption">Dùng phím ← → để chuyển ảnh · Esc để đóng</div>
+
+      <!-- MEDIA GRID -->
+      <div class="photo-grid" id="photoGrid" aria-label="Album ảnh & video kỷ niệm"></div>
+      <p class="status-msg" id="galleryStatus" role="status" hidden></p>
+    </main>
+
+    <footer class="page-footer">✦ &nbsp; THƯƠNG NHỚ NHỮNG THÁNG NĂM THANH XUÂN RỰC RỠ &nbsp; ✦</footer>
+  </div>
+
+  <button id="backToTop" type="button" aria-label="Cuộn lên đầu trang" title="Về đầu trang">
+    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
+  <!-- MULTIMEDIA DIALOG VIEWER -->
+  <dialog class="viewer" id="photoViewer" aria-label="Xem chi tiết ảnh và video">
+    <div class="viewer-inner">
+      <div class="viewer-toolbar">
+        <div class="viewer-info-wrap">
+          <span class="viewer-count" id="viewerCount">01 / 45</span>
+          <span class="viewer-cat-pill" id="viewerCatPill">CHÂN DUNG</span>
+        </div>
+        <div class="viewer-actions">
+          <button class="viewer-btn" id="previousPhoto" type="button" aria-label="Xem trước">‹</button>
+          <button class="viewer-btn" id="nextPhoto" type="button" aria-label="Xem tiếp theo">›</button>
+          <button class="viewer-btn" id="openOriginal" type="button" aria-label="Mở tệp gốc trong tab mới" title="Mở tệp gốc">↗</button>
+          <button class="viewer-btn" id="closeViewer" type="button" aria-label="Đóng">×</button>
+        </div>
+      </div>
+      <div class="viewer-stage" id="viewerStage"></div>
+      <div class="viewer-caption-bar">
+        <div class="viewer-text">
+          <div class="viewer-title" id="viewerTitle">Tiêu đề ảnh</div>
+          <div class="viewer-caption" id="viewerCaption">Mô tả khoảnh khắc</div>
+        </div>
+        <div class="viewer-hint">Phím ← → để chuyển · Esc để đóng · Vuốt màn hình</div>
+      </div>
     </div>
   </dialog>
 
   <script src="imgs/memory_imgs.js"></script>
   <script>
-    const photoGrid = document.getElementById('photoGrid');
-    const photoCount = document.getElementById('photoCount');
-    const galleryStatus = document.getElementById('galleryStatus');
-    const viewer = document.getElementById('photoViewer');
-    const viewerImage = document.getElementById('viewerImage');
-    const viewerCount = document.getElementById('viewerCount');
-    let activePhotoIndex = 0;
+    (function() {
+      const photoGrid = document.getElementById('photoGrid');
+      const galleryStats = document.getElementById('galleryStats');
+      const galleryStatus = document.getElementById('galleryStatus');
+      const filterTabsContainer = document.getElementById('filterTabs');
+      const viewer = document.getElementById('photoViewer');
+      const viewerStage = document.getElementById('viewerStage');
+      const viewerCount = document.getElementById('viewerCount');
+      const viewerCatPill = document.getElementById('viewerCatPill');
+      const viewerTitle = document.getElementById('viewerTitle');
+      const viewerCaption = document.getElementById('viewerCaption');
+      const openOriginal = document.getElementById('openOriginal');
+      const backToTop = document.getElementById('backToTop');
 
-    function showPhoto(index) {
-      const photos = window.MEMORY_IMAGE_FILES;
-      activePhotoIndex = (index + photos.length) % photos.length;
-      const filename = photos[activePhotoIndex];
-      viewerImage.src = `imgs/memory_imgs/${encodeURIComponent(filename)}`;
-      viewerImage.alt = `Kỷ niệm tốt nghiệp ${activePhotoIndex + 1}`;
-      viewerCount.textContent = `${String(activePhotoIndex + 1).padStart(2, '0')} / ${String(photos.length).padStart(2, '0')}`;
-      new Image().src = `imgs/memory_imgs/${encodeURIComponent(photos[(activePhotoIndex + 1) % photos.length])}`;
-    }
+      // Danh sách media hiện tại
+      const allMedia = window.MEMORY_MEDIA || [];
+      const categories = window.MEMORY_CATEGORIES || [
+        { id: 'all', label: 'Tất Cả', icon: '✦' }
+      ];
 
-    if (!Array.isArray(window.MEMORY_IMAGE_FILES) || window.MEMORY_IMAGE_FILES.length === 0) {
-      photoCount.textContent = 'Chưa có ảnh';
-      galleryStatus.textContent = 'Không tải được danh sách ảnh. Hãy kiểm tra thư mục imgs/memory_imgs và tệp imgs/memory_imgs.js.';
-      galleryStatus.hidden = false;
-    } else {
-      const fragment = document.createDocumentFragment();
-      window.MEMORY_IMAGE_FILES.forEach((filename, index) => {
-        const imageUrl = `imgs/memory_imgs/${encodeURIComponent(filename)}`;
-        const button = document.createElement('button');
-        const image = document.createElement('img');
-        const label = document.createElement('span');
+      let currentCategory = 'all';
+      let activeFilteredMedia = [...allMedia];
+      let activeIndexInFiltered = 0;
 
-        button.className = 'photo-card';
-        button.type = 'button';
-        button.setAttribute('aria-label', `Xem ảnh kỷ niệm ${index + 1}`);
-        button.style.animationDelay = `${Math.min(index % 12, 8) * 35}ms`;
-        image.src = imageUrl;
-        image.alt = '';
-        image.loading = index < 8 ? 'eager' : 'lazy';
-        image.decoding = 'async';
-        label.className = 'photo-index';
-        label.setAttribute('aria-hidden', 'true');
-        label.textContent = `KỶ NIỆM · ${String(index + 1).padStart(2, '0')}`;
-        button.append(image, label);
-        button.addEventListener('click', () => {
-          showPhoto(index);
-          viewer.showModal();
+      if (!allMedia.length) {
+        galleryStats.textContent = 'Chưa có ảnh';
+        galleryStatus.textContent = 'Không tìm thấy dữ liệu ảnh. Vui lòng kiểm tra lại cấu hình.';
+        galleryStatus.hidden = false;
+        return;
+      }
+
+      // Xây dựng bộ lọc danh mục
+      function buildFilterTabs() {
+        filterTabsContainer.innerHTML = '';
+        categories.forEach(cat => {
+          const count = cat.id === 'all'
+            ? allMedia.length
+            : allMedia.filter(m => m.category === cat.id).length;
+          
+          if (count === 0) return;
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `tab-btn ${cat.id === currentCategory ? 'active' : ''}`;
+          btn.setAttribute('role', 'tab');
+          btn.setAttribute('aria-selected', cat.id === currentCategory ? 'true' : 'false');
+          btn.innerHTML = `<span>${cat.icon || '✦'}</span> <span>${cat.label}</span> <span class="tab-badge">${count}</span>`;
+          btn.addEventListener('click', () => setCategory(cat.id));
+          filterTabsContainer.appendChild(btn);
         });
-        fragment.append(button);
+      }
+
+      // Lọc danh mục
+      function setCategory(catId) {
+        currentCategory = catId;
+        activeFilteredMedia = catId === 'all'
+          ? [...allMedia]
+          : allMedia.filter(m => m.category === catId);
+
+        // Cập nhật tab active
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          const isSelected = b.textContent.includes(categories.find(c => c.id === catId)?.label || '');
+          b.classList.toggle('active', isSelected);
+          b.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+        });
+
+        renderGrid();
+      }
+
+      // Render danh sách thẻ ảnh & video
+      function renderGrid() {
+        photoGrid.innerHTML = '';
+        galleryStats.textContent = `${activeFilteredMedia.length} khoảnh khắc`;
+
+        const fragment = document.createDocumentFragment();
+
+        activeFilteredMedia.forEach((item, index) => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = `media-card ${item.type === 'video' ? 'is-video' : ''}`;
+          card.setAttribute('aria-label', `${item.type === 'video' ? 'Xem video' : 'Xem ảnh'}: ${item.title}`);
+          card.style.animationDelay = `${Math.min(index % 12, 10) * 30}ms`;
+
+          // Tag danh mục
+          const tag = document.createElement('span');
+          tag.className = 'card-tag';
+          tag.textContent = item.categoryLabel || item.tag || 'Kỷ Niệm';
+
+          if (item.type === 'video') {
+            // Thẻ video
+            const video = document.createElement('video');
+            video.src = item.src;
+            video.muted = true;
+            video.playsInline = true;
+            video.loop = true;
+            video.preload = 'metadata';
+            
+            // Hover tự động chạy nhẹ
+            card.addEventListener('mouseenter', () => { video.play().catch(() => {}); });
+            card.addEventListener('mouseleave', () => { video.pause(); });
+
+            const playBadge = document.createElement('div');
+            playBadge.className = 'video-play-badge';
+            playBadge.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+
+            card.append(tag, video, playBadge);
+          } else {
+            // Thẻ ảnh
+            const img = document.createElement('img');
+            img.src = item.src;
+            img.alt = item.title || 'Kỷ niệm tốt nghiệp';
+            img.loading = index < 8 ? 'eager' : 'lazy';
+            img.decoding = 'async';
+            card.append(tag, img);
+          }
+
+          // Tiêu đề overlay dưới chân ảnh
+          const overlay = document.createElement('div');
+          overlay.className = 'card-overlay';
+          overlay.innerHTML = `
+            <div class="card-title">${item.title}</div>
+            ${item.caption ? `<div class="card-caption">${item.caption}</div>` : ''}
+          `;
+          card.append(overlay);
+
+          // Click mở viewer
+          card.addEventListener('click', () => {
+            showMediaInViewer(index);
+            viewer.showModal();
+          });
+
+          fragment.appendChild(card);
+        });
+
+        photoGrid.appendChild(fragment);
+      }
+
+      // Hiển thị media trong modal
+      function showMediaInViewer(index) {
+        if (!activeFilteredMedia.length) return;
+        activeIndexInFiltered = (index + activeFilteredMedia.length) % activeFilteredMedia.length;
+        const item = activeFilteredMedia[activeIndexInFiltered];
+
+        viewerStage.innerHTML = '';
+
+        if (item.type === 'video') {
+          const video = document.createElement('video');
+          video.src = item.src;
+          video.controls = true;
+          video.autoplay = true;
+          video.playsInline = true;
+          viewerStage.appendChild(video);
+        } else {
+          const img = document.createElement('img');
+          img.src = item.src;
+          img.alt = item.title;
+          viewerStage.appendChild(img);
+
+          // Preload ảnh tiếp theo để chuyển mượt mà
+          const nextIndex = (activeIndexInFiltered + 1) % activeFilteredMedia.length;
+          const nextItem = activeFilteredMedia[nextIndex];
+          if (nextItem && nextItem.type === 'image') {
+            new Image().src = nextItem.src;
+          }
+        }
+
+        viewerCount.textContent = `${String(activeIndexInFiltered + 1).padStart(2, '0')} / ${String(activeFilteredMedia.length).padStart(2, '0')}`;
+        viewerCatPill.textContent = item.categoryLabel || item.tag || 'KỶ NIỆM';
+        viewerTitle.textContent = item.title;
+        viewerCaption.textContent = item.caption || '';
+        openOriginal.onclick = () => window.open(item.src, '_blank');
+      }
+
+      function nextMedia() { showMediaInViewer(activeIndexInFiltered + 1); }
+      function prevMedia() { showMediaInViewer(activeIndexInFiltered - 1); }
+
+      // Event listeners cho viewer
+      document.getElementById('previousPhoto').addEventListener('click', prevMedia);
+      document.getElementById('nextPhoto').addEventListener('click', nextMedia);
+      document.getElementById('closeViewer').addEventListener('click', () => viewer.close());
+      
+      // Dừng video khi đóng modal
+      viewer.addEventListener('close', () => {
+        const v = viewerStage.querySelector('video');
+        if (v) v.pause();
       });
 
-      photoGrid.append(fragment);
-      photoCount.textContent = `${window.MEMORY_IMAGE_FILES.length} tấm ảnh`;
-    }
+      viewer.addEventListener('click', event => {
+        if (event.target === viewer) viewer.close();
+      });
 
-    document.getElementById('previousPhoto').addEventListener('click', () => showPhoto(activePhotoIndex - 1));
-    document.getElementById('nextPhoto').addEventListener('click', () => showPhoto(activePhotoIndex + 1));
-    document.getElementById('closeViewer').addEventListener('click', () => viewer.close());
-    viewer.addEventListener('click', event => {
-      if (event.target === viewer) viewer.close();
-    });
-    viewer.addEventListener('keydown', event => {
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        showPhoto(activePhotoIndex - 1);
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        showPhoto(activePhotoIndex + 1);
-      } else if (event.key === 'Escape') {
-        viewer.close();
-      }
-    });
+      // Phím điều hướng
+      viewer.addEventListener('keydown', event => {
+        if (event.key === 'ArrowLeft') { event.preventDefault(); prevMedia(); }
+        else if (event.key === 'ArrowRight') { event.preventDefault(); nextMedia(); }
+        else if (event.key === 'Escape') { viewer.close(); }
+      });
+
+      // Hỗ trợ vuốt tay trên điện thoại di động
+      let touchStartX = 0;
+      let touchEndX = 0;
+      viewerStage.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      viewerStage.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 50) {
+          if (diff < 0) nextMedia();
+          else prevMedia();
+        }
+      }, { passive: true });
+
+      // Nút Cuộn lên đầu
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) backToTop.classList.add('show');
+        else backToTop.classList.remove('show');
+      }, { passive: true });
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // Khởi tạo
+      buildFilterTabs();
+      renderGrid();
+    })();
   </script>
 </body>
 </html>

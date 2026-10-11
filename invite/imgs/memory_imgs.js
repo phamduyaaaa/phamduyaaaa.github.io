@@ -1,130 +1,438 @@
-window.MEMORY_IMAGE_FILES = [
-  "1790996039942_180932556958035237_1017915630482375559_32b0799f13229f20743801c2c0b2396f.jpg",
-  "1790996061363_180932556958035237_1017915630482375559_111612966d632d937e27f1b4d9ebadee.jpg",
-  "1790996061389_180932556958035237_1017915630482375559_4588c3e5a4784afef20ddfb4c10976ae.jpg",
-  "1790996068855_180932556958035237_1017915630482375559_a3a032ef5217463eff4a5e85561bd2e5.jpg",
-  "1790996068884_180932556958035237_1017915630482375559_03364f358ab9856356aa62194cc958b1.jpg",
-  "1790996068907_180932556958035237_1017915630482375559_b4eadb6e4a81fd7b86651fa70b893664.jpg",
-  "1790996068931_180932556958035237_1017915630482375559_2b5f22e9361888021e56aef62fe176d6.jpg",
-  "1790996074413_180932556958035237_1017915630482375559_39d1abb5b8aeba8b506bfd73c50374bc.jpg",
-  "1790996074444_180932556958035237_1017915630482375559_0df8b9d1021870a12b348d4b6890a5c3.jpg",
-  "1790996074468_180932556958035237_1017915630482375559_4c70ceb0f26958b6767503dbbe14f185.jpg",
-  "1790996074493_180932556958035237_1017915630482375559_05706c351b911a7d0fb8c43f1e2e5879.jpg",
-  "1790996074516_180932556958035237_1017915630482375559_6051b8ac20f4bd4f78901d4b3b96a6c9.jpg",
-  "1790996074540_180932556958035237_1017915630482375559_ed2781f0d45e45acf4381669cef755f0.jpg",
-  "1790996074564_180932556958035237_1017915630482375559_b3ae69a6e86171a4e54cbe3bef752a3f.jpg",
-  "1790996074589_180932556958035237_1017915630482375559_1ac893615b0408c0ec640dfd3d54a37f.jpg",
-  "1790996074614_180932556958035237_1017915630482375559_9c16da1cab0c7e16cadf8fafbec11fc8.jpg",
-  "1790996074637_180932556958035237_1017915630482375559_2436a7c1062eb161b26963b1a77c619b.jpg",
-  "1790996074660_180932556958035237_1017915630482375559_e8cd4a6ae026f8832343927b2309af1e.jpg",
-  "1790996074682_180932556958035237_1017915630482375559_21dee9d601a8bf191ea39606d7670483.jpg",
-  "1790996074706_180932556958035237_1017915630482375559_caaa0515287183f95e11fc46348da4fd.jpg",
-  "1790996074730_180932556958035237_1017915630482375559_b5ad626151196b039bf8a0d383b9dc31.jpg",
-  "1790996074754_180932556958035237_1017915630482375559_1c4b4946ed3b95447a483bce016b5ed3.jpg",
-  "1790996074779_180932556958035237_1017915630482375559_11587034a831edf4299b436b8f0b0156.jpg",
-  "1790996074807_180932556958035237_1017915630482375559_9b2a7e3a0f279173f835a0eb9d600993.jpg",
-  "1790996074835_180932556958035237_1017915630482375559_d09aa647a724f841977275ce0a9206ba.jpg",
-  "1790996074863_180932556958035237_1017915630482375559_0289df17ca2fb36159a183e7d249eaf3.jpg",
-  "1790996074881_180932556958035237_1017915630482375559_86290f331caf124dfac6977324e342e8.jpg",
-  "1790996074902_180932556958035237_1017915630482375559_69b2c96ec16c615f0d6972ed67fc9bc5.jpg",
-  "1790996074924_180932556958035237_1017915630482375559_c2b3fd4d77f395559853dad25b39de7b.jpg",
-  "1790996074946_180932556958035237_1017915630482375559_8c27d704b964569529c1f907be14bc6c.jpg",
-  "1790996074968_180932556958035237_1017915630482375559_6bd9bcfb964a91c3fd59578dee5b644b.jpg",
-  "1790996074992_180932556958035237_1017915630482375559_4c32b749712826cadb6444c5d8e63ddb.jpg",
-  "1790996075017_180932556958035237_1017915630482375559_1aff296337438cd71caaa14b8e499988.jpg",
-  "1790996075040_180932556958035237_1017915630482375559_e4b193ae1e98cb26cfa90456f8ebc9e8.jpg",
-  "1790996075064_180932556958035237_1017915630482375559_ca0e06069b79a8bbf638b770dfe86b2a.jpg",
-  "1790996075089_180932556958035237_1017915630482375559_163151c751c192d7ec4cf534e55be6c0.jpg",
-  "1790996075113_180932556958035237_1017915630482375559_86db1ddb514c39d57d27ba398cfa1ced.jpg",
-  "1790996075134_180932556958035237_1017915630482375559_242c15a15eb74aa3c0560437b92ce1da.jpg",
-  "1790996075156_180932556958035237_1017915630482375559_eb8c0462e0c39dfc8b35f18ea80c1818.jpg",
-  "1790996075179_180932556958035237_1017915630482375559_76115a6e12aaa4a31e105766ddb5c89e.jpg",
-  "1790996075202_180932556958035237_1017915630482375559_70d1072d15caa09c1e11406837513170.jpg",
-  "1790996075226_180932556958035237_1017915630482375559_cc63e8166e9e33c8309af01df37bdb33.jpg",
-  "1790996075249_180932556958035237_1017915630482375559_3ecbf81cc53c96722f0f5569413107af.jpg",
-  "1790996075272_180932556958035237_1017915630482375559_2a56cd5eaa1c1bf419648dd8fc961d61.jpg",
-  "1790996075297_180932556958035237_1017915630482375559_b112eee4e6410aceb8c2a8d00494b7bb.jpg",
-  "1790996075321_180932556958035237_1017915630482375559_96ff5cae05cb127d424e23b54448e091.jpg",
-  "1790996075342_180932556958035237_1017915630482375559_3b0e10a9e20517f540b02e45e48e4019.jpg",
-  "1790996075364_180932556958035237_1017915630482375559_8394830ad1f7ed4e333e9750848ef272.jpg",
-  "1790996075386_180932556958035237_1017915630482375559_2af0d3dff02ab46e5c79381383508d21.jpg",
-  "1790996075409_180932556958035237_1017915630482375559_a973b6208b9b21c31b78b9f6bcf899e8.jpg",
-  "1790996075432_180932556958035237_1017915630482375559_b58c0d8c1e08d85ae2d5299c0ce181c4.jpg",
-  "1790996075457_180932556958035237_1017915630482375559_9403616d345d6c0aed573dd5f5507001.jpg",
-  "1790996075480_180932556958035237_1017915630482375559_b808ae6f5afaf69b2bcdee0420123251.jpg",
-  "1790996075507_180932556958035237_1017915630482375559_d820e8f56c500324a96edc2eacad51aa.jpg",
-  "1790996075529_180932556958035237_1017915630482375559_71cfed23702823919ca81c38b99c0a49.jpg",
-  "1790996075553_180932556958035237_1017915630482375559_eb1304cb0e69a7830dfba5e1f1fb540c.jpg",
-  "1790996075575_180932556958035237_1017915630482375559_613907597f6600860a97d663d526fb3d.jpg",
-  "1790996103014_180932556958035237_1017915630482375559_a2e8bc9001bc1f4da14267f77e2c2a63.jpg",
-  "1790996103049_180932556958035237_1017915630482375559_b010aa06844e0726ded4f2f82d84753e.jpg",
-  "1790996103074_180932556958035237_1017915630482375559_8073fca01eeddb4839b27b2d265dfa11.jpg",
-  "1790996103099_180932556958035237_1017915630482375559_76064d312dc4198190d9737bad81089c.jpg",
-  "1790996103124_180932556958035237_1017915630482375559_2713486643dbf0284145e024102a5d7e.jpg",
-  "1790996103148_180932556958035237_1017915630482375559_38fed93248a07fd3a7065dd11d856e1e.jpg",
-  "1790996631785_180932556958035237_1017915630482375559_fb7b686b669d1ca7e348c4f20b127345.jpg",
-  "1790996665275_180932556958035237_1017915630482375559_5f8f77c431d68021a022f9f1f8319350.jpg",
-  "1790996888252_180932556958035237_1017915630482375559_6d67fccc26726fadfacd3e972863d737.jpg",
-  "1791042860726_180932556958035237_1017915630482375559_40d7d06cf78dd7940e3276f8ff05704f.jpg",
-  "1791042860755_180932556958035237_1017915630482375559_deb49199979ac1e70856bfb4467a0b23.jpg",
-  "1791042860781_180932556958035237_1017915630482375559_8c022053f90d183d02fe93ca1d1b199b.jpg",
-  "1791042860810_180932556958035237_1017915630482375559_8424140edf5f066ac5313a760c1de372.jpg",
-  "1791042860833_180932556958035237_1017915630482375559_0ed8b832dadb0780e994c1b03d5c81aa.jpg",
-  "1791043439158_180932556958035237_1017915630482375559_08ea406f9406e66c3ff2ee7532f09ecc.jpg",
-  "1791043439184_180932556958035237_1017915630482375559_c392d977f8df487bc04fc2809b717af5.jpg",
-  "1791043439206_180932556958035237_1017915630482375559_694198d8978ae29dbd72023e2fc5eb86.jpg",
-  "1791043439228_180932556958035237_1017915630482375559_78aa049f3e7bc79c3f947b8c892c19b5.jpg",
-  "1791043439250_180932556958035237_1017915630482375559_bf5a6e2e2b390ced7ef9794ca2025df1.jpg",
-  "1791043439278_180932556958035237_1017915630482375559_e8aca17471b3abdbd0d1bb4f92985257.jpg",
-  "1791043446471_180932556958035237_1017915630482375559_055ead939e04091cc3f7afabc2bcb1de.jpg",
-  "1791043446501_180932556958035237_1017915630482375559_b5adaef8d123a804878f0ba69ac85b09.jpg",
-  "1791043446525_180932556958035237_1017915630482375559_91ae6aa864fe2cb27fd9c7eaab1571ed.jpg",
-  "1791043446550_180932556958035237_1017915630482375559_8ce8fcec2700ffc622c3bef43f293006.jpg",
-  "1791043446573_180932556958035237_1017915630482375559_2c53e9ddb586e4dbf67e29a1896a0431.jpg",
-  "1791043446597_180932556958035237_1017915630482375559_d25297489ca91b9921340db1e8c6635d.jpg",
-  "1791043446626_180932556958035237_1017915630482375559_635b3cb961e4ac1cdd9e306faba9d396.jpg",
-  "1791043446648_180932556958035237_1017915630482375559_fd482a78063c80740d4d9c8944cd5f1e.jpg",
-  "1791043446670_180932556958035237_1017915630482375559_311ae568cdcbf5d9a01c4235a8268338.jpg",
-  "1791043446693_180932556958035237_1017915630482375559_b7476f5bc4ed97dffdf8fd1bcd88239c.jpg",
-  "1791043446724_180932556958035237_1017915630482375559_9d6dfd36659d2e15f8c090306308b4f9.jpg",
-  "1791043446742_180932556958035237_1017915630482375559_8ed4ba621b697e6ace527fbfdac0f1f8.jpg",
-  "1791043446765_180932556958035237_1017915630482375559_0092c9b535e9dabafb48300be2941ecc.jpg",
-  "1791043446793_180932556958035237_1017915630482375559_86821d12f2557338739db29b86f1d3b4.jpg",
-  "1791043446819_180932556958035237_1017915630482375559_a4bfe9b76bf54614e59ef2dd6393a5b2.jpg",
-  "1791043446844_180932556958035237_1017915630482375559_24c6197193d969f9723ea6603e2a5cb8.jpg",
-  "1791043446866_180932556958035237_1017915630482375559_e70748124a0ee44b3920e20f9e4deabb.jpg",
-  "1791043446888_180932556958035237_1017915630482375559_d9d0225b589c5eb900e6fa1a940c15b1.jpg",
-  "1791043446911_180932556958035237_1017915630482375559_0043d1a12e06749e90423bb2d96ed11a.jpg",
-  "1791043446935_180932556958035237_1017915630482375559_029527b32870219ceb38b4441f751129.jpg",
-  "1791043446961_180932556958035237_1017915630482375559_0114c0a8ac5e64e73b29ea5a3fd9668f.jpg",
-  "1791043446990_180932556958035237_1017915630482375559_8898a30b3b00e89d00afebe88d870600.jpg",
-  "1791043447019_180932556958035237_1017915630482375559_d16c3a09645351da654f0c775c0ce494.jpg",
-  "1791043447042_180932556958035237_1017915630482375559_30df369a35cc99a21252a6417acadf05.jpg",
-  "1791043447068_180932556958035237_1017915630482375559_fd9543e80952641f9eded31c4e9d4b85.jpg",
-  "1791043447091_180932556958035237_1017915630482375559_35eb8e6c395bcc0da500cbff5dc72f84.jpg",
-  "1791043447113_180932556958035237_1017915630482375559_b8d0e14b6d4bfaf6d628ae177924b064.jpg",
-  "1791043447135_180932556958035237_1017915630482375559_ed8b697a7875c2c476a6df5c61ba2c92.jpg",
-  "1791043447159_180932556958035237_1017915630482375559_e5ec294dff7cb8f07064c404357fadfb.jpg",
-  "1791043447181_180932556958035237_1017915630482375559_6171eca28522040f18f37d38d750a909.jpg",
-  "1791043447203_180932556958035237_1017915630482375559_0fff1c2327af4c435d6e48f7172a0a8a.jpg",
-  "1791043447226_180932556958035237_1017915630482375559_946eff10070258a6c5ad4d1beb0ab8f9.jpg",
-  "1791043447254_180932556958035237_1017915630482375559_ef3152110e54abdad0911cf69e43fd1c.jpg",
-  "1791043447278_180932556958035237_1017915630482375559_bbc528bc03e0f30bbd34a63af7925b83.jpg",
-  "1791043447302_180932556958035237_1017915630482375559_2a0041c43024dd3c192480c201df9d9f.jpg",
-  "1791043447326_180932556958035237_1017915630482375559_665e6fba304b1602eda4d8d47afe9906.jpg",
-  "1791043447355_180932556958035237_1017915630482375559_26bf88a46dd941dd39546447d63461f4.jpg",
-  "1791043447375_180932556958035237_1017915630482375559_85f910d5eb8d4710e3394c03dc859254.jpg",
-  "1791043447397_180932556958035237_1017915630482375559_b2e375ad89cb21d5739f7a933e56875c.jpg",
-  "1791043447419_180932556958035237_1017915630482375559_f345214eb64ff5d8a357c7588c5697e8.jpg",
-  "1791043447441_180932556958035237_1017915630482375559_175b96836dee70513b89d705fb0178b1.jpg",
-  "1791043447463_180932556958035237_1017915630482375559_679695ddc86964fd2985568027ad0b40.jpg",
-  "1791043447486_180932556958035237_1017915630482375559_59cba563966d5cd036aa909f3bcdeaf6.jpg",
-  "1791043447508_180932556958035237_1017915630482375559_9886c689b5baf592024e0ef6386ea147.jpg",
-  "1791043447533_180932556958035237_1017915630482375559_dc8b04a00d1b74dc9c01ed26ad312e22.jpg",
-  "1791043447560_180932556958035237_1017915630482375559_48e68f500273a702f39eec76ae50ad87.jpg",
-  "1791043447585_180932556958035237_1017915630482375559_55c1ffa1e06d029c52904f9a56a0cef3.jpg",
-  "1791043447610_180932556958035237_1017915630482375559_3aaaa877c751b14863e6d3a63fac7219.jpg",
-  "1791043447633_180932556958035237_1017915630482375559_703c0293f2633284512fa7edecee8dcb.jpg",
-  "1791043447656_180932556958035237_1017915630482375559_0087fb4e6ff63fd4497deadcc317dc5e.jpg",
-  "3ae.jpg"
+/**
+ * Danh sách toàn bộ ảnh & video kỷ niệm lễ tốt nghiệp của Phạm Đức Duy
+ * Sắp xếp theo nhóm chủ đề trực quan, hỗ trợ phân loại & lọc UX/UI
+ */
+
+window.MEMORY_CATEGORIES = [
+  { id: 'all', label: 'Tất Cả', icon: '✦' },
+  { id: 'portrait', label: 'Chân Dung', icon: '🎓' },
+  { id: 'family', label: 'Gia Đình', icon: '❤️' },
+  { id: 'lab', label: 'Haibot Lab', icon: '🔬' },
+  { id: 'k17', label: 'K17 Robot & AI', icon: '🤖' },
+  { id: 'moments', label: 'Trường Lớp & Kỷ Niệm', icon: '🏛️' },
+  { id: 'video', label: 'Video', icon: '🎬' }
 ];
+
+window.MEMORY_MEDIA = [
+  // 1. CHÂN DUNG CỬ NHÂN
+  {
+    type: 'image',
+    filename: 'only_me.jpg',
+    src: 'imgs/memory_imgs/only_me.jpg',
+    title: 'Chân dung Cử nhân',
+    caption: 'Phạm Đức Duy trong lễ tốt nghiệp Cử nhân Robot & AI',
+    category: 'portrait',
+    categoryLabel: 'Chân Dung'
+  },
+  {
+    type: 'image',
+    filename: 'only_me_graduation.jpg',
+    src: 'imgs/memory_imgs/only_me_graduation.jpg',
+    title: 'Rạng rỡ ngày nhận bằng',
+    caption: 'Cột mốc hoàn thành hành trình 4 năm đại học',
+    category: 'portrait',
+    categoryLabel: 'Chân Dung'
+  },
+  {
+    type: 'image',
+    filename: 'only_me_graduation_2.jpg',
+    src: 'imgs/memory_imgs/only_me_graduation_2.jpg',
+    title: 'Khoảnh khắc cử nhân HaUI',
+    caption: 'Niềm vui trong ngày bế giảng & trao bằng',
+    category: 'portrait',
+    categoryLabel: 'Chân Dung'
+  },
+  {
+    type: 'image',
+    filename: 'only_me_board.jpg',
+    src: 'imgs/memory_imgs/only_me_board.jpg',
+    title: 'Lưu niệm bên bảng vinh danh',
+    caption: 'Chụp hình kỷ niệm trước khu vực sân khấu lễ tốt nghiệp',
+    category: 'portrait',
+    categoryLabel: 'Chân Dung'
+  },
+  {
+    type: 'image',
+    filename: 'only_t3_a10.jpg',
+    src: 'imgs/memory_imgs/only_t3_a10.jpg',
+    title: 'Kỷ niệm sảnh A10',
+    caption: 'Những góc thân quen của Đại học Công Nghiệp Hà Nội',
+    category: 'portrait',
+    categoryLabel: 'Chân Dung'
+  },
+
+  // 2. GIA ĐÌNH THÂN YÊU
+  {
+    type: 'image',
+    filename: 'my_mother.jpg',
+    src: 'imgs/memory_imgs/my_mother.jpg',
+    title: 'Mẹ kính yêu',
+    caption: 'Chỗ dựa lớn nhất và niềm tự hào của con',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+  {
+    type: 'image',
+    filename: 'and_my_mother.jpg',
+    src: 'imgs/memory_imgs/and_my_mother.jpg',
+    title: 'Hai mẹ con ngày tốt nghiệp',
+    caption: 'Khoảnh khắc hạnh phúc cùng mẹ trong ngày nhận bằng',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+  {
+    type: 'image',
+    filename: 'my_young_sister.jpg',
+    src: 'imgs/memory_imgs/my_young_sister.jpg',
+    title: 'Em gái nhỏ',
+    caption: 'Em gái nhỏ đến chúc mừng anh hai tốt nghiệp',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+  {
+    type: 'image',
+    filename: 'and_my_family.jpg',
+    src: 'imgs/memory_imgs/and_my_family.jpg',
+    title: 'Gia đình trọn vẹn yêu thương',
+    caption: 'Gia đình cùng chung vui ngày lễ tốt nghiệp',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+  {
+    type: 'image',
+    filename: 'and_my_family_2.jpg',
+    src: 'imgs/memory_imgs/and_my_family_2.jpg',
+    title: 'Nụ cười bên gia đình',
+    caption: 'Khoảnh khắc sum vầy ấm áp của cả nhà',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+  {
+    type: 'image',
+    filename: 'and_my_family_3.jpg',
+    src: 'imgs/memory_imgs/and_my_family_3.jpg',
+    title: 'Kỷ niệm sum vầy ngày lễ lớn',
+    caption: 'Lưu giữ những nụ cười rạng rỡ của gia đình',
+    category: 'family',
+    categoryLabel: 'Gia Đình'
+  },
+
+  // 3. HAIBOT LAB
+  {
+    type: 'image',
+    filename: 'haibotlab_all.jpg',
+    src: 'imgs/memory_imgs/haibotlab_all.jpg',
+    title: 'Đại gia đình Haibot Lab',
+    caption: 'Tập thể Haibot Lab trong ngày tốt nghiệp',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_ahoc_k14.jpg',
+    src: 'imgs/memory_imgs/haibotlab_ahoc_k14.jpg',
+    title: 'Cùng anh Học K14',
+    caption: 'Kỷ niệm đẹp cùng tiền bối Haibot Lab',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_atai_k16.jpg',
+    src: 'imgs/memory_imgs/haibotlab_atai_k16.jpg',
+    title: 'Cùng anh Tài K16',
+    caption: 'Người anh đồng hành gắn bó tại lab',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_atai_minh_gay.jpg',
+    src: 'imgs/memory_imgs/haibotlab_atai_minh_gay.jpg',
+    title: 'Cùng anh Tài & Minh',
+    caption: 'Những đồng đội thân thiết nhất tại phòng lab',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_cdiep_k16.jpg',
+    src: 'imgs/memory_imgs/haibotlab_cdiep_k16.jpg',
+    title: 'Cùng chị Điệp K16',
+    caption: 'Khoảnh khắc kỷ niệm cùng chị Điệp Haibot Lab',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_k18.jpg',
+    src: 'imgs/memory_imgs/haibotlab_k18.jpg',
+    title: 'Thế hệ K18 Haibot Lab',
+    caption: 'Giao lưu cùng các em K18 tiếp nối đam mê nghiên cứu',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_k19.jpg',
+    src: 'imgs/memory_imgs/haibotlab_k19.jpg',
+    title: 'Thế hệ K19 Haibot Lab',
+    caption: 'Các thành viên trẻ đầy nhiệt huyết của lab',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+  {
+    type: 'image',
+    filename: 'haibotlab_dinner.jpg',
+    src: 'imgs/memory_imgs/haibotlab_dinner.jpg',
+    title: 'Bữa tiệc liên hoan Haibot Lab',
+    caption: 'Buổi gặp gỡ ấm cúng chúc mừng tốt nghiệp',
+    category: 'lab',
+    categoryLabel: 'Haibot Lab'
+  },
+
+  // 4. BẠN BÈ K17 ROBOT & AI
+  {
+    type: 'image',
+    filename: 'k17_all_1.jpg',
+    src: 'imgs/memory_imgs/k17_all_1.jpg',
+    title: 'Tập thể K17 Robot & AI (1)',
+    caption: 'Lớp Robot & Trí tuệ nhân tạo K17 ngày nhận bằng',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_2.jpg',
+    src: 'imgs/memory_imgs/k17_all_2.jpg',
+    title: 'Tập thể K17 Robot & AI (2)',
+    caption: 'Đại gia đình Robot K17 trước hội trường A11',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_4.jpg',
+    src: 'imgs/memory_imgs/k17_all_4.jpg',
+    title: 'Tập thể K17 Robot & AI (3)',
+    caption: 'Những người bạn đồng hành suốt 4 năm đèn sách',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_5.jpg',
+    src: 'imgs/memory_imgs/k17_all_5.jpg',
+    title: 'Tập thể K17 Robot & AI (4)',
+    caption: 'Rực rỡ sắc màu cử nhân của lớp Robot K17',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_6.jpg',
+    src: 'imgs/memory_imgs/k17_all_6.jpg',
+    title: 'Tập thể K17 Robot & AI (5)',
+    caption: 'Khoảnh khắc rạng rỡ của các kỹ sư/cử nhân tương lai',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_7.jpg',
+    src: 'imgs/memory_imgs/k17_all_7.jpg',
+    title: 'Tập thể K17 Robot & AI (6)',
+    caption: 'Kỷ niệm không thể nào quên của thanh xuân HaUI',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_8.jpg',
+    src: 'imgs/memory_imgs/k17_all_8.jpg',
+    title: 'Tập thể K17 Robot & AI (7)',
+    caption: 'Nụ cười tỏa nắng của tập thể K17',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_9.jpg',
+    src: 'imgs/memory_imgs/k17_all_9.jpg',
+    title: 'Tập thể K17 Robot & AI (8)',
+    caption: 'Chặng đường 2022 - 2026 khép lại đầy viên mãn',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_10.jpg',
+    src: 'imgs/memory_imgs/k17_all_10.jpg',
+    title: 'Tập thể K17 Robot & AI (9)',
+    caption: 'Góc chụp toàn cảnh bạn bè K17',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_11.jpg',
+    src: 'imgs/memory_imgs/k17_all_11.jpg',
+    title: 'Tập thể K17 Robot & AI (10)',
+    caption: 'Kỷ niệm đẹp cùng thầy cô và bạn bè đồng khóa',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_all_12.jpg',
+    src: 'imgs/memory_imgs/k17_all_12.jpg',
+    title: 'Tập thể K17 Robot & AI (11)',
+    caption: 'Những cái ôm và lời chúc mừng ngày tốt nghiệp',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_3ae.jpg',
+    src: 'imgs/memory_imgs/k17_3ae.jpg',
+    title: 'Ba anh em thân thiết K17',
+    caption: 'Hội bạn thân cùng sát cánh qua bao đồ án khó',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_minh_gay.jpg',
+    src: 'imgs/memory_imgs/k17_minh_gay.jpg',
+    title: 'Cùng bạn Minh K17',
+    caption: 'Người bạn thân đồng hành suốt những năm tháng đại học',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k17_rb_4.jpg',
+    src: 'imgs/memory_imgs/k17_rb_4.jpg',
+    title: 'Nhóm bạn K17 Robotics',
+    caption: 'Khoảnh khắc tươi vui bên bạn bè đồng môn',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+  {
+    type: 'image',
+    filename: 'k18_rb.jpg',
+    src: 'imgs/memory_imgs/k18_rb.jpg',
+    title: 'Giao lưu cùng K18 Robotics',
+    caption: 'Các thế hệ sinh viên ngành Robot HaUI hội tụ',
+    category: 'k17',
+    categoryLabel: 'K17 Robot'
+  },
+
+  // 5. TRƯỜNG LỚP & HẬU TRƯỜNG
+  {
+    type: 'image',
+    filename: 'pre.jpg',
+    src: 'imgs/memory_imgs/pre.jpg',
+    title: 'Chuẩn bị trước giờ G (1)',
+    caption: 'Hậu trường chuẩn bị trang phục và hoa chúc mừng',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+  {
+    type: 'image',
+    filename: 'pre_2.jpg',
+    src: 'imgs/memory_imgs/pre_2.jpg',
+    title: 'Chuẩn bị trước giờ G (2)',
+    caption: 'Tâm trạng hồi hộp trước khi bước vào lễ đường trao bằng',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+  {
+    type: 'image',
+    filename: 'pre_3.jpg',
+    src: 'imgs/memory_imgs/pre_3.jpg',
+    title: 'Chuẩn bị trước giờ G (3)',
+    caption: 'Chỉnh trang áo mũ cử nhân thật tươm tất',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+  {
+    type: 'image',
+    filename: 'pre_4.jpg',
+    src: 'imgs/memory_imgs/pre_4.jpg',
+    title: 'Chuẩn bị trước giờ G (4)',
+    caption: 'Lưu lại những khoảnh khắc tự nhiên trước buổi lễ',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+  {
+    type: 'image',
+    filename: 'pre_5.jpg',
+    src: 'imgs/memory_imgs/pre_5.jpg',
+    title: 'Chuẩn bị trước giờ G (5)',
+    caption: 'Không khí rộn ràng đón người thân và bạn bè đến dự',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+  {
+    type: 'image',
+    filename: 'inside.jpg',
+    src: 'imgs/memory_imgs/inside.jpg',
+    title: 'Hội trường lễ tốt nghiệp',
+    caption: 'Bên trong hội trường trang trọng ngày bế giảng',
+    category: 'moments',
+    categoryLabel: 'Không Gian'
+  },
+  {
+    type: 'image',
+    filename: 'library.jpg',
+    src: 'imgs/memory_imgs/library.jpg',
+    title: 'Thư viện ĐH Công Nghiệp',
+    caption: 'Nơi gắn liền với những đêm ôn thi và tra cứu tài liệu',
+    category: 'moments',
+    categoryLabel: 'Không Gian'
+  },
+  {
+    type: 'image',
+    filename: 'surround.jpg',
+    src: 'imgs/memory_imgs/surround.jpg',
+    title: 'Khuôn viên trường HaUI',
+    caption: 'Toàn cảnh ngôi trường thân yêu trong ngày lễ lớn',
+    category: 'moments',
+    categoryLabel: 'Không Gian'
+  },
+  {
+    type: 'image',
+    filename: 'surround_2.jpg',
+    src: 'imgs/memory_imgs/surround_2.jpg',
+    title: 'Khuôn viên rực rỡ cờ hoa',
+    caption: 'Sân trường tấp nập tân cử nhân và người thân',
+    category: 'moments',
+    categoryLabel: 'Không Gian'
+  },
+  {
+    type: 'image',
+    filename: 'them.jpg',
+    src: 'imgs/memory_imgs/them.jpg',
+    title: 'Nụ cười bạn bè',
+    caption: 'Khoảnh khắc rạng rỡ của bạn bè ngày tốt nghiệp',
+    category: 'moments',
+    categoryLabel: 'Kỷ Niệm'
+  },
+
+  // 6. VIDEO KỶ NIỆM
+  {
+    type: 'video',
+    filename: 'graduation.mp4',
+    src: 'imgs/memory_videos/graduation.mp4',
+    title: 'Thước phim Lễ Tốt Nghiệp 2026',
+    caption: 'Video ghi lại toàn cảnh những khoảnh khắc đáng nhớ nhất ngày 16.08.2026',
+    category: 'video',
+    categoryLabel: 'Video Kỷ Niệm'
+  }
+];
+
+// Danh sách tệp ảnh để đảm bảo tương thích ngược hoàn hảo
+window.MEMORY_IMAGE_FILES = window.MEMORY_MEDIA
+  .filter(function(item) { return item.type === 'image'; })
+  .map(function(item) { return item.filename; });
