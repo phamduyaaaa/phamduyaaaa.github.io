@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.">
+<title>ViT: When an Image Becomes Tokens · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="ViT: When an Image Becomes Tokens">
+<meta property="og:description" content="How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>ViT: When an Image Becomes Tokens</h1>
+    <h1 data-vi>ViT: Ảnh trở thành token</h1>
+
+    <p class="post-excerpt-lead" data-en>How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.</p>
+    <p class="post-excerpt-lead" data-vi>Transformer ăn một dãy vector, còn ảnh là một lưới số. Cắt patch, duỗi phẳng, chiếu tuyến tính và cộng mã vị trí, tính tay trên ảnh 4×4.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">ViT</span><span class="pill">Transformer</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<h2>The pain to cure</h2>
+<p>A Transformer eats a sequence of vectors. An image is a grid of numbers. How do we turn the grid into a sequence without losing anything important?</p>
+<h2>Step 1: The naive try, one token per pixel</h2>
+<p>A $4 \times 4$ grayscale image has 16 pixels, so 16 tokens. That sounds fine. But attention compares every pair of tokens, so it costs $N^2$.</p>
+<table>
+<thead>
+<tr>
+<th>Image size</th>
+<th>Tokens (one per pixel)</th>
+<th>Pairs $N^2$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$4 \times 4$</td>
+<td>16</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$224 \times 224$</td>
+<td>50,176</td>
+<td>$\approx 2.5 \times 10^9$</td>
+</tr>
+</tbody>
+</table>
+<p>Every layer and every head would have to compute that many pairs: not feasible. Also, a lone pixel means almost nothing, like a single letter standing by itself.</p>
+<h2>Step 2: Group pixels into patches (the ViT idea, 2020)</h2>
+<p>Cut the image into square cells and treat each cell as a "word". For a $4 \times 4$ image with $2 \times 2$ patches:</p>
+<p>$$
+\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix}
+\Rightarrow
+\underbrace{\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}}_{A}\;
+\underbrace{\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}}_{B}\;
+\underbrace{\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix}}_{C}\;
+\underbrace{\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}}_{D}
+$$</p>
+<p>(The numbers are made up for illustration.) 16 tokens become 4, and the number of pairs drops from 256 to 16. For a real $224 \times 224$ image with $14 \times 14$ patches, we get 256 tokens.</p>
+<h2>Step 3: Flatten (reshape)</h2>
+<p>Each $2 \times 2$ patch is read row by row into a 4-dimensional vector:</p>
+<p>$$
+p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
+$$</p>
+<p>This only rearranges the numbers and loses no information: the position of a pixel inside the patch is kept by the fixed order of the 4 coordinates.</p>
+<h2>Step 4: Linear projection to an embedding vector</h2>
+<p>Each token needs a dimension $d$ that we choose (here $d=2$). We use a learned matrix $W_p$ of size $4 \times 2$:</p>
+<p>$$
+z = p\,W_p
+$$</p>
+<p>Pick a toy $W_p = \begin{pmatrix}1&amp;0\\0&amp;1\\1&amp;0\\0&amp;1\end{pmatrix}$. For patch A:</p>
+<p>$$
+z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
+$$</p>
+<p>Likewise $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.</p>
+<p><strong>Meaning:</strong> each column of $W_p$ is a $2\times 2$ "template", and $z$ is how well the patch matches each template (a dot product). This is pattern matching: $W_p$ learns filters for edges, colour and texture. It resembles the lookup $E$ that turns a word into a vector, except that patches have no dictionary (there are endlessly many possible patches), so we use a projection instead of a table lookup. And $W_p$ is learned by gradient like any other matrix.</p>
+<h2>Step 5: The big problem, attention is blind to order</h2>
+<p>Recall the remaining weakness from the attention stage: shuffle the tokens and the output is just shuffled the same way. For images, that means the original image and one cut into 4 pieces and randomly reordered give the same set of representations. The model does not know that "A is in the top-left corner".</p>
+<p>For a robot this is a disaster, because the core task is where things are.</p>
+<h2>Step 6: Add position embeddings</h2>
+<p>Give each position a vector $\mathrm{pos}_i$ (learned, also randomly initialised then trained) and add it to the token:</p>
+<p>$$
+\tilde z_i = z_i + \mathrm{pos}_i
+$$</p>
+<p>Toy example: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (column, row). Then:</p>
+<p>$$
+\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
+$$</p>
+<p>Now each token carries both content (what the patch looks like) and coordinates (where it is). Permuting tokens changes the result, because each token is already labelled with its position.</p>
+<h2>Step 7: From here on it is pure Transformer</h2>
+<p>The four vectors $\tilde z_A,\dots,\tilde z_D$ enter exactly the attention mechanism: $q,k,v$, softmax, mixing. Image tokens look at each other just like text tokens. A "cup handle" patch pulls in information from the surrounding patches to become the representation of "cup".</p>
+<h2>Summary of the flow</h2>
+<p>$$
+\text{image (grid)} \xrightarrow{\text{cut}} \text{patches} \xrightarrow{\text{flatten}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{contextual tokens}
+$$</p>
+<p>Carry forward: the image is now continuous tokens used only as <strong>input</strong>, and nothing has to be generated. Actions are different: the robot must produce them. That tension is what the next stage resolves (see <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
+<p><strong>Check question:</strong> if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?</p>
+<p><em>Answer:</em> the original image and a version cut into patches and shuffled (for example a cup on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.</p>
+    </div>
+    <div data-vi>
+<h2>Cái đau cần chữa</h2>
+<p>Transformer ăn một dãy vector. Ảnh lại là một lưới số. Làm sao biến lưới thành dãy mà không mất thứ gì quan trọng?</p>
+<h2>Bước 1: Thử cách ngây thơ nhất, mỗi pixel một token</h2>
+<p>Ảnh $4 \times 4$ thang xám có 16 pixel, tức 16 token. Nghe ổn. Nhưng attention so mọi cặp token, nên tốn $N^2$.</p>
+<table>
+<thead>
+<tr>
+<th>Kích thước ảnh</th>
+<th>Số token (mỗi pixel)</th>
+<th>Số cặp $N^2$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$4 \times 4$</td>
+<td>16</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$224 \times 224$</td>
+<td>50,176</td>
+<td>$\approx 2.5 \times 10^9$</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi lớp, mỗi head đều phải tính chừng đó cặp: không khả thi. Thêm nữa, một pixel đơn lẻ gần như vô nghĩa, như một chữ cái đứng riêng.</p>
+<h2>Bước 2: Gom pixel thành patch (ý tưởng của ViT, 2020)</h2>
+<p>Chia ảnh thành các ô vuông, mỗi ô là một "từ". Với ảnh $4 \times 4$ và patch $2 \times 2$:</p>
+<p>$$
+\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix}
+\Rightarrow
+\underbrace{\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}}_{A}\;
+\underbrace{\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}}_{B}\;
+\underbrace{\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix}}_{C}\;
+\underbrace{\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}}_{D}
+$$</p>
+<p>(Số bịa để minh họa.) Từ 16 token còn 4 token, và số cặp giảm từ 256 xuống 16. Với ảnh thật $224 \times 224$, patch $14 \times 14$ cho 256 token.</p>
+<h2>Bước 3: Duỗi phẳng (reshape)</h2>
+<p>Mỗi patch $2 \times 2$ đọc theo hàng thành vector 4 chiều:</p>
+<p>$$
+p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
+$$</p>
+<p>Đây chỉ là sắp lại các con số, không mất thông tin gì: vị trí pixel trong patch được giữ bởi thứ tự cố định của 4 tọa độ.</p>
+<h2>Bước 4: Chiếu tuyến tính thành vector embedding</h2>
+<p>Ta cần mỗi token có số chiều $d$ do ta chọn (ở đây $d=2$). Dùng ma trận học được $W_p$ cỡ $4 \times 2$:</p>
+<p>$$
+z = p\,W_p
+$$</p>
+<p>Chọn đồ chơi $W_p = \begin{pmatrix}1&amp;0\\0&amp;1\\1&amp;0\\0&amp;1\end{pmatrix}$. Khi đó với patch A:</p>
+<p>$$
+z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
+$$</p>
+<p>Tương tự $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.</p>
+<p><strong>Ý nghĩa:</strong> mỗi cột của $W_p$ là một "mẫu" cỡ $2\times 2$, và $z$ chính là độ khớp của patch với từng mẫu (tích vô hướng). Đây là so khớp mẫu: $W_p$ học ra các bộ lọc cạnh, màu, kết cấu. Nó giống phép tra bảng $E$ biến từ thành vector, chỉ khác là patch không có từ điển (vô số patch có thể có), nên ta dùng phép chiếu thay cho tra bảng. Đồng thời $W_p$ cũng học bằng gradient như mọi ma trận khác.</p>
+<h2>Bước 5: Vấn đề lớn, attention mù thứ tự</h2>
+<p>Nhớ lại điểm yếu còn lại từ chặng attention: tráo các token thì kết quả chỉ tráo theo. Với ảnh, nghĩa là ảnh gốc và ảnh bị cắt 4 mảnh rồi xáo ngẫu nhiên cho ra cùng một tập biểu diễn. Mô hình không biết "A ở góc trên trái".</p>
+<p>Với robot đây là thảm họa, vì nhiệm vụ cốt lõi là vật ở đâu.</p>
+<h2>Bước 6: Cộng mã vị trí</h2>
+<p>Cho mỗi vị trí một vector $\mathrm{pos}_i$ (học được, cũng khởi tạo ngẫu nhiên rồi học) và cộng vào token:</p>
+<p>$$
+\tilde z_i = z_i + \mathrm{pos}_i
+$$</p>
+<p>Ví dụ đồ chơi: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (tọa độ cột, hàng). Khi đó:</p>
+<p>$$
+\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
+$$</p>
+<p>Giờ token vừa mang nội dung (patch trông thế nào) vừa mang tọa độ (nó nằm đâu). Hoán vị token sẽ làm thay đổi kết quả, vì mỗi token đã gắn nhãn vị trí.</p>
+<h2>Bước 7: Từ đây trở đi là Transformer thuần túy</h2>
+<p>Bốn vector $\tilde z_A,\dots,\tilde z_D$ vào đúng cơ chế attention: $q,k,v$, softmax, trộn. Token ảnh cũng nhìn nhau như token chữ. Patch "quai cốc" hút thông tin từ patch xung quanh để thành biểu diễn "cốc".</p>
+<h2>Tóm tắt dòng chảy</h2>
+<p>$$
+\text{ảnh (lưới)} \xrightarrow{\text{cắt}} \text{patch} \xrightarrow{\text{duỗi phẳng}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{token có ngữ cảnh}
+$$</p>
+<p>Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm <strong>đầu vào</strong>, không cần sinh ra. Còn hành động thì khác: robot phải sinh chúng. Đó là mâu thuẫn mà bài tiếp theo giải quyết (xem <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
+<p><strong>Câu kiểm tra:</strong> nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?</p>
+<p><em>Đáp án:</em> ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc ở trái và cốc ở phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

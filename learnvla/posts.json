@@ -1,1 +1,222 @@
-[]
+[
+  {
+    "slug": "action-tokenization",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Action Tokenization: Turning Actions into Tokens",
+    "title_vi": "Action Tokenization: Hành động trở thành token",
+    "excerpt_en": "An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.",
+    "excerpt_vi": "LLM chọn một chữ trong từ điển hữu hạn, còn hành động robot là số thực. Chia thùng (bin) biến số liên tục thành token, tính tay một ví dụ, cùng cái lợi và cái giá.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Tokenizer",
+      "Action"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "fd-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "FD-VLA: Force Distilled from Vision and State",
+    "title_vi": "FD-VLA: Chưng cất lực từ thị giác và state",
+    "excerpt_en": "FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.",
+    "excerpt_vi": "FD-VLA học một token lực từ ảnh và state của robot, chỉ được giám sát bởi bộ mã hóa lực thật lúc huấn luyện, nhờ đó VLA nhận biết lực chạy được mà không cần cảm biến lực.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Distillation",
+      "Paper Notes",
+      "SmolVLA"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "forcevla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "ForceVLA: Force-aware MoE for Contact-rich Manipulation",
+    "title_vi": "ForceVLA: MoE nhận biết lực cho thao tác giàu tiếp xúc",
+    "excerpt_en": "ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.",
+    "excerpt_vi": "ForceVLA coi lực 6 trục là một modality riêng và gộp vào π0 sau VLM bằng mixture-of-experts thưa (FVLMoE). Kiến trúc, cách huấn luyện và kết quả.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Paper Notes",
+      "MoE",
+      "π0"
+    ],
+    "read_min": 2
+  },
+  {
+    "slug": "forcevla2",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "ForceVLA2: Hybrid Force-Position Control with Force Awareness",
+    "title_vi": "ForceVLA2: Điều khiển lai lực-vị trí có nhận biết lực",
+    "excerpt_en": "ForceVLA2 injects force at two scales (force prompts in the VLM, force tokens in the action path), fuses them with a Cross-Scale MoE and outputs both a pose change and a target force.",
+    "excerpt_vi": "ForceVLA2 đưa lực vào ở hai tầng (force prompt trong VLM, force token trong nhánh hành động), gộp bằng Cross-Scale MoE và xuất cả độ dịch pose lẫn lực mục tiêu.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Paper Notes",
+      "MoE",
+      "π0"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "fwbc-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation",
+    "title_vi": "FWBC-VLA: Bù trừ toàn thân có nhận biết lực cho loco-manipulation",
+    "excerpt_en": "A wheeled-legged robot that pushes a door feels the reaction in its whole body. FWBC-VLA estimates contact force without a sensor, feeds it to the VLA, and also uses it to correct the base command.",
+    "excerpt_vi": "Robot bánh-chân đẩy cửa sẽ chịu phản lực lên cả thân. FWBC-VLA ước lượng lực tiếp xúc không cần cảm biến, đưa vào VLA, đồng thời dùng nó để hiệu chỉnh lệnh cho phần thân.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Loco-manipulation",
+      "Paper Notes",
+      "π0.5"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "hapticvla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference",
+    "title_vi": "HapticVLA: Thao tác nhận biết xúc giác mà không cần cảm biến lúc suy luận",
+    "excerpt_en": "HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.",
+    "excerpt_vi": "HapticVLA huấn luyện một SmolVLA teacher với phần thưởng xúc giác có nhận biết an toàn, rồi chưng cất sang student chỉ thấy thị giác và state. Mô hình 0,45B không cần phần cứng xúc giác lúc chạy.",
+    "tags": [
+      "VLA",
+      "Tactile",
+      "Distillation",
+      "Paper Notes",
+      "SmolVLA"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "mode-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch",
+    "title_vi": "MoDE-VLA: Mixture-of-Dexterous-Experts cho lực và xúc giác",
+    "excerpt_en": "MoDE-VLA adds force and tactile signals to π0 through a separate path with modality-aware routing and residual injection, so contact corrections do not overwrite pretrained knowledge.",
+    "excerpt_vi": "MoDE-VLA thêm tín hiệu lực và xúc giác vào π0 qua một đường riêng với routing theo modality và tiêm residual, để hiệu chỉnh tiếp xúc không ghi đè tri thức đã pretrain.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Paper Notes",
+      "MoE",
+      "π0"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "tabero",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Tabero: Gentle Manipulation with Closed-Loop Force Feedback",
+    "title_vi": "Tabero: Thao tác nhẹ tay với phản hồi lực vòng kín",
+    "excerpt_en": "Tabero replays LIBERO in a tactile simulator to get vision, touch and force data, and Tabero-VTLA predicts pose plus force setpoints that a fixed hybrid controller tracks, so 'gently' actually means less force.",
+    "excerpt_vi": "Tabero phát lại LIBERO trong mô phỏng xúc giác để có dữ liệu thị giác, xúc giác, lực; Tabero-VTLA dự đoán pose và lực mục tiêu cho bộ điều khiển lai cố định bám theo, nhờ đó 'nhẹ tay' thực sự là lực nhỏ hơn.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Benchmark",
+      "Paper Notes",
+      "π0"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "taf-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "TaF-VLA: Aligning Tactile Images with Force Before the VLA",
+    "title_vi": "TaF-VLA: Căn chỉnh ảnh xúc giác với lực trước khi vào VLA",
+    "excerpt_en": "A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.",
+    "excerpt_vi": "Ảnh xúc giác thị giác cho thấy biến dạng chứ không phải lực. TaF-VLA trước hết căn chỉnh chuỗi xúc giác với tín hiệu lực/áp suất thật bằng học tương phản, rồi gắn adapter đã đóng băng vào π0.5.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Paper Notes",
+      "π0.5"
+    ],
+    "read_min": 2
+  },
+  {
+    "slug": "ter-dagger",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion",
+    "title_vi": "TER-DAgger: Residual DAgger với chỉnh sửa quỹ đạo cho lắp ghép chính xác",
+    "excerpt_en": "When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.",
+    "excerpt_vi": "Khi lực dự đoán lệch lực đo, robot dừng và con người chỉnh. TER-DAgger chỉnh sửa quỹ đạo thất bại thành một bản hiệu chỉnh sạch rồi huấn luyện chính sách residual 50 Hz trên đó.",
+    "tags": [
+      "VLA",
+      "Force",
+      "DAgger",
+      "Imitation Learning",
+      "Paper Notes"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "torl-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA",
+    "title_vi": "TORL-VLA: RL online dẫn hướng bằng xúc giác trên nền VLA nhận biết wrench",
+    "excerpt_en": "A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.",
+    "excerpt_vi": "π0.5 nhận biết wrench (đóng băng) dự đoán hành động và wrench tương lai; một actor-critic nhẹ với critic bị kiểm duyệt theo can thiệp rồi tinh chỉnh chunk online từ chỉnh sửa của con người.",
+    "tags": [
+      "VLA",
+      "Tactile",
+      "RL",
+      "Paper Notes",
+      "π0.5"
+    ],
+    "read_min": 3
+  },
+  {
+    "slug": "vit",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "ViT: When an Image Becomes Tokens",
+    "title_vi": "ViT: Ảnh trở thành token",
+    "excerpt_en": "How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.",
+    "excerpt_vi": "Transformer ăn một dãy vector, còn ảnh là một lưới số. Cắt patch, duỗi phẳng, chiếu tuyến tính và cộng mã vị trí, tính tay trên ảnh 4×4.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "ViT",
+      "Transformer"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "vla-touch",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA",
+    "title_vi": "VLA-Touch: Phản hồi xúc giác hai tầng mà không train lại VLA",
+    "excerpt_en": "VLA-Touch leaves the base VLA (RDT) frozen and adds touch twice: as language for a GPT-4o planner, and as force for a small diffusion refiner on the action chunk.",
+    "excerpt_vi": "VLA-Touch giữ nguyên VLA nền (RDT) và thêm xúc giác ở hai tầng: dưới dạng ngôn ngữ cho planner GPT-4o, và dưới dạng lực cho một bộ tinh chỉnh diffusion nhỏ trên action chunk.",
+    "tags": [
+      "VLA",
+      "Tactile",
+      "Paper Notes",
+      "RDT"
+    ],
+    "read_min": 3
+  }
+]

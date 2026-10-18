@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ForceVLA2 injects force at two scales (force prompts in the VLM, force tokens in the action path), fuses them with a Cross-Scale MoE and outputs both a pose change and a target force.">
+<title>ForceVLA2: Hybrid Force-Position Control with Force Awareness · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="ForceVLA2: Hybrid Force-Position Control with Force Awareness">
+<meta property="og:description" content="ForceVLA2 injects force at two scales (force prompts in the VLM, force tokens in the action path), fuses them with a Cross-Scale MoE and outputs both a pose change and a target force.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>ForceVLA2: Hybrid Force-Position Control with Force Awareness</h1>
+    <h1 data-vi>ForceVLA2: Điều khiển lai lực-vị trí có nhận biết lực</h1>
+
+    <p class="post-excerpt-lead" data-en>ForceVLA2 injects force at two scales (force prompts in the VLM, force tokens in the action path), fuses them with a Cross-Scale MoE and outputs both a pose change and a target force.</p>
+    <p class="post-excerpt-lead" data-vi>ForceVLA2 đưa lực vào ở hai tầng (force prompt trong VLM, force token trong nhánh hành động), gộp bằng Cross-Scale MoE và xuất cả độ dịch pose lẫn lực mục tiêu.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Paper Notes</span><span class="pill">MoE</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2603.15169">arXiv 2603.15169</a> (March 2026), the successor of <a href="forcevla.html">ForceVLA</a>, also built on π0.</p>
+<h2>The pain it cures</h2>
+<p>ForceVLA feeds force in but still <strong>outputs only an end-effector pose</strong>. When the contact itself is the goal (press a button with the right force, polish a surface), a pose command cannot say how hard to push. ForceVLA2 changes the <strong>output</strong> too: the policy predicts a pose change and a contact force, a hybrid force-position action. It also lets force steer the task at a higher level, deciding when a subtask is done.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="ForceVLA2: force enters as a text-like force prompt in the VLM and as force tokens next to the EE pose; the Cross-Scale MoE fuses VLM output, state and force, with a bypass that keeps the raw force signal." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="20" width="130" height="36"/><text class="dg-t" x="85" y="42" text-anchor="middle">Multi-view RGB</text>
+<rect class="dg-ext" x="20" y="64" width="130" height="36"/><text class="dg-t" x="85" y="86" text-anchor="middle">Task prompt T_t</text>
+<rect class="dg-key" x="20" y="108" width="130" height="36"/><text class="dg-t" x="85" y="130" text-anchor="middle">Force prompt T_f</text>
+<rect class="dg-box" x="190" y="20" width="150" height="124"/><text class="dg-t" x="265" y="70" text-anchor="middle">VLM (SigLIP-</text><text class="dg-t" x="265" y="86" text-anchor="middle">based, PaliGemma)</text><text class="dg-s" x="265" y="108" text-anchor="middle">E: (Nv+Nt+Nf)×D</text>
+<path class="dg-a" d="M150 38 H190"/><path class="dg-a" d="M150 82 H190"/><path class="dg-a" d="M150 126 H190"/>
+<text class="dg-l" x="85" y="160" text-anchor="middle">stage / subtask text</text>
+<rect class="dg-ext" x="20" y="212" width="130" height="36"/><text class="dg-t" x="85" y="228" text-anchor="middle">EE pose p</text><text class="dg-s" x="85" y="241" text-anchor="middle">R^7</text>
+<rect class="dg-ext" x="20" y="256" width="130" height="36"/><text class="dg-t" x="85" y="272" text-anchor="middle">F/T f_raw</text><text class="dg-s" x="85" y="285" text-anchor="middle">R^6</text>
+<rect class="dg-box" x="190" y="212" width="110" height="36"/><text class="dg-t" x="245" y="234" text-anchor="middle">Linear φ_P</text>
+<rect class="dg-box" x="190" y="256" width="110" height="36"/><text class="dg-t" x="245" y="278" text-anchor="middle">Linear φ_F</text>
+<path class="dg-a" d="M150 230 H190"/><path class="dg-a" d="M150 274 H190"/>
+<rect class="dg-box" x="340" y="234" width="100" height="36"/><text class="dg-t" x="390" y="250" text-anchor="middle">E_state</text><text class="dg-s" x="390" y="263" text-anchor="middle">[E_P ; E_F]</text>
+<path class="dg-a" d="M300 230 H320 V246 H340"/><path class="dg-a" d="M300 274 H320 V258 H340"/>
+<rect class="dg-box" x="480" y="190" width="150" height="70"/><text class="dg-t" x="555" y="218" text-anchor="middle">Cross-Attn</text><text class="dg-s" x="555" y="234" text-anchor="middle">Q = E_state</text><text class="dg-s" x="555" y="248" text-anchor="middle">K,V = E</text>
+<path class="dg-a" d="M440 252 H460 V236 H480"/><path class="dg-a" d="M340 82 H455 V206 H480"/>
+<rect class="dg-box" x="670" y="150" width="100" height="60"/><text class="dg-t" x="720" y="176" text-anchor="middle">E_cond</text><text class="dg-s" x="720" y="192" text-anchor="middle">[E; E'; E_F]</text>
+<path class="dg-a" d="M340 56 H650 V166 H670"/><path class="dg-a" d="M630 225 H650 V196 H670"/>
+<path class="dg-ad" d="M245 292 V340 H720 V210"/><text class="dg-l" x="480" y="334" text-anchor="middle">E_F bypass: raw force skips the fusion layers</text>
+<rect class="dg-key" x="810" y="110" width="150" height="140"/><text class="dg-t" x="885" y="150" text-anchor="middle">Cross-Scale MoE</text><text class="dg-s" x="885" y="172" text-anchor="middle">3 experts: V · S · F</text><text class="dg-s" x="885" y="188" text-anchor="middle">token-wise gate w</text><text class="dg-s" x="885" y="204" text-anchor="middle">Σ w_m · Expert_m</text>
+<path class="dg-a" d="M770 180 H810"/>
+<rect class="dg-box" x="810" y="290" width="150" height="44"/><text class="dg-t" x="885" y="310" text-anchor="middle">Flow-matching</text><text class="dg-t" x="885" y="325" text-anchor="middle">action head</text>
+<path class="dg-a" d="M885 250 V290"/>
+<rect class="dg-box" x="690" y="360" width="160" height="40"/><text class="dg-t" x="770" y="378" text-anchor="middle">a_t = [Δp_t ; f_t]</text><text class="dg-s" x="770" y="392" text-anchor="middle">hybrid pose + force</text>
+<rect class="dg-box" x="870" y="360" width="100" height="40"/><text class="dg-t" x="920" y="378" text-anchor="middle">s_t ∈ [0,1]</text><text class="dg-s" x="920" y="392" text-anchor="middle">subtask progress</text>
+<path class="dg-a" d="M860 334 V347 H770 V360"/><path class="dg-a" d="M910 334 V347 H920 V360"/>
+</svg><figcaption>ForceVLA2: force enters as a text-like force prompt in the VLM and as force tokens next to the EE pose; the Cross-Scale MoE fuses VLM output, state and force, with a bypass that keeps the raw force signal.</figcaption></figure>
+<ol>
+<li><strong>Force prompts (high level).</strong> Each task has a predefined list of subtasks. A text force prompt, fed to the VLM together with the task prompt, tells it which subtask is active. The paper compares it to a discrete state machine. How the prompt text is produced at inference is not stated.</li>
+<li><strong>VLM.</strong> Multi-view images and text give the fused representation $E$.</li>
+<li><strong>State and force tokens (low level).</strong> EE pose $p \in \mathbb{R}^7$ and force $f_{raw} \in \mathbb{R}^6$ are each linearly projected to $E_P$ and $E_F$. A cross-attention layer (queries = state tokens, keys/values = $E$) injects task semantics into them.</li>
+<li><strong>Condition sequence.</strong> $E_{cond} = [E;\ E'_{state};\ E_F]$. Note that $E_F$ appears a second time: this is the <strong>bypass</strong> that stops transient force from being washed out by the fusion layers.</li>
+<li><strong>Cross-Scale MoE.</strong> Three lightweight MLP experts (vision, state, force) and a token-wise gate; the output is $\sum_m w_m\,\text{Expert}_m(E_{cond})$.</li>
+<li><strong>Flow-matching head.</strong> It outputs $a_t = [\Delta p_t;\ f_t]$ (pose change and predicted contact force) plus a progress value $s_t \in [0,1]$. When $s_t$ exceeds 1 the controller moves to the next subtask and resets it to 0.</li>
+</ol>
+<h2>Data and results</h2>
+<ul>
+<li>ForceVLA2-Dataset: 1,000 trajectories, about 500K timesteps, five tasks (press bottle, clean vase, clean board, retrieve plate, assemble gears), each split into 3–5 annotated subtasks; force-feedback GELLO teleoperation on a Flexiv Rizon 4s; F/T sensor at 300 Hz.</li>
+<li>Success rate over 20 trials per task: <strong>66%</strong> average, against π0 18%, π0.5 31% and π0 with naive force input 17%, which matches the abstract's +48.0 and +35.0 points.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>The text says the gate "activates the most relevant expert" but the equation sums all three experts weighted by $w$. Top-k and load-balancing are not described.</li>
+<li>Loss equations, the list of frozen modules and the number of denoising steps are not given in the part of the paper I could read in full. Appendix details (control rate, hyper-parameters) were not verified, so they are left out here.</li>
+</ul>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2603.15169">arXiv 2603.15169</a> (tháng 3/2026), là bản kế nhiệm của <a href="forcevla.html">ForceVLA</a>, cũng xây trên π0.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>ForceVLA đưa lực vào nhưng <strong>đầu ra vẫn chỉ là pose của end-effector</strong>. Khi chính lực tiếp xúc là mục tiêu (ấn nút với đúng lực, đánh bóng bề mặt), lệnh pose không nói được cần ấn mạnh đến đâu. ForceVLA2 đổi cả <strong>đầu ra</strong>: chính sách dự đoán độ dịch pose và lực tiếp xúc, tức hành động lai lực-vị trí. Lực còn được dùng ở mức cao hơn để quyết định khi nào xong một subtask.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="ForceVLA2: lực vào dưới dạng force prompt giống văn bản trong VLM và dưới dạng force token cạnh pose EE; Cross-Scale MoE gộp đầu ra VLM, state và lực, kèm một đường bypass giữ nguyên tín hiệu lực thô." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="20" width="130" height="36"/><text class="dg-t" x="85" y="42" text-anchor="middle">Multi-view RGB</text>
+<rect class="dg-ext" x="20" y="64" width="130" height="36"/><text class="dg-t" x="85" y="86" text-anchor="middle">Task prompt T_t</text>
+<rect class="dg-key" x="20" y="108" width="130" height="36"/><text class="dg-t" x="85" y="130" text-anchor="middle">Force prompt T_f</text>
+<rect class="dg-box" x="190" y="20" width="150" height="124"/><text class="dg-t" x="265" y="70" text-anchor="middle">VLM (SigLIP-</text><text class="dg-t" x="265" y="86" text-anchor="middle">based, PaliGemma)</text><text class="dg-s" x="265" y="108" text-anchor="middle">E: (Nv+Nt+Nf)×D</text>
+<path class="dg-a" d="M150 38 H190"/><path class="dg-a" d="M150 82 H190"/><path class="dg-a" d="M150 126 H190"/>
+<text class="dg-l" x="85" y="160" text-anchor="middle">stage / subtask text</text>
+<rect class="dg-ext" x="20" y="212" width="130" height="36"/><text class="dg-t" x="85" y="228" text-anchor="middle">EE pose p</text><text class="dg-s" x="85" y="241" text-anchor="middle">R^7</text>
+<rect class="dg-ext" x="20" y="256" width="130" height="36"/><text class="dg-t" x="85" y="272" text-anchor="middle">F/T f_raw</text><text class="dg-s" x="85" y="285" text-anchor="middle">R^6</text>
+<rect class="dg-box" x="190" y="212" width="110" height="36"/><text class="dg-t" x="245" y="234" text-anchor="middle">Linear φ_P</text>
+<rect class="dg-box" x="190" y="256" width="110" height="36"/><text class="dg-t" x="245" y="278" text-anchor="middle">Linear φ_F</text>
+<path class="dg-a" d="M150 230 H190"/><path class="dg-a" d="M150 274 H190"/>
+<rect class="dg-box" x="340" y="234" width="100" height="36"/><text class="dg-t" x="390" y="250" text-anchor="middle">E_state</text><text class="dg-s" x="390" y="263" text-anchor="middle">[E_P ; E_F]</text>
+<path class="dg-a" d="M300 230 H320 V246 H340"/><path class="dg-a" d="M300 274 H320 V258 H340"/>
+<rect class="dg-box" x="480" y="190" width="150" height="70"/><text class="dg-t" x="555" y="218" text-anchor="middle">Cross-Attn</text><text class="dg-s" x="555" y="234" text-anchor="middle">Q = E_state</text><text class="dg-s" x="555" y="248" text-anchor="middle">K,V = E</text>
+<path class="dg-a" d="M440 252 H460 V236 H480"/><path class="dg-a" d="M340 82 H455 V206 H480"/>
+<rect class="dg-box" x="670" y="150" width="100" height="60"/><text class="dg-t" x="720" y="176" text-anchor="middle">E_cond</text><text class="dg-s" x="720" y="192" text-anchor="middle">[E; E'; E_F]</text>
+<path class="dg-a" d="M340 56 H650 V166 H670"/><path class="dg-a" d="M630 225 H650 V196 H670"/>
+<path class="dg-ad" d="M245 292 V340 H720 V210"/><text class="dg-l" x="480" y="334" text-anchor="middle">E_F bypass: raw force skips the fusion layers</text>
+<rect class="dg-key" x="810" y="110" width="150" height="140"/><text class="dg-t" x="885" y="150" text-anchor="middle">Cross-Scale MoE</text><text class="dg-s" x="885" y="172" text-anchor="middle">3 experts: V · S · F</text><text class="dg-s" x="885" y="188" text-anchor="middle">token-wise gate w</text><text class="dg-s" x="885" y="204" text-anchor="middle">Σ w_m · Expert_m</text>
+<path class="dg-a" d="M770 180 H810"/>
+<rect class="dg-box" x="810" y="290" width="150" height="44"/><text class="dg-t" x="885" y="310" text-anchor="middle">Flow-matching</text><text class="dg-t" x="885" y="325" text-anchor="middle">action head</text>
+<path class="dg-a" d="M885 250 V290"/>
+<rect class="dg-box" x="690" y="360" width="160" height="40"/><text class="dg-t" x="770" y="378" text-anchor="middle">a_t = [Δp_t ; f_t]</text><text class="dg-s" x="770" y="392" text-anchor="middle">hybrid pose + force</text>
+<rect class="dg-box" x="870" y="360" width="100" height="40"/><text class="dg-t" x="920" y="378" text-anchor="middle">s_t ∈ [0,1]</text><text class="dg-s" x="920" y="392" text-anchor="middle">subtask progress</text>
+<path class="dg-a" d="M860 334 V347 H770 V360"/><path class="dg-a" d="M910 334 V347 H920 V360"/>
+</svg><figcaption>ForceVLA2: lực vào dưới dạng force prompt giống văn bản trong VLM và dưới dạng force token cạnh pose EE; Cross-Scale MoE gộp đầu ra VLM, state và lực, kèm một đường bypass giữ nguyên tín hiệu lực thô.</figcaption></figure>
+<ol>
+<li><strong>Force prompt (mức cao).</strong> Mỗi task có sẵn danh sách subtask. Một force prompt dạng văn bản, đưa vào VLM cùng task prompt, cho biết subtask nào đang chạy. Bài so sánh nó với một máy trạng thái rời rạc. Cách sinh văn bản prompt lúc suy luận không được nêu.</li>
+<li><strong>VLM.</strong> Ảnh nhiều góc nhìn và văn bản cho ra biểu diễn gộp $E$.</li>
+<li><strong>Token state và lực (mức thấp).</strong> Pose EE $p \in \mathbb{R}^7$ và lực $f_{raw} \in \mathbb{R}^6$ mỗi cái qua một lớp linear thành $E_P$ và $E_F$. Một lớp cross-attention (query = token state, key/value = $E$) đưa ngữ nghĩa nhiệm vụ vào chúng.</li>
+<li><strong>Chuỗi điều kiện.</strong> $E_{cond} = [E;\ E'_{state};\ E_F]$. Để ý $E_F$ xuất hiện lần thứ hai: đó là <strong>bypass</strong>, giúp lực thoáng qua không bị các lớp gộp làm mờ.</li>
+<li><strong>Cross-Scale MoE.</strong> Ba expert MLP nhẹ (thị giác, state, lực) và một gate theo từng token; đầu ra là $\sum_m w_m\,\text{Expert}_m(E_{cond})$.</li>
+<li><strong>Đầu flow-matching.</strong> Xuất $a_t = [\Delta p_t;\ f_t]$ (độ dịch pose và lực tiếp xúc dự đoán) cùng giá trị tiến độ $s_t \in [0,1]$. Khi $s_t$ vượt 1, bộ điều khiển chuyển sang subtask kế và đặt lại về 0.</li>
+</ol>
+<h2>Dữ liệu và kết quả</h2>
+<ul>
+<li>ForceVLA2-Dataset: 1.000 quỹ đạo, khoảng 500K timestep, năm task (ấn chai, lau bình, lau bảng, lấy đĩa, lắp bánh răng), mỗi task chia 3–5 subtask có nhãn; teleoperation GELLO có phản hồi lực trên Flexiv Rizon 4s; cảm biến F/T 300 Hz.</li>
+<li>Tỉ lệ thành công trên 20 lượt mỗi task: trung bình <strong>66%</strong>, so với π0 18%, π0.5 31% và π0 với force thô 17%, khớp với mức +48,0 và +35,0 điểm trong abstract.</li>
+</ul>
+<h2>Lưu ý</h2>
+<ul>
+<li>Bài viết gate "kích hoạt expert liên quan nhất" nhưng công thức lại cộng cả ba expert theo trọng số $w$. Top-k và cân bằng tải không được mô tả.</li>
+<li>Công thức loss, danh sách module đóng băng và số bước denoise không có trong phần bài tôi đọc nguyên văn. Chi tiết ở phụ lục (tần số điều khiển, siêu tham số) chưa được kiểm chứng nên tôi bỏ qua.</li>
+</ul>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

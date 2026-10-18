@@ -1,0 +1,25 @@
+<svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">(a) TACTILE–FORCE ALIGNMENT (self-supervised)</text>
+<rect class="dg-ext" x="20" y="42" width="160" height="48"/><text class="dg-t" x="100" y="60" text-anchor="middle">Force window N=5</text><text class="dg-s" x="100" y="75" text-anchor="middle">F' 12×12 map, F'' 6-axis</text>
+<rect class="dg-box" x="220" y="42" width="130" height="48"/><text class="dg-t" x="285" y="60" text-anchor="middle">MLP f_φ' f_φ''</text><text class="dg-s" x="285" y="75" text-anchor="middle">z', z''</text>
+<rect class="dg-box" x="390" y="42" width="130" height="48"/><text class="dg-t" x="455" y="60" text-anchor="middle">VQ codebooks</text><text class="dg-s" x="455" y="75" text-anchor="middle">C', C'' → c*</text>
+<path class="dg-a" d="M180 66 H220"/><path class="dg-a" d="M350 66 H390"/>
+<rect class="dg-ext" x="20" y="116" width="160" height="48"/><text class="dg-t" x="100" y="134" text-anchor="middle">Tactile images</text><text class="dg-s" x="100" y="149" text-anchor="middle">window N=5</text>
+<rect class="dg-box" x="220" y="116" width="130" height="48"/><text class="dg-t" x="285" y="134" text-anchor="middle">ViT</text><text class="dg-s" x="285" y="149" text-anchor="middle">per frame h_tac</text>
+<rect class="dg-box" x="390" y="116" width="150" height="48"/><text class="dg-t" x="465" y="134" text-anchor="middle">Causal Transformer</text><text class="dg-s" x="465" y="149" text-anchor="middle">summary token s → z*</text>
+<path class="dg-a" d="M180 140 H220"/><path class="dg-a" d="M350 140 H390"/>
+<rect class="dg-key" x="620" y="76" width="150" height="56"/><text class="dg-t" x="695" y="100" text-anchor="middle">InfoNCE</text><text class="dg-s" x="695" y="116" text-anchor="middle">pull z* ↔ c*</text>
+<path class="dg-a" d="M520 66 H570 V92 H620"/><path class="dg-a" d="M540 140 H570 V116 H620"/>
+<rect class="dg-key" x="810" y="76" width="140" height="56"/><text class="dg-t" x="880" y="98" text-anchor="middle">TaF-Adapter</text><text class="dg-s" x="880" y="114" text-anchor="middle">frozen → z^tac</text>
+<path class="dg-ad" d="M770 104 H810"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="184"/><text class="dg-h" x="22" y="226">(b) POLICY INTEGRATION (π0.5 backbone)</text>
+<rect class="dg-ext" x="20" y="250" width="160" height="48"/><text class="dg-t" x="100" y="268" text-anchor="middle">I_global, I_wrist</text><text class="dg-s" x="100" y="283" text-anchor="middle">+ language l</text>
+<rect class="dg-box" x="220" y="250" width="130" height="48"/><text class="dg-t" x="285" y="268" text-anchor="middle">π_VLM</text><text class="dg-s" x="285" y="283" text-anchor="middle">conditioning φ_t</text>
+<path class="dg-a" d="M180 274 H220"/>
+<rect class="dg-ext" x="220" y="326" width="130" height="40"/><text class="dg-t" x="285" y="344" text-anchor="middle">Proprio q_t</text>
+<rect class="dg-key" x="440" y="250" width="200" height="80"/><text class="dg-t" x="540" y="282" text-anchor="middle">Action expert</text><text class="dg-s" x="540" y="298" text-anchor="middle">flow matching, δ=0.1</text><text class="dg-s" x="540" y="312" text-anchor="middle">input: φ_t, z^tac, q_t</text>
+<path class="dg-a" d="M350 274 H440"/><path class="dg-a" d="M350 346 H400 V310 H440"/>
+<path class="dg-ad" d="M900 132 V236 H560 V250"/><text class="dg-l" x="730" y="230" text-anchor="middle">force-aligned tactile tokens</text>
+<rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
+<path class="dg-a" d="M640 292 H720"/>
+</svg>

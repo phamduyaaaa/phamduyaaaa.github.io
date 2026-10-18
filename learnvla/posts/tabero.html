@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Tabero replays LIBERO in a tactile simulator to get vision, touch and force data, and Tabero-VTLA predicts pose plus force setpoints that a fixed hybrid controller tracks, so 'gently' actually means less force.">
+<title>Tabero: Gentle Manipulation with Closed-Loop Force Feedback · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Tabero: Gentle Manipulation with Closed-Loop Force Feedback">
+<meta property="og:description" content="Tabero replays LIBERO in a tactile simulator to get vision, touch and force data, and Tabero-VTLA predicts pose plus force setpoints that a fixed hybrid controller tracks, so 'gently' actually means less force.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Tabero: Gentle Manipulation with Closed-Loop Force Feedback</h1>
+    <h1 data-vi>Tabero: Thao tác nhẹ tay với phản hồi lực vòng kín</h1>
+
+    <p class="post-excerpt-lead" data-en>Tabero replays LIBERO in a tactile simulator to get vision, touch and force data, and Tabero-VTLA predicts pose plus force setpoints that a fixed hybrid controller tracks, so 'gently' actually means less force.</p>
+    <p class="post-excerpt-lead" data-vi>Tabero phát lại LIBERO trong mô phỏng xúc giác để có dữ liệu thị giác, xúc giác, lực; Tabero-VTLA dự đoán pose và lực mục tiêu cho bộ điều khiển lai cố định bám theo, nhờ đó 'nhẹ tay' thực sự là lực nhỏ hơn.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Benchmark</span><span class="pill">Paper Notes</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2605.27886">arXiv 2605.27886</a> (ICML 2026), code at <a href="https://github.com/NathanWu7/Tabero">NathanWu7/Tabero</a>. It is both a <strong>benchmark/data pipeline</strong> and a <strong>model</strong>.</p>
+<h2>The pain it cures</h2>
+<p>A VLA told to "pick up the egg gently" has no way to make the gripper squeeze less: it never saw force, and an open-loop position command cannot hold a target force. Tabero attacks both ends: it creates force-aware data cheaply, and it gives the policy a force-position command interface that a low-level loop can actually track.</p>
+<h2>The benchmark pipeline</h2>
+<p>Take open-source trajectories made for another simulator (LIBERO tasks, originally MuJoCo) and <strong>replay</strong> them in Isaac Lab with a simulated GelSight gripper (320×240 image, 11×9 marker grid; Taxim for tactile images, FOTS for the marker field, physics-engine ground-truth contact force), sampled at 20 Hz. Force diversity comes from impedance gains for 100%, 25% and 10% force levels, and the paired instruction uses adverbs ("firmly", "gently"). Evaluation scores physical interaction quality as well as success: SR, mean grip force AG, peak grip force MG, and the matching applied-force metrics.</p>
+<h2>Architecture (Tabero-VTLA)</h2>
+<figure class="diagram"><svg role="img" aria-label="Vision, language, marker-field and force tokens enter a LoRA-tuned π0; it predicts pose and force setpoints; a fixed hybrid controller tracks them and feeds measured force back." viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="130" height="36"/><text class="dg-t" x="85" y="40" text-anchor="middle">Wrist + 3rd-person</text><text class="dg-s" x="85" y="53" text-anchor="middle">RGB-D</text>
+<rect class="dg-ext" x="20" y="68" width="130" height="36"/><text class="dg-t" x="85" y="84" text-anchor="middle">Language</text><text class="dg-s" x="85" y="97" text-anchor="middle">"gently" / "firmly"</text>
+<rect class="dg-ext" x="20" y="112" width="130" height="36"/><text class="dg-t" x="85" y="128" text-anchor="middle">Marker field M</text><text class="dg-s" x="85" y="141" text-anchor="middle">9 frames × N × 2</text>
+<rect class="dg-ext" x="20" y="156" width="130" height="36"/><text class="dg-t" x="85" y="172" text-anchor="middle">Force F_L, F_R</text><text class="dg-s" x="85" y="185" text-anchor="middle">6D</text>
+<rect class="dg-box" x="190" y="24" width="120" height="36"/><text class="dg-t" x="250" y="46" text-anchor="middle">Visual encoder</text>
+<rect class="dg-key" x="190" y="112" width="120" height="36"/><text class="dg-t" x="250" y="128" text-anchor="middle">TCN tokenizer</text><text class="dg-s" x="250" y="141" text-anchor="middle">Force-Field</text>
+<rect class="dg-key" x="190" y="156" width="120" height="36"/><text class="dg-t" x="250" y="172" text-anchor="middle">MLP tokenizer</text><text class="dg-s" x="250" y="185" text-anchor="middle">Force</text>
+<path class="dg-a" d="M150 42 H190"/><path class="dg-a" d="M150 130 H190"/><path class="dg-a" d="M150 174 H190"/>
+<rect class="dg-box" x="350" y="24" width="150" height="168"/><text class="dg-t" x="425" y="96" text-anchor="middle">π0 backbone</text><text class="dg-s" x="425" y="114" text-anchor="middle">LoRA fine-tune</text><text class="dg-s" x="425" y="130" text-anchor="middle">flow-matching</text>
+<path class="dg-a" d="M310 42 H350"/><path class="dg-a" d="M150 86 H330 V70 H350"/><path class="dg-a" d="M310 130 H350"/><path class="dg-a" d="M310 174 H350"/>
+<rect class="dg-box" x="540" y="24" width="150" height="36"/><text class="dg-t" x="615" y="46" text-anchor="middle">P_pred ∈ SE(3)</text>
+<rect class="dg-box" x="540" y="68" width="150" height="36"/><text class="dg-t" x="615" y="90" text-anchor="middle">F_target_applied</text>
+<rect class="dg-box" x="540" y="112" width="150" height="48"/><text class="dg-t" x="615" y="132" text-anchor="middle">F_grip_pred</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ gripper width p_pred</text>
+<path class="dg-a" d="M500 42 H540"/><path class="dg-a" d="M500 86 H540"/><path class="dg-a" d="M500 136 H540"/>
+<rect class="dg-grp" x="730" y="8" width="240" height="214"/><text class="dg-h" x="742" y="26">FIXED HYBRID CONTROLLER</text>
+<rect class="dg-key" x="745" y="38" width="210" height="76"/><text class="dg-t" x="850" y="58" text-anchor="middle">Applied-force loop</text><text class="dg-s" x="850" y="76" text-anchor="middle">p_cmd = p_pred + K(F_tgt − F_meas)</text><text class="dg-s" x="850" y="92" text-anchor="middle">→ differential IK → joint vel</text>
+<rect class="dg-key" x="745" y="126" width="210" height="76"/><text class="dg-t" x="850" y="146" text-anchor="middle">Grip-force loop</text><text class="dg-s" x="850" y="164" text-anchor="middle">F_tgt = (1+k_ff)·F_pred</text><text class="dg-s" x="850" y="180" text-anchor="middle">deadzone + clip → gripper cmd</text>
+<path class="dg-a" d="M690 42 H718 V56 H745"/><path class="dg-a" d="M690 86 H718 V72 H745"/><path class="dg-a" d="M690 136 H745"/>
+<rect class="dg-box" x="745" y="258" width="210" height="44"/><text class="dg-t" x="850" y="276" text-anchor="middle">Robot in Isaac Lab</text><text class="dg-s" x="850" y="291" text-anchor="middle">GelSight tactile + force</text>
+<path class="dg-a" d="M850 114 V126"/><path class="dg-a" d="M850 202 V258"/>
+<path class="dg-ad" d="M745 280 H85 V192"/><text class="dg-l" x="415" y="272" text-anchor="middle">measured force + tactile feedback</text>
+</svg><figcaption>Vision, language, marker-field and force tokens enter a LoRA-tuned π0; it predicts pose and force setpoints; a fixed hybrid controller tracks them and feeds measured force back.</figcaption></figure>
+<ul>
+<li><strong>Touch tokens.</strong> The marker displacement field (a history of 8 frames plus the undeformed layout) goes through a small causal TCN, the Force-Field Tokenizer. Alternatively, left/right tactile frames are arranged into one image and sent through the vision encoder (the "Img" variant).</li>
+<li><strong>Force token.</strong> The 6D force from both fingers goes through an MLP.</li>
+<li><strong>Backbone.</strong> π0 (JAX) with LoRA, flow matching. Tactile tokens go to the prefix (or the suffix in one variant). An optional force-supervision loss (weight 0.1) predicts force.</li>
+<li><strong>Decoupled command interface.</strong> The policy outputs a pose $P^{pred} \in SE(3)$, an applied-force target and a grip-force prediction with gripper width. The two forces are defined from fingertip forces: $F_{grip} = 2\min(|F_{L,z}|, |F_{R,z}|)$ and $F_{applied} = -(F_L + F_R)$.</li>
+<li><strong>Fixed hybrid controller.</strong> Applied-force loop (admittance): $p_{cmd} = p_{pred} + K\,(F^{target} - F^{meas})$, followed by differential IK. Grip loop: a feedforward $F^{target}_{grip} = (1+k_{ff})F^{pred}_{grip}$, exponential smoothing, a deadzone and clipping on the gripper width.</li>
+</ul>
+<h2>Results</h2>
+<ul>
+<li>Training: 50,000 steps, batch 32, peak learning rate $2.5\times10^{-5}$ with cosine decay.</li>
+<li>On Dataset B (10% gentle force) the best model, Field+FS, keeps 0.86 success when told to be firm and 0.52 when told to be gentle, while the average grip force falls from 32.4 to 3.7 (an 88.6% cut). On Dataset A (25%) the cut is 72.8%.</li>
+<li>Models without force supervision collapse under the gentle instruction (success about 0.01).</li>
+<li>Both the feedforward term and the admittance loop are needed for accurate force tracking (ablation).</li>
+</ul>
+<h2>Caveats</h2>
+<p>The visual encoder, the language encoder, the policy and controller rates and the action-chunk length are not stated. The text says the force input is 6D while Table 7 lists an MLP input of $8\times 6 = 48$. The authors note the framework does not jointly optimise task success and minimal force.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2605.27886">arXiv 2605.27886</a> (ICML 2026), code tại <a href="https://github.com/NathanWu7/Tabero">NathanWu7/Tabero</a>. Đây vừa là <strong>benchmark/pipeline dữ liệu</strong> vừa là <strong>mô hình</strong>.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Một VLA được bảo "nhặt quả trứng nhẹ tay" không có cách nào làm kẹp siết nhẹ hơn: nó chưa từng thấy lực, và lệnh vị trí vòng hở không giữ được lực mục tiêu. Tabero xử lý cả hai đầu: tạo dữ liệu có lực với chi phí thấp, và cho chính sách một giao diện lệnh lực-vị trí mà vòng điều khiển thấp có thể bám theo thật.</p>
+<h2>Pipeline benchmark</h2>
+<p>Lấy các quỹ đạo mã nguồn mở làm cho mô phỏng khác (task LIBERO, gốc là MuJoCo) rồi <strong>phát lại</strong> chúng trong Isaac Lab với kẹp GelSight mô phỏng (ảnh 320×240, lưới marker 11×9; Taxim cho ảnh xúc giác, FOTS cho trường marker, lực tiếp xúc chuẩn từ engine vật lý), lấy mẫu 20 Hz. Độ đa dạng lực đến từ hệ số impedance cho mức lực 100%, 25% và 10%, và câu lệnh đi kèm dùng trạng từ ("firmly", "gently"). Đánh giá chấm cả chất lượng tương tác vật lý chứ không chỉ thành công: SR, lực kẹp trung bình AG, lực kẹp đỉnh MG, và các chỉ số lực tác dụng tương ứng.</p>
+<h2>Kiến trúc (Tabero-VTLA)</h2>
+<figure class="diagram"><svg role="img" aria-label="Token thị giác, ngôn ngữ, trường marker và lực vào π0 tinh chỉnh LoRA; mô hình dự đoán pose và lực mục tiêu; bộ điều khiển lai cố định bám theo và đưa lực đo được ngược lại." viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="130" height="36"/><text class="dg-t" x="85" y="40" text-anchor="middle">Wrist + 3rd-person</text><text class="dg-s" x="85" y="53" text-anchor="middle">RGB-D</text>
+<rect class="dg-ext" x="20" y="68" width="130" height="36"/><text class="dg-t" x="85" y="84" text-anchor="middle">Language</text><text class="dg-s" x="85" y="97" text-anchor="middle">"gently" / "firmly"</text>
+<rect class="dg-ext" x="20" y="112" width="130" height="36"/><text class="dg-t" x="85" y="128" text-anchor="middle">Marker field M</text><text class="dg-s" x="85" y="141" text-anchor="middle">9 frames × N × 2</text>
+<rect class="dg-ext" x="20" y="156" width="130" height="36"/><text class="dg-t" x="85" y="172" text-anchor="middle">Force F_L, F_R</text><text class="dg-s" x="85" y="185" text-anchor="middle">6D</text>
+<rect class="dg-box" x="190" y="24" width="120" height="36"/><text class="dg-t" x="250" y="46" text-anchor="middle">Visual encoder</text>
+<rect class="dg-key" x="190" y="112" width="120" height="36"/><text class="dg-t" x="250" y="128" text-anchor="middle">TCN tokenizer</text><text class="dg-s" x="250" y="141" text-anchor="middle">Force-Field</text>
+<rect class="dg-key" x="190" y="156" width="120" height="36"/><text class="dg-t" x="250" y="172" text-anchor="middle">MLP tokenizer</text><text class="dg-s" x="250" y="185" text-anchor="middle">Force</text>
+<path class="dg-a" d="M150 42 H190"/><path class="dg-a" d="M150 130 H190"/><path class="dg-a" d="M150 174 H190"/>
+<rect class="dg-box" x="350" y="24" width="150" height="168"/><text class="dg-t" x="425" y="96" text-anchor="middle">π0 backbone</text><text class="dg-s" x="425" y="114" text-anchor="middle">LoRA fine-tune</text><text class="dg-s" x="425" y="130" text-anchor="middle">flow-matching</text>
+<path class="dg-a" d="M310 42 H350"/><path class="dg-a" d="M150 86 H330 V70 H350"/><path class="dg-a" d="M310 130 H350"/><path class="dg-a" d="M310 174 H350"/>
+<rect class="dg-box" x="540" y="24" width="150" height="36"/><text class="dg-t" x="615" y="46" text-anchor="middle">P_pred ∈ SE(3)</text>
+<rect class="dg-box" x="540" y="68" width="150" height="36"/><text class="dg-t" x="615" y="90" text-anchor="middle">F_target_applied</text>
+<rect class="dg-box" x="540" y="112" width="150" height="48"/><text class="dg-t" x="615" y="132" text-anchor="middle">F_grip_pred</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ gripper width p_pred</text>
+<path class="dg-a" d="M500 42 H540"/><path class="dg-a" d="M500 86 H540"/><path class="dg-a" d="M500 136 H540"/>
+<rect class="dg-grp" x="730" y="8" width="240" height="214"/><text class="dg-h" x="742" y="26">FIXED HYBRID CONTROLLER</text>
+<rect class="dg-key" x="745" y="38" width="210" height="76"/><text class="dg-t" x="850" y="58" text-anchor="middle">Applied-force loop</text><text class="dg-s" x="850" y="76" text-anchor="middle">p_cmd = p_pred + K(F_tgt − F_meas)</text><text class="dg-s" x="850" y="92" text-anchor="middle">→ differential IK → joint vel</text>
+<rect class="dg-key" x="745" y="126" width="210" height="76"/><text class="dg-t" x="850" y="146" text-anchor="middle">Grip-force loop</text><text class="dg-s" x="850" y="164" text-anchor="middle">F_tgt = (1+k_ff)·F_pred</text><text class="dg-s" x="850" y="180" text-anchor="middle">deadzone + clip → gripper cmd</text>
+<path class="dg-a" d="M690 42 H718 V56 H745"/><path class="dg-a" d="M690 86 H718 V72 H745"/><path class="dg-a" d="M690 136 H745"/>
+<rect class="dg-box" x="745" y="258" width="210" height="44"/><text class="dg-t" x="850" y="276" text-anchor="middle">Robot in Isaac Lab</text><text class="dg-s" x="850" y="291" text-anchor="middle">GelSight tactile + force</text>
+<path class="dg-a" d="M850 114 V126"/><path class="dg-a" d="M850 202 V258"/>
+<path class="dg-ad" d="M745 280 H85 V192"/><text class="dg-l" x="415" y="272" text-anchor="middle">measured force + tactile feedback</text>
+</svg><figcaption>Token thị giác, ngôn ngữ, trường marker và lực vào π0 tinh chỉnh LoRA; mô hình dự đoán pose và lực mục tiêu; bộ điều khiển lai cố định bám theo và đưa lực đo được ngược lại.</figcaption></figure>
+<ul>
+<li><strong>Token xúc giác.</strong> Trường dịch chuyển marker (lịch sử 8 khung cộng khung chưa biến dạng) qua một TCN nhân quả nhỏ, gọi là Force-Field Tokenizer. Cách khác: ghép khung xúc giác trái/phải thành một ảnh rồi cho qua encoder thị giác (biến thể "Img").</li>
+<li><strong>Token lực.</strong> Lực 6D từ hai ngón qua một MLP.</li>
+<li><strong>Backbone.</strong> π0 (JAX) với LoRA, flow matching. Token xúc giác vào prefix (hoặc suffix ở một biến thể). Một loss giám sát lực tùy chọn (trọng số 0,1) dự đoán lực.</li>
+<li><strong>Giao diện lệnh tách rời.</strong> Chính sách xuất pose $P^{pred} \in SE(3)$, lực tác dụng mục tiêu, và lực kẹp dự đoán cùng độ mở kẹp. Hai lực được định nghĩa từ lực đầu ngón: $F_{grip} = 2\min(|F_{L,z}|, |F_{R,z}|)$ và $F_{applied} = -(F_L + F_R)$.</li>
+<li><strong>Bộ điều khiển lai cố định.</strong> Vòng lực tác dụng (admittance): $p_{cmd} = p_{pred} + K\,(F^{target} - F^{meas})$, sau đó IK vi phân. Vòng kẹp: feedforward $F^{target}_{grip} = (1+k_{ff})F^{pred}_{grip}$, làm mượt mũ, vùng chết và cắt biên độ mở kẹp.</li>
+</ul>
+<h2>Kết quả</h2>
+<ul>
+<li>Huấn luyện: 50.000 bước, batch 32, learning rate đỉnh $2.5\times10^{-5}$ giảm kiểu cosine.</li>
+<li>Ở Dataset B (lực nhẹ 10%), mô hình tốt nhất Field+FS giữ 0,86 thành công khi bảo "firm" và 0,52 khi bảo "gentle", trong khi lực kẹp trung bình giảm từ 32,4 xuống 3,7 (giảm 88,6%). Ở Dataset A (25%) mức giảm là 72,8%.</li>
+<li>Mô hình không có giám sát lực sụp khi nhận lệnh "gentle" (thành công khoảng 0,01).</li>
+<li>Cả thành phần feedforward lẫn vòng admittance đều cần cho việc bám lực chính xác (ablation).</li>
+</ul>
+<h2>Lưu ý</h2>
+<p>Encoder thị giác, encoder ngôn ngữ, tần số chính sách và bộ điều khiển, và độ dài action chunk không được nêu. Văn bản nói lực đầu vào là 6D trong khi Bảng 7 ghi đầu vào MLP là $8\times 6 = 48$. Các tác giả thừa nhận khung chưa tối ưu đồng thời thành công nhiệm vụ và lực tối thiểu.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

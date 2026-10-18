@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.">
+<title>HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference">
+<meta property="og:description" content="HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference</h1>
+    <h1 data-vi>HapticVLA: Thao tác nhận biết xúc giác mà không cần cảm biến lúc suy luận</h1>
+
+    <p class="post-excerpt-lead" data-en>HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.</p>
+    <p class="post-excerpt-lead" data-vi>HapticVLA huấn luyện một SmolVLA teacher với phần thưởng xúc giác có nhận biết an toàn, rồi chưng cất sang student chỉ thấy thị giác và state. Mô hình 0,45B không cần phần cứng xúc giác lúc chạy.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">Distillation</span><span class="pill">Paper Notes</span><span class="pill">SmolVLA</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (March 2026), Skoltech; project page linked from the abstract.</p>
+<h2>The pain it cures</h2>
+<p>Pick a jar, a waffle and an egg with the same gripper. The jar tolerates force; the waffle and the egg do not. Success must mean "object intact", not just "object moved". HapticVLA gets there with <strong>two stages</strong>: first learn gentleness using tactile data, then make the policy independent of the tactile sensor.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Stage 1 trains a teacher with a tactile reward as an extra condition; stage 2 distils the teacher's action targets into a student that never sees tactile data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
+<rect class="dg-ext" x="20" y="44" width="190" height="48"/><text class="dg-t" x="115" y="62" text-anchor="middle">Tactile maps M^L, M^R</text><text class="dg-s" x="115" y="77" text-anchor="middle">10×10 + manipulator state</text>
+<rect class="dg-box" x="250" y="44" width="160" height="48"/><text class="dg-t" x="330" y="62" text-anchor="middle">Offline tactile reward</text><text class="dg-s" x="330" y="77" text-anchor="middle">r_t · R_episode · risk</text>
+<path class="dg-a" d="M210 68 H250"/>
+<rect class="dg-ext" x="250" y="112" width="160" height="48"/><text class="dg-t" x="330" y="130" text-anchor="middle">Vision · Language</text><text class="dg-s" x="330" y="145" text-anchor="middle">· State</text>
+<rect class="dg-box" x="460" y="112" width="140" height="48"/><text class="dg-t" x="530" y="130" text-anchor="middle">SmolVLA VLM</text><text class="dg-s" x="530" y="145" text-anchor="middle">0.45B</text>
+<path class="dg-a" d="M410 136 H460"/>
+<rect class="dg-key" x="650" y="60" width="170" height="100"/><text class="dg-t" x="735" y="94" text-anchor="middle">SA-RWFM</text><text class="dg-t" x="735" y="110" text-anchor="middle">action expert</text><text class="dg-s" x="735" y="130" text-anchor="middle">reward-weighted flow</text><text class="dg-s" x="735" y="144" text-anchor="middle">matching + anchor</text>
+<path class="dg-a" d="M600 136 H625 V120 H650"/><path class="dg-ad" d="M410 68 H625 V88 H650"/><text class="dg-l" x="520" y="60" text-anchor="middle">reward as extra condition</text>
+<rect class="dg-box" x="860" y="84" width="100" height="52"/><text class="dg-t" x="910" y="106" text-anchor="middle">Teacher</text><text class="dg-s" x="910" y="122" text-anchor="middle">π_T</text>
+<path class="dg-a" d="M820 110 H860"/>
+<rect class="dg-grp" x="10" y="196" width="960" height="194"/><text class="dg-h" x="22" y="214">STAGE 2 · TACTILE DISTILLATION (no tactile at inference)</text>
+<rect class="dg-box" x="20" y="240" width="170" height="48"/><text class="dg-t" x="105" y="258" text-anchor="middle">Teacher targets â^T</text><text class="dg-s" x="105" y="273" text-anchor="middle">offline, N=51,251</text>
+<path class="dg-a" d="M910 136 V226 H105 V240"/><text class="dg-l" x="560" y="220" text-anchor="middle">pre-computed once</text>
+<rect class="dg-box" x="230" y="240" width="190" height="48"/><text class="dg-t" x="325" y="258" text-anchor="middle">ã = (1−α)a_GT + α â^T</text><text class="dg-s" x="325" y="273" text-anchor="middle">blend, α = 0.5</text>
+<path class="dg-a" d="M190 264 H230"/>
+<rect class="dg-ext" x="230" y="316" width="190" height="40"/><text class="dg-t" x="325" y="340" text-anchor="middle">Ground-truth actions a_GT</text>
+<path class="dg-a" d="M325 316 V288"/>
+<rect class="dg-key" x="470" y="228" width="210" height="76"/><text class="dg-t" x="575" y="254" text-anchor="middle">Student SmolVLA</text><text class="dg-s" x="575" y="272" text-anchor="middle">vision + state only; init from</text><text class="dg-s" x="575" y="286" text-anchor="middle">teacher, tactile encoder removed</text>
+<path class="dg-a" d="M420 264 H470"/>
+<rect class="dg-box" x="730" y="240" width="220" height="48"/><text class="dg-t" x="840" y="258" text-anchor="middle">Flow-matching L_distill</text><text class="dg-s" x="840" y="273" text-anchor="middle">target ã − x_0</text>
+<path class="dg-a" d="M680 264 H730"/>
+<rect class="dg-ext" x="470" y="330" width="480" height="40"/><text class="dg-t" x="710" y="348" text-anchor="middle">Inference: vision + state → predicted tactile token → actions</text><text class="dg-s" x="710" y="362" text-anchor="middle">(token output/size not specified in the paper)</text>
+<path class="dg-ad" d="M575 304 V330"/>
+</svg><figcaption>Stage 1 trains a teacher with a tactile reward as an extra condition; stage 2 distils the teacher's action targets into a student that never sees tactile data.</figcaption></figure>
+<p><strong>Stage 1: the teacher (SA-RWFM).</strong></p>
+<ul>
+<li><strong>Offline tactile reward.</strong> From the two 10×10 tactile maps (100 taxels per finger) the method computes per-step statistics: mean force, peak pressure, how concentrated the pressure is, centre of pressure and slip. A per-step reward $r_t$ sums squared penalties for over-force, under-force while holding, peak pressure, concentration and asymmetry plus a slip term. An episode reward adds success and subtracts drop, damage and risk.</li>
+<li><strong>Reward-weighted flow matching (RWFM).</strong> The SmolVLA action expert is trained with a flow-matching loss in which each sample is weighted by $w = \exp(\alpha A)$, with advantage $A$ built from the episode and chunk-level rewards ($\alpha = 0.25$, weights clipped to $[0.25, 4]$). An anchor term keeps parameters near the pretrained model. Faulty demonstrations (the object was damaged) are kept and receive negative rewards.</li>
+</ul>
+<p><strong>Stage 2: tactile distillation.</strong></p>
+<ul>
+<li>The teacher generates action targets $\hat a^T$ offline for $N = 51{,}251$ samples.</li>
+<li>The student is a standard SmolVLA with the teacher's weights except the tactile encoder; its state projection shrinks from $134 \to 6$ inputs.</li>
+<li>Training target: $\tilde a = (1-\alpha)\,a^{GT} + \alpha\,\hat a^T$ with $\alpha = 0.5$, trained by flow matching.</li>
+</ul>
+<h2>Hardware and data</h2>
+<p>Two LeRobot SO-101 arms (one with a tactile parallel gripper; 100 taxels per electrode, 120 Hz), a RealSense D435, wrist cameras, and a Jetson Orin NX. 310 real episodes over three tasks (70 good plus 20 faulty per single-arm task, 100 plus 30 for the bimanual one), plus 1,000 Isaac Sim episodes.</p>
+<h2>Results</h2>
+<p>20 trials per task (Jar, Waffles, Egg): HapticVLA reaches <strong>86.7%</strong> mean (75%, 90%, 95%), the teacher-style SmolVLA with the SA-RWFM expert alone <strong>75%</strong>, and X-VLA and VLA-0 score 0%. On the egg task it is a 45-point improvement over the base model. Asynchronous chunking sometimes lowers success because of added latency.</p>
+<h2>Caveats</h2>
+<p>The abstract says the student predicts a "compact tactile token", but the loss in the paper is only the action-level flow-matching distillation. No token size or token loss is given, so the figure marks that box as unspecified. Optimiser, learning rate, batch size, steps and control rate are not stated.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (tháng 3/2026), Skoltech; trang dự án có link trong abstract.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Nhặt một hũ, một cái bánh waffle và một quả trứng bằng cùng một kẹp. Hũ chịu được lực; waffle và trứng thì không. Thành công phải nghĩa là "vật còn nguyên vẹn", không chỉ "vật đã di chuyển". HapticVLA làm được qua <strong>hai giai đoạn</strong>: học sự nhẹ nhàng bằng dữ liệu xúc giác trước, rồi làm chính sách không còn phụ thuộc cảm biến xúc giác.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Giai đoạn 1 huấn luyện teacher với phần thưởng xúc giác làm điều kiện phụ; giai đoạn 2 chưng cất mục tiêu hành động của teacher sang student không bao giờ thấy dữ liệu xúc giác." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
+<rect class="dg-ext" x="20" y="44" width="190" height="48"/><text class="dg-t" x="115" y="62" text-anchor="middle">Tactile maps M^L, M^R</text><text class="dg-s" x="115" y="77" text-anchor="middle">10×10 + manipulator state</text>
+<rect class="dg-box" x="250" y="44" width="160" height="48"/><text class="dg-t" x="330" y="62" text-anchor="middle">Offline tactile reward</text><text class="dg-s" x="330" y="77" text-anchor="middle">r_t · R_episode · risk</text>
+<path class="dg-a" d="M210 68 H250"/>
+<rect class="dg-ext" x="250" y="112" width="160" height="48"/><text class="dg-t" x="330" y="130" text-anchor="middle">Vision · Language</text><text class="dg-s" x="330" y="145" text-anchor="middle">· State</text>
+<rect class="dg-box" x="460" y="112" width="140" height="48"/><text class="dg-t" x="530" y="130" text-anchor="middle">SmolVLA VLM</text><text class="dg-s" x="530" y="145" text-anchor="middle">0.45B</text>
+<path class="dg-a" d="M410 136 H460"/>
+<rect class="dg-key" x="650" y="60" width="170" height="100"/><text class="dg-t" x="735" y="94" text-anchor="middle">SA-RWFM</text><text class="dg-t" x="735" y="110" text-anchor="middle">action expert</text><text class="dg-s" x="735" y="130" text-anchor="middle">reward-weighted flow</text><text class="dg-s" x="735" y="144" text-anchor="middle">matching + anchor</text>
+<path class="dg-a" d="M600 136 H625 V120 H650"/><path class="dg-ad" d="M410 68 H625 V88 H650"/><text class="dg-l" x="520" y="60" text-anchor="middle">reward as extra condition</text>
+<rect class="dg-box" x="860" y="84" width="100" height="52"/><text class="dg-t" x="910" y="106" text-anchor="middle">Teacher</text><text class="dg-s" x="910" y="122" text-anchor="middle">π_T</text>
+<path class="dg-a" d="M820 110 H860"/>
+<rect class="dg-grp" x="10" y="196" width="960" height="194"/><text class="dg-h" x="22" y="214">STAGE 2 · TACTILE DISTILLATION (no tactile at inference)</text>
+<rect class="dg-box" x="20" y="240" width="170" height="48"/><text class="dg-t" x="105" y="258" text-anchor="middle">Teacher targets â^T</text><text class="dg-s" x="105" y="273" text-anchor="middle">offline, N=51,251</text>
+<path class="dg-a" d="M910 136 V226 H105 V240"/><text class="dg-l" x="560" y="220" text-anchor="middle">pre-computed once</text>
+<rect class="dg-box" x="230" y="240" width="190" height="48"/><text class="dg-t" x="325" y="258" text-anchor="middle">ã = (1−α)a_GT + α â^T</text><text class="dg-s" x="325" y="273" text-anchor="middle">blend, α = 0.5</text>
+<path class="dg-a" d="M190 264 H230"/>
+<rect class="dg-ext" x="230" y="316" width="190" height="40"/><text class="dg-t" x="325" y="340" text-anchor="middle">Ground-truth actions a_GT</text>
+<path class="dg-a" d="M325 316 V288"/>
+<rect class="dg-key" x="470" y="228" width="210" height="76"/><text class="dg-t" x="575" y="254" text-anchor="middle">Student SmolVLA</text><text class="dg-s" x="575" y="272" text-anchor="middle">vision + state only; init from</text><text class="dg-s" x="575" y="286" text-anchor="middle">teacher, tactile encoder removed</text>
+<path class="dg-a" d="M420 264 H470"/>
+<rect class="dg-box" x="730" y="240" width="220" height="48"/><text class="dg-t" x="840" y="258" text-anchor="middle">Flow-matching L_distill</text><text class="dg-s" x="840" y="273" text-anchor="middle">target ã − x_0</text>
+<path class="dg-a" d="M680 264 H730"/>
+<rect class="dg-ext" x="470" y="330" width="480" height="40"/><text class="dg-t" x="710" y="348" text-anchor="middle">Inference: vision + state → predicted tactile token → actions</text><text class="dg-s" x="710" y="362" text-anchor="middle">(token output/size not specified in the paper)</text>
+<path class="dg-ad" d="M575 304 V330"/>
+</svg><figcaption>Giai đoạn 1 huấn luyện teacher với phần thưởng xúc giác làm điều kiện phụ; giai đoạn 2 chưng cất mục tiêu hành động của teacher sang student không bao giờ thấy dữ liệu xúc giác.</figcaption></figure>
+<p><strong>Giai đoạn 1: teacher (SA-RWFM).</strong></p>
+<ul>
+<li><strong>Phần thưởng xúc giác offline.</strong> Từ hai bản đồ xúc giác 10×10 (100 taxel mỗi ngón), phương pháp tính thống kê từng bước: lực trung bình, áp suất đỉnh, mức tập trung áp suất, tâm áp suất và trượt. Phần thưởng mỗi bước $r_t$ cộng các phạt bình phương cho lực quá lớn, lực quá nhỏ khi đang giữ, áp suất đỉnh, độ tập trung, mất đối xứng, cộng một số hạng trượt. Phần thưởng cả episode cộng thành công và trừ rơi, hỏng, rủi ro.</li>
+<li><strong>Flow matching có trọng số theo phần thưởng (RWFM).</strong> Action expert của SmolVLA được huấn luyện bằng loss flow-matching trong đó mỗi mẫu có trọng số $w = \exp(\alpha A)$, với advantage $A$ xây từ phần thưởng mức episode và mức chunk ($\alpha = 0{,}25$, trọng số bị cắt trong $[0{,}25, 4]$). Một số hạng neo giữ tham số gần mô hình pretrain. Demo lỗi (vật bị hỏng) được giữ lại và nhận phần thưởng âm.</li>
+</ul>
+<p><strong>Giai đoạn 2: chưng cất xúc giác.</strong></p>
+<ul>
+<li>Teacher sinh mục tiêu hành động $\hat a^T$ offline cho $N = 51{.}251$ mẫu.</li>
+<li>Student là SmolVLA chuẩn với trọng số của teacher trừ bộ mã hóa xúc giác; phép chiếu state thu từ 134 xuống 6 đầu vào.</li>
+<li>Mục tiêu huấn luyện: $\tilde a = (1-\alpha)\,a^{GT} + \alpha\,\hat a^T$ với $\alpha = 0{,}5$, huấn luyện bằng flow matching.</li>
+</ul>
+<h2>Phần cứng và dữ liệu</h2>
+<p>Hai tay LeRobot SO-101 (một tay có kẹp song song xúc giác; 100 taxel mỗi điện cực, 120 Hz), RealSense D435, camera cổ tay và Jetson Orin NX. 310 episode thật trên ba task (70 tốt cộng 20 lỗi cho mỗi task một tay, 100 cộng 30 cho task hai tay), thêm 1.000 episode trong Isaac Sim.</p>
+<h2>Kết quả</h2>
+<p>20 lượt mỗi task (Jar, Waffles, Egg): HapticVLA đạt <strong>86,7%</strong> trung bình (75%, 90%, 95%), SmolVLA chỉ có expert SA-RWFM đạt <strong>75%</strong>, X-VLA và VLA-0 đạt 0%. Ở task trứng, mô hình hơn mô hình gốc 45 điểm. Chunking bất đồng bộ đôi khi làm giảm thành công vì thêm độ trễ.</p>
+<h2>Lưu ý</h2>
+<p>Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss trong bài chỉ là chưng cất flow-matching ở mức hành động. Không có kích thước token hay loss riêng cho token, nên hình đánh dấu ô đó là chưa được đặc tả. Optimizer, learning rate, batch size, số bước và tần số điều khiển không được nêu.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

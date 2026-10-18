@@ -1,0 +1,26 @@
+<svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="40" width="150" height="48"/><text class="dg-t" x="95" y="58" text-anchor="middle">Pose x_t + force F_t</text><text class="dg-s" x="95" y="73" text-anchor="middle">+ front/wrist RGB</text>
+<rect class="dg-box" x="210" y="30" width="160" height="64"/><text class="dg-t" x="290" y="54" text-anchor="middle">Base policy</text><text class="dg-s" x="290" y="70" text-anchor="middle">ACT-style CVAE, 1 Hz</text><text class="dg-s" x="290" y="84" text-anchor="middle">n=100, run 50</text>
+<path class="dg-a" d="M170 62 H210"/>
+<rect class="dg-key" x="420" y="30" width="170" height="64"/><text class="dg-t" x="505" y="54" text-anchor="middle">Residual policy</text><text class="dg-s" x="505" y="70" text-anchor="middle">2-layer Transformer, 50 Hz</text><text class="dg-s" x="505" y="84" text-anchor="middle">in: x_t, Â, 2 images</text>
+<path class="dg-a" d="M370 62 H420"/><text class="dg-l" x="395" y="54" text-anchor="middle">Â</text>
+<circle class="dg-box" cx="650" cy="62" r="14"/><text class="dg-t" x="650" y="67" text-anchor="middle">+</text>
+<path class="dg-a" d="M590 62 H636"/><text class="dg-l" x="613" y="54" text-anchor="middle">ΔA</text>
+<path class="dg-a" d="M290 30 V14 H650 V48"/>
+<rect class="dg-box" x="710" y="36" width="130" height="52"/><text class="dg-t" x="775" y="56" text-anchor="middle">Impedance ctrl</text><text class="dg-s" x="775" y="72" text-anchor="middle">1 kHz</text>
+<rect class="dg-ext" x="870" y="36" width="90" height="52"/><text class="dg-t" x="915" y="66" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M664 62 H710"/><path class="dg-a" d="M840 62 H870"/>
+<rect class="dg-key" x="210" y="150" width="160" height="64"/><text class="dg-t" x="290" y="172" text-anchor="middle">Error detector</text><text class="dg-s" x="290" y="188" text-anchor="middle">e = ‖F̂ − F‖₁ &gt; c</text><text class="dg-s" x="290" y="202" text-anchor="middle">50 Hz</text>
+<path class="dg-a" d="M250 94 V150"/><text class="dg-l" x="240" y="126" text-anchor="end">F̂_t</text>
+<path class="dg-a" d="M915 88 V124 H340 V150"/><text class="dg-l" x="700" y="118" text-anchor="middle">measured F_t</text>
+<rect class="dg-ext" x="420" y="150" width="170" height="64"/><text class="dg-t" x="505" y="172" text-anchor="middle">Pause + human</text><text class="dg-t" x="505" y="188" text-anchor="middle">corrective demo X_h</text><text class="dg-s" x="505" y="204" text-anchor="middle">stiffness set to 0</text>
+<path class="dg-a" d="M370 182 H420"/><text class="dg-l" x="395" y="174" text-anchor="middle">trigger</text>
+<rect class="dg-key" x="640" y="150" width="190" height="64"/><text class="dg-t" x="735" y="172" text-anchor="middle">Trajectory editing</text><text class="dg-s" x="735" y="188" text-anchor="middle">align at nearest point k*,</text><text class="dg-s" x="735" y="202" text-anchor="middle">min fidelity+smooth+end</text>
+<path class="dg-a" d="M590 182 H640"/>
+<rect class="dg-ext" x="640" y="256" width="190" height="40"/><text class="dg-t" x="735" y="274" text-anchor="middle">Base trajectory X_b</text><text class="dg-s" x="735" y="288" text-anchor="middle">that failed</text>
+<path class="dg-a" d="M735 256 V214"/>
+<rect class="dg-box" x="640" y="328" width="190" height="52"/><text class="dg-t" x="735" y="348" text-anchor="middle">X_correct</text><text class="dg-s" x="735" y="364" text-anchor="middle">residual labels, 4 regions</text>
+<path class="dg-a" d="M830 182 H890 V354 H830"/>
+<path class="dg-ad" d="M640 354 H610 V84 H590"/><text class="dg-l" x="600" y="230" text-anchor="end" transform="rotate(0)">trains residual</text>
+<text class="dg-h" x="20" y="396">LOOP: run base → detect force error → human fixes → edit trajectory → new residual data → retrain residual</text>
+</svg>

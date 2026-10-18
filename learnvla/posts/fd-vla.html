@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.">
+<title>FD-VLA: Force Distilled from Vision and State · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="FD-VLA: Force Distilled from Vision and State">
+<meta property="og:description" content="FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>FD-VLA: Force Distilled from Vision and State</h1>
+    <h1 data-vi>FD-VLA: Chưng cất lực từ thị giác và state</h1>
+
+    <p class="post-excerpt-lead" data-en>FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.</p>
+    <p class="post-excerpt-lead" data-vi>FD-VLA học một token lực từ ảnh và state của robot, chỉ được giám sát bởi bộ mã hóa lực thật lúc huấn luyện, nhờ đó VLA nhận biết lực chạy được mà không cần cảm biến lực.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Distillation</span><span class="pill">Paper Notes</span><span class="pill">SmolVLA</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (February 2026), built on SmolVLA.</p>
+<h2>The pain it cures</h2>
+<p>Force sensors are costly, fragile and often absent on deployed robots. Yet the earlier force VLAs in this series (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) need them at run time. FD-VLA's idea: the force during contact is largely <strong>predictable from what the robot sees and how its arm is posed</strong>, so train a small module to predict a latent force token and throw the sensor away at inference.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
+<rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Language L</text>
+<rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">State S_t</text>
+<rect class="dg-box" x="160" y="24" width="120" height="124"/><text class="dg-t" x="220" y="76" text-anchor="middle">Projection</text><text class="dg-s" x="220" y="94" text-anchor="middle">1-layer MLP</text><text class="dg-s" x="220" y="112" text-anchor="middle">f^V · f^L · f^S</text>
+<path class="dg-a" d="M130 42 H160"/><path class="dg-a" d="M130 86 H160"/><path class="dg-a" d="M130 130 H160"/>
+<rect class="dg-ext" x="160" y="196" width="120" height="36"/><text class="dg-t" x="220" y="212" text-anchor="middle">Query p</text><text class="dg-s" x="220" y="225" text-anchor="middle">learnable, 1×D</text>
+<rect class="dg-key" x="330" y="150" width="160" height="96"/><text class="dg-t" x="410" y="178" text-anchor="middle">Force Distillation</text><text class="dg-t" x="410" y="194" text-anchor="middle">Module (FDM)</text><text class="dg-s" x="410" y="214" text-anchor="middle">1-query attention over</text><text class="dg-s" x="410" y="228" text-anchor="middle">[p, f^V, f^S] + FFN</text>
+<path class="dg-a" d="M280 130 H305 V174 H330"/><path class="dg-a" d="M280 214 H305 V222 H330"/>
+<rect class="dg-key" x="540" y="168" width="90" height="36"/><text class="dg-t" x="585" y="190" text-anchor="middle">f^pF</text>
+<path class="dg-a" d="M490 198 H540"/><text class="dg-l" x="515" y="190" text-anchor="middle">1×D</text>
+<rect class="dg-box" x="780" y="40" width="180" height="140"/><text class="dg-t" x="870" y="84" text-anchor="middle">SmolVLM-2 (frozen)</text><text class="dg-s" x="870" y="104" text-anchor="middle">SigLIP encoder</text><text class="dg-s" x="870" y="124" text-anchor="middle">directional mask:</text><text class="dg-s" x="870" y="138" text-anchor="middle">control tokens see percept</text><text class="dg-s" x="870" y="152" text-anchor="middle">tokens, never the reverse</text>
+<path class="dg-a" d="M280 60 H780"/><text class="dg-l" x="530" y="52" text-anchor="middle">percept tokens f^V, f^L</text>
+<path class="dg-a" d="M630 180 H740 V120 H780"/><text class="dg-l" x="700" y="172" text-anchor="middle">+ f^S, f^pF</text>
+<rect class="dg-box" x="780" y="230" width="180" height="50"/><text class="dg-t" x="870" y="250" text-anchor="middle">Action expert</text><text class="dg-s" x="870" y="266" text-anchor="middle">flow-matching decoder</text>
+<rect class="dg-box" x="780" y="318" width="180" height="36"/><text class="dg-t" x="870" y="340" text-anchor="middle">Action chunk A_t</text>
+<path class="dg-a" d="M870 180 V230"/><path class="dg-a" d="M870 280 V318"/>
+<rect class="dg-ext" x="170" y="300" width="130" height="40"/><text class="dg-t" x="235" y="318" text-anchor="middle">Force F_t</text><text class="dg-s" x="235" y="332" text-anchor="middle">training only</text>
+<rect class="dg-box" x="340" y="300" width="120" height="40"/><text class="dg-t" x="400" y="318" text-anchor="middle">Light MLP</text><text class="dg-s" x="400" y="332" text-anchor="middle">teacher</text>
+<rect class="dg-box" x="500" y="300" width="100" height="40"/><text class="dg-t" x="550" y="324" text-anchor="middle">f^aF</text>
+<path class="dg-a" d="M300 320 H340"/><path class="dg-a" d="M460 320 H500"/>
+<rect class="dg-key" x="640" y="252" width="110" height="52"/><text class="dg-t" x="695" y="274" text-anchor="middle">L_dist</text><text class="dg-s" x="695" y="290" text-anchor="middle">‖f^pF−f^aF‖²</text>
+<path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
+<text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
+</svg><figcaption>The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs.</figcaption></figure>
+<ol>
+<li><strong>Backbone and projection.</strong> Following SmolVLA, the perception backbone is SmolVLM-2 with a SigLIP vision encoder. A single-layer MLP projects vision $f^V$, language $f^L$ and state $f^S$ to the VLM width $D$.</li>
+<li><strong>Force Distillation Module (FDM).</strong> A learnable query token $p \in \mathbb{R}^{1\times D}$ attends over the context $C = [p, f^V, f^S]$ with single-query multi-head attention; the output is $f^{pF} = \text{FFN}(\text{LN}([Z_1..Z_H] W_O + p))$, a single force token. Because $p$ is in the keys and values, the residual path gives self-conditioning.</li>
+<li><strong>Teacher branch (training only).</strong> The raw force from the F/T sensor goes through a light MLP to $f^{aF}$. The distillation loss is $L_{dist} = \lVert f^{pF} - f^{aF}\rVert_2^2$.</li>
+<li><strong>Injection.</strong> The VLM input is $[f^V, f^L, f^S, f^{pF}]$. The VLM is <strong>frozen</strong>. A directional attention mask (adapted from SmolVLA) makes information flow one way: percept tokens (vision, language) only see each other; control tokens (state, force) see percept tokens and earlier control tokens.</li>
+<li><strong>Action expert.</strong> A transformer head with a conditional flow-matching decoder produces the chunk $A_t$. Total loss $L = L^\tau(\theta) + \lambda L_{dist}$.</li>
+</ol>
+<h2>Results</h2>
+<p>Hardware: UR5e with a wrist and a main camera; force from the arm's internal sensor during data collection. Tasks: Clean Whiteboard, Press Emergency Button, Insert Plug; 50 teleoperated demos per task, 30 evaluation trials each.</p>
+<p>FD-VLA reaches a <strong>61.1%</strong> mean success, against 23.3% for SmolVLA without force, 46.7% for π0 without force and 11.1% for DP3. Ablation on the same three tasks:</p>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Mean success</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No FDM (MLP force encoding)</td>
+<td>38.9%</td>
+</tr>
+<tr>
+<td>FDM with the ground-truth force latent as the query</td>
+<td>51.1%</td>
+</tr>
+<tr>
+<td>FDM with a learnable query (proposed)</td>
+<td>61.1%</td>
+</tr>
+</tbody>
+</table>
+<h2>Caveats</h2>
+<p>The text's gains for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative), and the π0 numbers do not obviously add up against FD-VLA's 61.1%. Hidden sizes, $\lambda$, the chunk length, control rate and training schedule are not stated. The paper says the model has about one tenth of π0's parameters.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (tháng 2/2026), xây trên SmolVLA.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Cảm biến lực đắt, dễ hỏng và thường không có trên robot triển khai. Vậy mà các VLA lực trước trong series này (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) cần chúng lúc chạy. Ý tưởng FD-VLA: lực khi tiếp xúc phần lớn <strong>đoán được từ những gì robot thấy và tư thế cánh tay</strong>, nên huấn luyện một module nhỏ dự đoán token lực ẩn rồi bỏ cảm biến lúc suy luận.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó được kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
+<rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Language L</text>
+<rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">State S_t</text>
+<rect class="dg-box" x="160" y="24" width="120" height="124"/><text class="dg-t" x="220" y="76" text-anchor="middle">Projection</text><text class="dg-s" x="220" y="94" text-anchor="middle">1-layer MLP</text><text class="dg-s" x="220" y="112" text-anchor="middle">f^V · f^L · f^S</text>
+<path class="dg-a" d="M130 42 H160"/><path class="dg-a" d="M130 86 H160"/><path class="dg-a" d="M130 130 H160"/>
+<rect class="dg-ext" x="160" y="196" width="120" height="36"/><text class="dg-t" x="220" y="212" text-anchor="middle">Query p</text><text class="dg-s" x="220" y="225" text-anchor="middle">learnable, 1×D</text>
+<rect class="dg-key" x="330" y="150" width="160" height="96"/><text class="dg-t" x="410" y="178" text-anchor="middle">Force Distillation</text><text class="dg-t" x="410" y="194" text-anchor="middle">Module (FDM)</text><text class="dg-s" x="410" y="214" text-anchor="middle">1-query attention over</text><text class="dg-s" x="410" y="228" text-anchor="middle">[p, f^V, f^S] + FFN</text>
+<path class="dg-a" d="M280 130 H305 V174 H330"/><path class="dg-a" d="M280 214 H305 V222 H330"/>
+<rect class="dg-key" x="540" y="168" width="90" height="36"/><text class="dg-t" x="585" y="190" text-anchor="middle">f^pF</text>
+<path class="dg-a" d="M490 198 H540"/><text class="dg-l" x="515" y="190" text-anchor="middle">1×D</text>
+<rect class="dg-box" x="780" y="40" width="180" height="140"/><text class="dg-t" x="870" y="84" text-anchor="middle">SmolVLM-2 (frozen)</text><text class="dg-s" x="870" y="104" text-anchor="middle">SigLIP encoder</text><text class="dg-s" x="870" y="124" text-anchor="middle">directional mask:</text><text class="dg-s" x="870" y="138" text-anchor="middle">control tokens see percept</text><text class="dg-s" x="870" y="152" text-anchor="middle">tokens, never the reverse</text>
+<path class="dg-a" d="M280 60 H780"/><text class="dg-l" x="530" y="52" text-anchor="middle">percept tokens f^V, f^L</text>
+<path class="dg-a" d="M630 180 H740 V120 H780"/><text class="dg-l" x="700" y="172" text-anchor="middle">+ f^S, f^pF</text>
+<rect class="dg-box" x="780" y="230" width="180" height="50"/><text class="dg-t" x="870" y="250" text-anchor="middle">Action expert</text><text class="dg-s" x="870" y="266" text-anchor="middle">flow-matching decoder</text>
+<rect class="dg-box" x="780" y="318" width="180" height="36"/><text class="dg-t" x="870" y="340" text-anchor="middle">Action chunk A_t</text>
+<path class="dg-a" d="M870 180 V230"/><path class="dg-a" d="M870 280 V318"/>
+<rect class="dg-ext" x="170" y="300" width="130" height="40"/><text class="dg-t" x="235" y="318" text-anchor="middle">Force F_t</text><text class="dg-s" x="235" y="332" text-anchor="middle">training only</text>
+<rect class="dg-box" x="340" y="300" width="120" height="40"/><text class="dg-t" x="400" y="318" text-anchor="middle">Light MLP</text><text class="dg-s" x="400" y="332" text-anchor="middle">teacher</text>
+<rect class="dg-box" x="500" y="300" width="100" height="40"/><text class="dg-t" x="550" y="324" text-anchor="middle">f^aF</text>
+<path class="dg-a" d="M300 320 H340"/><path class="dg-a" d="M460 320 H500"/>
+<rect class="dg-key" x="640" y="252" width="110" height="52"/><text class="dg-t" x="695" y="274" text-anchor="middle">L_dist</text><text class="dg-s" x="695" y="290" text-anchor="middle">‖f^pF−f^aF‖²</text>
+<path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
+<text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
+</svg><figcaption>Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó được kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán.</figcaption></figure>
+<ol>
+<li><strong>Backbone và phép chiếu.</strong> Theo SmolVLA, backbone cảm nhận là SmolVLM-2 với encoder ảnh SigLIP. Một MLP một lớp chiếu thị giác $f^V$, ngôn ngữ $f^L$ và state $f^S$ về chiều $D$ của VLM.</li>
+<li><strong>Force Distillation Module (FDM).</strong> Một token truy vấn học được $p \in \mathbb{R}^{1\times D}$ chú ý trên ngữ cảnh $C = [p, f^V, f^S]$ bằng multi-head attention một query; đầu ra $f^{pF} = \text{FFN}(\text{LN}([Z_1..Z_H] W_O + p))$, một token lực duy nhất. Vì $p$ nằm trong cả key và value, đường residual cho phép tự điều kiện hóa.</li>
+<li><strong>Nhánh teacher (chỉ lúc huấn luyện).</strong> Lực thô từ cảm biến F/T qua một MLP nhẹ thành $f^{aF}$. Loss chưng cất là $L_{dist} = \lVert f^{pF} - f^{aF}\rVert_2^2$.</li>
+<li><strong>Tiêm vào VLM.</strong> Đầu vào VLM là $[f^V, f^L, f^S, f^{pF}]$. VLM bị <strong>đóng băng</strong>. Một mask attention có hướng (lấy từ SmolVLA) làm thông tin chảy một chiều: token cảm nhận (thị giác, ngôn ngữ) chỉ nhìn nhau; token điều khiển (state, lực) nhìn được token cảm nhận và token điều khiển trước đó.</li>
+<li><strong>Action expert.</strong> Đầu transformer với bộ giải mã conditional flow-matching tạo chunk $A_t$. Loss tổng $L = L^\tau(\theta) + \lambda L_{dist}$.</li>
+</ol>
+<h2>Kết quả</h2>
+<p>Phần cứng: UR5e có camera cổ tay và camera chính; lực lấy từ cảm biến trong của cánh tay khi thu dữ liệu. Task: Clean Whiteboard, Press Emergency Button, Insert Plug; 50 demo teleoperation mỗi task, 30 lượt đánh giá mỗi task.</p>
+<p>FD-VLA đạt <strong>61,1%</strong> thành công trung bình, so với 23,3% của SmolVLA không lực, 46,7% của π0 không lực và 11,1% của DP3. Ablation trên cùng ba task:</p>
+<table>
+<thead>
+<tr>
+<th>Biến thể</th>
+<th>Thành công TB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không FDM (mã hóa lực bằng MLP)</td>
+<td>38,9%</td>
+</tr>
+<tr>
+<td>FDM dùng latent lực thật làm query</td>
+<td>51,1%</td>
+</tr>
+<tr>
+<td>FDM với query học được (đề xuất)</td>
+<td>61,1%</td>
+</tr>
+</tbody>
+</table>
+<h2>Lưu ý</h2>
+<p>Mức cải thiện bài nêu cho baseline có dùng lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối, và số của π0 không khớp rõ ràng với 61,1% của FD-VLA. Kích thước ẩn, $\lambda$, độ dài chunk, tần số điều khiển và lịch huấn luyện không được nêu. Bài cho biết mô hình có khoảng một phần mười số tham số của π0.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

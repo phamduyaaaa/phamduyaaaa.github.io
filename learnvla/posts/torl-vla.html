@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.">
+<title>TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA">
+<meta property="og:description" content="A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA</h1>
+    <h1 data-vi>TORL-VLA: RL online dẫn hướng bằng xúc giác trên nền VLA nhận biết wrench</h1>
+
+    <p class="post-excerpt-lead" data-en>A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.</p>
+    <p class="post-excerpt-lead" data-vi>π0.5 nhận biết wrench (đóng băng) dự đoán hành động và wrench tương lai; một actor-critic nhẹ với critic bị kiểm duyệt theo can thiệp rồi tinh chỉnh chunk online từ chỉnh sửa của con người.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">RL</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> (June 2026), project page <a href="https://torl-vla.github.io/">torl-vla.github.io</a>. The title says "tactile", not "torque": the tactile pads are converted to a 6D wrench.</p>
+<h2>The pain it cures</h2>
+<p>A tactile VLA trained offline cannot adapt when contact conditions shift (a slightly different latch, a harder egg). It retries inefficiently or presses too hard. TORL-VLA keeps the offline policy as a <strong>reference</strong> and learns a <strong>small online correction</strong> on top, using human interventions near failure.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online from policy and human data." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">STAGE I · WRENCH-AWARE REFERENCE VLA (π0.5)</text>
+<rect class="dg-ext" x="20" y="42" width="150" height="44"/><text class="dg-t" x="95" y="60" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="75" text-anchor="middle">+ robot state</text>
+<rect class="dg-box" x="210" y="42" width="140" height="44"/><text class="dg-t" x="280" y="60" text-anchor="middle">VLM</text><text class="dg-s" x="280" y="75" text-anchor="middle">prefix P_t</text>
+<path class="dg-a" d="M170 64 H210"/>
+<rect class="dg-ext" x="20" y="108" width="150" height="44"/><text class="dg-t" x="95" y="126" text-anchor="middle">Wrench window W_t</text><text class="dg-s" x="95" y="141" text-anchor="middle">2 pads, R^12 per step</text>
+<rect class="dg-key" x="210" y="108" width="140" height="44"/><text class="dg-t" x="280" y="126" text-anchor="middle">MLP encoder</text><text class="dg-s" x="280" y="141" text-anchor="middle">z^tac (1 token)</text>
+<path class="dg-a" d="M170 130 H210"/>
+<rect class="dg-box" x="390" y="64" width="120" height="64"/><text class="dg-t" x="450" y="90" text-anchor="middle">[P_t ; z^tac]</text><text class="dg-s" x="450" y="106" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M350 64 H370 V80 H390"/><path class="dg-a" d="M350 130 H370 V112 H390"/>
+<rect class="dg-key" x="550" y="64" width="120" height="64"/><text class="dg-t" x="610" y="90" text-anchor="middle">Soft-routed</text><text class="dg-t" x="610" y="106" text-anchor="middle">MoE</text>
+<path class="dg-a" d="M510 96 H550"/>
+<circle class="dg-box" cx="720" cy="96" r="14"/><text class="dg-t" x="720" y="101" text-anchor="middle">+</text>
+<path class="dg-a" d="M670 96 H706"/>
+<path class="dg-ad" d="M280 152 V176 H720 V110"/><text class="dg-l" x="500" y="170" text-anchor="middle">zero-initialised bypass (α·P(z^tac), α starts at 0)</text>
+<rect class="dg-box" x="770" y="62" width="180" height="68"/><text class="dg-t" x="860" y="88" text-anchor="middle">Flow-matching expert</text><text class="dg-s" x="860" y="106" text-anchor="middle">outputs A^ref and</text><text class="dg-s" x="860" y="120" text-anchor="middle">future wrench W^ref</text>
+<path class="dg-a" d="M734 96 H770"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="222"/><text class="dg-h" x="22" y="226">STAGE II · ONLINE RL REFINEMENT (reference VLA frozen)</text>
+<rect class="dg-box" x="20" y="250" width="210" height="64"/><text class="dg-t" x="125" y="274" text-anchor="middle">Context c_t</text><text class="dg-s" x="125" y="290" text-anchor="middle">[z^vla, q, w, W hist,</text><text class="dg-s" x="125" y="304" text-anchor="middle">W^ref, A^ref]</text>
+<path class="dg-ad" d="M860 130 V204 H125 V250"/><text class="dg-l" x="560" y="200" text-anchor="middle">frozen VLA supplies z^vla, A^ref, W^ref</text>
+<rect class="dg-box" x="270" y="256" width="140" height="52"/><text class="dg-t" x="340" y="276" text-anchor="middle">Stage estimator</text><text class="dg-s" x="340" y="292" text-anchor="middle">picks head g_t</text>
+<rect class="dg-key" x="450" y="244" width="170" height="76"/><text class="dg-t" x="535" y="270" text-anchor="middle">Stage-specific</text><text class="dg-t" x="535" y="286" text-anchor="middle">actor π_φ(g)</text><text class="dg-s" x="535" y="304" text-anchor="middle">refined chunk A^φ</text>
+<path class="dg-a" d="M230 282 H270"/><path class="dg-a" d="M410 282 H450"/>
+<rect class="dg-box" x="660" y="256" width="110" height="52"/><text class="dg-t" x="715" y="278" text-anchor="middle">Robot</text><text class="dg-s" x="715" y="294" text-anchor="middle">executes</text>
+<path class="dg-a" d="M620 282 H660"/>
+<rect class="dg-ext" x="800" y="256" width="150" height="52"/><text class="dg-t" x="875" y="276" text-anchor="middle">Human</text><text class="dg-s" x="875" y="292" text-anchor="middle">intervention + reward</text>
+<path class="dg-a" d="M800 282 H770"/>
+<rect class="dg-box" x="660" y="356" width="170" height="44"/><text class="dg-t" x="745" y="374" text-anchor="middle">Replay buffer</text><text class="dg-s" x="745" y="388" text-anchor="middle">source: policy | human</text>
+<path class="dg-a" d="M715 308 V356"/>
+<rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: intervention-censored bootstrap</text>
+<path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">actor loss L_π</text>
+</svg><figcaption>Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online from policy and human data.</figcaption></figure>
+<p><strong>Stage I: reference model (flow matching on π0.5).</strong></p>
+<ul>
+<li>Each fingertip pad (6×8 piezoelectric array) is mapped to a 6D wrench; both give $w_t \in \mathbb{R}^{12}$. A window of past wrenches goes through a light MLP into <strong>one</strong> token $z^{tac}$.</li>
+<li><strong>Late fusion:</strong> the wrench token is not given to the VLM. After the VLM encodes images, language and state into prefix $P_t$, $[P_t; z^{tac}]$ passes self-attention, then a <strong>soft-routed MoE</strong> $F_t = \sum_m \rho_{t,m} E_m(H_t)$.</li>
+<li>A <strong>zero-initialised bypass</strong> $\alpha\,P(z^{tac})$ (learnable scalar $\alpha$ starting at 0) is added so contact information reaches the action expert directly.</li>
+<li>The expert predicts the action chunk <strong>and the future wrench sequence</strong>, with loss $L = \lVert u^a - \hat u^a\rVert^2 + \lambda_w\lVert u^w - \hat u^w\rVert^2$.</li>
+</ul>
+<p><strong>Stage II: online refinement (reference frozen).</strong></p>
+<ul>
+<li>Context $c_t = [z^{vla}, q_t, w_t, W_{hist}, \hat W^{ref}, A^{ref}]$: visual tokens from the frozen VLA, proprioception, measured wrench and history, plus the VLA's predicted wrench and reference actions.</li>
+<li>A <strong>stage estimator</strong> picks one of several <strong>stage-specific actor heads</strong>, which output the refined chunk directly.</li>
+<li>Two critics: $Q_{task}$ (task return) and $Q_{ic}$, an <strong>intervention-censored</strong> critic. When a mostly policy-generated chunk is followed by an intervention-dominated one, the mask $m^{int}$ cuts the bootstrap, so human takeover is not credited to the policy. Intervention actions stay in the replay buffer for behaviour regularisation.</li>
+<li>Actor loss: $L_\pi = \lambda_{bc}L_{bc} - \lambda_{task}\,\mathbb{E}[\min_i Q^{(i)}_{task}] + \lambda_{ic}\,\mathbb{E}[\Delta Q_{ic}]$, anchoring to the VLA reference while following the critics.</li>
+<li>Reward: a human-judged binary success signal per subtask.</li>
+</ul>
+<h2>Results</h2>
+<p>A latch-box long-horizon task (place a coffee cup in a tight holder, lock a latch, grasp and place an egg), 30 autonomous trials per row:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Cup</th>
+<th>Latch</th>
+<th>Egg</th>
+<th>Full task</th>
+<th>Full-task time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0.5</td>
+<td>18</td>
+<td>15</td>
+<td>20</td>
+<td>12</td>
+<td>199.7 s</td>
+</tr>
+<tr>
+<td>ForceVLA</td>
+<td>21</td>
+<td>20</td>
+<td>22</td>
+<td>15</td>
+<td>195.3 s</td>
+</tr>
+<tr>
+<td>TORL-VLA w/o RL</td>
+<td>25</td>
+<td>23</td>
+<td>25</td>
+<td>21</td>
+<td>191.9 s</td>
+</tr>
+<tr>
+<td>RLT</td>
+<td>26</td>
+<td>25</td>
+<td>25</td>
+<td>23</td>
+<td>175.2 s</td>
+</tr>
+<tr>
+<td><strong>TORL-VLA</strong></td>
+<td><strong>30</strong></td>
+<td><strong>29</strong></td>
+<td><strong>30</strong></td>
+<td><strong>28</strong></td>
+<td><strong>165.5 s</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Ablations on the reference model: removing the MoE drops to 18/17/19, the bypass to 23/20/21. Online ablations: no wrench context 27/27/26, no IC critic 27/26/28.</p>
+<h2>Caveats</h2>
+<p>I read the HTML verbatim only up to the middle of the experiments; details such as H, K, control rate, update ratios and latencies come from a summary and are not quoted here. The number of experts, the sample rate of the tactile pads and the VLM size are not stated in the part I read.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> (tháng 6/2026), trang dự án <a href="https://torl-vla.github.io/">torl-vla.github.io</a>. Tiêu đề nói "tactile" (xúc giác), không phải "torque": các miếng xúc giác được đổi thành wrench 6D.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>VLA xúc giác huấn luyện offline không thích nghi được khi điều kiện tiếp xúc đổi (chốt hơi khác, quả trứng cứng hơn). Nó thử lại kém hiệu quả hoặc ấn quá mạnh. TORL-VLA giữ chính sách offline làm <strong>tham chiếu</strong> và học thêm một <strong>hiệu chỉnh online nhỏ</strong>, dùng can thiệp của con người khi sắp thất bại.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện các đầu actor theo từng pha cùng hai critic online từ dữ liệu của chính sách và con người." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">STAGE I · WRENCH-AWARE REFERENCE VLA (π0.5)</text>
+<rect class="dg-ext" x="20" y="42" width="150" height="44"/><text class="dg-t" x="95" y="60" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="75" text-anchor="middle">+ robot state</text>
+<rect class="dg-box" x="210" y="42" width="140" height="44"/><text class="dg-t" x="280" y="60" text-anchor="middle">VLM</text><text class="dg-s" x="280" y="75" text-anchor="middle">prefix P_t</text>
+<path class="dg-a" d="M170 64 H210"/>
+<rect class="dg-ext" x="20" y="108" width="150" height="44"/><text class="dg-t" x="95" y="126" text-anchor="middle">Wrench window W_t</text><text class="dg-s" x="95" y="141" text-anchor="middle">2 pads, R^12 per step</text>
+<rect class="dg-key" x="210" y="108" width="140" height="44"/><text class="dg-t" x="280" y="126" text-anchor="middle">MLP encoder</text><text class="dg-s" x="280" y="141" text-anchor="middle">z^tac (1 token)</text>
+<path class="dg-a" d="M170 130 H210"/>
+<rect class="dg-box" x="390" y="64" width="120" height="64"/><text class="dg-t" x="450" y="90" text-anchor="middle">[P_t ; z^tac]</text><text class="dg-s" x="450" y="106" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M350 64 H370 V80 H390"/><path class="dg-a" d="M350 130 H370 V112 H390"/>
+<rect class="dg-key" x="550" y="64" width="120" height="64"/><text class="dg-t" x="610" y="90" text-anchor="middle">Soft-routed</text><text class="dg-t" x="610" y="106" text-anchor="middle">MoE</text>
+<path class="dg-a" d="M510 96 H550"/>
+<circle class="dg-box" cx="720" cy="96" r="14"/><text class="dg-t" x="720" y="101" text-anchor="middle">+</text>
+<path class="dg-a" d="M670 96 H706"/>
+<path class="dg-ad" d="M280 152 V176 H720 V110"/><text class="dg-l" x="500" y="170" text-anchor="middle">zero-initialised bypass (α·P(z^tac), α starts at 0)</text>
+<rect class="dg-box" x="770" y="62" width="180" height="68"/><text class="dg-t" x="860" y="88" text-anchor="middle">Flow-matching expert</text><text class="dg-s" x="860" y="106" text-anchor="middle">outputs A^ref and</text><text class="dg-s" x="860" y="120" text-anchor="middle">future wrench W^ref</text>
+<path class="dg-a" d="M734 96 H770"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="222"/><text class="dg-h" x="22" y="226">STAGE II · ONLINE RL REFINEMENT (reference VLA frozen)</text>
+<rect class="dg-box" x="20" y="250" width="210" height="64"/><text class="dg-t" x="125" y="274" text-anchor="middle">Context c_t</text><text class="dg-s" x="125" y="290" text-anchor="middle">[z^vla, q, w, W hist,</text><text class="dg-s" x="125" y="304" text-anchor="middle">W^ref, A^ref]</text>
+<path class="dg-ad" d="M860 130 V204 H125 V250"/><text class="dg-l" x="560" y="200" text-anchor="middle">frozen VLA supplies z^vla, A^ref, W^ref</text>
+<rect class="dg-box" x="270" y="256" width="140" height="52"/><text class="dg-t" x="340" y="276" text-anchor="middle">Stage estimator</text><text class="dg-s" x="340" y="292" text-anchor="middle">picks head g_t</text>
+<rect class="dg-key" x="450" y="244" width="170" height="76"/><text class="dg-t" x="535" y="270" text-anchor="middle">Stage-specific</text><text class="dg-t" x="535" y="286" text-anchor="middle">actor π_φ(g)</text><text class="dg-s" x="535" y="304" text-anchor="middle">refined chunk A^φ</text>
+<path class="dg-a" d="M230 282 H270"/><path class="dg-a" d="M410 282 H450"/>
+<rect class="dg-box" x="660" y="256" width="110" height="52"/><text class="dg-t" x="715" y="278" text-anchor="middle">Robot</text><text class="dg-s" x="715" y="294" text-anchor="middle">executes</text>
+<path class="dg-a" d="M620 282 H660"/>
+<rect class="dg-ext" x="800" y="256" width="150" height="52"/><text class="dg-t" x="875" y="276" text-anchor="middle">Human</text><text class="dg-s" x="875" y="292" text-anchor="middle">intervention + reward</text>
+<path class="dg-a" d="M800 282 H770"/>
+<rect class="dg-box" x="660" y="356" width="170" height="44"/><text class="dg-t" x="745" y="374" text-anchor="middle">Replay buffer</text><text class="dg-s" x="745" y="388" text-anchor="middle">source: policy | human</text>
+<path class="dg-a" d="M715 308 V356"/>
+<rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: intervention-censored bootstrap</text>
+<path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">actor loss L_π</text>
+</svg><figcaption>Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện các đầu actor theo từng pha cùng hai critic online từ dữ liệu của chính sách và con người.</figcaption></figure>
+<p><strong>Giai đoạn I: mô hình tham chiếu (flow matching trên π0.5).</strong></p>
+<ul>
+<li>Mỗi miếng xúc giác ở đầu ngón (mảng áp điện 6×8) được ánh xạ thành wrench 6D; hai miếng cho $w_t \in \mathbb{R}^{12}$. Một cửa sổ wrench quá khứ qua MLP nhẹ thành <strong>một</strong> token $z^{tac}$.</li>
+<li><strong>Gộp muộn:</strong> token wrench không được đưa vào VLM. Sau khi VLM mã hóa ảnh, ngôn ngữ và state thành prefix $P_t$, $[P_t; z^{tac}]$ qua self-attention rồi <strong>MoE định tuyến mềm</strong> $F_t = \sum_m \rho_{t,m} E_m(H_t)$.</li>
+<li>Một <strong>bypass khởi tạo bằng 0</strong> $\alpha\,P(z^{tac})$ (vô hướng học được $\alpha$ bắt đầu từ 0) được cộng vào để thông tin tiếp xúc đến thẳng action expert.</li>
+<li>Expert dự đoán chunk hành động <strong>và chuỗi wrench tương lai</strong>, với loss $L = \lVert u^a - \hat u^a\rVert^2 + \lambda_w\lVert u^w - \hat u^w\rVert^2$.</li>
+</ul>
+<p><strong>Giai đoạn II: tinh chỉnh online (tham chiếu bị đóng băng).</strong></p>
+<ul>
+<li>Ngữ cảnh $c_t = [z^{vla}, q_t, w_t, W_{hist}, \hat W^{ref}, A^{ref}]$: token thị giác từ VLA đóng băng, proprioception, wrench đo được và lịch sử, cùng wrench dự đoán và hành động tham chiếu của VLA.</li>
+<li>Một <strong>bộ ước lượng pha</strong> chọn một trong nhiều <strong>đầu actor theo pha</strong>, xuất trực tiếp chunk đã tinh chỉnh.</li>
+<li>Hai critic: $Q_{task}$ (lợi ích nhiệm vụ) và $Q_{ic}$, critic <strong>bị kiểm duyệt theo can thiệp</strong>. Khi một chunk phần lớn do chính sách sinh ra được theo sau bởi chunk chủ yếu do con người, mask $m^{int}$ cắt bootstrap, nên việc con người tiếp quản không được ghi công cho chính sách. Hành động can thiệp vẫn nằm trong replay buffer để điều hòa hành vi.</li>
+<li>Loss actor: $L_\pi = \lambda_{bc}L_{bc} - \lambda_{task}\,\mathbb{E}[\min_i Q^{(i)}_{task}] + \lambda_{ic}\,\mathbb{E}[\Delta Q_{ic}]$, neo vào tham chiếu của VLA trong khi bám theo critic.</li>
+<li>Phần thưởng: tín hiệu thành công nhị phân do con người chấm cho từng subtask.</li>
+</ul>
+<h2>Kết quả</h2>
+<p>Task chuỗi dài hộp chốt (đặt cốc cà phê vào khay chặt, khóa chốt, nắm và đặt quả trứng), 30 lượt tự động mỗi dòng:</p>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Cốc</th>
+<th>Chốt</th>
+<th>Trứng</th>
+<th>Cả chuỗi</th>
+<th>Thời gian cả chuỗi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0.5</td>
+<td>18</td>
+<td>15</td>
+<td>20</td>
+<td>12</td>
+<td>199,7 s</td>
+</tr>
+<tr>
+<td>ForceVLA</td>
+<td>21</td>
+<td>20</td>
+<td>22</td>
+<td>15</td>
+<td>195,3 s</td>
+</tr>
+<tr>
+<td>TORL-VLA không RL</td>
+<td>25</td>
+<td>23</td>
+<td>25</td>
+<td>21</td>
+<td>191,9 s</td>
+</tr>
+<tr>
+<td>RLT</td>
+<td>26</td>
+<td>25</td>
+<td>25</td>
+<td>23</td>
+<td>175,2 s</td>
+</tr>
+<tr>
+<td><strong>TORL-VLA</strong></td>
+<td><strong>30</strong></td>
+<td><strong>29</strong></td>
+<td><strong>30</strong></td>
+<td><strong>28</strong></td>
+<td><strong>165,5 s</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Ablation mô hình tham chiếu: bỏ MoE tụt xuống 18/17/19, bỏ bypass 23/20/21. Ablation online: không có wrench context 27/27/26, không có IC critic 27/26/28.</p>
+<h2>Lưu ý</h2>
+<p>Tôi chỉ đọc HTML nguyên văn đến khoảng giữa phần thực nghiệm; các chi tiết như H, K, tần số điều khiển, tỉ lệ cập nhật và độ trễ lấy từ bản tóm tắt nên không trích ở đây. Số expert, tần số lấy mẫu của miếng xúc giác và kích thước VLM không được nêu trong phần tôi đọc.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

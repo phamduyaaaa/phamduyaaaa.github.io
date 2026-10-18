@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MoDE-VLA adds force and tactile signals to π0 through a separate path with modality-aware routing and residual injection, so contact corrections do not overwrite pretrained knowledge.">
+<title>MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch">
+<meta property="og:description" content="MoDE-VLA adds force and tactile signals to π0 through a separate path with modality-aware routing and residual injection, so contact corrections do not overwrite pretrained knowledge.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch</h1>
+    <h1 data-vi>MoDE-VLA: Mixture-of-Dexterous-Experts cho lực và xúc giác</h1>
+
+    <p class="post-excerpt-lead" data-en>MoDE-VLA adds force and tactile signals to π0 through a separate path with modality-aware routing and residual injection, so contact corrections do not overwrite pretrained knowledge.</p>
+    <p class="post-excerpt-lead" data-vi>MoDE-VLA thêm tín hiệu lực và xúc giác vào π0 qua một đường riêng với routing theo modality và tiêm residual, để hiệu chỉnh tiếp xúc không ghi đè tri thức đã pretrain.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Paper Notes</span><span class="pill">MoE</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2603.08122">arXiv 2603.08122</a>, <em>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA</em> (the abstract names the architecture MoDE-VLA).</p>
+<h2>The pain it cures</h2>
+<p>A dual-arm humanoid with two 22-DoF dexterous hands has force at the arms and touch at ten fingertips. Mixing those signals straight into a pretrained VLA risks erasing what it learned. The paper has two parts: a <strong>data</strong> side (teleoperation with force and tactile feedback, plus an RL hand skill called IMCopilot) and a <strong>model</strong> side (MoDE-VLA). This note covers the model.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="MoDE-VLA on a π0 backbone: force and tactile tokens go through a sparse MoE, produce residual corrections for arm and hand velocity, and an RL skill can take over the hand." viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="120" height="36"/><text class="dg-t" x="80" y="40" text-anchor="middle">3 RGB views</text><text class="dg-s" x="80" y="53" text-anchor="middle">base, L/R wrist</text>
+<rect class="dg-ext" x="20" y="68" width="120" height="36"/><text class="dg-t" x="80" y="90" text-anchor="middle">Language ℓ</text>
+<rect class="dg-ext" x="20" y="112" width="120" height="36"/><text class="dg-t" x="80" y="134" text-anchor="middle">Proprio s</text>
+<rect class="dg-box" x="170" y="24" width="110" height="36"/><text class="dg-t" x="225" y="46" text-anchor="middle">SigLIP</text>
+<rect class="dg-box" x="310" y="24" width="150" height="124"/><text class="dg-t" x="385" y="76" text-anchor="middle">PaliGemma</text><text class="dg-s" x="385" y="92" text-anchor="middle">Gemma-3B</text><text class="dg-s" x="385" y="112" text-anchor="middle">prefix Z_prefix</text>
+<path class="dg-a" d="M140 42 H170"/><path class="dg-a" d="M280 42 H310"/><path class="dg-a" d="M140 86 H310"/><path class="dg-a" d="M140 130 H310"/>
+<rect class="dg-ext" x="170" y="190" width="120" height="44"/><text class="dg-t" x="230" y="208" text-anchor="middle">noisy x_t, t</text><text class="dg-s" x="230" y="222" text-anchor="middle">H×d_a</text>
+<rect class="dg-box" x="310" y="190" width="150" height="44"/><text class="dg-t" x="385" y="208" text-anchor="middle">Action expert</text><text class="dg-s" x="385" y="222" text-anchor="middle">Gemma-300M · Z_suffix</text>
+<path class="dg-a" d="M290 212 H310"/><path class="dg-ad" d="M385 148 V190"/><text class="dg-l" x="395" y="174">shared KV</text>
+<rect class="dg-ext" x="20" y="280" width="120" height="44"/><text class="dg-t" x="80" y="298" text-anchor="middle">Force f</text><text class="dg-s" x="80" y="312" text-anchor="middle">14 joint torques</text>
+<rect class="dg-ext" x="20" y="336" width="120" height="44"/><text class="dg-t" x="80" y="354" text-anchor="middle">Tactile g</text><text class="dg-s" x="80" y="368" text-anchor="middle">10 fingertips × 6</text>
+<rect class="dg-key" x="170" y="280" width="120" height="44"/><text class="dg-t" x="230" y="298" text-anchor="middle">W_f → Z~f</text><text class="dg-s" x="230" y="312" text-anchor="middle">H copies + pos</text>
+<rect class="dg-key" x="170" y="336" width="120" height="44"/><text class="dg-t" x="230" y="354" text-anchor="middle">W_g → Z~g</text><text class="dg-s" x="230" y="368" text-anchor="middle">H copies + pos</text>
+<path class="dg-a" d="M140 302 H170"/><path class="dg-a" d="M140 358 H170"/>
+<rect class="dg-box" x="520" y="130" width="120" height="170"/><text class="dg-t" x="580" y="196" text-anchor="middle">concat</text><text class="dg-s" x="580" y="214" text-anchor="middle">prefix‖suffix‖</text><text class="dg-s" x="580" y="228" text-anchor="middle">Z~f‖Z~g</text><text class="dg-s" x="580" y="246" text-anchor="middle">+ self-attn</text>
+<path class="dg-a" d="M460 86 H490 V160 H520"/><path class="dg-a" d="M460 212 H520"/><path class="dg-a" d="M290 302 H500 V252 H520"/><path class="dg-a" d="M290 358 H510 V272 H520"/>
+<rect class="dg-key" x="680" y="130" width="130" height="170"/><text class="dg-t" x="745" y="190" text-anchor="middle">MoDE</text><text class="dg-s" x="745" y="208" text-anchor="middle">sparse MoE</text><text class="dg-s" x="745" y="222" text-anchor="middle">8 experts, top-1</text><text class="dg-s" x="745" y="240" text-anchor="middle">modality-aware</text><text class="dg-s" x="745" y="254" text-anchor="middle">routing</text>
+<path class="dg-a" d="M640 215 H680"/>
+<rect class="dg-box" x="850" y="130" width="110" height="64"/><text class="dg-t" x="905" y="154" text-anchor="middle">W1(Z_f+Z_suf)</text><text class="dg-s" x="905" y="172" text-anchor="middle">arm velocity</text>
+<rect class="dg-box" x="850" y="236" width="110" height="64"/><text class="dg-t" x="905" y="260" text-anchor="middle">W2(Z_g+Z_suf)</text><text class="dg-s" x="905" y="278" text-anchor="middle">hand velocity</text>
+<path class="dg-a" d="M810 162 H850"/><path class="dg-a" d="M810 268 H850"/>
+<rect class="dg-box" x="700" y="350" width="260" height="44"/><text class="dg-t" x="830" y="368" text-anchor="middle">Euler ×10 steps (H=50)</text><text class="dg-s" x="830" y="382" text-anchor="middle">a_arm · a_hand · a_other (incl. trigger c)</text>
+<path class="dg-a" d="M960 162 H974 V372 H960"/><path class="dg-a" d="M905 300 V350"/>
+<rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (PPO hand skill)</text><text class="dg-s" x="530" y="442" text-anchor="middle">in-hand rotation</text>
+<path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="710" y="424" text-anchor="middle">c&gt;0.5: overrides hand action</text>
+</svg><figcaption>MoDE-VLA on a π0 backbone: force and tactile tokens go through a sparse MoE, produce residual corrections for arm and hand velocity, and an RL skill can take over the hand.</figcaption></figure>
+<ol>
+<li><strong>π0 backbone (left of the figure).</strong> Three RGB views (224×224) go through a SigLIP So400m/14 encoder (256 tokens per view); with language and proprioception they form the PaliGemma (Gemma-3B) prefix. Noisy actions with a timestep form the suffix handled by a Gemma-300M action expert. Prefix and suffix share key-value pairs across layers.</li>
+<li><strong>Force and tactile paths.</strong> Force $f \in \mathbb{R}^{14}$ (joint torques, 7 joints × 2 arms) and tactile $g \in \mathbb{R}^{60}$ (6-DoF wrench × 5 fingers × 2 hands) each get a learned linear projection into the model width, then are replicated $H$ times with step encodings so that each timestep can be routed separately.</li>
+<li><strong>Concatenate, then MoE.</strong> $[Z_{prefix} \Vert Z_{suffix} \Vert \tilde Z_f \Vert \tilde Z_g]$ passes a self-attention layer and a token-level MoE (8 experts, top-1 routing). The routing is motivated by contact regimes (reaching, first contact, stable grasp, in-hand rotation).</li>
+<li><strong>Residual injection.</strong> The velocity is $v_\theta = [W_1(Z_f + Z_{suffix}) \Vert W_2(Z_g + Z_{suffix})]$: the <strong>force</strong> path corrects <strong>arm</strong> actions, the <strong>tactile</strong> path corrects <strong>hand</strong> actions.</li>
+<li><strong>Sampling.</strong> Flow matching with 10 Euler steps, action horizon $H=50$.</li>
+<li><strong>IMCopilot.</strong> The VLA also outputs a trigger $c \in [0,1]$. If $c &gt; 0.5$, a PPO-trained policy (IsaacLab, teacher–student distillation) takes over the hand for in-hand rotation.</li>
+</ol>
+<h2>Training</h2>
+<ul>
+<li>Backbone initialised from the pretrained π0 checkpoint; the MoDE module and projections start from scratch.</li>
+<li>60,000 steps, AdamW, cosine learning-rate decay, colour-jitter augmentation.</li>
+<li>Loss: flow matching $\lVert v_\theta(x_t,t) - (\epsilon - x_0)\rVert^2$ with $t \sim \text{Beta}(1.5, 1)$.</li>
+</ul>
+<h2>Results and caveats</h2>
+<p>The abstract claims "doubled success rate improvement over the baseline" on dexterous contact-rich tasks (Gear Assembling, Charger Plugging, Apple Peeling, Tube Rearranging), with π0 as the baseline. Per-task numbers come from a part of the paper I could not read verbatim, so I do not quote them. Also note that the body says π0 while the Fig. 3 caption says "OpenPI-0", and the control frequency is not stated.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2603.08122">arXiv 2603.08122</a>, <em>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA</em> (abstract gọi kiến trúc này là MoDE-VLA).</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Robot humanoid hai tay với hai bàn tay 22 bậc tự do có lực ở cánh tay và xúc giác ở mười đầu ngón. Trộn thẳng các tín hiệu đó vào một VLA đã pretrain dễ xóa mất những gì nó đã học. Bài có hai phần: phần <strong>dữ liệu</strong> (teleoperation có phản hồi lực/xúc giác, cộng một kỹ năng bàn tay học bằng RL tên IMCopilot) và phần <strong>mô hình</strong> (MoDE-VLA). Ghi chú này nói về mô hình.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="MoDE-VLA trên nền π0: token lực và xúc giác đi qua MoE thưa, tạo hiệu chỉnh residual cho vận tốc tay-cánh, và một kỹ năng RL có thể chiếm quyền điều khiển bàn tay." viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="120" height="36"/><text class="dg-t" x="80" y="40" text-anchor="middle">3 RGB views</text><text class="dg-s" x="80" y="53" text-anchor="middle">base, L/R wrist</text>
+<rect class="dg-ext" x="20" y="68" width="120" height="36"/><text class="dg-t" x="80" y="90" text-anchor="middle">Language ℓ</text>
+<rect class="dg-ext" x="20" y="112" width="120" height="36"/><text class="dg-t" x="80" y="134" text-anchor="middle">Proprio s</text>
+<rect class="dg-box" x="170" y="24" width="110" height="36"/><text class="dg-t" x="225" y="46" text-anchor="middle">SigLIP</text>
+<rect class="dg-box" x="310" y="24" width="150" height="124"/><text class="dg-t" x="385" y="76" text-anchor="middle">PaliGemma</text><text class="dg-s" x="385" y="92" text-anchor="middle">Gemma-3B</text><text class="dg-s" x="385" y="112" text-anchor="middle">prefix Z_prefix</text>
+<path class="dg-a" d="M140 42 H170"/><path class="dg-a" d="M280 42 H310"/><path class="dg-a" d="M140 86 H310"/><path class="dg-a" d="M140 130 H310"/>
+<rect class="dg-ext" x="170" y="190" width="120" height="44"/><text class="dg-t" x="230" y="208" text-anchor="middle">noisy x_t, t</text><text class="dg-s" x="230" y="222" text-anchor="middle">H×d_a</text>
+<rect class="dg-box" x="310" y="190" width="150" height="44"/><text class="dg-t" x="385" y="208" text-anchor="middle">Action expert</text><text class="dg-s" x="385" y="222" text-anchor="middle">Gemma-300M · Z_suffix</text>
+<path class="dg-a" d="M290 212 H310"/><path class="dg-ad" d="M385 148 V190"/><text class="dg-l" x="395" y="174">shared KV</text>
+<rect class="dg-ext" x="20" y="280" width="120" height="44"/><text class="dg-t" x="80" y="298" text-anchor="middle">Force f</text><text class="dg-s" x="80" y="312" text-anchor="middle">14 joint torques</text>
+<rect class="dg-ext" x="20" y="336" width="120" height="44"/><text class="dg-t" x="80" y="354" text-anchor="middle">Tactile g</text><text class="dg-s" x="80" y="368" text-anchor="middle">10 fingertips × 6</text>
+<rect class="dg-key" x="170" y="280" width="120" height="44"/><text class="dg-t" x="230" y="298" text-anchor="middle">W_f → Z~f</text><text class="dg-s" x="230" y="312" text-anchor="middle">H copies + pos</text>
+<rect class="dg-key" x="170" y="336" width="120" height="44"/><text class="dg-t" x="230" y="354" text-anchor="middle">W_g → Z~g</text><text class="dg-s" x="230" y="368" text-anchor="middle">H copies + pos</text>
+<path class="dg-a" d="M140 302 H170"/><path class="dg-a" d="M140 358 H170"/>
+<rect class="dg-box" x="520" y="130" width="120" height="170"/><text class="dg-t" x="580" y="196" text-anchor="middle">concat</text><text class="dg-s" x="580" y="214" text-anchor="middle">prefix‖suffix‖</text><text class="dg-s" x="580" y="228" text-anchor="middle">Z~f‖Z~g</text><text class="dg-s" x="580" y="246" text-anchor="middle">+ self-attn</text>
+<path class="dg-a" d="M460 86 H490 V160 H520"/><path class="dg-a" d="M460 212 H520"/><path class="dg-a" d="M290 302 H500 V252 H520"/><path class="dg-a" d="M290 358 H510 V272 H520"/>
+<rect class="dg-key" x="680" y="130" width="130" height="170"/><text class="dg-t" x="745" y="190" text-anchor="middle">MoDE</text><text class="dg-s" x="745" y="208" text-anchor="middle">sparse MoE</text><text class="dg-s" x="745" y="222" text-anchor="middle">8 experts, top-1</text><text class="dg-s" x="745" y="240" text-anchor="middle">modality-aware</text><text class="dg-s" x="745" y="254" text-anchor="middle">routing</text>
+<path class="dg-a" d="M640 215 H680"/>
+<rect class="dg-box" x="850" y="130" width="110" height="64"/><text class="dg-t" x="905" y="154" text-anchor="middle">W1(Z_f+Z_suf)</text><text class="dg-s" x="905" y="172" text-anchor="middle">arm velocity</text>
+<rect class="dg-box" x="850" y="236" width="110" height="64"/><text class="dg-t" x="905" y="260" text-anchor="middle">W2(Z_g+Z_suf)</text><text class="dg-s" x="905" y="278" text-anchor="middle">hand velocity</text>
+<path class="dg-a" d="M810 162 H850"/><path class="dg-a" d="M810 268 H850"/>
+<rect class="dg-box" x="700" y="350" width="260" height="44"/><text class="dg-t" x="830" y="368" text-anchor="middle">Euler ×10 steps (H=50)</text><text class="dg-s" x="830" y="382" text-anchor="middle">a_arm · a_hand · a_other (incl. trigger c)</text>
+<path class="dg-a" d="M960 162 H974 V372 H960"/><path class="dg-a" d="M905 300 V350"/>
+<rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (PPO hand skill)</text><text class="dg-s" x="530" y="442" text-anchor="middle">in-hand rotation</text>
+<path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="710" y="424" text-anchor="middle">c&gt;0.5: overrides hand action</text>
+</svg><figcaption>MoDE-VLA trên nền π0: token lực và xúc giác đi qua MoE thưa, tạo hiệu chỉnh residual cho vận tốc tay-cánh, và một kỹ năng RL có thể chiếm quyền điều khiển bàn tay.</figcaption></figure>
+<ol>
+<li><strong>Backbone π0 (bên trái hình).</strong> Ba góc nhìn RGB (224×224) qua encoder SigLIP So400m/14 (256 token mỗi góc); cùng ngôn ngữ và proprioception tạo prefix của PaliGemma (Gemma-3B). Action nhiễu kèm timestep là suffix do action expert Gemma-300M xử lý. Prefix và suffix dùng chung cặp key-value ở mọi lớp.</li>
+<li><strong>Hai đường lực và xúc giác.</strong> Lực $f \in \mathbb{R}^{14}$ (mô men khớp, 7 khớp × 2 tay) và xúc giác $g \in \mathbb{R}^{60}$ (wrench 6 bậc × 5 ngón × 2 bàn tay) mỗi cái qua một lớp linear học được vào chiều của mô hình, rồi nhân bản $H$ lần kèm mã hóa bước, để mỗi timestep có thể được định tuyến riêng.</li>
+<li><strong>Nối rồi MoE.</strong> $[Z_{prefix} \Vert Z_{suffix} \Vert \tilde Z_f \Vert \tilde Z_g]$ qua một lớp self-attention và MoE mức token (8 expert, top-1). Việc định tuyến được lý giải bằng các chế độ tiếp xúc (với tới, chạm đầu tiên, nắm ổn định, xoay trong tay).</li>
+<li><strong>Tiêm residual.</strong> Vận tốc là $v_\theta = [W_1(Z_f + Z_{suffix}) \Vert W_2(Z_g + Z_{suffix})]$: đường <strong>lực</strong> hiệu chỉnh hành động <strong>cánh tay</strong>, đường <strong>xúc giác</strong> hiệu chỉnh hành động <strong>bàn tay</strong>.</li>
+<li><strong>Lấy mẫu.</strong> Flow matching với 10 bước Euler, horizon hành động $H=50$.</li>
+<li><strong>IMCopilot.</strong> VLA còn xuất tín hiệu kích hoạt $c \in [0,1]$. Nếu $c &gt; 0{,}5$, một chính sách học bằng PPO (IsaacLab, chưng cất teacher–student) tiếp quản bàn tay để xoay vật trong tay.</li>
+</ol>
+<h2>Huấn luyện</h2>
+<ul>
+<li>Backbone khởi tạo từ checkpoint π0 đã pretrain; module MoDE và các lớp chiếu khởi tạo từ đầu.</li>
+<li>60.000 bước, AdamW, giảm learning rate kiểu cosine, augmentation đổi màu.</li>
+<li>Loss: flow matching $\lVert v_\theta(x_t,t) - (\epsilon - x_0)\rVert^2$ với $t \sim \text{Beta}(1.5, 1)$.</li>
+</ul>
+<h2>Kết quả và lưu ý</h2>
+<p>Abstract nêu "tỉ lệ thành công tăng gấp đôi so với baseline" trên các task khéo léo giàu tiếp xúc (lắp bánh răng, cắm sạc, gọt táo, sắp xếp ống), baseline là π0. Số liệu từng task nằm ở phần bài tôi không đọc được nguyên văn nên không trích. Cũng lưu ý phần thân bài ghi π0 còn chú thích Fig. 3 ghi "OpenPI-0", và tần số điều khiển không được nêu.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

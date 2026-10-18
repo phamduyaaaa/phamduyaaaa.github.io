@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.">
+<title>Action Tokenization: Turning Actions into Tokens · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Action Tokenization: Turning Actions into Tokens">
+<meta property="og:description" content="An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Action Tokenization: Turning Actions into Tokens</h1>
+    <h1 data-vi>Action Tokenization: Hành động trở thành token</h1>
+
+    <p class="post-excerpt-lead" data-en>An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.</p>
+    <p class="post-excerpt-lead" data-vi>LLM chọn một chữ trong từ điển hữu hạn, còn hành động robot là số thực. Chia thùng (bin) biến số liên tục thành token, tính tay một ví dụ, cùng cái lợi và cái giá.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Tokenizer</span><span class="pill">Action</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<h2>The pain to cure</h2>
+<p>An LLM generates tokens with a softmax over a finite vocabulary, so its output is a <strong>discrete</strong> variable. A robot action (for example moving the gripper by $\Delta x = 0.03$ m) is a <strong>continuous</strong> number.</p>
+<p>Images were easy because they are only input. Actions must be spoken by the model. So how can a model that only knows how to "pick one word from a dictionary" control real numbers?</p>
+<h2>The idea: turn a real number into a "word" by binning</h2>
+<p>Like rounding an exam score: instead of the exact 7.43, we only say "between 7 and 8". Split the value range into equal bins, and make each bin a word.</p>
+<h3>A worked example</h3>
+<p>Suppose $\Delta x$ lies in $[-0.1,\, 0.1]$ metres. Split it into $K=10$ bins to keep things readable (OpenVLA uses $K=256$).</p>
+<p>Bin width:</p>
+<p>$$
+\Delta = \frac{0.1-(-0.1)}{10} = 0.02
+$$</p>
+<p><strong>Encode</strong> (real number $\to$ bin index):</p>
+<p>$$
+b = \left\lfloor \frac{a-(-0.1)}{\Delta} \right\rfloor
+$$</p>
+<p>For $a = 0.03$:</p>
+<p>$$
+b = \left\lfloor \frac{0.03+0.1}{0.02} \right\rfloor = \lfloor 6.5 \rfloor = 6
+$$</p>
+<p>Bin 6 covers $[0.02,\, 0.04)$. The index $b=6$ is the token: one "word" of the vocabulary.</p>
+<p><strong>Decode</strong> (index $\to$ real number): take the bin centre:</p>
+<p>$$
+\hat a = -0.1 + (6+0.5)\times 0.02 = 0.03
+$$</p>
+<p>Here it matches exactly because $0.03$ happens to sit in the middle of the bin. Try $a=0.027$: it still falls in bin 6 (since $\lfloor 6.35 \rfloor = 6$), decodes to $0.03$, an error of $0.003$.</p>
+<p>The maximum error is always half a bin width:</p>
+<p>$$
+|a-\hat a| \le \frac{\Delta}{2} = 0.01
+$$</p>
+<p>For higher accuracy, increase $K$. With $K=256$, $\Delta = 0.2/256 \approx 0.00078$ and the maximum error is about $0.0004$ m, under half a millimetre.</p>
+<h2>Plugging into an LLM</h2>
+<p>Each bin gets a token of the vocabulary (OpenVLA overwrites 256 rarely used tokens of the Llama tokenizer). A 7-dimensional action becomes 7 consecutive tokens:</p>
+<p>$$
+a=(\Delta x,\Delta y,\Delta z,\Delta\phi,\Delta\theta,\Delta\psi,g)\;\to\;(b_1,b_2,\dots,b_7)
+$$</p>
+<p>The model generates one token at a time, exactly like writing a sentence:</p>
+<p>$$
+\pi(a \mid \text{image},\text{command}) = \prod_{j=1}^{7} p(b_j \mid \text{image},\text{command},b_{&lt;j})
+$$</p>
+<p>The loss is still cross-entropy. The whole LLM machinery is reused unchanged, with no architecture change. That is why the approach is attractive.</p>
+<h2>Why classification instead of regressing the real number?</h2>
+<p>Consider a robot facing an obstacle. It can dodge left ($a=-1$) or right ($a=+1$), each 50% of the time in the data.</p>
+<ul>
+<li><strong>MSE regression</strong> learns the mean: $\tfrac12(-1)+\tfrac12(+1)=0$, which drives straight into the obstacle.</li>
+<li><strong>Classification over bins</strong> puts high probability on two bins (left and right) and low probability in the middle. Sampling then yields one valid direction.</li>
+</ul>
+<p>So tokenization is not only a trick to reuse LLMs. It also lets the model represent several equally valid options (a multi-modal distribution).</p>
+<h2>The price to pay (leading to the next stage)</h2>
+<ol>
+<li><strong>Order between bins is lost.</strong> Cross-entropy treats bin 6 and bin 7 as two completely different labels. Guessing 7 when the answer is 6 is penalised exactly as much as guessing 0, although physically they are much closer.</li>
+<li><strong>Sequences get long.</strong> Each step costs 7 tokens. A robot controlled at 50 Hz over a 1-second chunk of 50 steps needs $50\times 7=350$ tokens, heavy for $O(N^2)$ attention.</li>
+<li><strong>Redundant tokens.</strong> At high frequency $a_t \approx a_{t-1}$, so the next token is almost predictable from the previous one, and each token carries very little new information.</li>
+</ol>
+<p>Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT), then tokenize it, using the same BPE as text tokenizers.</p>
+<p><strong>Check question:</strong> with $K=10$ bins on $[-0.1, 0.1]$, which bin does the action $a=-0.095$ fall into, what does it decode to, and what is the error?</p>
+<p><em>Answer:</em> $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. The bin covers $[-0.1,-0.08)$ with centre $-0.09$, so it decodes to $\hat a=-0.09$ and the error is $0.005$, within the bound $\Delta/2=0.01$.</p>
+    </div>
+    <div data-vi>
+<h2>Cái đau cần chữa</h2>
+<p>LLM sinh token bằng softmax trên từ điển hữu hạn, nghĩa là đầu ra là một biến <strong>rời rạc</strong>. Còn hành động robot (ví dụ dịch tay máy $\Delta x = 0.03$ m) là số <strong>liên tục</strong>.</p>
+<p>Ảnh thì dễ vì chỉ là đầu vào. Hành động thì mô hình phải nói ra. Vậy làm sao để một mô hình chỉ biết "chọn một chữ trong từ điển" điều khiển được số thực?</p>
+<h2>Ý tưởng: biến số thực thành "chữ" bằng cách chia thùng (bin)</h2>
+<p>Giống như làm tròn điểm thi: thay vì điểm thật 7.43, ta chỉ nói "điểm thuộc khoảng 7 đến 8". Ta chia đoạn giá trị thành các thùng bằng nhau, mỗi thùng là một chữ.</p>
+<h3>Làm tay một ví dụ</h3>
+<p>Giả sử $\Delta x$ chỉ nằm trong $[-0.1,\, 0.1]$ mét, ta chia thành $K=10$ thùng cho dễ nhìn (OpenVLA dùng $K=256$).</p>
+<p>Bề rộng mỗi thùng:</p>
+<p>$$
+\Delta = \frac{0.1-(-0.1)}{10} = 0.02
+$$</p>
+<p><strong>Mã hóa</strong> (số thực $\to$ chỉ số thùng):</p>
+<p>$$
+b = \left\lfloor \frac{a-(-0.1)}{\Delta} \right\rfloor
+$$</p>
+<p>Với $a = 0.03$:</p>
+<p>$$
+b = \left\lfloor \frac{0.03+0.1}{0.02} \right\rfloor = \lfloor 6.5 \rfloor = 6
+$$</p>
+<p>Thùng số 6 phủ khoảng $[0.02,\, 0.04)$. Chỉ số $b=6$ chính là token: một "chữ" trong từ điển.</p>
+<p><strong>Giải mã</strong> (chỉ số $\to$ số thực): lấy tâm thùng:</p>
+<p>$$
+\hat a = -0.1 + (6+0.5)\times 0.02 = 0.03
+$$</p>
+<p>Ở ví dụ này khớp đúng vì $0.03$ tình cờ nằm giữa thùng. Thử $a=0.027$: vẫn rơi vào thùng 6 (vì $\lfloor 6.35 \rfloor = 6$), giải mã ra $0.03$, sai lệch $0.003$.</p>
+<p>Sai số tối đa luôn là nửa bề rộng thùng:</p>
+<p>$$
+|a-\hat a| \le \frac{\Delta}{2} = 0.01
+$$</p>
+<p>Muốn chính xác hơn thì tăng $K$. Với $K=256$, $\Delta = 0.2/256 \approx 0.00078$, sai số tối đa $\approx 0.0004$ m, tức dưới nửa milimét.</p>
+<h2>Nối vào LLM như thế nào?</h2>
+<p>Mỗi thùng được gán một token trong từ điển (OpenVLA ghi đè 256 token ít dùng của tokenizer Llama). Một hành động 7 chiều trở thành 7 token liên tiếp:</p>
+<p>$$
+a=(\Delta x,\Delta y,\Delta z,\Delta\phi,\Delta\theta,\Delta\psi,g)\;\to\;(b_1,b_2,\dots,b_7)
+$$</p>
+<p>Mô hình sinh từng token một, y hệt sinh câu văn:</p>
+<p>$$
+\pi(a \mid \text{ảnh},\text{lệnh}) = \prod_{j=1}^{7} p(b_j \mid \text{ảnh},\text{lệnh},b_{&lt;j})
+$$</p>
+<p>Và loss vẫn là cross-entropy. Toàn bộ máy móc của LLM dùng lại nguyên xi, không cần sửa kiến trúc. Đó là lý do cách này hấp dẫn.</p>
+<h2>Vì sao chọn phân loại mà không hồi quy số thực trực tiếp?</h2>
+<p>Hãy xét một tình huống: robot gặp vật cản, có thể né trái ($a=-1$) hoặc phải ($a=+1$), mỗi hướng 50% trong dữ liệu.</p>
+<ul>
+<li><strong>Hồi quy MSE</strong> học giá trị trung bình: $\tfrac12(-1)+\tfrac12(+1)=0$, tức đi thẳng vào vật cản.</li>
+<li><strong>Phân loại trên thùng</strong> cho xác suất cao ở hai thùng (trái và phải), thấp ở giữa. Khi lấy mẫu sẽ ra một hướng hợp lệ.</li>
+</ul>
+<p>Vậy token hóa không chỉ là mẹo để dùng LLM, mà còn cho mô hình biểu diễn được nhiều phương án đều hợp lý (phân phối đa đỉnh).</p>
+<h2>Cái giá phải trả (dẫn sang bài sau)</h2>
+<ol>
+<li><strong>Mất thứ tự giữa các thùng.</strong> Cross-entropy coi thùng 6 và thùng 7 là hai nhãn khác nhau hoàn toàn. Đoán thùng 7 khi đáp án là 6 bị phạt bằng đúng mức đoán thùng 0, dù về vật lý chúng gần nhau hơn rất nhiều.</li>
+<li><strong>Dãy quá dài.</strong> Mỗi bước tốn 7 token. Robot điều khiển ở 50 Hz, một đoạn 1 giây gồm 50 bước sẽ là $50\times 7=350$ token, nặng cho attention $O(N^2)$.</li>
+<li><strong>Token dư thừa.</strong> Ở tần số cao, $a_t \approx a_{t-1}$, nên token tiếp theo gần như đoán được ngay từ token trước, và mỗi token mang rất ít thông tin mới.</li>
+</ol>
+<p>Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT) rồi mới token hóa, dùng chính BPE của tokenizer văn bản.</p>
+<p><strong>Câu kiểm tra:</strong> với $K=10$ thùng trên $[-0.1,0.1]$, hành động $a=-0.095$ rơi vào thùng số mấy, giải mã ra bao nhiêu, và sai số là bao nhiêu?</p>
+<p><em>Đáp án:</em> $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. Thùng này phủ $[-0.1,-0.08)$, tâm là $-0.09$, nên giải mã ra $\hat a=-0.09$ và sai số là $0.005$, nằm trong giới hạn $\Delta/2=0.01$.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

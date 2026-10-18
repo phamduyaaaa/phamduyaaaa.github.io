@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.">
+<title>ForceVLA: Force-aware MoE for Contact-rich Manipulation · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="ForceVLA: Force-aware MoE for Contact-rich Manipulation">
+<meta property="og:description" content="ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">2 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>ForceVLA: Force-aware MoE for Contact-rich Manipulation</h1>
+    <h1 data-vi>ForceVLA: MoE nhận biết lực cho thao tác giàu tiếp xúc</h1>
+
+    <p class="post-excerpt-lead" data-en>ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.</p>
+    <p class="post-excerpt-lead" data-vi>ForceVLA coi lực 6 trục là một modality riêng và gộp vào π0 sau VLM bằng mixture-of-experts thưa (FVLMoE). Kiến trúc, cách huấn luyện và kết quả.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Paper Notes</span><span class="pill">MoE</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> (NeurIPS 2025), built on π0.</p>
+<h2>The pain it cures</h2>
+<p>Vision-language-action models are good at coarse motion but fail when the task is decided by contact: inserting a plug, wiping a board, peeling a cucumber. Naively concatenating force to the robot state barely helps. ForceVLA's claim is that force should be a <strong>first-class modality</strong> with its own token, and that it should be fused <strong>after</strong> the VLM has already processed vision and language.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="ForceVLA: the force token E_F joins the VLM output, passes an encoder and a 4-expert top-1 MoE (FVLMoE), and the result is added to the action expert's suffix before flow-matching decoding." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="130" height="40"/><text class="dg-t" x="85" y="48" text-anchor="middle">Base + hand RGB</text>
+<rect class="dg-ext" x="20" y="76" width="130" height="40"/><text class="dg-t" x="85" y="100" text-anchor="middle">Language L</text>
+<rect class="dg-ext" x="20" y="138" width="130" height="40"/><text class="dg-t" x="85" y="156" text-anchor="middle">F/T f</text><text class="dg-s" x="85" y="170" text-anchor="middle">6-axis, R^6</text>
+<rect class="dg-box" x="200" y="24" width="150" height="92"/><text class="dg-t" x="275" y="62" text-anchor="middle">SigLIP VLM</text><text class="dg-s" x="275" y="78" text-anchor="middle">(PaliGemma)</text><text class="dg-s" x="275" y="96" text-anchor="middle">E_VL: N×2048</text>
+<rect class="dg-box" x="200" y="138" width="150" height="40"/><text class="dg-t" x="275" y="156" text-anchor="middle">Linear φ_F</text><text class="dg-s" x="275" y="170" text-anchor="middle">E_F: 1×2048</text>
+<path class="dg-a" d="M150 44 H200"/><path class="dg-a" d="M150 96 H200"/><path class="dg-a" d="M150 158 H200"/>
+<rect class="dg-box" x="400" y="70" width="110" height="60"/><text class="dg-t" x="455" y="96" text-anchor="middle">concat</text><text class="dg-s" x="455" y="112" text-anchor="middle">[E_VL ; E_F]</text>
+<path class="dg-a" d="M350 70 H375 V92 H400"/><path class="dg-a" d="M350 158 H375 V108 H400"/>
+<rect class="dg-box" x="545" y="70" width="120" height="60"/><text class="dg-t" x="605" y="96" text-anchor="middle">Encoder</text><text class="dg-s" x="605" y="112" text-anchor="middle">MHSA(8 heads)+FFN</text>
+<path class="dg-a" d="M510 100 H545"/>
+<rect class="dg-key" x="700" y="60" width="200" height="80"/><text class="dg-t" x="800" y="86" text-anchor="middle">FVLMoE</text><text class="dg-s" x="800" y="104" text-anchor="middle">sparse MoE: 4 expert MLPs</text><text class="dg-s" x="800" y="120" text-anchor="middle">top-1 router + residual</text>
+<path class="dg-a" d="M665 100 H700"/>
+<rect class="dg-box" x="700" y="206" width="200" height="40"/><text class="dg-t" x="800" y="224" text-anchor="middle">Linear 2048→1024</text><text class="dg-s" x="800" y="238" text-anchor="middle">last H_action tokens = G</text>
+<path class="dg-a" d="M800 140 V206"/>
+<circle class="dg-box" cx="620" cy="226" r="14"/><text class="dg-t" x="620" y="231" text-anchor="middle">+</text>
+<path class="dg-a" d="M700 226 H634"/>
+<rect class="dg-box" x="520" y="290" width="200" height="40"/><text class="dg-t" x="620" y="308" text-anchor="middle">S_suffix</text><text class="dg-s" x="620" y="322" text-anchor="middle">state + noisy action a^τ</text>
+<path class="dg-a" d="M620 290 V240"/>
+<rect class="dg-box" x="330" y="204" width="170" height="44"/><text class="dg-t" x="415" y="224" text-anchor="middle">Flow-matching</text><text class="dg-t" x="415" y="239" text-anchor="middle">action head</text>
+<path class="dg-a" d="M606 226 H500"/>
+<rect class="dg-box" x="130" y="204" width="150" height="44"/><text class="dg-t" x="205" y="224" text-anchor="middle">Action chunk</text><text class="dg-s" x="205" y="239" text-anchor="middle">A_t = a_t … a_t+H-1</text>
+<path class="dg-a" d="M330 226 H280"/>
+<text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
+</svg><figcaption>ForceVLA: the force token E_F joins the VLM output, passes an encoder and a 4-expert top-1 MoE (FVLMoE), and the result is added to the action expert's suffix before flow-matching decoding.</figcaption></figure>
+<p>Read it left to right:</p>
+<ol>
+<li><strong>VLM.</strong> Base and wrist RGB plus the instruction go through a SigLIP-based PaliGemma VLM, giving $E_{VL}$.</li>
+<li><strong>Force token.</strong> The raw 6-axis force-torque reading $f \in \mathbb{R}^6$ goes through one linear layer to $\mathbb{R}^{2048}$, giving a single token $E_F$.</li>
+<li><strong>Concatenate and encode.</strong> $E_{in} = [E_{VL}; E_F]$ passes a Transformer encoder block ($D=2048$, 8 heads) with self-attention and an FFN.</li>
+<li><strong>FVLMoE.</strong> A sparse MoE with 4 expert MLPs and a top-1 router picks one expert per token; a residual connection adds the input back.</li>
+<li><strong>Inject into the action expert.</strong> A linear layer maps $2048 \to 1024$, the last $H_{action}$ tokens become $G$, and $G$ is added element-wise to $S_{suffix}$ (the processed robot state plus noisy action). A flow-matching head decodes the action chunk.</li>
+</ol>
+<p>The ablation supports the "after the VLM" choice: fusing with a linear layer before the VLM scored 55%, a MoE before the VLM collapsed to 0%, concatenation after the VLM 60%, and full ForceVLA 80% (on the ablation task).</p>
+<h2>Training and data</h2>
+<ul>
+<li>Base: π0 with a conditional flow-matching action generator.</li>
+<li>ForceVLA-Data: 244 trajectories, about 140 thousand synchronized timesteps, five tasks (bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling), collected by VR teleoperation on a Flexiv Rizon arm.</li>
+<li>Optimiser: Adam ($\beta_1=0.9$, $\beta_2=0.95$), peak learning rate $2.5\times10^{-5}$ decaying to $2.5\times10^{-6}$ over 30,000 steps, bfloat16, gradient clipping 1.0.</li>
+</ul>
+<h2>Results</h2>
+<p>On the five tasks ForceVLA averages <strong>60.5%</strong> success against <strong>37.3%</strong> for a π0-base baseline, a gain of 23.2 points. In the multi-task setting it reaches 67.5% average (plug insertion 100%).</p>
+<h2>Caveats from reading the paper</h2>
+<ul>
+<li>Control frequency and the numeric action-chunk length are not stated.</li>
+<li>The paper labels the 37.3% baseline inconsistently ("with force" in one sentence, "without" elsewhere), and the ablation baseline (45%) is on a different footing.</li>
+<li>Which parts are frozen during fine-tuning is not stated.</li>
+</ul>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> (NeurIPS 2025), xây trên π0.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Các mô hình VLA làm tốt chuyển động thô nhưng thất bại khi nhiệm vụ do tiếp xúc quyết định: cắm phích, lau bảng, gọt dưa chuột. Chỉ nối lực vào state của robot gần như không giúp được gì. Ý tưởng của ForceVLA: lực phải là một <strong>modality hạng nhất</strong> với token riêng, và phải được gộp <strong>sau</strong> khi VLM đã xử lý xong ảnh và ngôn ngữ.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="ForceVLA: token lực E_F nhập vào đầu ra của VLM, đi qua một encoder và MoE 4 expert top-1 (FVLMoE), kết quả được cộng vào suffix của action expert trước khi giải mã flow-matching." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="130" height="40"/><text class="dg-t" x="85" y="48" text-anchor="middle">Base + hand RGB</text>
+<rect class="dg-ext" x="20" y="76" width="130" height="40"/><text class="dg-t" x="85" y="100" text-anchor="middle">Language L</text>
+<rect class="dg-ext" x="20" y="138" width="130" height="40"/><text class="dg-t" x="85" y="156" text-anchor="middle">F/T f</text><text class="dg-s" x="85" y="170" text-anchor="middle">6-axis, R^6</text>
+<rect class="dg-box" x="200" y="24" width="150" height="92"/><text class="dg-t" x="275" y="62" text-anchor="middle">SigLIP VLM</text><text class="dg-s" x="275" y="78" text-anchor="middle">(PaliGemma)</text><text class="dg-s" x="275" y="96" text-anchor="middle">E_VL: N×2048</text>
+<rect class="dg-box" x="200" y="138" width="150" height="40"/><text class="dg-t" x="275" y="156" text-anchor="middle">Linear φ_F</text><text class="dg-s" x="275" y="170" text-anchor="middle">E_F: 1×2048</text>
+<path class="dg-a" d="M150 44 H200"/><path class="dg-a" d="M150 96 H200"/><path class="dg-a" d="M150 158 H200"/>
+<rect class="dg-box" x="400" y="70" width="110" height="60"/><text class="dg-t" x="455" y="96" text-anchor="middle">concat</text><text class="dg-s" x="455" y="112" text-anchor="middle">[E_VL ; E_F]</text>
+<path class="dg-a" d="M350 70 H375 V92 H400"/><path class="dg-a" d="M350 158 H375 V108 H400"/>
+<rect class="dg-box" x="545" y="70" width="120" height="60"/><text class="dg-t" x="605" y="96" text-anchor="middle">Encoder</text><text class="dg-s" x="605" y="112" text-anchor="middle">MHSA(8 heads)+FFN</text>
+<path class="dg-a" d="M510 100 H545"/>
+<rect class="dg-key" x="700" y="60" width="200" height="80"/><text class="dg-t" x="800" y="86" text-anchor="middle">FVLMoE</text><text class="dg-s" x="800" y="104" text-anchor="middle">sparse MoE: 4 expert MLPs</text><text class="dg-s" x="800" y="120" text-anchor="middle">top-1 router + residual</text>
+<path class="dg-a" d="M665 100 H700"/>
+<rect class="dg-box" x="700" y="206" width="200" height="40"/><text class="dg-t" x="800" y="224" text-anchor="middle">Linear 2048→1024</text><text class="dg-s" x="800" y="238" text-anchor="middle">last H_action tokens = G</text>
+<path class="dg-a" d="M800 140 V206"/>
+<circle class="dg-box" cx="620" cy="226" r="14"/><text class="dg-t" x="620" y="231" text-anchor="middle">+</text>
+<path class="dg-a" d="M700 226 H634"/>
+<rect class="dg-box" x="520" y="290" width="200" height="40"/><text class="dg-t" x="620" y="308" text-anchor="middle">S_suffix</text><text class="dg-s" x="620" y="322" text-anchor="middle">state + noisy action a^τ</text>
+<path class="dg-a" d="M620 290 V240"/>
+<rect class="dg-box" x="330" y="204" width="170" height="44"/><text class="dg-t" x="415" y="224" text-anchor="middle">Flow-matching</text><text class="dg-t" x="415" y="239" text-anchor="middle">action head</text>
+<path class="dg-a" d="M606 226 H500"/>
+<rect class="dg-box" x="130" y="204" width="150" height="44"/><text class="dg-t" x="205" y="224" text-anchor="middle">Action chunk</text><text class="dg-s" x="205" y="239" text-anchor="middle">A_t = a_t … a_t+H-1</text>
+<path class="dg-a" d="M330 226 H280"/>
+<text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
+</svg><figcaption>ForceVLA: token lực E_F nhập vào đầu ra của VLM, đi qua một encoder và MoE 4 expert top-1 (FVLMoE), kết quả được cộng vào suffix của action expert trước khi giải mã flow-matching.</figcaption></figure>
+<p>Đọc từ trái sang phải:</p>
+<ol>
+<li><strong>VLM.</strong> Ảnh RGB từ camera nền và camera cổ tay cùng câu lệnh đi qua VLM PaliGemma (dựa trên SigLIP), cho ra $E_{VL}$.</li>
+<li><strong>Token lực.</strong> Số đo lực-mô men 6 trục $f \in \mathbb{R}^6$ qua một lớp linear lên $\mathbb{R}^{2048}$, thành một token $E_F$.</li>
+<li><strong>Nối và mã hóa.</strong> $E_{in} = [E_{VL}; E_F]$ đi qua một block Transformer encoder ($D=2048$, 8 head) gồm self-attention và FFN.</li>
+<li><strong>FVLMoE.</strong> MoE thưa với 4 expert MLP và router top-1 chọn một expert cho mỗi token; kết nối residual cộng đầu vào trở lại.</li>
+<li><strong>Tiêm vào action expert.</strong> Một lớp linear $2048 \to 1024$, lấy $H_{action}$ token cuối làm $G$, rồi cộng từng phần tử vào $S_{suffix}$ (state đã xử lý cộng với action nhiễu). Đầu flow-matching giải mã ra chuỗi hành động.</li>
+</ol>
+<p>Ablation ủng hộ lựa chọn "sau VLM": gộp bằng linear trước VLM đạt 55%, MoE trước VLM sụp xuống 0%, concat sau VLM 60%, ForceVLA đầy đủ 80% (trên task dùng cho ablation).</p>
+<h2>Huấn luyện và dữ liệu</h2>
+<ul>
+<li>Nền: π0 với bộ sinh hành động conditional flow matching.</li>
+<li>ForceVLA-Data: 244 quỹ đạo, khoảng 140 nghìn timestep đồng bộ, năm task (bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột), thu bằng teleoperation VR trên tay Flexiv Rizon.</li>
+<li>Optimizer: Adam ($\beta_1=0.9$, $\beta_2=0.95$), learning rate đỉnh $2.5\times10^{-5}$ giảm về $2.5\times10^{-6}$ trong 30.000 bước, bfloat16, clip gradient 1.0.</li>
+</ul>
+<h2>Kết quả</h2>
+<p>Trên năm task, ForceVLA trung bình <strong>60,5%</strong> thành công so với <strong>37,3%</strong> của baseline π0-base, hơn 23,2 điểm. Ở cài đặt multi-task đạt trung bình 67,5% (cắm phích 100%).</p>
+<h2>Lưu ý khi đọc bài</h2>
+<ul>
+<li>Tần số điều khiển và độ dài action chunk (con số cụ thể) không được nêu.</li>
+<li>Bài gắn nhãn baseline 37,3% không nhất quán (chỗ ghi "có lực", chỗ ghi "không lực"), và baseline của ablation (45%) nằm trên một nền khác.</li>
+<li>Không nêu phần nào bị đóng băng khi fine-tune.</li>
+</ul>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

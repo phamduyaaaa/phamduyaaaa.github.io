@@ -43,6 +43,50 @@ LANG_BLOCK_RE = re.compile(r":::(en|vi)\s*\n(.*?)\n:::", re.DOTALL)
 MD_EXTENSIONS = ["fenced_code", "tables", "sane_lists"]
 
 
+MATH_BLOCK_RE = re.compile(r"\$\$.+?\$\$", re.DOTALL)
+MATH_INLINE_RE = re.compile(r"(?<![\\$])\$(?!\s)[^$\n]+?(?<!\s)\$")
+
+
+FIG_RE = re.compile(r"^\[\[fig:([\w-]+)\]\][ \t]*(.*)$", re.MULTILINE)
+
+
+def render_figure(name: str, caption: str, diagram_dir: Path) -> str:
+    """Nhúng diagrams/<name>.svg thành <figure> có caption (dùng chung cho cả EN và VI)."""
+    svg_path = diagram_dir / f"{name}.svg"
+    if not svg_path.exists():
+        raise ValueError(f"không tìm thấy sơ đồ {svg_path}")
+    svg = svg_path.read_text(encoding="utf-8").strip()
+    label = caption.replace("&", "&amp;").replace('"', "&quot;")
+    svg = svg.replace("<svg ", f'<svg role="img" aria-label="{label}" ', 1)
+    return f'<figure class="diagram">{svg}<figcaption>{caption}</figcaption></figure>'
+
+
+def render_markdown(text: str, diagram_dir: Path = None) -> str:
+    """Markdown -> HTML, giữ nguyên công thức $...$ / $$...$$ (KaTeX) và nhúng sơ đồ [[fig:name]] caption."""
+    store = []
+
+    def stash(m):
+        store.append(m.group(0))
+        return f"@@MATH{len(store) - 1}@@"
+
+    figs = []
+
+    def stash_fig(m):
+        figs.append(render_figure(m.group(1), m.group(2).strip(), diagram_dir))
+        return f"@@FIG{len(figs) - 1}@@"
+
+    text = FIG_RE.sub(stash_fig, text)
+    text = MATH_BLOCK_RE.sub(stash, text)
+    text = MATH_INLINE_RE.sub(stash, text)
+    html = markdown.markdown(text, extensions=MD_EXTENSIONS)
+    for i, math in enumerate(store):
+        safe = math.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        html = html.replace(f"@@MATH{i}@@", safe)
+    for i, fig in enumerate(figs):
+        html = html.replace(f"<p>@@FIG{i}@@</p>", fig).replace(f"@@FIG{i}@@", fig)
+    return html
+
+
 def parse_post(path: Path) -> dict:
     raw = path.read_text(encoding="utf-8")
     m = FRONTMATTER_RE.match(raw)
@@ -64,8 +108,9 @@ def parse_post(path: Path) -> dict:
     if not blocks["en"].strip() or not blocks["vi"].strip():
         raise ValueError(f"{path.name}: cần có cả khối :::en::: và :::vi:::")
 
-    html_en = markdown.markdown(blocks["en"].strip(), extensions=MD_EXTENSIONS)
-    html_vi = markdown.markdown(blocks["vi"].strip(), extensions=MD_EXTENSIONS)
+    diagram_dir = path.parent.parent / "diagrams"
+    html_en = render_markdown(blocks["en"].strip(), diagram_dir)
+    html_vi = render_markdown(blocks["vi"].strip(), diagram_dir)
 
     tags = meta.get("tags") or []
     if isinstance(tags, str):
@@ -97,11 +142,11 @@ def parse_post(path: Path) -> dict:
 
 def render_post_html(post: dict, section: str) -> str:
     tags_html = "".join(f'<span class="pill">{t}</span>' for t in post["tags"])
-  section_title = "Learn VLA" if section == "learnvla" else "Blog"
-  section_styles = "../../blog/styles/blog.css" if section == "learnvla" else "../styles/blog.css"
-  section_i18n = "../../blog/js/i18n.js" if section == "learnvla" else "../js/i18n.js"
-  blog_url = "../../blog/" if section == "learnvla" else "../"
-  learnvla_url = "../" if section == "learnvla" else "../../learnvla/"
+    section_title = "Learn VLA" if section == "learnvla" else "Blog"
+    section_styles = "../../blog/styles/blog.css" if section == "learnvla" else "../styles/blog.css"
+    section_i18n = "../../blog/js/i18n.js" if section == "learnvla" else "../js/i18n.js"
+    blog_url = "../../blog/" if section == "learnvla" else "../"
+    learnvla_url = "../" if section == "learnvla" else "../../learnvla/"
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -121,9 +166,33 @@ def render_post_html(post: dict, section: str) -> str:
 
 <link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
 <link rel="stylesheet" href="{section_styles}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display {{ overflow-x: auto; overflow-y: hidden; padding: 4px 0; }}
+.post-body figure.diagram {{ box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }}
+.post-body figure.diagram svg {{ display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }}
+.post-body table {{ border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }}
+.post-body th, .post-body td {{ padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }}
+.post-body figure.diagram figcaption {{ margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }}
+.dg-box {{ fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }}
+.dg-key {{ fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }}
+.dg-ext {{ fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }}
+.dg-grp {{ fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }}
+.dg-t {{ fill: var(--ink); font: 600 12.5px var(--font-mono); }}
+.dg-s {{ fill: var(--ink-3); font: 500 10.5px var(--font-mono); }}
+.dg-h {{ fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }}
+.dg-a {{ fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }}
+.dg-ad {{ fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }}
+.dg-l {{ fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }}
+.dg-m {{ fill: var(--ink); }}
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}], throwOnError: false}});"></script>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
 <div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
 <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
   <a href="{blog_url}" onclick="toggleMenu(false)">Blog</a>
@@ -212,18 +281,18 @@ function toggleMenu(force) {{
 
 
 def main():
-  parser = argparse.ArgumentParser(description="Build a Markdown article section.")
-  parser.add_argument("--section", choices=("blog", "learnvla"), default="blog")
-  section = parser.parse_args().section
-  section_dir = REPO_ROOT / section
-  posts_dir = section_dir / "posts"
-  manifest_path = section_dir / "posts.json"
+    parser = argparse.ArgumentParser(description="Build a Markdown article section.")
+    parser.add_argument("--section", choices=("blog", "learnvla"), default="blog")
+    section = parser.parse_args().section
+    section_dir = REPO_ROOT / section
+    posts_dir = section_dir / "posts"
+    manifest_path = section_dir / "posts.json"
 
-  if not posts_dir.exists():
-    print(f"Không tìm thấy thư mục {posts_dir}", file=sys.stderr)
+    if not posts_dir.exists():
+        print(f"Không tìm thấy thư mục {posts_dir}", file=sys.stderr)
         sys.exit(1)
 
-  md_files = sorted(p for p in posts_dir.glob("*.md") if not p.name.startswith("_"))
+    md_files = sorted(p for p in posts_dir.glob("*.md") if not p.name.startswith("_"))
     if not md_files:
         print("Không có file .md nào để build (bỏ qua các file bắt đầu bằng '_').")
 

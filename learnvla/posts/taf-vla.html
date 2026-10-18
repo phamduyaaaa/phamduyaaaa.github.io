@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.">
+<title>TaF-VLA: Aligning Tactile Images with Force Before the VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="TaF-VLA: Aligning Tactile Images with Force Before the VLA">
+<meta property="og:description" content="A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">2 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>TaF-VLA: Aligning Tactile Images with Force Before the VLA</h1>
+    <h1 data-vi>TaF-VLA: Căn chỉnh ảnh xúc giác với lực trước khi vào VLA</h1>
+
+    <p class="post-excerpt-lead" data-en>A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.</p>
+    <p class="post-excerpt-lead" data-vi>Ảnh xúc giác thị giác cho thấy biến dạng chứ không phải lực. TaF-VLA trước hết căn chỉnh chuỗi xúc giác với tín hiệu lực/áp suất thật bằng học tương phản, rồi gắn adapter đã đóng băng vào π0.5.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> (January 2026).</p>
+<h2>The pain it cures</h2>
+<p>Earlier tactile VLAs treat a vision-based tactile sensor (VBTS) image as one more picture. But the image shows how the gel <strong>deforms</strong>, not how hard it is pressed. TaF-VLA's idea: teach a tactile encoder to predict <strong>force-like latents</strong> first, using a large dataset that pairs tactile images with a real 6-axis F/T sensor and a pressure array, then feed the resulting tokens to the policy.</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Stage (a) aligns a tactile encoder with a quantised force code by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">(a) TACTILE–FORCE ALIGNMENT (self-supervised)</text>
+<rect class="dg-ext" x="20" y="42" width="160" height="48"/><text class="dg-t" x="100" y="60" text-anchor="middle">Force window N=5</text><text class="dg-s" x="100" y="75" text-anchor="middle">F' 12×12 map, F'' 6-axis</text>
+<rect class="dg-box" x="220" y="42" width="130" height="48"/><text class="dg-t" x="285" y="60" text-anchor="middle">MLP f_φ' f_φ''</text><text class="dg-s" x="285" y="75" text-anchor="middle">z', z''</text>
+<rect class="dg-box" x="390" y="42" width="130" height="48"/><text class="dg-t" x="455" y="60" text-anchor="middle">VQ codebooks</text><text class="dg-s" x="455" y="75" text-anchor="middle">C', C'' → c*</text>
+<path class="dg-a" d="M180 66 H220"/><path class="dg-a" d="M350 66 H390"/>
+<rect class="dg-ext" x="20" y="116" width="160" height="48"/><text class="dg-t" x="100" y="134" text-anchor="middle">Tactile images</text><text class="dg-s" x="100" y="149" text-anchor="middle">window N=5</text>
+<rect class="dg-box" x="220" y="116" width="130" height="48"/><text class="dg-t" x="285" y="134" text-anchor="middle">ViT</text><text class="dg-s" x="285" y="149" text-anchor="middle">per frame h_tac</text>
+<rect class="dg-box" x="390" y="116" width="150" height="48"/><text class="dg-t" x="465" y="134" text-anchor="middle">Causal Transformer</text><text class="dg-s" x="465" y="149" text-anchor="middle">summary token s → z*</text>
+<path class="dg-a" d="M180 140 H220"/><path class="dg-a" d="M350 140 H390"/>
+<rect class="dg-key" x="620" y="76" width="150" height="56"/><text class="dg-t" x="695" y="100" text-anchor="middle">InfoNCE</text><text class="dg-s" x="695" y="116" text-anchor="middle">pull z* ↔ c*</text>
+<path class="dg-a" d="M520 66 H570 V92 H620"/><path class="dg-a" d="M540 140 H570 V116 H620"/>
+<rect class="dg-key" x="810" y="76" width="140" height="56"/><text class="dg-t" x="880" y="98" text-anchor="middle">TaF-Adapter</text><text class="dg-s" x="880" y="114" text-anchor="middle">frozen → z^tac</text>
+<path class="dg-ad" d="M770 104 H810"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="184"/><text class="dg-h" x="22" y="226">(b) POLICY INTEGRATION (π0.5 backbone)</text>
+<rect class="dg-ext" x="20" y="250" width="160" height="48"/><text class="dg-t" x="100" y="268" text-anchor="middle">I_global, I_wrist</text><text class="dg-s" x="100" y="283" text-anchor="middle">+ language l</text>
+<rect class="dg-box" x="220" y="250" width="130" height="48"/><text class="dg-t" x="285" y="268" text-anchor="middle">π_VLM</text><text class="dg-s" x="285" y="283" text-anchor="middle">conditioning φ_t</text>
+<path class="dg-a" d="M180 274 H220"/>
+<rect class="dg-ext" x="220" y="326" width="130" height="40"/><text class="dg-t" x="285" y="344" text-anchor="middle">Proprio q_t</text>
+<rect class="dg-key" x="440" y="250" width="200" height="80"/><text class="dg-t" x="540" y="282" text-anchor="middle">Action expert</text><text class="dg-s" x="540" y="298" text-anchor="middle">flow matching, δ=0.1</text><text class="dg-s" x="540" y="312" text-anchor="middle">input: φ_t, z^tac, q_t</text>
+<path class="dg-a" d="M350 274 H440"/><path class="dg-a" d="M350 346 H400 V310 H440"/>
+<path class="dg-ad" d="M900 132 V236 H560 V250"/><text class="dg-l" x="730" y="230" text-anchor="middle">force-aligned tactile tokens</text>
+<rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
+<path class="dg-a" d="M640 292 H720"/>
+</svg><figcaption>Stage (a) aligns a tactile encoder with a quantised force code by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.</figcaption></figure>
+<p><strong>(a) Tactile–force alignment (self-supervised).</strong></p>
+<ul>
+<li><strong>Force side.</strong> Over a window of $N=5$ steps, a pressure map $F' \in \mathbb{R}^{12\times12}$ and a wrench $F'' \in \mathbb{R}^6$ each pass an MLP, then are quantised against two learnable codebooks (VQ-VAE style). The concatenated nearest codes form $c^*$. Decoders reconstruct the signals to prevent codebook collapse.</li>
+<li><strong>Tactile side.</strong> Each tactile frame goes through a ViT; a learnable summary token and a causal Transformer give the holistic embedding $z^*$.</li>
+<li><strong>Loss.</strong> $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, with InfoNCE pulling $z^*$ towards its paired $c^*$.</li>
+</ul>
+<p><strong>(b) Policy integration.</strong> The backbone is π0.5, a flow-matching policy. A vision-language encoder turns the global and wrist images and the instruction into conditioning $\phi_t$. The frozen TaF-Adapter provides force-aligned tactile tokens $z^{tac}_t$. The action expert is conditioned on $(\phi_t, z^{tac}_t, q_t)$ and integrates the flow with step $\delta = 0.1$.</p>
+<h2>Data</h2>
+<p>The TaF-Dataset has over 10 million synchronised tactile frames, 6-axis F/T and 12×12 pressure maps, collected by an automated device with more than 60 indenters (40 rigid, 20 deformable) at 30 Hz. Policy data: over 10,000 force-aware episodes across more than 20 scenarios.</p>
+<h2>Results</h2>
+<p>Success rate, 15 rollouts per task, averaged over tasks:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Avg success</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACT</td>
+<td>26.7%</td>
+</tr>
+<tr>
+<td>Diffusion Policy</td>
+<td>29.5%</td>
+</tr>
+<tr>
+<td>π0.5 (vision only)</td>
+<td>37.1%</td>
+</tr>
+<tr>
+<td>FreeTacMan</td>
+<td>42.8%</td>
+</tr>
+<tr>
+<td>TaF-VLA</td>
+<td><strong>64.8%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The adapter also helps other backbones: ACT 26.7% to 47.6%, Diffusion Policy 29.5% to 44.7%. On the alignment ablation (three tasks), removing history (N=1) or sharing one codebook between modalities cut success sharply (for example whiteboard 60.0% to 26.7% and 13.3%).</p>
+<h2>Caveats</h2>
+<p>The paper is inconsistent about the task count (eight in the text, seven columns in Table I) and the number of baselines. The token position inside π0.5's sequence, the policy control rate and the action chunk length are not stated. The text says the adapter is frozen but also mentions task-specific fine-tuning; it is not reconciled.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> (tháng 1/2026).</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Các VLA xúc giác trước đây coi ảnh từ cảm biến xúc giác thị giác (VBTS) như thêm một bức ảnh. Nhưng ảnh chỉ cho thấy gel <strong>biến dạng</strong> ra sao, không cho biết ấn mạnh đến đâu. Ý tưởng của TaF-VLA: dạy bộ mã hóa xúc giác dự đoán <strong>latent giống lực</strong> trước, dùng một bộ dữ liệu lớn ghép ảnh xúc giác với cảm biến F/T 6 trục thật và ma trận áp suất, rồi mới đưa các token đó cho chính sách.</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Giai đoạn (a) căn chỉnh bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đã đóng băng vào action expert của π0.5." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">(a) TACTILE–FORCE ALIGNMENT (self-supervised)</text>
+<rect class="dg-ext" x="20" y="42" width="160" height="48"/><text class="dg-t" x="100" y="60" text-anchor="middle">Force window N=5</text><text class="dg-s" x="100" y="75" text-anchor="middle">F' 12×12 map, F'' 6-axis</text>
+<rect class="dg-box" x="220" y="42" width="130" height="48"/><text class="dg-t" x="285" y="60" text-anchor="middle">MLP f_φ' f_φ''</text><text class="dg-s" x="285" y="75" text-anchor="middle">z', z''</text>
+<rect class="dg-box" x="390" y="42" width="130" height="48"/><text class="dg-t" x="455" y="60" text-anchor="middle">VQ codebooks</text><text class="dg-s" x="455" y="75" text-anchor="middle">C', C'' → c*</text>
+<path class="dg-a" d="M180 66 H220"/><path class="dg-a" d="M350 66 H390"/>
+<rect class="dg-ext" x="20" y="116" width="160" height="48"/><text class="dg-t" x="100" y="134" text-anchor="middle">Tactile images</text><text class="dg-s" x="100" y="149" text-anchor="middle">window N=5</text>
+<rect class="dg-box" x="220" y="116" width="130" height="48"/><text class="dg-t" x="285" y="134" text-anchor="middle">ViT</text><text class="dg-s" x="285" y="149" text-anchor="middle">per frame h_tac</text>
+<rect class="dg-box" x="390" y="116" width="150" height="48"/><text class="dg-t" x="465" y="134" text-anchor="middle">Causal Transformer</text><text class="dg-s" x="465" y="149" text-anchor="middle">summary token s → z*</text>
+<path class="dg-a" d="M180 140 H220"/><path class="dg-a" d="M350 140 H390"/>
+<rect class="dg-key" x="620" y="76" width="150" height="56"/><text class="dg-t" x="695" y="100" text-anchor="middle">InfoNCE</text><text class="dg-s" x="695" y="116" text-anchor="middle">pull z* ↔ c*</text>
+<path class="dg-a" d="M520 66 H570 V92 H620"/><path class="dg-a" d="M540 140 H570 V116 H620"/>
+<rect class="dg-key" x="810" y="76" width="140" height="56"/><text class="dg-t" x="880" y="98" text-anchor="middle">TaF-Adapter</text><text class="dg-s" x="880" y="114" text-anchor="middle">frozen → z^tac</text>
+<path class="dg-ad" d="M770 104 H810"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="184"/><text class="dg-h" x="22" y="226">(b) POLICY INTEGRATION (π0.5 backbone)</text>
+<rect class="dg-ext" x="20" y="250" width="160" height="48"/><text class="dg-t" x="100" y="268" text-anchor="middle">I_global, I_wrist</text><text class="dg-s" x="100" y="283" text-anchor="middle">+ language l</text>
+<rect class="dg-box" x="220" y="250" width="130" height="48"/><text class="dg-t" x="285" y="268" text-anchor="middle">π_VLM</text><text class="dg-s" x="285" y="283" text-anchor="middle">conditioning φ_t</text>
+<path class="dg-a" d="M180 274 H220"/>
+<rect class="dg-ext" x="220" y="326" width="130" height="40"/><text class="dg-t" x="285" y="344" text-anchor="middle">Proprio q_t</text>
+<rect class="dg-key" x="440" y="250" width="200" height="80"/><text class="dg-t" x="540" y="282" text-anchor="middle">Action expert</text><text class="dg-s" x="540" y="298" text-anchor="middle">flow matching, δ=0.1</text><text class="dg-s" x="540" y="312" text-anchor="middle">input: φ_t, z^tac, q_t</text>
+<path class="dg-a" d="M350 274 H440"/><path class="dg-a" d="M350 346 H400 V310 H440"/>
+<path class="dg-ad" d="M900 132 V236 H560 V250"/><text class="dg-l" x="730" y="230" text-anchor="middle">force-aligned tactile tokens</text>
+<rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
+<path class="dg-a" d="M640 292 H720"/>
+</svg><figcaption>Giai đoạn (a) căn chỉnh bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đã đóng băng vào action expert của π0.5.</figcaption></figure>
+<p><strong>(a) Căn chỉnh xúc giác–lực (tự giám sát).</strong></p>
+<ul>
+<li><strong>Phía lực.</strong> Trong cửa sổ $N=5$ bước, bản đồ áp suất $F' \in \mathbb{R}^{12\times12}$ và wrench $F'' \in \mathbb{R}^6$ mỗi cái qua một MLP, rồi được lượng tử hóa theo hai codebook học được (kiểu VQ-VAE). Các mã gần nhất ghép lại thành $c^*$. Decoder tái tạo tín hiệu để tránh sụp codebook.</li>
+<li><strong>Phía xúc giác.</strong> Mỗi khung xúc giác qua một ViT; token tóm tắt học được cùng một Transformer nhân quả cho ra embedding tổng thể $z^*$.</li>
+<li><strong>Loss.</strong> $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, trong đó InfoNCE kéo $z^*$ về $c^*$ cùng cặp.</li>
+</ul>
+<p><strong>(b) Tích hợp chính sách.</strong> Backbone là π0.5, chính sách flow-matching. Một encoder thị giác-ngôn ngữ biến ảnh toàn cảnh, ảnh cổ tay và câu lệnh thành điều kiện $\phi_t$. TaF-Adapter đã đóng băng cung cấp token xúc giác đã căn với lực $z^{tac}_t$. Action expert nhận điều kiện $(\phi_t, z^{tac}_t, q_t)$ và tích phân dòng với bước $\delta = 0{,}1$.</p>
+<h2>Dữ liệu</h2>
+<p>TaF-Dataset có hơn 10 triệu khung xúc giác đồng bộ, F/T 6 trục và bản đồ áp suất 12×12, thu bằng thiết bị tự động với hơn 60 vật ấn (40 cứng, 20 biến dạng) ở 30 Hz. Dữ liệu chính sách: hơn 10.000 episode có nhận biết lực trên hơn 20 kịch bản.</p>
+<h2>Kết quả</h2>
+<p>Tỉ lệ thành công, 15 lượt mỗi task, trung bình theo task:</p>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Thành công TB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACT</td>
+<td>26,7%</td>
+</tr>
+<tr>
+<td>Diffusion Policy</td>
+<td>29,5%</td>
+</tr>
+<tr>
+<td>π0.5 (chỉ thị giác)</td>
+<td>37,1%</td>
+</tr>
+<tr>
+<td>FreeTacMan</td>
+<td>42,8%</td>
+</tr>
+<tr>
+<td>TaF-VLA</td>
+<td><strong>64,8%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Adapter cũng giúp các backbone khác: ACT từ 26,7% lên 47,6%, Diffusion Policy từ 29,5% lên 44,7%. Trong ablation căn chỉnh (ba task), bỏ lịch sử (N=1) hoặc dùng chung một codebook cho hai modality làm tụt mạnh (ví dụ whiteboard từ 60,0% xuống 26,7% và 13,3%).</p>
+<h2>Lưu ý</h2>
+<p>Bài không nhất quán về số task (tám trong văn bản, bảy cột ở Bảng I) và số baseline. Vị trí token trong chuỗi của π0.5, tần số điều khiển và độ dài action chunk không được nêu. Văn bản nói adapter bị đóng băng nhưng cũng nhắc đến fine-tune theo task; hai điều này không được dung hòa.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

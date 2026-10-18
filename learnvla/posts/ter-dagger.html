@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.">
+<title>TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion">
+<meta property="og:description" content="When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion</h1>
+    <h1 data-vi>TER-DAgger: Residual DAgger với chỉnh sửa quỹ đạo cho lắp ghép chính xác</h1>
+
+    <p class="post-excerpt-lead" data-en>When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.</p>
+    <p class="post-excerpt-lead" data-vi>Khi lực dự đoán lệch lực đo, robot dừng và con người chỉnh. TER-DAgger chỉnh sửa quỹ đạo thất bại thành một bản hiệu chỉnh sạch rồi huấn luyện chính sách residual 50 Hz trên đó.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">DAgger</span><span class="pill">Imitation Learning</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a>, <em>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control</em>; the abstract names the method <strong>Trajectory Editing Residual Dataset Aggregation (TER-DAgger)</strong>. It is not a VLA itself: the base policy is an ACT-style transformer. It belongs in this series because it shows how <strong>force prediction error</strong> can trigger and shape human corrections.</p>
+<h2>The pain it cures</h2>
+<p>A USB plug has about 0.1 mm of tolerance. A slow base policy (1 Hz) will often land a few millimetres off. Ordinary DAgger asks a human for corrections, but a correction recorded during a failure contains the hesitation and drift of the failing rollout, and it is hard to tell the learner where the failure begins. TER-DAgger fixes three things: <strong>when</strong> to ask (a force-error detector), <strong>what</strong> to record (an edited, clean trajectory) and <strong>how</strong> to apply it (a fast residual policy under impedance control).</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="A 1 Hz base policy proposes actions, a 50 Hz residual policy adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction, and trajectory editing turns it into residual training data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="40" width="150" height="48"/><text class="dg-t" x="95" y="58" text-anchor="middle">Pose x_t + force F_t</text><text class="dg-s" x="95" y="73" text-anchor="middle">+ front/wrist RGB</text>
+<rect class="dg-box" x="210" y="30" width="160" height="64"/><text class="dg-t" x="290" y="54" text-anchor="middle">Base policy</text><text class="dg-s" x="290" y="70" text-anchor="middle">ACT-style CVAE, 1 Hz</text><text class="dg-s" x="290" y="84" text-anchor="middle">n=100, run 50</text>
+<path class="dg-a" d="M170 62 H210"/>
+<rect class="dg-key" x="420" y="30" width="170" height="64"/><text class="dg-t" x="505" y="54" text-anchor="middle">Residual policy</text><text class="dg-s" x="505" y="70" text-anchor="middle">2-layer Transformer, 50 Hz</text><text class="dg-s" x="505" y="84" text-anchor="middle">in: x_t, Â, 2 images</text>
+<path class="dg-a" d="M370 62 H420"/><text class="dg-l" x="395" y="54" text-anchor="middle">Â</text>
+<circle class="dg-box" cx="650" cy="62" r="14"/><text class="dg-t" x="650" y="67" text-anchor="middle">+</text>
+<path class="dg-a" d="M590 62 H636"/><text class="dg-l" x="613" y="54" text-anchor="middle">ΔA</text>
+<path class="dg-a" d="M290 30 V14 H650 V48"/>
+<rect class="dg-box" x="710" y="36" width="130" height="52"/><text class="dg-t" x="775" y="56" text-anchor="middle">Impedance ctrl</text><text class="dg-s" x="775" y="72" text-anchor="middle">1 kHz</text>
+<rect class="dg-ext" x="870" y="36" width="90" height="52"/><text class="dg-t" x="915" y="66" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M664 62 H710"/><path class="dg-a" d="M840 62 H870"/>
+<rect class="dg-key" x="210" y="150" width="160" height="64"/><text class="dg-t" x="290" y="172" text-anchor="middle">Error detector</text><text class="dg-s" x="290" y="188" text-anchor="middle">e = ‖F̂ − F‖₁ &gt; c</text><text class="dg-s" x="290" y="202" text-anchor="middle">50 Hz</text>
+<path class="dg-a" d="M250 94 V150"/><text class="dg-l" x="240" y="126" text-anchor="end">F̂_t</text>
+<path class="dg-a" d="M915 88 V124 H340 V150"/><text class="dg-l" x="700" y="118" text-anchor="middle">measured F_t</text>
+<rect class="dg-ext" x="420" y="150" width="170" height="64"/><text class="dg-t" x="505" y="172" text-anchor="middle">Pause + human</text><text class="dg-t" x="505" y="188" text-anchor="middle">corrective demo X_h</text><text class="dg-s" x="505" y="204" text-anchor="middle">stiffness set to 0</text>
+<path class="dg-a" d="M370 182 H420"/><text class="dg-l" x="395" y="174" text-anchor="middle">trigger</text>
+<rect class="dg-key" x="640" y="150" width="190" height="64"/><text class="dg-t" x="735" y="172" text-anchor="middle">Trajectory editing</text><text class="dg-s" x="735" y="188" text-anchor="middle">align at nearest point k*,</text><text class="dg-s" x="735" y="202" text-anchor="middle">min fidelity+smooth+end</text>
+<path class="dg-a" d="M590 182 H640"/>
+<rect class="dg-ext" x="640" y="256" width="190" height="40"/><text class="dg-t" x="735" y="274" text-anchor="middle">Base trajectory X_b</text><text class="dg-s" x="735" y="288" text-anchor="middle">that failed</text>
+<path class="dg-a" d="M735 256 V214"/>
+<rect class="dg-box" x="640" y="328" width="190" height="52"/><text class="dg-t" x="735" y="348" text-anchor="middle">X_correct</text><text class="dg-s" x="735" y="364" text-anchor="middle">residual labels, 4 regions</text>
+<path class="dg-a" d="M830 182 H890 V354 H830"/>
+<path class="dg-ad" d="M640 354 H610 V84 H590"/><text class="dg-l" x="600" y="230" text-anchor="end" transform="rotate(0)">trains residual</text>
+<text class="dg-h" x="20" y="396">LOOP: run base → detect force error → human fixes → edit trajectory → new residual data → retrain residual</text>
+</svg><figcaption>A 1 Hz base policy proposes actions, a 50 Hz residual policy adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction, and trajectory editing turns it into residual training data.</figcaption></figure>
+<ul>
+<li><strong>Base policy (1 Hz).</strong> ACT-style CVAE transformer. Inputs: pose $x_t = [p_t, q_t]$, force $F_t = [f_x,f_y,f_z,\tau_x,\tau_y,\tau_z]$ (estimated from joint torques) and two 480×640 RGB images through ResNet-18. It predicts <strong>future actions and future forces</strong> jointly, with horizon $n=100$ steps (2 s), executing the first 50 before replanning.</li>
+<li><strong>Error detector (50 Hz).</strong> $e_t = \lVert\hat F_t - F_t\rVert_1$, comparing the base policy's predicted force with the measured force. If $e_t &gt; c$ (a threshold), execution pauses.</li>
+<li><strong>Human correction.</strong> The Cartesian impedance stiffness is set to zero and a short corrective insertion demonstration is recorded (in real experiments the end-effector starts about 8 cm above the target).</li>
+<li><strong>Trajectory editing.</strong> Find the base-trajectory point nearest to the start of the human demonstration, $k^* = \arg\min_k D(k)$ with $D = \omega_p d_p + \omega_q d_q$ ($\omega_p=1.0$, $\omega_q=0.5$). Replace a local segment by an optimised one that minimises fidelity + smoothness + endpoint cost ($\lambda_s = 1$, $\lambda_e = 1000$) while being pinned to the human start pose. The output $X_{correct}$ is a smooth path joining the base trajectory to the human insertion.</li>
+<li><strong>Residual labels in four regions.</strong> Before the edit the residual is 0; in the transition it is the edited pose minus the base action; in the human demo it is the human pose minus the base action; after the edit it is the nearest human pose minus the base action.</li>
+<li><strong>Residual policy (50 Hz).</strong> A two-layer transformer encoder (hidden size 256, 8 heads); inputs: current pose, the base action $\hat A_{t+1}$ and two images through a shared ResNet-18; output $\Delta A_{t+1}$. Executed action: $A^{exec} = \hat A + \Delta A$.</li>
+<li><strong>Impedance controller (1 kHz).</strong> $F_{imp} = K(x_d - x) + D(\dot x_d - \dot x)$ with gravity compensation.</li>
+</ul>
+<h2>Training and setup</h2>
+<p>Base: 100 demonstrations, 2000 epochs. Residual: 50 corrective demonstrations, 200 epochs. Simulation: MuJoCo, Franka Research 3, USB and two-pin plugs, socket offset in $[-5, 5]$ cm. Real: Franka with a wrist RealSense D415 and a fixed front camera; USB, two-pin and three-pin plugs. Baselines: ACT, FILIC, HG-DAgger, Retrain (one combined dataset) and Finetune. 50 trials per task.</p>
+<h2>Results</h2>
+<p>The abstract reports an average improvement of <strong>over 37%</strong> over the baselines. The paper's tables (which I read only through a summary, so verify them) report TER-DAgger around 77% average, a force-error detector with about 98.8% precision and 100% recall, and an optimisation window of 20 points working best.</p>
+<h2>Caveats</h2>
+<p>The aggregation loop itself (when the dataset is merged and models retrained) is not described step by step, and the physical interface used by the human is not stated. The figure caption says the edited segment has $N-1$ preceding points while the equation uses $N+1$ indices. Stiffness values $K$, $D$ and the optimiser used for editing are not given.</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a>, <em>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control</em>; abstract đặt tên phương pháp là <strong>Trajectory Editing Residual Dataset Aggregation (TER-DAgger)</strong>. Bản thân nó không phải VLA: chính sách nền là transformer kiểu ACT. Nó nằm trong series này vì cho thấy <strong>sai số dự đoán lực</strong> có thể kích hoạt và định hình các chỉnh sửa của con người ra sao.</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Phích USB có dung sai khoảng 0,1 mm. Chính sách nền chậm (1 Hz) thường rơi lệch vài milimét. DAgger thông thường nhờ con người chỉnh, nhưng bản chỉnh ghi lúc đang thất bại chứa cả sự do dự và trôi của lượt chạy lỗi, và khó chỉ cho học viên chỗ thất bại bắt đầu. TER-DAgger sửa ba thứ: <strong>khi nào</strong> hỏi (bộ phát hiện sai số lực), <strong>ghi gì</strong> (quỹ đạo đã chỉnh sửa, sạch) và <strong>áp dụng thế nào</strong> (chính sách residual nhanh dưới điều khiển impedance).</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Chính sách nền 1 Hz đề xuất hành động, chính sách residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt chỉnh sửa của con người, và chỉnh sửa quỹ đạo biến nó thành dữ liệu huấn luyện residual." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="40" width="150" height="48"/><text class="dg-t" x="95" y="58" text-anchor="middle">Pose x_t + force F_t</text><text class="dg-s" x="95" y="73" text-anchor="middle">+ front/wrist RGB</text>
+<rect class="dg-box" x="210" y="30" width="160" height="64"/><text class="dg-t" x="290" y="54" text-anchor="middle">Base policy</text><text class="dg-s" x="290" y="70" text-anchor="middle">ACT-style CVAE, 1 Hz</text><text class="dg-s" x="290" y="84" text-anchor="middle">n=100, run 50</text>
+<path class="dg-a" d="M170 62 H210"/>
+<rect class="dg-key" x="420" y="30" width="170" height="64"/><text class="dg-t" x="505" y="54" text-anchor="middle">Residual policy</text><text class="dg-s" x="505" y="70" text-anchor="middle">2-layer Transformer, 50 Hz</text><text class="dg-s" x="505" y="84" text-anchor="middle">in: x_t, Â, 2 images</text>
+<path class="dg-a" d="M370 62 H420"/><text class="dg-l" x="395" y="54" text-anchor="middle">Â</text>
+<circle class="dg-box" cx="650" cy="62" r="14"/><text class="dg-t" x="650" y="67" text-anchor="middle">+</text>
+<path class="dg-a" d="M590 62 H636"/><text class="dg-l" x="613" y="54" text-anchor="middle">ΔA</text>
+<path class="dg-a" d="M290 30 V14 H650 V48"/>
+<rect class="dg-box" x="710" y="36" width="130" height="52"/><text class="dg-t" x="775" y="56" text-anchor="middle">Impedance ctrl</text><text class="dg-s" x="775" y="72" text-anchor="middle">1 kHz</text>
+<rect class="dg-ext" x="870" y="36" width="90" height="52"/><text class="dg-t" x="915" y="66" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M664 62 H710"/><path class="dg-a" d="M840 62 H870"/>
+<rect class="dg-key" x="210" y="150" width="160" height="64"/><text class="dg-t" x="290" y="172" text-anchor="middle">Error detector</text><text class="dg-s" x="290" y="188" text-anchor="middle">e = ‖F̂ − F‖₁ &gt; c</text><text class="dg-s" x="290" y="202" text-anchor="middle">50 Hz</text>
+<path class="dg-a" d="M250 94 V150"/><text class="dg-l" x="240" y="126" text-anchor="end">F̂_t</text>
+<path class="dg-a" d="M915 88 V124 H340 V150"/><text class="dg-l" x="700" y="118" text-anchor="middle">measured F_t</text>
+<rect class="dg-ext" x="420" y="150" width="170" height="64"/><text class="dg-t" x="505" y="172" text-anchor="middle">Pause + human</text><text class="dg-t" x="505" y="188" text-anchor="middle">corrective demo X_h</text><text class="dg-s" x="505" y="204" text-anchor="middle">stiffness set to 0</text>
+<path class="dg-a" d="M370 182 H420"/><text class="dg-l" x="395" y="174" text-anchor="middle">trigger</text>
+<rect class="dg-key" x="640" y="150" width="190" height="64"/><text class="dg-t" x="735" y="172" text-anchor="middle">Trajectory editing</text><text class="dg-s" x="735" y="188" text-anchor="middle">align at nearest point k*,</text><text class="dg-s" x="735" y="202" text-anchor="middle">min fidelity+smooth+end</text>
+<path class="dg-a" d="M590 182 H640"/>
+<rect class="dg-ext" x="640" y="256" width="190" height="40"/><text class="dg-t" x="735" y="274" text-anchor="middle">Base trajectory X_b</text><text class="dg-s" x="735" y="288" text-anchor="middle">that failed</text>
+<path class="dg-a" d="M735 256 V214"/>
+<rect class="dg-box" x="640" y="328" width="190" height="52"/><text class="dg-t" x="735" y="348" text-anchor="middle">X_correct</text><text class="dg-s" x="735" y="364" text-anchor="middle">residual labels, 4 regions</text>
+<path class="dg-a" d="M830 182 H890 V354 H830"/>
+<path class="dg-ad" d="M640 354 H610 V84 H590"/><text class="dg-l" x="600" y="230" text-anchor="end" transform="rotate(0)">trains residual</text>
+<text class="dg-h" x="20" y="396">LOOP: run base → detect force error → human fixes → edit trajectory → new residual data → retrain residual</text>
+</svg><figcaption>Chính sách nền 1 Hz đề xuất hành động, chính sách residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt chỉnh sửa của con người, và chỉnh sửa quỹ đạo biến nó thành dữ liệu huấn luyện residual.</figcaption></figure>
+<ul>
+<li><strong>Chính sách nền (1 Hz).</strong> Transformer CVAE kiểu ACT. Đầu vào: pose $x_t = [p_t, q_t]$, lực $F_t = [f_x,f_y,f_z,\tau_x,\tau_y,\tau_z]$ (ước lượng từ mô men khớp) và hai ảnh RGB 480×640 qua ResNet-18. Nó dự đoán đồng thời <strong>hành động và lực tương lai</strong>, horizon $n=100$ bước (2 s), chạy 50 bước đầu rồi lập kế hoạch lại.</li>
+<li><strong>Bộ phát hiện lỗi (50 Hz).</strong> $e_t = \lVert\hat F_t - F_t\rVert_1$, so lực dự đoán của chính sách nền với lực đo. Nếu $e_t &gt; c$ (ngưỡng), việc thực thi tạm dừng.</li>
+<li><strong>Con người chỉnh sửa.</strong> Độ cứng impedance Descartes đặt về 0 và ghi một demo chèn hiệu chỉnh ngắn (thí nghiệm thật bắt đầu với end-effector cách mục tiêu khoảng 8 cm).</li>
+<li><strong>Chỉnh sửa quỹ đạo.</strong> Tìm điểm trên quỹ đạo nền gần nhất với điểm bắt đầu demo của con người, $k^* = \arg\min_k D(k)$ với $D = \omega_p d_p + \omega_q d_q$ ($\omega_p=1{,}0$, $\omega_q=0{,}5$). Thay một đoạn cục bộ bằng đoạn được tối ưu giảm thiểu chi phí trung thực + mượt + điểm cuối ($\lambda_s = 1$, $\lambda_e = 1000$) trong khi bị ghim vào pose bắt đầu của con người. Đầu ra $X_{correct}$ là đường mượt nối quỹ đạo nền với đoạn chèn của con người.</li>
+<li><strong>Nhãn residual ở bốn vùng.</strong> Trước chỗ chỉnh, residual bằng 0; ở đoạn chuyển tiếp là pose đã chỉnh trừ hành động nền; ở demo con người là pose con người trừ hành động nền; sau chỗ chỉnh là pose con người gần nhất trừ hành động nền.</li>
+<li><strong>Chính sách residual (50 Hz).</strong> Transformer encoder hai lớp (ẩn 256, 8 head); đầu vào: pose hiện tại, hành động nền $\hat A_{t+1}$ và hai ảnh qua ResNet-18 dùng chung; đầu ra $\Delta A_{t+1}$. Hành động thực thi: $A^{exec} = \hat A + \Delta A$.</li>
+<li><strong>Bộ điều khiển impedance (1 kHz).</strong> $F_{imp} = K(x_d - x) + D(\dot x_d - \dot x)$ có bù trọng lực.</li>
+</ul>
+<h2>Huấn luyện và thiết lập</h2>
+<p>Nền: 100 demo, 2000 epoch. Residual: 50 demo hiệu chỉnh, 200 epoch. Mô phỏng: MuJoCo, Franka Research 3, phích USB và phích hai chấu, độ lệch ổ cắm trong $[-5, 5]$ cm. Thật: Franka với RealSense D415 cổ tay và camera cố định phía trước; phích USB, hai chấu và ba chấu. Baseline: ACT, FILIC, HG-DAgger, Retrain (một bộ dữ liệu gộp) và Finetune. 50 lượt mỗi task.</p>
+<h2>Kết quả</h2>
+<p>Abstract nêu mức cải thiện trung bình <strong>hơn 37%</strong> so với các baseline. Các bảng trong bài (tôi chỉ đọc qua bản tóm tắt nên cần kiểm tra lại) cho TER-DAgger khoảng 77% trung bình, bộ phát hiện sai số lực có độ chính xác khoảng 98,8% và recall 100%, và cửa sổ tối ưu 20 điểm là tốt nhất.</p>
+<h2>Lưu ý</h2>
+<p>Bản thân vòng tổng hợp dữ liệu (khi nào gộp dataset và huấn luyện lại) không được mô tả từng bước, và giao diện vật lý con người dùng để chỉnh không được nêu. Chú thích hình nói đoạn được chỉnh có $N-1$ điểm đứng trước còn công thức dùng $N+1$ chỉ số. Giá trị độ cứng $K$, $D$ và bộ tối ưu dùng khi chỉnh sửa không được nêu.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

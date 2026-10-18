@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A wheeled-legged robot that pushes a door feels the reaction in its whole body. FWBC-VLA estimates contact force without a sensor, feeds it to the VLA, and also uses it to correct the base command.">
+<title>FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation">
+<meta property="og:description" content="A wheeled-legged robot that pushes a door feels the reaction in its whole body. FWBC-VLA estimates contact force without a sensor, feeds it to the VLA, and also uses it to correct the base command.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation</h1>
+    <h1 data-vi>FWBC-VLA: Bù trừ toàn thân có nhận biết lực cho loco-manipulation</h1>
+
+    <p class="post-excerpt-lead" data-en>A wheeled-legged robot that pushes a door feels the reaction in its whole body. FWBC-VLA estimates contact force without a sensor, feeds it to the VLA, and also uses it to correct the base command.</p>
+    <p class="post-excerpt-lead" data-vi>Robot bánh-chân đẩy cửa sẽ chịu phản lực lên cả thân. FWBC-VLA ước lượng lực tiếp xúc không cần cảm biến, đưa vào VLA, đồng thời dùng nó để hiệu chỉnh lệnh cho phần thân.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Loco-manipulation</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Paper: <a href="https://arxiv.org/abs/2609.03889">arXiv 2609.03889</a> (September 2026).</p>
+<h2>The pain it cures</h2>
+<p>Arm-centric force VLAs (<a href="forcevla.html">ForceVLA</a> and friends) correct the <strong>arm</strong> only. On a wheeled-legged robot with an arm, wiping a whiteboard or opening a spring-closed door also pushes the <strong>base</strong>; a VLA that ignores this loses balance or drifts. FWBC-VLA builds <strong>dual feedback loops</strong> from one sensorless force estimate: one into the VLA's task actions, one into a body-compensation command for the whole-body controller (WBC).</p>
+<h2>Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="One 200 Hz sensorless estimator feeds two branches: force tokens for the 15 Hz VLA, and a Jacobian-derived body load for a small compensation network; the corrected base command goes to the WBC." viewBox="0 0 980 430" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="52" width="150" height="52"/><text class="dg-t" x="95" y="72" text-anchor="middle">Joint torque τ_meas</text><text class="dg-s" x="95" y="88" text-anchor="middle">+ arm/base/leg/IMU</text>
+<rect class="dg-key" x="210" y="40" width="170" height="76"/><text class="dg-t" x="295" y="66" text-anchor="middle">HSR-Force</text><text class="dg-s" x="295" y="84" text-anchor="middle">history expert + state</text><text class="dg-s" x="295" y="98" text-anchor="middle">expert, gate α_t</text>
+<path class="dg-a" d="M170 78 H210"/><text class="dg-l" x="295" y="32" text-anchor="middle">200 Hz, sensorless</text>
+<rect class="dg-box" x="420" y="58" width="100" height="40"/><text class="dg-t" x="470" y="76" text-anchor="middle">τ̂_ext</text><text class="dg-s" x="470" y="90" text-anchor="middle">residual</text>
+<path class="dg-a" d="M380 78 H420"/>
+<rect class="dg-box" x="560" y="20" width="160" height="52"/><text class="dg-t" x="640" y="40" text-anchor="middle">d = [‖τ̂‖, Δ‖τ̂‖]</text><text class="dg-s" x="640" y="56" text-anchor="middle">K=13 steps → GRU E_int</text>
+<rect class="dg-box" x="560" y="100" width="160" height="52"/><text class="dg-t" x="640" y="120" text-anchor="middle">Jacobian wrench</text><text class="dg-s" x="640" y="136" text-anchor="middle">→ body-frame F̂_body</text>
+<path class="dg-a" d="M520 70 H540 V46 H560"/><path class="dg-a" d="M520 86 H540 V126 H560"/>
+<rect class="dg-key" x="770" y="30" width="190" height="92"/><text class="dg-t" x="865" y="58" text-anchor="middle">π0.5 VLA · 15 Hz</text><text class="dg-s" x="865" y="78" text-anchor="middle">action expert + cross-attn</text><text class="dg-s" x="865" y="92" text-anchor="middle">to force tokens Z_force</text><text class="dg-s" x="865" y="108" text-anchor="middle">(gate g_t, scale α_f)</text>
+<path class="dg-a" d="M720 46 H770"/><text class="dg-l" x="745" y="38" text-anchor="middle">tokens</text>
+<rect class="dg-ext" x="790" y="150" width="150" height="30"/><text class="dg-t" x="865" y="170" text-anchor="middle">images + language</text>
+<path class="dg-a" d="M865 150 V122"/>
+<rect class="dg-ext" x="420" y="210" width="130" height="36"/><text class="dg-t" x="485" y="232" text-anchor="middle">IMU Δη, ω</text>
+<rect class="dg-key" x="590" y="196" width="190" height="64"/><text class="dg-t" x="685" y="222" text-anchor="middle">Compensation C_ψ</text><text class="dg-s" x="685" y="240" text-anchor="middle">MLP → r̄ = (Δv_x,Δv_y,Δω_z)</text>
+<path class="dg-a" d="M640 152 V196"/><path class="dg-a" d="M550 228 H590"/>
+<circle class="dg-box" cx="865" cy="296" r="14"/><text class="dg-t" x="865" y="301" text-anchor="middle">+</text>
+<path class="dg-a" d="M780 240 H830 V296 H851"/><text class="dg-l" x="700" y="282" text-anchor="middle">r = r_max·tanh(r̄)</text>
+<path class="dg-a" d="M960 76 H972 V296 H879"/><text class="dg-l" x="968" y="230" text-anchor="end">u_nom (nominal base)</text>
+<rect class="dg-key" x="770" y="340" width="190" height="52"/><text class="dg-t" x="865" y="362" text-anchor="middle">WBC policy</text><text class="dg-s" x="865" y="378" text-anchor="middle">balance + command tracking</text>
+<path class="dg-a" d="M865 310 V340"/><text class="dg-l" x="878" y="328">u_base = u_nom + r</text>
+<rect class="dg-ext" x="560" y="346" width="170" height="40"/><text class="dg-t" x="645" y="364" text-anchor="middle">Wheeled-legged robot</text><text class="dg-s" x="645" y="378" text-anchor="middle">+ 6-DoF arm</text>
+<path class="dg-a" d="M770 366 H730"/>
+<text class="dg-h" x="20" y="416">arm and gripper actions go from the VLA to the WBC unchanged; only the base command is corrected.</text>
+</svg><figcaption>One 200 Hz sensorless estimator feeds two branches: force tokens for the 15 Hz VLA, and a Jacobian-derived body load for a small compensation network; the corrected base command goes to the WBC.</figcaption></figure>
+<ol>
+<li><strong>HSR-Force (200 Hz).</strong> Two compact experts, a <em>history</em> expert (causal torque and motion history) and a <em>state</em> expert (current arm, base, leg and IMU state), each predict the free-motion torque. A gate $\alpha_t = G(\lVert r_{state}\rVert)$ blends them: $\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}$. The external-torque estimate is $\hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}$.</li>
+<li><strong>Contact descriptor.</strong> $d_t = [s_t, \Delta s_t]$ with $s_t = \lVert\hat\tau_{ext}\rVert_2$. The last $K=13$ descriptors (60 ms) pass a normalisation layer and a <strong>GRU</strong> to produce force tokens $Z^{force}$ (width 1024).</li>
+<li><strong>Force-conditioned VLA (15 Hz).</strong> The backbone is π0.5, fully fine-tuned. Force enters the Gemma action expert by cross-attention on its final hidden states: $\tilde Z^{act} = Z^{act} + \alpha_f\, g_t\, \text{CA}(Z^{act}, Z^{force})$, with a learned force-presence gate $g_t$. It is <strong>not</strong> propagated through the visual backbone.</li>
+<li><strong>Body compensation.</strong> A damped-least-squares Jacobian maps $\hat\tau_{ext}$ to wrenches at the end-effector and body frames. A small MLP $C_\psi$ takes the body-frame load $\hat F_{body}$, IMU orientation deviation and the nominal base command and predicts a residual $\bar r$ (for $\Delta v_x, \Delta v_y, \Delta\omega_z$). It is bounded, $r = r_{max}\tanh(\bar r)$, and added: $u_{base} = u_{nom} + r$, then deadband, low-pass, slew limits and clipping. A stale estimate or invalid IMU sets the residual to zero.</li>
+<li><strong>WBC policy</strong> keeps balance and tracks the combined command.</li>
+</ol>
+<h2>Training and data</h2>
+<ul>
+<li>The <strong>WL&amp;Arm dataset</strong>: more than 5,000 teleoperation episodes with a Pico hybrid position-force teleoperation system, 200 Hz joint data and 15 Hz demonstrations (bottle pick-and-place 41%, whiteboard wiping 25%, door opening 21%).</li>
+<li>Estimator experts are fitted on free-motion windows where $\tau_{ext} \approx 0$. $C_\psi$ is trained with an $\ell_1$ loss on the demonstrated residual. No contact-classification or phase-prediction auxiliary losses.</li>
+</ul>
+<h2>Results</h2>
+<p>25 trials per task; whiteboard wiping final-stage success: <strong>FWBC-VLA 64%</strong>, ForceVLA 24%, ACP 20%, OpenPI 0.5 12%. Door opening final stage: <strong>52%</strong> against ForceVLA 12% and OpenPI 0.5 0%. In the component ablation, no force gives 12.0% average contact-stage success, force input only 35.0%, the full method 65%. The estimator reaches 0.15 N force MAE with no load.</p>
+<h2>Caveats</h2>
+<p>The action-chunk length, the WBC internals and rates of the WBC and compensation path are not stated. The paper describes base outputs as velocity and steering angle in one place and as $(\Delta v_x,\Delta v_y,\Delta\omega_z)$ residuals in another. The intro says "dual LSTM" while Sec. 4 only describes two "compact experts".</p>
+    </div>
+    <div data-vi>
+<p>Bài báo: <a href="https://arxiv.org/abs/2609.03889">arXiv 2609.03889</a> (tháng 9/2026).</p>
+<h2>Vấn đề cần chữa</h2>
+<p>Các VLA lực lấy cánh tay làm trung tâm (<a href="forcevla.html">ForceVLA</a> và các bài tương tự) chỉ hiệu chỉnh <strong>cánh tay</strong>. Trên robot bánh-chân có tay, lau bảng hay mở cửa có lò xo đóng cũng đẩy lên <strong>thân</strong>; VLA bỏ qua điều này sẽ mất thăng bằng hoặc trôi. FWBC-VLA xây <strong>hai vòng phản hồi</strong> từ một ước lượng lực không cần cảm biến: một vào hành động tác vụ của VLA, một vào lệnh bù cho bộ điều khiển toàn thân (WBC).</p>
+<h2>Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Một bộ ước lượng 200 Hz không cảm biến cấp cho hai nhánh: token lực cho VLA 15 Hz, và tải thân suy ra từ Jacobian cho một mạng bù nhỏ; lệnh thân đã hiệu chỉnh đi vào WBC." viewBox="0 0 980 430" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="52" width="150" height="52"/><text class="dg-t" x="95" y="72" text-anchor="middle">Joint torque τ_meas</text><text class="dg-s" x="95" y="88" text-anchor="middle">+ arm/base/leg/IMU</text>
+<rect class="dg-key" x="210" y="40" width="170" height="76"/><text class="dg-t" x="295" y="66" text-anchor="middle">HSR-Force</text><text class="dg-s" x="295" y="84" text-anchor="middle">history expert + state</text><text class="dg-s" x="295" y="98" text-anchor="middle">expert, gate α_t</text>
+<path class="dg-a" d="M170 78 H210"/><text class="dg-l" x="295" y="32" text-anchor="middle">200 Hz, sensorless</text>
+<rect class="dg-box" x="420" y="58" width="100" height="40"/><text class="dg-t" x="470" y="76" text-anchor="middle">τ̂_ext</text><text class="dg-s" x="470" y="90" text-anchor="middle">residual</text>
+<path class="dg-a" d="M380 78 H420"/>
+<rect class="dg-box" x="560" y="20" width="160" height="52"/><text class="dg-t" x="640" y="40" text-anchor="middle">d = [‖τ̂‖, Δ‖τ̂‖]</text><text class="dg-s" x="640" y="56" text-anchor="middle">K=13 steps → GRU E_int</text>
+<rect class="dg-box" x="560" y="100" width="160" height="52"/><text class="dg-t" x="640" y="120" text-anchor="middle">Jacobian wrench</text><text class="dg-s" x="640" y="136" text-anchor="middle">→ body-frame F̂_body</text>
+<path class="dg-a" d="M520 70 H540 V46 H560"/><path class="dg-a" d="M520 86 H540 V126 H560"/>
+<rect class="dg-key" x="770" y="30" width="190" height="92"/><text class="dg-t" x="865" y="58" text-anchor="middle">π0.5 VLA · 15 Hz</text><text class="dg-s" x="865" y="78" text-anchor="middle">action expert + cross-attn</text><text class="dg-s" x="865" y="92" text-anchor="middle">to force tokens Z_force</text><text class="dg-s" x="865" y="108" text-anchor="middle">(gate g_t, scale α_f)</text>
+<path class="dg-a" d="M720 46 H770"/><text class="dg-l" x="745" y="38" text-anchor="middle">tokens</text>
+<rect class="dg-ext" x="790" y="150" width="150" height="30"/><text class="dg-t" x="865" y="170" text-anchor="middle">images + language</text>
+<path class="dg-a" d="M865 150 V122"/>
+<rect class="dg-ext" x="420" y="210" width="130" height="36"/><text class="dg-t" x="485" y="232" text-anchor="middle">IMU Δη, ω</text>
+<rect class="dg-key" x="590" y="196" width="190" height="64"/><text class="dg-t" x="685" y="222" text-anchor="middle">Compensation C_ψ</text><text class="dg-s" x="685" y="240" text-anchor="middle">MLP → r̄ = (Δv_x,Δv_y,Δω_z)</text>
+<path class="dg-a" d="M640 152 V196"/><path class="dg-a" d="M550 228 H590"/>
+<circle class="dg-box" cx="865" cy="296" r="14"/><text class="dg-t" x="865" y="301" text-anchor="middle">+</text>
+<path class="dg-a" d="M780 240 H830 V296 H851"/><text class="dg-l" x="700" y="282" text-anchor="middle">r = r_max·tanh(r̄)</text>
+<path class="dg-a" d="M960 76 H972 V296 H879"/><text class="dg-l" x="968" y="230" text-anchor="end">u_nom (nominal base)</text>
+<rect class="dg-key" x="770" y="340" width="190" height="52"/><text class="dg-t" x="865" y="362" text-anchor="middle">WBC policy</text><text class="dg-s" x="865" y="378" text-anchor="middle">balance + command tracking</text>
+<path class="dg-a" d="M865 310 V340"/><text class="dg-l" x="878" y="328">u_base = u_nom + r</text>
+<rect class="dg-ext" x="560" y="346" width="170" height="40"/><text class="dg-t" x="645" y="364" text-anchor="middle">Wheeled-legged robot</text><text class="dg-s" x="645" y="378" text-anchor="middle">+ 6-DoF arm</text>
+<path class="dg-a" d="M770 366 H730"/>
+<text class="dg-h" x="20" y="416">arm and gripper actions go from the VLA to the WBC unchanged; only the base command is corrected.</text>
+</svg><figcaption>Một bộ ước lượng 200 Hz không cảm biến cấp cho hai nhánh: token lực cho VLA 15 Hz, và tải thân suy ra từ Jacobian cho một mạng bù nhỏ; lệnh thân đã hiệu chỉnh đi vào WBC.</figcaption></figure>
+<ol>
+<li><strong>HSR-Force (200 Hz).</strong> Hai expert gọn, expert <em>lịch sử</em> (lịch sử mô men và chuyển động nhân quả) và expert <em>trạng thái</em> (trạng thái tay, thân, chân và IMU hiện tại), mỗi cái dự đoán mô men chuyển động tự do. Một gate $\alpha_t = G(\lVert r_{state}\rVert)$ trộn chúng: $\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}$. Ước lượng mô men ngoài là $\hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}$.</li>
+<li><strong>Mô tả tiếp xúc.</strong> $d_t = [s_t, \Delta s_t]$ với $s_t = \lVert\hat\tau_{ext}\rVert_2$. $K=13$ mô tả gần nhất (60 ms) qua lớp chuẩn hóa và một <strong>GRU</strong> để tạo token lực $Z^{force}$ (độ rộng 1024).</li>
+<li><strong>VLA điều kiện theo lực (15 Hz).</strong> Backbone là π0.5, fine-tune toàn bộ. Lực vào action expert Gemma bằng cross-attention trên hidden state cuối: $\tilde Z^{act} = Z^{act} + \alpha_f\, g_t\, \text{CA}(Z^{act}, Z^{force})$, với gate "có lực" $g_t$ học được. Lực <strong>không</strong> được lan truyền qua backbone thị giác.</li>
+<li><strong>Bù thân.</strong> Jacobian bình phương tối thiểu có giảm chấn ánh xạ $\hat\tau_{ext}$ sang wrench ở khung end-effector và khung thân. Một MLP nhỏ $C_\psi$ nhận tải khung thân $\hat F_{body}$, độ lệch hướng IMU và lệnh thân danh định, dự đoán phần dư $\bar r$ (cho $\Delta v_x, \Delta v_y, \Delta\omega_z$). Phần dư bị chặn, $r = r_{max}\tanh(\bar r)$, rồi cộng vào: $u_{base} = u_{nom} + r$, sau đó qua vùng chết, lọc thông thấp, giới hạn tốc độ thay đổi và cắt biên. Ước lượng cũ hoặc IMU không hợp lệ sẽ đặt phần dư bằng 0.</li>
+<li><strong>WBC policy</strong> giữ thăng bằng và bám theo lệnh đã gộp.</li>
+</ol>
+<h2>Huấn luyện và dữ liệu</h2>
+<ul>
+<li>Bộ <strong>WL&amp;Arm</strong>: hơn 5.000 episode teleoperation bằng hệ Pico lai vị trí-lực, dữ liệu khớp 200 Hz và demo 15 Hz (nhặt-thả chai 41%, lau bảng 25%, mở cửa 21%).</li>
+<li>Các expert ước lượng được fit trên cửa sổ chuyển động tự do nơi $\tau_{ext} \approx 0$. $C_\psi$ được huấn luyện bằng loss $\ell_1$ trên phần dư của demo. Không có loss phụ phân loại tiếp xúc hay dự đoán pha.</li>
+</ul>
+<h2>Kết quả</h2>
+<p>25 lượt mỗi task; thành công ở bước cuối khi lau bảng: <strong>FWBC-VLA 64%</strong>, ForceVLA 24%, ACP 20%, OpenPI 0.5 12%. Mở cửa, bước cuối: <strong>52%</strong> so với ForceVLA 12% và OpenPI 0.5 0%. Trong ablation thành phần, không dùng lực cho 12,0% thành công trung bình ở các bước tiếp xúc, chỉ đưa lực vào VLA 35,0%, phương pháp đầy đủ 65%. Bộ ước lượng đạt sai số tuyệt đối trung bình 0,15 N khi không tải.</p>
+<h2>Lưu ý</h2>
+<p>Độ dài action chunk, nội bộ WBC và tần số của WBC và đường bù không được nêu. Bài mô tả đầu ra thân là vận tốc và góc lái ở một chỗ, và là phần dư $(\Delta v_x,\Delta v_y,\Delta\omega_z)$ ở chỗ khác. Phần mở đầu nói "dual LSTM" trong khi Sec. 4 chỉ mô tả hai "expert gọn".</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

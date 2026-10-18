@@ -1,0 +1,27 @@
+<svg viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="120" height="36"/><text class="dg-t" x="80" y="40" text-anchor="middle">3 RGB views</text><text class="dg-s" x="80" y="53" text-anchor="middle">base, L/R wrist</text>
+<rect class="dg-ext" x="20" y="68" width="120" height="36"/><text class="dg-t" x="80" y="90" text-anchor="middle">Language ℓ</text>
+<rect class="dg-ext" x="20" y="112" width="120" height="36"/><text class="dg-t" x="80" y="134" text-anchor="middle">Proprio s</text>
+<rect class="dg-box" x="170" y="24" width="110" height="36"/><text class="dg-t" x="225" y="46" text-anchor="middle">SigLIP</text>
+<rect class="dg-box" x="310" y="24" width="150" height="124"/><text class="dg-t" x="385" y="76" text-anchor="middle">PaliGemma</text><text class="dg-s" x="385" y="92" text-anchor="middle">Gemma-3B</text><text class="dg-s" x="385" y="112" text-anchor="middle">prefix Z_prefix</text>
+<path class="dg-a" d="M140 42 H170"/><path class="dg-a" d="M280 42 H310"/><path class="dg-a" d="M140 86 H310"/><path class="dg-a" d="M140 130 H310"/>
+<rect class="dg-ext" x="170" y="190" width="120" height="44"/><text class="dg-t" x="230" y="208" text-anchor="middle">noisy x_t, t</text><text class="dg-s" x="230" y="222" text-anchor="middle">H×d_a</text>
+<rect class="dg-box" x="310" y="190" width="150" height="44"/><text class="dg-t" x="385" y="208" text-anchor="middle">Action expert</text><text class="dg-s" x="385" y="222" text-anchor="middle">Gemma-300M · Z_suffix</text>
+<path class="dg-a" d="M290 212 H310"/><path class="dg-ad" d="M385 148 V190"/><text class="dg-l" x="395" y="174">shared KV</text>
+<rect class="dg-ext" x="20" y="280" width="120" height="44"/><text class="dg-t" x="80" y="298" text-anchor="middle">Force f</text><text class="dg-s" x="80" y="312" text-anchor="middle">14 joint torques</text>
+<rect class="dg-ext" x="20" y="336" width="120" height="44"/><text class="dg-t" x="80" y="354" text-anchor="middle">Tactile g</text><text class="dg-s" x="80" y="368" text-anchor="middle">10 fingertips × 6</text>
+<rect class="dg-key" x="170" y="280" width="120" height="44"/><text class="dg-t" x="230" y="298" text-anchor="middle">W_f → Z~f</text><text class="dg-s" x="230" y="312" text-anchor="middle">H copies + pos</text>
+<rect class="dg-key" x="170" y="336" width="120" height="44"/><text class="dg-t" x="230" y="354" text-anchor="middle">W_g → Z~g</text><text class="dg-s" x="230" y="368" text-anchor="middle">H copies + pos</text>
+<path class="dg-a" d="M140 302 H170"/><path class="dg-a" d="M140 358 H170"/>
+<rect class="dg-box" x="520" y="130" width="120" height="170"/><text class="dg-t" x="580" y="196" text-anchor="middle">concat</text><text class="dg-s" x="580" y="214" text-anchor="middle">prefix‖suffix‖</text><text class="dg-s" x="580" y="228" text-anchor="middle">Z~f‖Z~g</text><text class="dg-s" x="580" y="246" text-anchor="middle">+ self-attn</text>
+<path class="dg-a" d="M460 86 H490 V160 H520"/><path class="dg-a" d="M460 212 H520"/><path class="dg-a" d="M290 302 H500 V252 H520"/><path class="dg-a" d="M290 358 H510 V272 H520"/>
+<rect class="dg-key" x="680" y="130" width="130" height="170"/><text class="dg-t" x="745" y="190" text-anchor="middle">MoDE</text><text class="dg-s" x="745" y="208" text-anchor="middle">sparse MoE</text><text class="dg-s" x="745" y="222" text-anchor="middle">8 experts, top-1</text><text class="dg-s" x="745" y="240" text-anchor="middle">modality-aware</text><text class="dg-s" x="745" y="254" text-anchor="middle">routing</text>
+<path class="dg-a" d="M640 215 H680"/>
+<rect class="dg-box" x="850" y="130" width="110" height="64"/><text class="dg-t" x="905" y="154" text-anchor="middle">W1(Z_f+Z_suf)</text><text class="dg-s" x="905" y="172" text-anchor="middle">arm velocity</text>
+<rect class="dg-box" x="850" y="236" width="110" height="64"/><text class="dg-t" x="905" y="260" text-anchor="middle">W2(Z_g+Z_suf)</text><text class="dg-s" x="905" y="278" text-anchor="middle">hand velocity</text>
+<path class="dg-a" d="M810 162 H850"/><path class="dg-a" d="M810 268 H850"/>
+<rect class="dg-box" x="700" y="350" width="260" height="44"/><text class="dg-t" x="830" y="368" text-anchor="middle">Euler ×10 steps (H=50)</text><text class="dg-s" x="830" y="382" text-anchor="middle">a_arm · a_hand · a_other (incl. trigger c)</text>
+<path class="dg-a" d="M960 162 H974 V372 H960"/><path class="dg-a" d="M905 300 V350"/>
+<rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (PPO hand skill)</text><text class="dg-s" x="530" y="442" text-anchor="middle">in-hand rotation</text>
+<path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="710" y="424" text-anchor="middle">c&gt;0.5: overrides hand action</text>
+</svg>

@@ -1,0 +1,25 @@
+<svg viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="130" height="40"/><text class="dg-t" x="85" y="48" text-anchor="middle">Base + hand RGB</text>
+<rect class="dg-ext" x="20" y="76" width="130" height="40"/><text class="dg-t" x="85" y="100" text-anchor="middle">Language L</text>
+<rect class="dg-ext" x="20" y="138" width="130" height="40"/><text class="dg-t" x="85" y="156" text-anchor="middle">F/T f</text><text class="dg-s" x="85" y="170" text-anchor="middle">6-axis, R^6</text>
+<rect class="dg-box" x="200" y="24" width="150" height="92"/><text class="dg-t" x="275" y="62" text-anchor="middle">SigLIP VLM</text><text class="dg-s" x="275" y="78" text-anchor="middle">(PaliGemma)</text><text class="dg-s" x="275" y="96" text-anchor="middle">E_VL: N×2048</text>
+<rect class="dg-box" x="200" y="138" width="150" height="40"/><text class="dg-t" x="275" y="156" text-anchor="middle">Linear φ_F</text><text class="dg-s" x="275" y="170" text-anchor="middle">E_F: 1×2048</text>
+<path class="dg-a" d="M150 44 H200"/><path class="dg-a" d="M150 96 H200"/><path class="dg-a" d="M150 158 H200"/>
+<rect class="dg-box" x="400" y="70" width="110" height="60"/><text class="dg-t" x="455" y="96" text-anchor="middle">concat</text><text class="dg-s" x="455" y="112" text-anchor="middle">[E_VL ; E_F]</text>
+<path class="dg-a" d="M350 70 H375 V92 H400"/><path class="dg-a" d="M350 158 H375 V108 H400"/>
+<rect class="dg-box" x="545" y="70" width="120" height="60"/><text class="dg-t" x="605" y="96" text-anchor="middle">Encoder</text><text class="dg-s" x="605" y="112" text-anchor="middle">MHSA(8 heads)+FFN</text>
+<path class="dg-a" d="M510 100 H545"/>
+<rect class="dg-key" x="700" y="60" width="200" height="80"/><text class="dg-t" x="800" y="86" text-anchor="middle">FVLMoE</text><text class="dg-s" x="800" y="104" text-anchor="middle">sparse MoE: 4 expert MLPs</text><text class="dg-s" x="800" y="120" text-anchor="middle">top-1 router + residual</text>
+<path class="dg-a" d="M665 100 H700"/>
+<rect class="dg-box" x="700" y="206" width="200" height="40"/><text class="dg-t" x="800" y="224" text-anchor="middle">Linear 2048→1024</text><text class="dg-s" x="800" y="238" text-anchor="middle">last H_action tokens = G</text>
+<path class="dg-a" d="M800 140 V206"/>
+<circle class="dg-box" cx="620" cy="226" r="14"/><text class="dg-t" x="620" y="231" text-anchor="middle">+</text>
+<path class="dg-a" d="M700 226 H634"/>
+<rect class="dg-box" x="520" y="290" width="200" height="40"/><text class="dg-t" x="620" y="308" text-anchor="middle">S_suffix</text><text class="dg-s" x="620" y="322" text-anchor="middle">state + noisy action a^τ</text>
+<path class="dg-a" d="M620 290 V240"/>
+<rect class="dg-box" x="330" y="204" width="170" height="44"/><text class="dg-t" x="415" y="224" text-anchor="middle">Flow-matching</text><text class="dg-t" x="415" y="239" text-anchor="middle">action head</text>
+<path class="dg-a" d="M606 226 H500"/>
+<rect class="dg-box" x="130" y="204" width="150" height="44"/><text class="dg-t" x="205" y="224" text-anchor="middle">Action chunk</text><text class="dg-s" x="205" y="239" text-anchor="middle">A_t = a_t … a_t+H-1</text>
+<path class="dg-a" d="M330 226 H280"/>
+<text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
+</svg>

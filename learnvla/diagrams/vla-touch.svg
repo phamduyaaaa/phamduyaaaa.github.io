@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="24" width="150" height="44"/><text class="dg-t" x="95" y="42" text-anchor="middle">Goal g</text><text class="dg-s" x="95" y="57" text-anchor="middle">+ scene image s_t</text>
+<rect class="dg-box" x="230" y="24" width="150" height="44"/><text class="dg-t" x="305" y="42" text-anchor="middle">Task planner</text><text class="dg-s" x="305" y="57" text-anchor="middle">GPT-4o (VLM)</text>
+<rect class="dg-box" x="440" y="24" width="150" height="44"/><text class="dg-t" x="515" y="42" text-anchor="middle">Base VLA</text><text class="dg-s" x="515" y="57" text-anchor="middle">RDT-1B, frozen</text>
+<path class="dg-a" d="M170 46 H230"/><path class="dg-a" d="M380 46 H440"/><text class="dg-l" x="410" y="38" text-anchor="middle">I_k</text>
+<rect class="dg-key" x="650" y="96" width="170" height="64"/><text class="dg-t" x="735" y="122" text-anchor="middle">Interpolant</text><text class="dg-t" x="735" y="138" text-anchor="middle">controller π_I</text><text class="dg-s" x="735" y="152" text-anchor="middle">(BRIDGeR-style)</text>
+<path class="dg-a" d="M590 46 H735 V96"/><text class="dg-l" x="660" y="38" text-anchor="middle">chunk a (T_a=64)</text>
+<rect class="dg-box" x="850" y="106" width="110" height="44"/><text class="dg-t" x="905" y="124" text-anchor="middle">Robot</text><text class="dg-s" x="905" y="139" text-anchor="middle">â, ~8 Hz</text>
+<path class="dg-a" d="M820 128 H850"/><text class="dg-l" x="835" y="118" text-anchor="middle">â</text>
+<rect class="dg-box" x="440" y="150" width="150" height="44"/><text class="dg-t" x="515" y="168" text-anchor="middle">DINOv2</text><text class="dg-s" x="515" y="183" text-anchor="middle">z^o from RGB+proprio</text>
+<path class="dg-a" d="M590 172 H620 V148 H650"/>
+<rect class="dg-ext" x="20" y="150" width="150" height="44"/><text class="dg-t" x="95" y="168" text-anchor="middle">GelSight Mini</text><text class="dg-s" x="95" y="183" text-anchor="middle">tactile images</text>
+<rect class="dg-box" x="230" y="100" width="150" height="40"/><text class="dg-t" x="305" y="118" text-anchor="middle">Octopi</text><text class="dg-s" x="305" y="132" text-anchor="middle">6 frames → text</text>
+<rect class="dg-box" x="230" y="210" width="150" height="40"/><text class="dg-t" x="305" y="228" text-anchor="middle">Marker tracking</text><text class="dg-s" x="305" y="242" text-anchor="middle">OpenCV</text>
+<path class="dg-a" d="M170 162 H200 V120 H230"/><path class="dg-a" d="M170 182 H200 V230 H230"/>
+<path class="dg-ad" d="M305 100 V68"/><text class="dg-l" x="315" y="88">L^m_t (hardness, roughness)</text>
+<path class="dg-a" d="M380 230 H700 V160"/><text class="dg-l" x="540" y="224" text-anchor="middle">m_t = (X, Y, M) summed force</text>
+<text class="dg-h" x="20" y="300">OUTER LOOP: instruction done or max steps → tactile text → planner → next instruction</text>
+<text class="dg-h" x="20" y="318">INNER LOOP: VLA chunk → refine first 48 of 64 steps with tactile force → execute</text>
+</svg>
