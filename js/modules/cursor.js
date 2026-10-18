@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         outline.className = 'cursor-outline';
         document.body.appendChild(dot);
         document.body.appendChild(outline);
+        document.body.classList.add('custom-cursor-active');
 
         window.addEventListener('mousemove', (e) => {
             const posX = e.clientX;

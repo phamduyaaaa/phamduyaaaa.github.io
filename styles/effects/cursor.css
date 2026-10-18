@@ -1,5 +1,8 @@
 @media (pointer: fine) {
-    body, a, button, canvas {
+    body.custom-cursor-active,
+    body.custom-cursor-active a,
+    body.custom-cursor-active button,
+    body.custom-cursor-active canvas {
         cursor: none !important;
     }
 
