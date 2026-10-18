@@ -91,7 +91,7 @@ $$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qqu
 
 ## 6. Caveats
 
-- Chunk length, WBC internals and the compensation rate are not stated.
+- Checked against the full text: the policy runs at 15 Hz and the estimator at 200 Hz. Chunk length, WBC internals and the compensation rate are not stated.
 - The base output is described as velocity + steering in one place and $(\Delta v_x, \Delta v_y, \Delta\omega_z)$ in another.
 
 **Carry forward:** FWBC-VLA, like every model so far, is trained offline and stays fixed. [TORL-VLA](torl-vla.html) keeps learning online.
@@ -188,7 +188,7 @@ $$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qqu
 
 ## 6. Lưu ý
 
-- Độ dài chunk, nội bộ WBC và tần số của đường bù không được nêu.
+- Đã đối chiếu với toàn văn: chính sách chạy 15 Hz và bộ ước lượng 200 Hz. Độ dài chunk, nội bộ WBC và tần số của đường bù không được nêu.
 - Đầu ra thân được mô tả là vận tốc + góc lái ở một chỗ, và $(\Delta v_x, \Delta v_y, \Delta\omega_z)$ ở chỗ khác.
 
 **Mang sang bài sau:** FWBC-VLA, như mọi mô hình tới đây, được huấn luyện offline rồi đứng yên. [TORL-VLA](torl-vla.html) tiếp tục học online.

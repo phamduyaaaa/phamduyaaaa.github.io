@@ -234,10 +234,67 @@
 </tr>
 </tbody>
 </table>
-<h2>5. Caveats</h2>
+<h2>5. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Average success over five tasks, 50 trials per task (Table I of the paper)." class="dg-natural" width="537" height="192" viewBox="0 0 537 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="77" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="87" y="10" width="99" height="18"/><text class="dg-barval" x="194" y="23">27.6%</text><text class="dg-barlabel" x="77" y="53" text-anchor="end">FILIC</text><rect class="dg-bar" x="87" y="40" width="92" height="18"/><text class="dg-barval" x="187" y="53">25.6%</text><text class="dg-barlabel" x="77" y="83" text-anchor="end">HG-DAgger</text><rect class="dg-bar" x="87" y="70" width="114" height="18"/><text class="dg-barval" x="209" y="83">31.6%</text><text class="dg-barlabel" x="77" y="113" text-anchor="end">Retrain</text><rect class="dg-bar" x="87" y="100" width="117" height="18"/><text class="dg-barval" x="212" y="113">32.4%</text><text class="dg-barlabel" x="77" y="143" text-anchor="end">Finetune</text><rect class="dg-bar" x="87" y="130" width="144" height="18"/><text class="dg-barval" x="239" y="143">40%</text><text class="dg-barlabel" x="77" y="173" text-anchor="end">TER-DAgger</text><rect class="dg-key" x="87" y="160" width="278" height="18"/><text class="dg-barval" x="373" y="173">77.2%</text></svg><figcaption>Average success over five tasks, 50 trials per task (Table I of the paper).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Sim USB</th>
+<th>Sim two-pin</th>
+<th>Real USB</th>
+<th>Real two-pin</th>
+<th>Real three-pin</th>
+<th>Average</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACT</td>
+<td>26%</td>
+<td>22%</td>
+<td>2%</td>
+<td>64%</td>
+<td>24%</td>
+<td>27.6%</td>
+</tr>
+<tr>
+<td>HG-DAgger</td>
+<td>50%</td>
+<td>44%</td>
+<td>16%</td>
+<td>36%</td>
+<td>12%</td>
+<td>31.6%</td>
+</tr>
+<tr>
+<td>Finetune</td>
+<td>68%</td>
+<td>54%</td>
+<td>10%</td>
+<td>28%</td>
+<td>40%</td>
+<td>40.0%</td>
+</tr>
+<tr>
+<td>TER-DAgger</td>
+<td>90%</td>
+<td>96%</td>
+<td>22%</td>
+<td>96%</td>
+<td>82%</td>
+<td>77.2%</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li>Table values (≈ 77% average, detector precision ≈ 98.8%) come from a summary of the paper; only the "over 37%" headline is verbatim.</li>
-<li>The physical interface the human uses and the stiffness values are not stated.</li>
+<li>The error detector keeps 100% recall (its threshold is chosen for that) and reaches 98.8% average precision with force prediction error; KL loss, reconstruction loss and position error give lower precision.</li>
+<li>Note the weak cell: real USB insertion is only 22%.</li>
+</ul>
+<h2>6. Caveats</h2>
+<ul>
+<li>Checked against the full text: the numbers in the results above match Table I and Table II of the paper (50 trials per task).</li>
+<li>Corrections are given by hand with the impedance stiffness set to zero; the physical interface and the other stiffness values are not stated.</li>
 </ul>
 <p><strong>Carry forward:</strong> this closes the force-paper series. <a href="survey-force-map.html">Survey 1</a> puts all eleven side by side with 22 more methods.</p>
 <p><strong>Check question:</strong> $\hat F = (0, 0, -4, 0, 0, 0)$, $F = (0.2, -0.3, -5, 0.1, 0, 0)$, $c = 3$. Does the detector fire?</p>
@@ -407,10 +464,67 @@
 </tr>
 </tbody>
 </table>
-<h2>5. Lưu ý</h2>
+<h2>5. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Tỉ lệ thành công trung bình trên năm tác vụ, 50 lượt mỗi tác vụ (Bảng I của paper)." class="dg-natural" width="537" height="192" viewBox="0 0 537 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="77" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="87" y="10" width="99" height="18"/><text class="dg-barval" x="194" y="23">27,6%</text><text class="dg-barlabel" x="77" y="53" text-anchor="end">FILIC</text><rect class="dg-bar" x="87" y="40" width="92" height="18"/><text class="dg-barval" x="187" y="53">25,6%</text><text class="dg-barlabel" x="77" y="83" text-anchor="end">HG-DAgger</text><rect class="dg-bar" x="87" y="70" width="114" height="18"/><text class="dg-barval" x="209" y="83">31,6%</text><text class="dg-barlabel" x="77" y="113" text-anchor="end">Retrain</text><rect class="dg-bar" x="87" y="100" width="117" height="18"/><text class="dg-barval" x="212" y="113">32,4%</text><text class="dg-barlabel" x="77" y="143" text-anchor="end">Finetune</text><rect class="dg-bar" x="87" y="130" width="144" height="18"/><text class="dg-barval" x="239" y="143">40%</text><text class="dg-barlabel" x="77" y="173" text-anchor="end">TER-DAgger</text><rect class="dg-key" x="87" y="160" width="278" height="18"/><text class="dg-barval" x="373" y="173">77,2%</text></svg><figcaption>Tỉ lệ thành công trung bình trên năm tác vụ, 50 lượt mỗi tác vụ (Bảng I của paper).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>USB mô phỏng</th>
+<th>Phích hai chân mô phỏng</th>
+<th>USB thật</th>
+<th>Phích hai chân thật</th>
+<th>Phích ba chân thật</th>
+<th>Trung bình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACT</td>
+<td>26%</td>
+<td>22%</td>
+<td>2%</td>
+<td>64%</td>
+<td>24%</td>
+<td>27,6%</td>
+</tr>
+<tr>
+<td>HG-DAgger</td>
+<td>50%</td>
+<td>44%</td>
+<td>16%</td>
+<td>36%</td>
+<td>12%</td>
+<td>31,6%</td>
+</tr>
+<tr>
+<td>Finetune</td>
+<td>68%</td>
+<td>54%</td>
+<td>10%</td>
+<td>28%</td>
+<td>40%</td>
+<td>40,0%</td>
+</tr>
+<tr>
+<td>TER-DAgger</td>
+<td>90%</td>
+<td>96%</td>
+<td>22%</td>
+<td>96%</td>
+<td>82%</td>
+<td>77,2%</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li>Số liệu trong bảng (≈ 77% trung bình, độ chính xác bộ phát hiện ≈ 98,8%) lấy từ bản tóm tắt của bài; chỉ con số "hơn 37%" là nguyên văn.</li>
-<li>Giao diện vật lý con người dùng và giá trị độ cứng không được nêu.</li>
+<li>Bộ phát hiện sai số giữ recall 100% (ngưỡng được chọn cho điều đó) và đạt độ chính xác trung bình 98,8% với sai số dự đoán lực; KL loss, loss tái tạo và sai số vị trí cho độ chính xác thấp hơn.</li>
+<li>Lưu ý ô yếu: lắp USB thật chỉ đạt 22%.</li>
+</ul>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: các số ở phần kết quả khớp Bảng I và Bảng II của paper (50 lượt mỗi tác vụ).</li>
+<li>Bản hiệu chỉnh do người làm bằng tay khi độ cứng trở kháng đặt bằng 0; giao diện vật lý và các giá trị độ cứng còn lại không được nêu.</li>
 </ul>
 <p><strong>Mang sang bài sau:</strong> bài này khép lại series paper lực. <a href="survey-force-map.html">Survey 1</a> đặt cả mười một bài cạnh nhau cùng 22 phương pháp khác.</p>
 <p><strong>Câu kiểm tra:</strong> $\hat F = (0, 0, -4, 0, 0, 0)$, $F = (0.2, -0.3, -5, 0.1, 0, 0)$, $c = 3$. Bộ phát hiện có kích hoạt không?</p>

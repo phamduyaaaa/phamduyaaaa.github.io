@@ -89,7 +89,7 @@ $$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = 
 ## 6. Caveats
 
 - Gains reported for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative).
-- $\lambda$, hidden sizes, chunk length and control rate are not stated.
+- Checked against the full text: the VLM's perceptual stream (images and language) is kept frozen with SmolVLA-style directional attention. The value of $\lambda$, hidden sizes, chunk length and control rate are not stated.
 
 **Carry forward:** FD-VLA learns what the force *is*, not what force is *safe*. [HapticVLA](hapticvla.html) turns tactile data into a safety reward, then also removes the sensor.
 
@@ -183,7 +183,7 @@ $$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = 
 ## 6. Lưu ý
 
 - Mức tăng bài nêu cho baseline có lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối.
-- $\lambda$, kích thước ẩn, độ dài chunk và tần số điều khiển không được nêu.
+- Đã đối chiếu với toàn văn: luồng cảm nhận của VLM (ảnh và ngôn ngữ) được giữ đóng băng, dùng attention có hướng kiểu SmolVLA. Giá trị $\lambda$, kích thước ẩn, độ dài chunk và tần số điều khiển không được nêu.
 
 **Mang sang bài sau:** FD-VLA học lực *là bao nhiêu*, không học lực nào là *an toàn*. [HapticVLA](hapticvla.html) biến dữ liệu xúc giác thành phần thưởng an toàn, rồi cũng bỏ cảm biến.
 

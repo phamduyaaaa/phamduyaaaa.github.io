@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>ForceVLA2: Hybrid Force-Position Control with Force Awareness</h1>
@@ -258,7 +258,7 @@
 <h2>6. Caveats</h2>
 <ul>
 <li>The text says the gate "activates the most relevant expert", but the equation sums all three experts.</li>
-<li>How the force prompt is produced at inference, the losses and the frozen modules are not stated in what I read.</li>
+<li>Checked against the full text: the force prompt works like a discrete state machine over a predefined list of subtasks per task. The appendix reports a chunk size of 30 and 15 Hz inference on a 4090 (8 A100 GPUs, 30,000 steps, about 10 hours), but under the name "Foca-VLA", apparently an earlier name of this model. Who produces the force prompt at run time, the losses and the frozen modules are still not clear.</li>
 </ul>
 <p><strong>Carry forward:</strong> ForceVLA2 has one gripper and one wrist sensor. A humanoid with two dexterous hands has torques at 14 joints and touch at 10 fingertips: which signal should correct which part of the body? See <a href="mode-vla.html">MoDE-VLA</a>.</p>
 <p><strong>Check question:</strong> $K = 500$ N/m, $F^* = 8$ N, and the surface is 4 mm closer than believed. What force is applied?</p>
@@ -452,7 +452,7 @@
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Văn bản nói gate "kích hoạt expert liên quan nhất", nhưng công thức cộng cả ba expert.</li>
-<li>Cách sinh force prompt lúc suy luận, các hàm loss và module đóng băng không có trong phần tôi đọc.</li>
+<li>Đã đối chiếu với toàn văn: force prompt hoạt động như một máy trạng thái rời rạc trên danh sách subtask định sẵn cho mỗi tác vụ. Phụ lục nêu chunk 30 và suy luận 15 Hz trên 4090 (8 GPU A100, 30.000 bước, khoảng 10 giờ), nhưng dưới tên "Foca-VLA", có vẻ là tên cũ của mô hình này. Ai tạo force prompt lúc chạy thật, các hàm loss và module đóng băng vẫn chưa rõ.</li>
 </ul>
 <p><strong>Mang sang bài sau:</strong> ForceVLA2 có một kẹp và một cảm biến cổ tay. Một humanoid hai bàn tay khéo léo có mô men ở 14 khớp và xúc giác ở 10 đầu ngón: tín hiệu nào nên hiệu chỉnh phần nào của cơ thể? Xem <a href="mode-vla.html">MoDE-VLA</a>.</p>
 <p><strong>Câu kiểm tra:</strong> $K = 500$ N/m, $F^* = 8$ N, và bề mặt gần hơn 4 mm so với chính sách nghĩ. Lực tác dụng là bao nhiêu?</p>

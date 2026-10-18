@@ -53,7 +53,7 @@ Calculation card
 | Symbol | Meaning | Type | Example |
 |---|---|---|---|
 | $A_t[i]$ | prediction for step $t$ from the $i$-th chunk covering it, $i = 0$ the oldest | input | 1.0, 1.2, 1.5 |
-| $m$ | decay rate; smaller $m$ lets new observations in faster | constant | 0.1 (illustrative; the paper's value was not read) |
+| $m$ | decay rate; smaller $m$ lets new observations in faster | constant | 0.1 (illustrative; the paper gives the formula but no value for $m$) |
 | $w_i$ | weight of the $i$-th prediction | derived | – |
 | $a_t$ | executed action | output | – |
 
@@ -72,7 +72,7 @@ $$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$
 **Why it matters.** The average is over predictions for the *same* step, not over neighbouring steps, so motion is smoothed without lagging behind. It costs only inference time, no training. Note the text says the oldest prediction gets $w_0$, the largest weight.
 </div>
 
-**Chunk horizon, in numbers.** An episode of $T = 500$ steps with $k = 50$ needs $T/k = 10$ chunk decisions instead of 500 single-step decisions (illustrative $T$ and $k$; the paper states the $k$-fold reduction).
+**Chunk horizon, in numbers.** The paper's hyperparameter table uses a chunk size $k = 100$. With 50 Hz control, an episode of 400-700 steps (8-14 s, the paper's figures) then needs about 4 to 7 chunk decisions instead of 400 to 700 single-step decisions. The paper states this as a $k$-fold reduction in effective horizon.
 
 ## 3. Why the CVAE?
 
@@ -86,9 +86,9 @@ Humans solve the same task in different ways, and are more variable where precis
 
 ## 5. Caveats
 
-- The chunk size used in the experiments and the value of $m$ were not in the part of the paper I read verbatim; the examples use illustrative values.
-- Ablation numbers (effect of $k$, of temporal ensembling, of the CVAE) came from a summary and are not quoted.
-- Table II (more real tasks) was read in flattened form; I quote only the two tasks above.
+- The paper states the formula for the weights but not a value for $m$, so the example uses an illustrative one.
+- Checked against the full text: $k = 100$ (hyperparameter table); in the chunk-size ablation, success rises from 1% at $k = 1$ to 44% at $k = 100$ and then dips slightly, averaged over four simulated settings; temporal ensembling adds about 4 points for BC-ConvMLP and 3.3 for ACT and hurts VINN; removing the CVAE drops success on human data from 35.3% to 2%.
+- Table II (more real tasks) is not quoted, only the two tasks above.
 
 **Carry forward:** chunks predicted by ACT are a deterministic decode of one latent. π0 replaces that with flow matching: [π0](pi0.html).
 
@@ -146,7 +146,7 @@ Thẻ tính tay
 | Ký hiệu | Nghĩa | Loại | Ví dụ |
 |---|---|---|---|
 | $A_t[i]$ | dự đoán cho bước $t$ từ đoạn thứ $i$ phủ nó, $i = 0$ là cũ nhất | input | 1,0; 1,2; 1,5 |
-| $m$ | tốc độ suy giảm; $m$ nhỏ thì quan sát mới vào nhanh hơn | hằng số | 0,1 (minh họa; chưa đọc giá trị của paper) |
+| $m$ | tốc độ suy giảm; $m$ nhỏ thì quan sát mới vào nhanh hơn | hằng số | 0,1 (minh họa; paper cho công thức nhưng không nêu giá trị $m$) |
 | $w_i$ | trọng số của dự đoán thứ $i$ | suy ra | – |
 | $a_t$ | hành động được thực thi | output | – |
 
@@ -165,7 +165,7 @@ $$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$
 **Ý nghĩa.** Trung bình lấy trên các dự đoán cho *cùng một* bước, không phải các bước lân cận, nên chuyển động mượt mà không bị trễ. Chỉ tốn thời gian suy luận, không tốn huấn luyện. Lưu ý theo paper, dự đoán cũ nhất có $w_0$, trọng số lớn nhất.
 </div>
 
-**Horizon theo số liệu.** Một episode $T = 500$ bước với $k = 50$ cần $T/k = 10$ quyết định theo đoạn thay vì 500 quyết định từng bước ($T$ và $k$ minh họa; paper nêu mức giảm $k$ lần).
+**Horizon theo số liệu.** Bảng siêu tham số của paper dùng chunk $k = 100$. Với điều khiển 50 Hz, một episode 400-700 bước (8-14 giây, số liệu của paper) chỉ cần khoảng 4 đến 7 quyết định theo đoạn thay vì 400 đến 700 quyết định từng bước. Paper phát biểu đây là mức giảm $k$ lần của horizon hiệu dụng.
 
 ## 3. Vì sao có CVAE?
 
@@ -179,8 +179,8 @@ Con người giải cùng một tác vụ theo nhiều cách, và thay đổi nh
 
 ## 5. Lưu ý
 
-- Cỡ chunk dùng trong thí nghiệm và giá trị $m$ không nằm trong phần paper tôi đọc nguyên văn; các ví dụ dùng giá trị minh họa.
-- Số liệu ablation (ảnh hưởng của $k$, temporal ensembling, CVAE) đến từ bản tóm tắt nên không trích.
+- Paper nêu công thức trọng số nhưng không nêu giá trị $m$, nên ví dụ dùng một giá trị minh họa.
+- Đã đối chiếu với toàn văn: $k = 100$ (bảng siêu tham số); trong ablation về cỡ chunk, tỉ lệ thành công tăng từ 1% ở $k = 1$ lên 44% ở $k = 100$ rồi giảm nhẹ, tính trung bình trên bốn thiết lập mô phỏng; temporal ensembling giúp thêm khoảng 4 điểm cho BC-ConvMLP và 3,3 điểm cho ACT, còn VINN thì kém đi; bỏ CVAE làm tỉ lệ thành công trên dữ liệu người giảm từ 35,3% xuống 2%.
 - Bảng II (thêm tác vụ thật) đọc ở dạng bị làm phẳng; tôi chỉ trích hai tác vụ ở trên.
 
 **Mang theo:** các đoạn do ACT dự đoán là giải mã xác định từ một latent. π0 thay bằng flow matching: [π0](pi0.html).

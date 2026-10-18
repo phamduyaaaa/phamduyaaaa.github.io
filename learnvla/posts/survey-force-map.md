@@ -70,7 +70,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 [[fig:survey-force-flow-anim]] Animated: a force signal travelling along each of the four paths that touch the running pipeline (entry points ① to ④). Entry points ⑤ and ⑥ are about training and prediction, so they are not on this picture.
 
-[[fig:survey-force-map]] The same six entry points with the methods that use each. DAM-VLA (*) handles a high-rate input the paper does not name.
+[[fig:survey-force-map]] The same six entry points with the methods that use each. DAM-VLA (*) treats force/torque as its high-rate modality.
 
 | # | Entry point | In plain words | Typical form |
 |---|---|---|---|
@@ -112,7 +112,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 ## 6. The full table
 
-"Read": **full** = detailed note on this site; **abstract** = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.
+"Read": **full** = detailed note on this site, checked against the full text; **abstract+** = abstract plus a targeted look at the full text for the fields marked n/s; **abstract** = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.
 
 | # | Method | Date | Signal | Enters at | Output | Learning | Read |
 |---|---|---|---|---|---|---|---|
@@ -122,7 +122,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 4 | [VLA-Touch](vla-touch.html) | 07/2025 | GelSight | ① planner text, ④ refiner | refined chunk | refiner only, RDT | full |
 | 5 | [VLH](https://arxiv.org/abs/2508.01361) | 08/2025 | none (haptics is an output to a human) | – | motion + haptic commands | LoRA, OpenVLA | abstract |
 | 6 | [OmniVTLA](https://arxiv.org/abs/2508.08706) | 08/2025 | vision- and force-based tactile | ① | actions | semantic-aligned encoder | abstract |
-| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | torque | ③ ⑥ | actions + torque | n/s | abstract |
+| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | torque | ③ ⑥ | actions + torque | action-torque diffusion objective on a pretrained VLA | abstract+ |
 | 8 | [CompliantVLA-adaptor](https://arxiv.org/abs/2601.15541) | 01/2026 | F/T at the controller | ④ | stiffness + damping | VLM-guided | abstract |
 | 9 | [TaF-VLA](taf-vla.html) | 01/2026 | vision tactile aligned to F/T | ③ ⑤ | actions | contrastive pretraining, π0.5 | full |
 | 10 | [FD-VLA](fd-vla.html) | 02/2026 | F/T (training only) | ① ⑤ | actions | distillation, SmolVLA | full |
@@ -134,25 +134,25 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 16 | [HapticVLA](hapticvla.html) | 03/2026 | taxel arrays (training only) | ⑤ | actions | reward-weighted + distillation, SmolVLA | full |
 | 17 | [Tabero](tabero.html) | 05/2026 | simulated tactile + fingertip force | ① ④ | pose + grip/applied force | LoRA imitation, π0 | full |
 | 18 | [TORL-VLA](torl-vla.html) | 06/2026 | piezo pads → wrench | ② ⑥ | actions + future wrench | imitation + online RL, π0.5 | full |
-| 19 | [DAM-VLA](https://arxiv.org/abs/2606.12105) | 06/2026 | unnamed high-rate modality | ③ | 100 Hz actions | n/s | abstract |
-| 20 | [UniTacVLA](https://arxiv.org/abs/2606.31723) | 06/2026 | tactile | ④ ⑥ | chunk + fast corrections | n/s | abstract |
+| 19 | [DAM-VLA](https://arxiv.org/abs/2606.12105) | 06/2026 | force/torque as the high-rate modality (X-VLA backbone) | ③ | 100 Hz actions | n/s | abstract+ |
+| 20 | [UniTacVLA](https://arxiv.org/abs/2606.31723) | 06/2026 | fingertip visuo-tactile (DM-Tac W) | ④ ⑥ | chunk + fast corrections | two stages: backbone, then a residual tactile controller | abstract+ |
 | 21 | [H-Tac / TTP](https://arxiv.org/abs/2607.01067) | 07/2026 | tactile, human video | ⑤ ⑥ | actions + future touch | human pretraining | abstract |
 | 22 | [LIFT](https://arxiv.org/abs/2607.14236) | 07/2026 | 6D end-effector force | ③ | actions | post-training + DAgger | abstract |
 | 23 | [FM-VLA](https://arxiv.org/abs/2607.18231) | 07/2026 | force history | ③ | actions | VAE memory | abstract |
-| 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | force, ultrasound probe | ② | probe motion | n/s | abstract |
+| 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | six-axis force sensor, ultrasound probe | ② | probe motion | n/s | abstract+ |
 | 25 | [FWBC-VLA](fwbc-vla.html) | 09/2026 | sensorless, from joint torque | ③ ④ | actions + base residual | imitation, π0.5 | full |
-| 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | tactile images | ④ ⑥ | corrected chunk | n/s | abstract |
+| 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | tactile images | ④ ⑥ | corrected chunk | flow-matching world-action model + tactile corrector trained on its own plans | abstract+ |
 | 27 | [CR-VLA-Force](https://arxiv.org/abs/2609.05832) | 09/2026 | F/T sequence | ② ④ | via compliance controller | multi-stage imitation | abstract |
-| 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | tactile | ② ⑥ | actions | n/s | abstract |
+| 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | tactile images + 6-DoF fingertip force estimated from them | ② ⑥ | actions | mixture-of-transformers, factorised flow matching for arm and hand | abstract+ |
 | 29 | [ForceDelta-VLA](https://arxiv.org/abs/2609.18242) | 09/2026 | force history | ④ | corrected actions | distillation | abstract |
 | 30 | [ForceRFT](https://arxiv.org/abs/2609.22840) | 09/2026 | wrist wrench | ④ | pose residuals | residual RL, SmolVLA prior | abstract |
-| 31 | [CompVLA](https://arxiv.org/abs/2609.23614) | 09/2026 | none stated (RGB + language) | ④ | stiffness + virtual displacement | n/s | abstract |
-| 32 | [Opt2VLA](https://arxiv.org/abs/2609.23968) | 09/2026 | n/s | ④ | motion + force references | trajectory-optimisation data | abstract |
+| 31 | [CompVLA](https://arxiv.org/abs/2609.23614) | 09/2026 | force-feedback teleoperation demos (training) | ④ | stiffness + virtual displacement | stiffness and virtual displacement inferred from demos | abstract+ |
+| 32 | [Opt2VLA](https://arxiv.org/abs/2609.23968) | 09/2026 | joint-torque references from trajectory optimisation (training) | ④ | motion + force references | trajectory-optimisation force supervision + RL whole-body controllers | abstract+ |
 | 33 | [DexTacWAM](https://arxiv.org/abs/2609.24976) | 09/2026 | fingertip tactile | ⑥ | actions + predicted touch | video world model | abstract |
 
 ## 7. Caveats
 
-- 22 of the 33 rows come from abstracts only; "n/s" means I could not tell, not that the paper lacks it.
+- 14 of the 33 rows come from abstracts only and 8 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.
 - The set reflects one search in October 2026. It is a snapshot, not a complete census.
 - Dates are the first arXiv submission (v1).
 - Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.
@@ -275,7 +275,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 [[fig:survey-force-flow-anim]] Hình động: tín hiệu lực chạy lần lượt qua bốn đường nối vào pipeline đang chạy (điểm ① đến ④). Điểm ⑤ và ⑥ liên quan đến huấn luyện và dự đoán nên không nằm trên hình này.
 
-[[fig:survey-force-map]] Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một loại tín hiệu tốc độ cao mà paper không gọi tên.
+[[fig:survey-force-map]] Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) coi F/T là tín hiệu tốc độ cao của nó.
 
 | # | Điểm đi vào | Nói đơn giản | Dạng thường gặp |
 |---|---|---|---|
@@ -317,7 +317,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 ## 6. Bảng đầy đủ
 
-"Đã đọc": **full** = có bài ghi chú chi tiết trên site; **abstract** = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.
+"Đã đọc": **full** = có bài ghi chú chi tiết trên site, đã đối chiếu toàn văn; **abstract+** = abstract cộng với việc xem có chủ đích toàn văn cho các ô ghi n/s; **abstract** = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.
 
 | # | Phương pháp | Ngày | Tín hiệu | Đi vào ở | Đầu ra | Cách học | Đã đọc |
 |---|---|---|---|---|---|---|---|
@@ -327,7 +327,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 4 | [VLA-Touch](vla-touch.html) | 07/2025 | GelSight | ① văn bản cho planner, ④ bộ tinh chỉnh | đoạn hành động đã tinh chỉnh | chỉ huấn luyện bộ tinh chỉnh, RDT | full |
 | 5 | [VLH](https://arxiv.org/abs/2508.01361) | 08/2025 | không có (haptics là đầu ra cho người) | – | chuyển động + lệnh haptic | LoRA, OpenVLA | abstract |
 | 6 | [OmniVTLA](https://arxiv.org/abs/2508.08706) | 08/2025 | xúc giác dựa ảnh và dựa lực | ① | hành động | encoder căn theo ngữ nghĩa | abstract |
-| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | mô-men | ③ ⑥ | hành động + mô-men | n/s | abstract |
+| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | mô-men | ③ ⑥ | hành động + mô-men | mục tiêu diffusion hành động-mô-men trên VLA đã tiền huấn luyện | abstract+ |
 | 8 | [CompliantVLA-adaptor](https://arxiv.org/abs/2601.15541) | 01/2026 | F/T tại bộ điều khiển | ④ | độ cứng + giảm chấn | VLM dẫn đường | abstract |
 | 9 | [TaF-VLA](taf-vla.html) | 01/2026 | xúc giác ảnh căn với F/T | ③ ⑤ | hành động | tiền huấn luyện contrastive, π0.5 | full |
 | 10 | [FD-VLA](fd-vla.html) | 02/2026 | F/T (chỉ khi huấn luyện) | ① ⑤ | hành động | chưng cất, SmolVLA | full |
@@ -339,25 +339,25 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 16 | [HapticVLA](hapticvla.html) | 03/2026 | lưới taxel (chỉ khi huấn luyện) | ⑤ | hành động | trọng số theo thưởng + chưng cất, SmolVLA | full |
 | 17 | [Tabero](tabero.html) | 05/2026 | xúc giác mô phỏng + lực đầu ngón | ① ④ | pose + lực kẹp/lực tác dụng | LoRA imitation, π0 | full |
 | 18 | [TORL-VLA](torl-vla.html) | 06/2026 | đệm piezo → wrench | ② ⑥ | hành động + wrench tương lai | imitation + RL online, π0.5 | full |
-| 19 | [DAM-VLA](https://arxiv.org/abs/2606.12105) | 06/2026 | tín hiệu tốc độ cao không nêu tên | ③ | hành động 100 Hz | n/s | abstract |
-| 20 | [UniTacVLA](https://arxiv.org/abs/2606.31723) | 06/2026 | xúc giác | ④ ⑥ | đoạn hành động + chỉnh nhanh | n/s | abstract |
+| 19 | [DAM-VLA](https://arxiv.org/abs/2606.12105) | 06/2026 | F/T làm tín hiệu tốc độ cao (backbone X-VLA) | ③ | hành động 100 Hz | n/s | abstract+ |
+| 20 | [UniTacVLA](https://arxiv.org/abs/2606.31723) | 06/2026 | xúc giác thị giác ở đầu ngón (DM-Tac W) | ④ ⑥ | đoạn hành động + chỉnh nhanh | hai giai đoạn: backbone, rồi bộ điều khiển xúc giác residual | abstract+ |
 | 21 | [H-Tac / TTP](https://arxiv.org/abs/2607.01067) | 07/2026 | xúc giác, video người | ⑤ ⑥ | hành động + xúc giác tương lai | tiền huấn luyện từ người | abstract |
 | 22 | [LIFT](https://arxiv.org/abs/2607.14236) | 07/2026 | lực 6D tại đầu công cụ | ③ | hành động | hậu huấn luyện + DAgger | abstract |
 | 23 | [FM-VLA](https://arxiv.org/abs/2607.18231) | 07/2026 | lịch sử lực | ③ | hành động | bộ nhớ VAE | abstract |
-| 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | lực, đầu dò siêu âm | ② | chuyển động đầu dò | n/s | abstract |
+| 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | cảm biến lực sáu trục, đầu dò siêu âm | ② | chuyển động đầu dò | n/s | abstract+ |
 | 25 | [FWBC-VLA](fwbc-vla.html) | 09/2026 | không cảm biến, suy từ mô-men khớp | ③ ④ | hành động + residual cho thân | imitation, π0.5 | full |
-| 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | ảnh xúc giác | ④ ⑥ | đoạn hành động đã chỉnh | n/s | abstract |
+| 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | ảnh xúc giác | ④ ⑥ | đoạn hành động đã chỉnh | world-action model flow matching + bộ chỉnh xúc giác huấn luyện trên chính kế hoạch của nó | abstract+ |
 | 27 | [CR-VLA-Force](https://arxiv.org/abs/2609.05832) | 09/2026 | chuỗi F/T | ② ④ | qua bộ điều khiển mềm dẻo | imitation nhiều giai đoạn | abstract |
-| 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | xúc giác | ② ⑥ | hành động | n/s | abstract |
+| 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | ảnh xúc giác + lực 6 bậc ở đầu ngón ước lượng từ chính ảnh đó | ② ⑥ | hành động | mixture-of-transformers, flow matching phân tách cho tay máy và bàn tay | abstract+ |
 | 29 | [ForceDelta-VLA](https://arxiv.org/abs/2609.18242) | 09/2026 | lịch sử lực | ④ | hành động đã chỉnh | chưng cất | abstract |
 | 30 | [ForceRFT](https://arxiv.org/abs/2609.22840) | 09/2026 | wrench cổ tay | ④ | residual cho pose | RL residual, tiên nghiệm SmolVLA | abstract |
-| 31 | [CompVLA](https://arxiv.org/abs/2609.23614) | 09/2026 | không nêu (RGB + ngôn ngữ) | ④ | độ cứng + độ dời ảo | n/s | abstract |
-| 32 | [Opt2VLA](https://arxiv.org/abs/2609.23968) | 09/2026 | n/s | ④ | chuyển động + tham chiếu lực | dữ liệu tối ưu quỹ đạo | abstract |
+| 31 | [CompVLA](https://arxiv.org/abs/2609.23614) | 09/2026 | demo teleoperation có phản hồi lực (khi huấn luyện) | ④ | độ cứng + độ dời ảo | độ cứng và độ dời ảo suy ra từ demo | abstract+ |
+| 32 | [Opt2VLA](https://arxiv.org/abs/2609.23968) | 09/2026 | tham chiếu mô-men khớp từ tối ưu quỹ đạo (khi huấn luyện) | ④ | chuyển động + tham chiếu lực | giám sát lực từ tối ưu quỹ đạo + bộ điều khiển toàn thân bằng RL | abstract+ |
 | 33 | [DexTacWAM](https://arxiv.org/abs/2609.24976) | 09/2026 | xúc giác đầu ngón | ⑥ | hành động + xúc giác dự đoán | world model video | abstract |
 
 ## 7. Lưu ý
 
-- 22 trên 33 hàng chỉ dựa vào abstract; "n/s" nghĩa là mình không biết, chứ không phải paper không có.
+- 14 trên 33 hàng chỉ dựa vào abstract và 8 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.
 - Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.
 - Ngày là ngày đăng arXiv lần đầu (v1).
 - Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.

@@ -85,8 +85,7 @@ $$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} 
 
 ## 5. Caveats
 
-- I read the paper verbatim only up to the middle of the experiments; chunk length, control rate and update ratios are not quoted here.
-- The number of MoE experts and the tactile sample rate are not stated in the part I read.
+- Checked against the full text: policy observations are queried and logged at 20 Hz, and in stage II the wrench-aware VLA is frozen. Chunk length, the number of MoE experts and the tactile sample rate are not stated.
 
 **Carry forward:** TORL-VLA needs a human ready to intervene. [TER-DAgger](ter-dagger.html) asks when exactly to call the human and how to turn a messy correction into clean data.
 
@@ -176,8 +175,7 @@ $$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} 
 
 ## 5. Lưu ý
 
-- Tôi chỉ đọc nguyên văn tới khoảng giữa phần thực nghiệm; độ dài chunk, tần số điều khiển và tỉ lệ cập nhật không được trích ở đây.
-- Số expert của MoE và tần số lấy mẫu xúc giác không được nêu trong phần tôi đọc.
+- Đã đối chiếu với toàn văn: quan sát của chính sách được truy vấn và ghi ở 20 Hz, và ở giai đoạn II VLA nhận biết wrench được đóng băng. Độ dài chunk, số expert của MoE và tần số lấy mẫu xúc giác không được nêu.
 
 **Mang sang bài sau:** TORL-VLA cần một người sẵn sàng can thiệp. [TER-DAgger](ter-dagger.html) hỏi chính xác khi nào nên gọi con người và làm sao biến bản sửa lộn xộn thành dữ liệu sạch.
 

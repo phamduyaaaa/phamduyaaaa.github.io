@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">13 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">14 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Survey 1: Where Does Force Enter a VLA?</h1>
@@ -196,7 +196,7 @@
 <circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.5;.7;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.5;.51;.69;.7;1"/></circle>
 <circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.75;.95;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.75;.76;.94;.95;1"/></circle>
 </svg><figcaption>Animated: a force signal travelling along each of the four paths that touch the running pipeline (entry points ① to ④). Entry points ⑤ and ⑥ are about training and prediction, so they are not on this picture.</figcaption></figure>
-<figure class="diagram"><svg role="img" aria-label="The same six entry points with the methods that use each. DAM-VLA (*) handles a high-rate input the paper does not name." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<figure class="diagram"><svg role="img" aria-label="The same six entry points with the methods that use each. DAM-VLA (*) treats force/torque as its high-rate modality." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
 <rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
 <rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
@@ -213,14 +213,14 @@
 <rect class="dg-key" x="175" y="148" width="150" height="250"/><text class="dg-t" x="250" y="168" text-anchor="middle">② After the VLM</text><text class="dg-s" x="250" y="184" text-anchor="middle">fusion module</text>
 <text class="dg-s" x="185" y="208">ForceVLA</text><text class="dg-s" x="185" y="223">ForceVLA2</text><text class="dg-s" x="185" y="238">MoDE-VLA</text><text class="dg-s" x="185" y="253">TORL-VLA</text><text class="dg-s" x="185" y="268">CR-VLA-Force</text><text class="dg-s" x="185" y="283">DeCAL</text><text class="dg-s" x="185" y="298">ForceU-VLA</text>
 <rect class="dg-key" x="335" y="148" width="150" height="250"/><text class="dg-t" x="410" y="168" text-anchor="middle">③ Action expert</text><text class="dg-s" x="410" y="184" text-anchor="middle">tokens, adapters</text>
-<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA*</text>
+<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA (F/T)</text>
 <rect class="dg-key" x="495" y="148" width="150" height="250"/><text class="dg-t" x="570" y="168" text-anchor="middle">④ Outside the VLA</text><text class="dg-s" x="570" y="184" text-anchor="middle">controller, residual</text>
 <text class="dg-s" x="505" y="208">VLA-Touch (refiner)</text><text class="dg-s" x="505" y="223">Tabero · Tactile-VLA</text><text class="dg-s" x="505" y="238">FWBC-VLA (body)</text><text class="dg-s" x="505" y="253">TER-DAgger</text><text class="dg-s" x="505" y="268">ForceDelta-VLA</text><text class="dg-s" x="505" y="283">ForceRFT</text><text class="dg-s" x="505" y="298">CompVLA</text><text class="dg-s" x="505" y="313">CompliantVLA-adapt.</text><text class="dg-s" x="505" y="328">CR-VLA-Force</text><text class="dg-s" x="505" y="343">Opt2VLA</text><text class="dg-s" x="505" y="358">TacPAC · UniTacVLA</text>
 <rect class="dg-box" x="655" y="148" width="150" height="250"/><text class="dg-t" x="730" y="168" text-anchor="middle">⑤ Training only</text><text class="dg-s" x="730" y="184" text-anchor="middle">no sensor at run time</text>
 <text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
-</svg><figcaption>The same six entry points with the methods that use each. DAM-VLA (*) handles a high-rate input the paper does not name.</figcaption></figure>
+</svg><figcaption>The same six entry points with the methods that use each. DAM-VLA (*) treats force/torque as its high-rate modality.</figcaption></figure>
 <table>
 <thead>
 <tr>
@@ -537,7 +537,7 @@
 </tbody>
 </table>
 <h2>6. The full table</h2>
-<p>"Read": <strong>full</strong> = detailed note on this site; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.</p>
+<p>"Read": <strong>full</strong> = detailed note on this site, checked against the full text; <strong>abstract+</strong> = abstract plus a targeted look at the full text for the fields marked n/s; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.</p>
 <table>
 <thead>
 <tr>
@@ -619,8 +619,8 @@
 <td>torque</td>
 <td>③ ⑥</td>
 <td>actions + torque</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>action-torque diffusion objective on a pretrained VLA</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>8</td>
@@ -736,21 +736,21 @@
 <td>19</td>
 <td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
 <td>06/2026</td>
-<td>unnamed high-rate modality</td>
+<td>force/torque as the high-rate modality (X-VLA backbone)</td>
 <td>③</td>
 <td>100 Hz actions</td>
 <td>n/s</td>
-<td>abstract</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>20</td>
 <td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
 <td>06/2026</td>
-<td>tactile</td>
+<td>fingertip visuo-tactile (DM-Tac W)</td>
 <td>④ ⑥</td>
 <td>chunk + fast corrections</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>two stages: backbone, then a residual tactile controller</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>21</td>
@@ -786,11 +786,11 @@
 <td>24</td>
 <td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
 <td>08/2026</td>
-<td>force, ultrasound probe</td>
+<td>six-axis force sensor, ultrasound probe</td>
 <td>②</td>
 <td>probe motion</td>
 <td>n/s</td>
-<td>abstract</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>25</td>
@@ -809,8 +809,8 @@
 <td>tactile images</td>
 <td>④ ⑥</td>
 <td>corrected chunk</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>flow-matching world-action model + tactile corrector trained on its own plans</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>27</td>
@@ -826,11 +826,11 @@
 <td>28</td>
 <td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
 <td>09/2026</td>
-<td>tactile</td>
+<td>tactile images + 6-DoF fingertip force estimated from them</td>
 <td>② ⑥</td>
 <td>actions</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>mixture-of-transformers, factorised flow matching for arm and hand</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>29</td>
@@ -856,21 +856,21 @@
 <td>31</td>
 <td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
 <td>09/2026</td>
-<td>none stated (RGB + language)</td>
+<td>force-feedback teleoperation demos (training)</td>
 <td>④</td>
 <td>stiffness + virtual displacement</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>stiffness and virtual displacement inferred from demos</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>32</td>
 <td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
 <td>09/2026</td>
-<td>n/s</td>
+<td>joint-torque references from trajectory optimisation (training)</td>
 <td>④</td>
 <td>motion + force references</td>
-<td>trajectory-optimisation data</td>
-<td>abstract</td>
+<td>trajectory-optimisation force supervision + RL whole-body controllers</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>33</td>
@@ -886,7 +886,7 @@
 </table>
 <h2>7. Caveats</h2>
 <ul>
-<li>22 of the 33 rows come from abstracts only; "n/s" means I could not tell, not that the paper lacks it.</li>
+<li>14 of the 33 rows come from abstracts only and 8 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.</li>
 <li>The set reflects one search in October 2026. It is a snapshot, not a complete census.</li>
 <li>Dates are the first arXiv submission (v1).</li>
 <li>Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.</li>
@@ -1064,7 +1064,7 @@
 <circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.5;.7;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.5;.51;.69;.7;1"/></circle>
 <circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.75;.95;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.75;.76;.94;.95;1"/></circle>
 </svg><figcaption>Hình động: tín hiệu lực chạy lần lượt qua bốn đường nối vào pipeline đang chạy (điểm ① đến ④). Điểm ⑤ và ⑥ liên quan đến huấn luyện và dự đoán nên không nằm trên hình này.</figcaption></figure>
-<figure class="diagram"><svg role="img" aria-label="Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một loại tín hiệu tốc độ cao mà paper không gọi tên." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<figure class="diagram"><svg role="img" aria-label="Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) coi F/T là tín hiệu tốc độ cao của nó." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
 <rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
 <rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
@@ -1081,14 +1081,14 @@
 <rect class="dg-key" x="175" y="148" width="150" height="250"/><text class="dg-t" x="250" y="168" text-anchor="middle">② After the VLM</text><text class="dg-s" x="250" y="184" text-anchor="middle">fusion module</text>
 <text class="dg-s" x="185" y="208">ForceVLA</text><text class="dg-s" x="185" y="223">ForceVLA2</text><text class="dg-s" x="185" y="238">MoDE-VLA</text><text class="dg-s" x="185" y="253">TORL-VLA</text><text class="dg-s" x="185" y="268">CR-VLA-Force</text><text class="dg-s" x="185" y="283">DeCAL</text><text class="dg-s" x="185" y="298">ForceU-VLA</text>
 <rect class="dg-key" x="335" y="148" width="150" height="250"/><text class="dg-t" x="410" y="168" text-anchor="middle">③ Action expert</text><text class="dg-s" x="410" y="184" text-anchor="middle">tokens, adapters</text>
-<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA*</text>
+<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA (F/T)</text>
 <rect class="dg-key" x="495" y="148" width="150" height="250"/><text class="dg-t" x="570" y="168" text-anchor="middle">④ Outside the VLA</text><text class="dg-s" x="570" y="184" text-anchor="middle">controller, residual</text>
 <text class="dg-s" x="505" y="208">VLA-Touch (refiner)</text><text class="dg-s" x="505" y="223">Tabero · Tactile-VLA</text><text class="dg-s" x="505" y="238">FWBC-VLA (body)</text><text class="dg-s" x="505" y="253">TER-DAgger</text><text class="dg-s" x="505" y="268">ForceDelta-VLA</text><text class="dg-s" x="505" y="283">ForceRFT</text><text class="dg-s" x="505" y="298">CompVLA</text><text class="dg-s" x="505" y="313">CompliantVLA-adapt.</text><text class="dg-s" x="505" y="328">CR-VLA-Force</text><text class="dg-s" x="505" y="343">Opt2VLA</text><text class="dg-s" x="505" y="358">TacPAC · UniTacVLA</text>
 <rect class="dg-box" x="655" y="148" width="150" height="250"/><text class="dg-t" x="730" y="168" text-anchor="middle">⑤ Training only</text><text class="dg-s" x="730" y="184" text-anchor="middle">no sensor at run time</text>
 <text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
-</svg><figcaption>Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một loại tín hiệu tốc độ cao mà paper không gọi tên.</figcaption></figure>
+</svg><figcaption>Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) coi F/T là tín hiệu tốc độ cao của nó.</figcaption></figure>
 <table>
 <thead>
 <tr>
@@ -1405,7 +1405,7 @@
 </tbody>
 </table>
 <h2>6. Bảng đầy đủ</h2>
-<p>"Đã đọc": <strong>full</strong> = có bài ghi chú chi tiết trên site; <strong>abstract</strong> = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.</p>
+<p>"Đã đọc": <strong>full</strong> = có bài ghi chú chi tiết trên site, đã đối chiếu toàn văn; <strong>abstract+</strong> = abstract cộng với việc xem có chủ đích toàn văn cho các ô ghi n/s; <strong>abstract</strong> = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.</p>
 <table>
 <thead>
 <tr>
@@ -1487,8 +1487,8 @@
 <td>mô-men</td>
 <td>③ ⑥</td>
 <td>hành động + mô-men</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>mục tiêu diffusion hành động-mô-men trên VLA đã tiền huấn luyện</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>8</td>
@@ -1604,21 +1604,21 @@
 <td>19</td>
 <td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
 <td>06/2026</td>
-<td>tín hiệu tốc độ cao không nêu tên</td>
+<td>F/T làm tín hiệu tốc độ cao (backbone X-VLA)</td>
 <td>③</td>
 <td>hành động 100 Hz</td>
 <td>n/s</td>
-<td>abstract</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>20</td>
 <td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
 <td>06/2026</td>
-<td>xúc giác</td>
+<td>xúc giác thị giác ở đầu ngón (DM-Tac W)</td>
 <td>④ ⑥</td>
 <td>đoạn hành động + chỉnh nhanh</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>hai giai đoạn: backbone, rồi bộ điều khiển xúc giác residual</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>21</td>
@@ -1654,11 +1654,11 @@
 <td>24</td>
 <td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
 <td>08/2026</td>
-<td>lực, đầu dò siêu âm</td>
+<td>cảm biến lực sáu trục, đầu dò siêu âm</td>
 <td>②</td>
 <td>chuyển động đầu dò</td>
 <td>n/s</td>
-<td>abstract</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>25</td>
@@ -1677,8 +1677,8 @@
 <td>ảnh xúc giác</td>
 <td>④ ⑥</td>
 <td>đoạn hành động đã chỉnh</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>world-action model flow matching + bộ chỉnh xúc giác huấn luyện trên chính kế hoạch của nó</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>27</td>
@@ -1694,11 +1694,11 @@
 <td>28</td>
 <td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
 <td>09/2026</td>
-<td>xúc giác</td>
+<td>ảnh xúc giác + lực 6 bậc ở đầu ngón ước lượng từ chính ảnh đó</td>
 <td>② ⑥</td>
 <td>hành động</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>mixture-of-transformers, flow matching phân tách cho tay máy và bàn tay</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>29</td>
@@ -1724,21 +1724,21 @@
 <td>31</td>
 <td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
 <td>09/2026</td>
-<td>không nêu (RGB + ngôn ngữ)</td>
+<td>demo teleoperation có phản hồi lực (khi huấn luyện)</td>
 <td>④</td>
 <td>độ cứng + độ dời ảo</td>
-<td>n/s</td>
-<td>abstract</td>
+<td>độ cứng và độ dời ảo suy ra từ demo</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>32</td>
 <td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
 <td>09/2026</td>
-<td>n/s</td>
+<td>tham chiếu mô-men khớp từ tối ưu quỹ đạo (khi huấn luyện)</td>
 <td>④</td>
 <td>chuyển động + tham chiếu lực</td>
-<td>dữ liệu tối ưu quỹ đạo</td>
-<td>abstract</td>
+<td>giám sát lực từ tối ưu quỹ đạo + bộ điều khiển toàn thân bằng RL</td>
+<td>abstract+</td>
 </tr>
 <tr>
 <td>33</td>
@@ -1754,7 +1754,7 @@
 </table>
 <h2>7. Lưu ý</h2>
 <ul>
-<li>22 trên 33 hàng chỉ dựa vào abstract; "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>
+<li>14 trên 33 hàng chỉ dựa vào abstract và 8 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>
 <li>Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.</li>
 <li>Ngày là ngày đăng arXiv lần đầu (v1).</li>
 <li>Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.</li>

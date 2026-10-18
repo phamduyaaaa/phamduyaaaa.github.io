@@ -77,7 +77,7 @@
 <div class="tldr">
 <p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> · 03/2026 · built on SmolVLA (0.45B) · Skoltech</p>
 <p><strong>PROBLEM</strong> For a jar, waffles and an egg, success means the object stays intact, not just that it moved.</p>
-<p><strong>WHAT FAILED BEFORE</strong> Baseline VLAs (SmolVLA, X-VLA, VLA-0) imitate every demonstration equally, including ones where the object was damaged; X-VLA and VLA-0 score 0%. The abstract adds that HapticVLA beats even versions "provided with direct tactile feedback during inference".</p>
+<p><strong>WHAT FAILED BEFORE</strong> Baseline VLAs (SmolVLA, X-VLA, VLA-0) imitate every demonstration equally, including ones where the object was damaged; X-VLA and VLA-0 score 0%. The abstract adds that HapticVLA beats even versions "provided with direct tactile feedback at inference".</p>
 <p><strong>IDEA</strong> Stage 1: compute a safety reward from tactile maps and train a teacher with reward-weighted flow matching. Stage 2: distil the teacher into a student that sees only vision and state.</p>
 <p><strong>RESULT</strong> 86.7% mean success with no tactile sensor at run time.</p>
 </div>
@@ -232,7 +232,7 @@
 <h2>6. Caveats</h2>
 <ul>
 <li>The abstract says the student predicts a "compact tactile token", but the only distillation loss given is on actions; token size and loss are not specified.</li>
-<li>Optimiser, learning rate, steps and control rate are not stated.</li>
+<li>Checked against the full text: action horizon $K = 50$ and a 6-dimensional joint action per arm. Optimiser, learning rate, steps and control rate are not stated.</li>
 </ul>
 <p><strong>Carry forward:</strong> all arms so far stand on a fixed base. On a wheeled-legged robot, pushing a door also pushes the body. See <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
 <p><strong>Check question:</strong> a batch of two samples, $A = (-6,\ 6)$, $\alpha = 0.25$. What are the final weights?</p>
@@ -400,7 +400,7 @@
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss chưng cất duy nhất được nêu là trên hành động; kích thước và loss của token không được đặc tả.</li>
-<li>Optimizer, learning rate, số bước và tần số điều khiển không được nêu.</li>
+<li>Đã đối chiếu với toàn văn: horizon hành động $K = 50$ và hành động khớp 6 chiều cho mỗi tay. Optimizer, learning rate, số bước và tần số điều khiển không được nêu.</li>
 </ul>
 <p><strong>Mang sang bài sau:</strong> mọi cánh tay tới đây đều đứng trên đế cố định. Trên robot bánh-chân, đẩy cửa cũng là đẩy cả thân. Xem <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
 <p><strong>Câu kiểm tra:</strong> batch có hai mẫu, $A = (-6,\ 6)$, $\alpha = 0.25$. Trọng số cuối là bao nhiêu?</p>

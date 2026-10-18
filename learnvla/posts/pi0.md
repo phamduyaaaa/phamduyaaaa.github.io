@@ -14,7 +14,7 @@ tags: [VLA, Paper Notes, π0, Flow Matching]
 
 **PROBLEM** One model should follow language and also handle dexterous, high-frequency control (the paper's tasks include folding laundry).
 
-**WHAT FAILED BEFORE** The paper says prior VLAs "employ autoregressive discretization to represent actions in a manner analogous to text tokens", and that high-frequency action chunks (up to 50 Hz) and dexterous tasks "pose a major challenge" for such VLAs.
+**WHAT FAILED BEFORE** The paper says prior VLAs "employ autoregressive discretization to represent actions in a manner analogous to text tokens", and that high-frequency action chunks (up to 50 Hz) and dexterous tasks "pose a major challenge" for such VLAs. Of the baselines it compares against, the paper says OpenVLA "does not support action chunks" and Octo "does support action chunks, but has a comparatively limited representational capacity".
 
 **IDEA** Keep a pre-trained VLM (PaliGemma, 3B) for semantics. Add a separate 300M "action expert" that outputs a continuous action chunk by flow matching, attending to the VLM's tokens.
 
@@ -80,15 +80,15 @@ $$P_{AR} = H \times d, \qquad P_{flow} = N$$
 
 ## 4. What the paper reports
 
-- Pre-trained π0 follows language better than the 470M π0-small baseline and beats prior VLAs in the paper's comparisons.
-- Pre-training helps fine-tuning, in the paper's summary up to about 2× on some tasks.
-- On multi-stage tasks the paper reports more than 50% of the maximum score across tasks.
+- **Out of the box** (10 episodes per task, partial credit scored): π0 beats every baseline (OpenVLA, Octo, π0-small), with near-perfect success on shirt folding and the easier bussing tasks. Even the "compute parity" version trained for 160k steps (against 700k for the main model) beats all baselines, and π0-small beats OpenVLA and Octo.
+- **VLM pre-training matters**, but the paper warns the comparison with π0-small is hard to make fair because the models differ in size.
+- **Fine-tuning** (10 trials per task): π0 generally outperforms the other methods, and pre-training helps "sometimes by as much as 2x". On the complex multi-stage tasks the full recipe reaches more than 50% of the maximum score on all tasks.
 
 ## 5. Caveats
 
-- These results come from a summary of the paper's later sections; I did not read the numbers in the figures, so none are quoted.
-- Appendix A (architecture and inference details) was not read verbatim. The attention layout of the three token groups is from a summary, not checked.
-- The paper says not all evaluated tasks work reliably, and the comparison with π0-small is confounded by model size.
+- Checked against the full text: the numbers above, the attention layout (three blocks: images and language; state; actions; bidirectional inside a block, not attending to later blocks), the flow-matching convention and the shifted Beta timestep distribution.
+- Exact per-task bars are in figures that I did not read as numbers, so none are quoted here.
+- The paper says not all evaluated tasks work reliably, and that how to compose the pre-training data is still an open question.
 
 **Carry forward:** force papers build on this: [ForceVLA](forcevla.html) adds force tokens to a π0-style model, and [TaF-VLA](taf-vla.html) plugs tactile tokens into the action expert of π0.5.
 
@@ -107,7 +107,7 @@ $P_{AR} = 50 \times 14 = 700$; $P_{flow} = 10$. Ratio 70.
 
 **VẤN ĐỀ** Một mô hình vừa theo được ngôn ngữ vừa xử lý điều khiển khéo léo, tần số cao (các tác vụ của paper gồm gấp quần áo).
 
-**PAPER TRƯỚC HỎNG Ở ĐÂU** Paper nói các VLA trước "dùng rời rạc hóa tự hồi quy để biểu diễn hành động giống như token chữ", và rằng đoạn hành động tần số cao (đến 50 Hz) cùng tác vụ khéo léo "là thách thức lớn" với loại VLA này.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Paper nói các VLA trước "dùng rời rạc hóa tự hồi quy để biểu diễn hành động giống như token chữ", và rằng đoạn hành động tần số cao (đến 50 Hz) cùng tác vụ khéo léo "là thách thức lớn" với loại VLA này. Với các baseline, paper nói OpenVLA "không hỗ trợ action chunk" và Octo "có hỗ trợ action chunk nhưng khả năng biểu diễn tương đối hạn chế".
 
 **Ý TƯỞNG** Giữ một VLM tiền huấn luyện (PaliGemma, 3B) cho ngữ nghĩa. Thêm một "action expert" riêng 300M xuất đoạn hành động liên tục bằng flow matching, chú ý đến token của VLM.
 
@@ -173,15 +173,15 @@ $$P_{AR} = H \times d, \qquad P_{flow} = N$$
 
 ## 4. Paper báo cáo gì
 
-- π0 tiền huấn luyện theo ngôn ngữ tốt hơn baseline π0-small 470M và vượt các VLA trước trong các so sánh của paper.
-- Tiền huấn luyện giúp tinh chỉnh, theo tóm tắt paper tới khoảng 2 lần trên một số tác vụ.
-- Với tác vụ nhiều giai đoạn, paper báo cáo trên 50% điểm tối đa ở mọi tác vụ.
+- **Chạy ngay sau tiền huấn luyện** (10 episode mỗi tác vụ, có chấm điểm từng phần): π0 vượt mọi baseline (OpenVLA, Octo, π0-small), gần như hoàn hảo ở gấp áo và các tác vụ dọn bàn dễ. Ngay cả bản "cùng ngân sách tính toán" huấn luyện 160k bước (so với 700k của mô hình chính) cũng vượt mọi baseline, và π0-small vượt cả OpenVLA lẫn Octo.
+- **Tiền huấn luyện bằng VLM có ích**, nhưng paper lưu ý so sánh với π0-small khó công bằng vì hai mô hình khác kích thước.
+- **Tinh chỉnh** (10 lần thử mỗi tác vụ): nhìn chung π0 vượt các phương pháp khác, và tiền huấn luyện giúp "có khi tới 2 lần". Với các tác vụ phức tạp nhiều giai đoạn, công thức đầy đủ đạt trên 50% điểm tối đa ở mọi tác vụ.
 
 ## 5. Lưu ý
 
-- Các kết quả này đến từ bản tóm tắt phần sau của paper; tôi chưa đọc số trong các hình nên không trích số.
-- Phụ lục A (chi tiết kiến trúc và suy luận) chưa đọc nguyên văn. Cách chia ba nhóm token trong attention lấy từ bản tóm tắt, chưa kiểm.
-- Paper nói không phải tác vụ nào được đánh giá cũng chạy ổn định, và so sánh với π0-small bị lẫn yếu tố kích thước mô hình.
+- Đã đối chiếu với toàn văn: các số ở trên, cách chia attention (ba khối: ảnh và ngôn ngữ; trạng thái; hành động; hai chiều trong một khối, không nhìn sang khối sau), quy ước flow matching và phân phối Beta lệch cho bước thời gian.
+- Số cụ thể từng tác vụ nằm trong các hình mà tôi không đọc được thành số, nên không trích ở đây.
+- Paper nói không phải tác vụ nào được đánh giá cũng chạy ổn định, và cách phối trộn dữ liệu tiền huấn luyện vẫn là câu hỏi mở.
 
 **Mang theo:** các paper lực xây trên nó: [ForceVLA](forcevla.html) thêm token lực vào mô hình kiểu π0, và [TaF-VLA](taf-vla.html) cắm token xúc giác vào action expert của π0.5.
 

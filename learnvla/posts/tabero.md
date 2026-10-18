@@ -83,7 +83,7 @@ $$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L
 
 ## 5. Caveats
 
-- Policy and controller rates and the chunk length are not stated.
+- Checked against the full text: data in the simulator are sampled at 20 Hz. Policy and controller rates and the run-time chunk length are not stated.
 - The text says the force input is 6D; Table 7 lists an MLP input of 48.
 
 **Carry forward:** every method so far needs a tactile or force sensor at run time. [FD-VLA](fd-vla.html) asks whether force can be inferred from vision and arm state instead.
@@ -172,7 +172,7 @@ $$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L
 
 ## 5. Lưu ý
 
-- Tần số chính sách, tần số bộ điều khiển và độ dài chunk không được nêu.
+- Đã đối chiếu với toàn văn: dữ liệu trong mô phỏng lấy mẫu ở 20 Hz. Tần số chính sách, tần số bộ điều khiển và độ dài chunk lúc chạy không được nêu.
 - Văn bản nói lực đầu vào là 6D; Bảng 7 ghi đầu vào MLP là 48.
 
 **Mang sang bài sau:** mọi phương pháp tới đây đều cần cảm biến xúc giác hoặc lực lúc chạy. [FD-VLA](fd-vla.html) hỏi: có suy ra được lực từ thị giác và state của cánh tay không?

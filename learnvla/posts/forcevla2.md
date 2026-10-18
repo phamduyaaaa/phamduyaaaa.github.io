@@ -91,7 +91,7 @@ $$\Delta x = \frac{F^*}{K}, \qquad F_{real} = K\,(\Delta x \pm \delta)$$
 ## 6. Caveats
 
 - The text says the gate "activates the most relevant expert", but the equation sums all three experts.
-- How the force prompt is produced at inference, the losses and the frozen modules are not stated in what I read.
+- Checked against the full text: the force prompt works like a discrete state machine over a predefined list of subtasks per task. The appendix reports a chunk size of 30 and 15 Hz inference on a 4090 (8 A100 GPUs, 30,000 steps, about 10 hours), but under the name "Foca-VLA", apparently an earlier name of this model. Who produces the force prompt at run time, the losses and the frozen modules are still not clear.
 
 **Carry forward:** ForceVLA2 has one gripper and one wrist sensor. A humanoid with two dexterous hands has torques at 14 joints and touch at 10 fingertips: which signal should correct which part of the body? See [MoDE-VLA](mode-vla.html).
 
@@ -187,7 +187,7 @@ $$\Delta x = \frac{F^*}{K}, \qquad F_{real} = K\,(\Delta x \pm \delta)$$
 ## 6. Lưu ý
 
 - Văn bản nói gate "kích hoạt expert liên quan nhất", nhưng công thức cộng cả ba expert.
-- Cách sinh force prompt lúc suy luận, các hàm loss và module đóng băng không có trong phần tôi đọc.
+- Đã đối chiếu với toàn văn: force prompt hoạt động như một máy trạng thái rời rạc trên danh sách subtask định sẵn cho mỗi tác vụ. Phụ lục nêu chunk 30 và suy luận 15 Hz trên 4090 (8 GPU A100, 30.000 bước, khoảng 10 giờ), nhưng dưới tên "Foca-VLA", có vẻ là tên cũ của mô hình này. Ai tạo force prompt lúc chạy thật, các hàm loss và module đóng băng vẫn chưa rõ.
 
 **Mang sang bài sau:** ForceVLA2 có một kẹp và một cảm biến cổ tay. Một humanoid hai bàn tay khéo léo có mô men ở 14 khớp và xúc giác ở 10 đầu ngón: tín hiệu nào nên hiệu chỉnh phần nào của cơ thể? Xem [MoDE-VLA](mode-vla.html).
 

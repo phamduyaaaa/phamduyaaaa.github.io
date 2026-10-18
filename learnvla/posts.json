@@ -128,7 +128,7 @@
       "MoE",
       "π0"
     ],
-    "read_min": 4
+    "read_min": 5
   },
   {
     "slug": "fwbc-vla",
@@ -196,7 +196,7 @@
       "MoE",
       "π0"
     ],
-    "read_min": 4
+    "read_min": 5
   },
   {
     "slug": "pi0",
@@ -212,7 +212,7 @@
       "π0",
       "Flow Matching"
     ],
-    "read_min": 4
+    "read_min": 5
   },
   {
     "slug": "survey-force-map",
@@ -228,7 +228,7 @@
       "Tactile",
       "Survey"
     ],
-    "read_min": 13
+    "read_min": 14
   },
   {
     "slug": "survey-force-output",

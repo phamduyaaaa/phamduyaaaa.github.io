@@ -263,8 +263,7 @@
 </table>
 <h2>5. Caveats</h2>
 <ul>
-<li>I read the paper verbatim only up to the middle of the experiments; chunk length, control rate and update ratios are not quoted here.</li>
-<li>The number of MoE experts and the tactile sample rate are not stated in the part I read.</li>
+<li>Checked against the full text: policy observations are queried and logged at 20 Hz, and in stage II the wrench-aware VLA is frozen. Chunk length, the number of MoE experts and the tactile sample rate are not stated.</li>
 </ul>
 <p><strong>Carry forward:</strong> TORL-VLA needs a human ready to intervene. <a href="ter-dagger.html">TER-DAgger</a> asks when exactly to call the human and how to turn a messy correction into clean data.</p>
 <p><strong>Check question:</strong> $R = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, $d = 0$, $c_{int} = 1$, takeover next ($m^{int} = 1$). Compute $y_{task}$ and $y_{ic}$.</p>
@@ -463,8 +462,7 @@
 </table>
 <h2>5. Lưu ý</h2>
 <ul>
-<li>Tôi chỉ đọc nguyên văn tới khoảng giữa phần thực nghiệm; độ dài chunk, tần số điều khiển và tỉ lệ cập nhật không được trích ở đây.</li>
-<li>Số expert của MoE và tần số lấy mẫu xúc giác không được nêu trong phần tôi đọc.</li>
+<li>Đã đối chiếu với toàn văn: quan sát của chính sách được truy vấn và ghi ở 20 Hz, và ở giai đoạn II VLA nhận biết wrench được đóng băng. Độ dài chunk, số expert của MoE và tần số lấy mẫu xúc giác không được nêu.</li>
 </ul>
 <p><strong>Mang sang bài sau:</strong> TORL-VLA cần một người sẵn sàng can thiệp. <a href="ter-dagger.html">TER-DAgger</a> hỏi chính xác khi nào nên gọi con người và làm sao biến bản sửa lộn xộn thành dữ liệu sạch.</p>
 <p><strong>Câu kiểm tra:</strong> $R = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, $d = 0$, $c_{int} = 1$, chunk kế là tiếp quản ($m^{int} = 1$). Tính $y_{task}$ và $y_{ic}$.</p>

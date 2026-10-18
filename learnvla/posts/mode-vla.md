@@ -82,9 +82,23 @@ $$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$
 | Data | exoskeleton + VR teleoperation with force/tactile feedback; foot pedals trigger hand skills |
 | Sizes | $14 = 7 \times 2$ torques, $60 = 5 \times 6 \times 2$ tactile values, $63 = (7+22)\times 2 + 2 + 3$ DoF |
 
-## 5. Caveats
+## 5. Results
 
-- Per-task numbers are in a part of the paper I could not read verbatim, so no chart here.
+[[bars:%]] π0 (baseline)=15; w/o force=23; w/o touch=26; *MoDE-VLA=34* || Average success over four tasks, 20 trials per task (Table II of the paper).
+
+| Task | π0 | MoDE-VLA | w/o force | w/o touch |
+|---|---|---|---|---|
+| Apple peeling (success / ring completed) | 0% / 8% | 30% / 73% | 15% / 48% | 30% / 70% |
+| Tube rearranging | 15% | 30% | 25% | 15% |
+| Gear assembling | 40% | 60% | 45% | 45% |
+| Charger plugging | 5% | 15% | 5% | 15% |
+
+- Removing force costs the most (−11 points on average); removing touch costs 8 (the paper's figures). Without the IMCopilot RL skill, apple peeling falls from 30% to 0% success and from 73% to 25% ring completion.
+- Data collection: operators with force and touch feedback succeed in 89% of in-hand trials (80/90), against 34% (31/90) for plain teleoperation.
+
+## 6. Caveats
+
+- Checked against the full text; the success rates are small in absolute terms (34% best), so with 20 trials per task the differences between rows are within noise for several cells (see [how to evaluate a VLA](danh-gia-vla.html)).
 - The body says π0, the Fig. 3 caption says "OpenPI-0"; control frequency is not stated.
 
 **Carry forward:** ForceVLA, ForceVLA2 and MoDE-VLA all fine-tune the VLA on the new signal. [VLA-Touch](vla-touch.html) asks whether touch can be added without changing the VLA at all.
@@ -172,9 +186,23 @@ $$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$
 | Dữ liệu | teleoperation bằng exoskeleton + VR có phản hồi lực/xúc giác; bàn đạp chân kích hoạt kỹ năng tay |
 | Kích thước | $14 = 7 \times 2$ mô men, $60 = 5 \times 6 \times 2$ giá trị xúc giác, $63 = (7+22)\times 2 + 2 + 3$ bậc tự do |
 
-## 5. Lưu ý
+## 5. Kết quả
 
-- Số liệu từng task nằm ở phần bài tôi không đọc được nguyên văn, nên không có biểu đồ ở đây.
+[[bars:%]] π0 (baseline)=15; Bỏ lực=23; Bỏ xúc giác=26; *MoDE-VLA=34* || Tỉ lệ thành công trung bình trên bốn tác vụ, 20 lượt mỗi tác vụ (Bảng II của paper).
+
+| Tác vụ | π0 | MoDE-VLA | Bỏ lực | Bỏ xúc giác |
+|---|---|---|---|---|
+| Gọt táo (thành công / hoàn thành vòng gọt) | 0% / 8% | 30% / 73% | 15% / 48% | 30% / 70% |
+| Sắp xếp ống | 15% | 30% | 25% | 15% |
+| Lắp bánh răng | 40% | 60% | 45% | 45% |
+| Cắm sạc | 5% | 15% | 5% | 15% |
+
+- Bỏ lực làm giảm nhiều nhất (−11 điểm trung bình); bỏ xúc giác giảm 8 điểm (số của paper). Bỏ kỹ năng RL IMCopilot thì gọt táo từ 30% thành công xuống 0%, và mức hoàn thành vòng gọt từ 73% xuống 25%.
+- Thu dữ liệu: người vận hành có phản hồi lực và xúc giác thành công 89% các lượt thao tác trong tay (80/90), so với 34% (31/90) khi teleoperation thường.
+
+## 6. Lưu ý
+
+- Đã đối chiếu với toàn văn. Tỉ lệ thành công tuyệt đối còn nhỏ (cao nhất 34%), nên với 20 lượt mỗi tác vụ, chênh lệch giữa các hàng ở một số ô nằm trong vùng nhiễu (xem [cách đánh giá VLA](danh-gia-vla.html)).
 - Thân bài ghi π0, chú thích Fig. 3 ghi "OpenPI-0"; tần số điều khiển không được nêu.
 
 **Mang sang bài sau:** ForceVLA, ForceVLA2 và MoDE-VLA đều fine-tune VLA trên tín hiệu mới. [VLA-Touch](vla-touch.html) hỏi: có thêm được xúc giác mà không đổi gì ở VLA không?

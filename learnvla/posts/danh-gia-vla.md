@@ -45,10 +45,10 @@ Rule of thumb: a force-sensitive task can "succeed" while crushing the object, s
 
 | Benchmark | Date | Setting | Main reading |
 |---|---|---|---|
-| CALVIN | 12/2021 | simulation, language-conditioned | average number of tasks completed in a row (out of 5) |
-| LIBERO | 06/2023 | simulation, four suites (Spatial, Object, Goal, Long) | success per suite: each suite changes one thing |
+| CALVIN | 12/2021 | simulation, long-horizon, language-conditioned | average number of tasks completed in a row (the usual metric; chains of 5) |
+| LIBERO | 06/2023 | simulation, built for lifelong learning: 130 tasks in four suites | success per suite; originally a knowledge-transfer benchmark, now widely used to score VLAs |
 | SimplerEnv | 05/2024 | simulation built to track real-robot results | does the sim ranking match the real ranking |
-| RoboTwin | 09/2024 | simulation, two-arm tasks | bimanual coordination |
+| RoboTwin | 09/2024 | generative digital twins: data generation and a sim + real benchmark for dual-arm tasks | bimanual coordination, sim-to-real alignment |
 | Real robot | – | your own tasks | closest to deployment, least comparable |
 
 Simulation is cheap and repeatable. Real robots show what simulation hides (friction, sensor noise), but a lab's setup cannot be copied exactly.
@@ -145,10 +145,10 @@ Quy tắc: tác vụ nhạy lực có thể "thành công" mà vẫn bóp nát v
 
 | Benchmark | Ngày | Bối cảnh | Cách đọc chính |
 |---|---|---|---|
-| CALVIN | 12/2021 | mô phỏng, điều kiện theo ngôn ngữ | số tác vụ hoàn thành liên tiếp trung bình (tối đa 5) |
-| LIBERO | 06/2023 | mô phỏng, bốn suite (Spatial, Object, Goal, Long) | thành công theo suite: mỗi suite đổi một yếu tố |
+| CALVIN | 12/2021 | mô phỏng, dài hạn, điều kiện theo ngôn ngữ | số tác vụ hoàn thành liên tiếp trung bình (thước đo thông dụng; chuỗi 5 tác vụ) |
+| LIBERO | 06/2023 | mô phỏng, xây cho lifelong learning: 130 tác vụ trong bốn suite | thành công theo suite; ban đầu là benchmark chuyển giao tri thức, nay được dùng rộng rãi để chấm VLA |
 | SimplerEnv | 05/2024 | mô phỏng được thiết kế để bám kết quả robot thật | thứ hạng trong mô phỏng có khớp thứ hạng thật không |
-| RoboTwin | 09/2024 | mô phỏng, tác vụ hai tay | phối hợp hai tay |
+| RoboTwin | 09/2024 | digital twin sinh tạo: sinh dữ liệu và benchmark mô phỏng + thật cho tác vụ hai tay | phối hợp hai tay, độ khớp giữa mô phỏng và thật |
 | Robot thật | – | tác vụ của bạn | gần triển khai nhất, khó so sánh nhất |
 
 Mô phỏng rẻ và lặp lại được. Robot thật cho thấy điều mô phỏng che (ma sát, nhiễu cảm biến), nhưng thiết lập của một phòng thí nghiệm không sao chép nguyên được.

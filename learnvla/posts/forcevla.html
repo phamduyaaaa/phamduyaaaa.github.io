@@ -256,7 +256,7 @@
 </table>
 <h2>6. Caveats</h2>
 <ul>
-<li>Control rate, chunk length and frozen modules are not stated.</li>
+<li>Checked against the full text: multi-task training used Adam with a peak learning rate of 2.5e-5 for 30,000 steps (about 12 hours on 2 GPUs), and the cameras run at 30 FPS. Control rate, chunk length and frozen modules are still not stated.</li>
 <li>The 37.3% baseline is labelled inconsistently in the paper; the ablation baseline (45%) is on a different footing.</li>
 </ul>
 <p><strong>Carry forward:</strong> ForceVLA reads force but still outputs only a pose, so it cannot say <em>how hard</em> to push. <a href="forcevla2.html">ForceVLA2</a> changes the output.</p>
@@ -449,7 +449,7 @@
 </table>
 <h2>6. Lưu ý</h2>
 <ul>
-<li>Không nêu tần số điều khiển, độ dài chunk, module nào bị đóng băng.</li>
+<li>Đã đối chiếu với toàn văn: huấn luyện đa tác vụ dùng Adam, learning rate đỉnh 2,5e-5, 30.000 bước (khoảng 12 giờ trên 2 GPU), camera chạy 30 FPS. Tần số điều khiển, độ dài chunk và module bị đóng băng vẫn không được nêu.</li>
 <li>Baseline 37,3% được gắn nhãn không nhất quán trong bài; baseline của ablation (45%) nằm trên một nền khác.</li>
 </ul>
 <p><strong>Mang sang bài sau:</strong> ForceVLA đọc được lực nhưng vẫn chỉ xuất pose, nên không nói được <em>ấn mạnh đến đâu</em>. <a href="forcevla2.html">ForceVLA2</a> thay đổi đầu ra.</p>

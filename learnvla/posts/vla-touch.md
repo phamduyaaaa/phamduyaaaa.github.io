@@ -87,7 +87,7 @@ $$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$
 ## 6. Caveats
 
 - High-frequency touch (25 Hz and up) is not used yet; data were logged at 10 Hz.
-- Whether Octopi and DINOv2 are frozen is not stated.
+- Checked against the full text: whether Octopi and DINOv2 are frozen is still not stated.
 
 **Carry forward:** VLA-Touch passes touch on as words or as a summed shear, but a gel image shows deformation, not force. [TaF-VLA](taf-vla.html) trains the tactile encoder to produce force-like features first.
 
@@ -179,7 +179,7 @@ $$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$
 ## 6. Lưu ý
 
 - Chưa dùng xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu ghi ở 10 Hz.
-- Không nêu Octopi và DINOv2 có bị đóng băng không.
+- Đã đối chiếu với toàn văn: Octopi và DINOv2 có bị đóng băng hay không vẫn không được nêu.
 
 **Mang sang bài sau:** VLA-Touch truyền xúc giác dưới dạng chữ hoặc một lực trượt tổng, nhưng ảnh gel cho thấy biến dạng chứ không phải lực. [TaF-VLA](taf-vla.html) huấn luyện bộ mã hóa xúc giác cho ra đặc trưng giống lực trước.
 

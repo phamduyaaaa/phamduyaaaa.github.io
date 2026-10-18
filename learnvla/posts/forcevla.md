@@ -98,7 +98,7 @@ Same steps for a token while the plug is pushed in, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)
 
 ## 6. Caveats
 
-- Control rate, chunk length and frozen modules are not stated.
+- Checked against the full text: multi-task training used Adam with a peak learning rate of 2.5e-5 for 30,000 steps (about 12 hours on 2 GPUs), and the cameras run at 30 FPS. Control rate, chunk length and frozen modules are still not stated.
 - The 37.3% baseline is labelled inconsistently in the paper; the ablation baseline (45%) is on a different footing.
 
 **Carry forward:** ForceVLA reads force but still outputs only a pose, so it cannot say *how hard* to push. [ForceVLA2](forcevla2.html) changes the output.
@@ -202,7 +202,7 @@ Làm lại với token lúc đang ấn phích, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)$: t�
 
 ## 6. Lưu ý
 
-- Không nêu tần số điều khiển, độ dài chunk, module nào bị đóng băng.
+- Đã đối chiếu với toàn văn: huấn luyện đa tác vụ dùng Adam, learning rate đỉnh 2,5e-5, 30.000 bước (khoảng 12 giờ trên 2 GPU), camera chạy 30 FPS. Tần số điều khiển, độ dài chunk và module bị đóng băng vẫn không được nêu.
 - Baseline 37,3% được gắn nhãn không nhất quán trong bài; baseline của ablation (45%) nằm trên một nền khác.
 
 **Mang sang bài sau:** ForceVLA đọc được lực nhưng vẫn chỉ xuất pose, nên không nói được *ấn mạnh đến đâu*. [ForceVLA2](forcevla2.html) thay đổi đầu ra.

@@ -79,10 +79,24 @@ $$e_t = \lVert \hat F_t - F_t \rVert_1 = \sum_{j=1}^{6} \left| \hat F_{t,j} - F_
 | Tasks | USB, two-pin, three-pin plugs; MuJoCo + real Franka; 50 trials each |
 | Baselines | ACT, FILIC, HG-DAgger, Retrain, Finetune |
 
-## 5. Caveats
+## 5. Results
 
-- Table values (≈ 77% average, detector precision ≈ 98.8%) come from a summary of the paper; only the "over 37%" headline is verbatim.
-- The physical interface the human uses and the stiffness values are not stated.
+[[bars:%]] ACT=27.6; FILIC=25.6; HG-DAgger=31.6; Retrain=32.4; Finetune=40; *TER-DAgger=77.2* || Average success over five tasks, 50 trials per task (Table I of the paper).
+
+| Method | Sim USB | Sim two-pin | Real USB | Real two-pin | Real three-pin | Average |
+|---|---|---|---|---|---|---|
+| ACT | 26% | 22% | 2% | 64% | 24% | 27.6% |
+| HG-DAgger | 50% | 44% | 16% | 36% | 12% | 31.6% |
+| Finetune | 68% | 54% | 10% | 28% | 40% | 40.0% |
+| TER-DAgger | 90% | 96% | 22% | 96% | 82% | 77.2% |
+
+- The error detector keeps 100% recall (its threshold is chosen for that) and reaches 98.8% average precision with force prediction error; KL loss, reconstruction loss and position error give lower precision.
+- Note the weak cell: real USB insertion is only 22%.
+
+## 6. Caveats
+
+- Checked against the full text: the numbers in the results above match Table I and Table II of the paper (50 trials per task).
+- Corrections are given by hand with the impedance stiffness set to zero; the physical interface and the other stiffness values are not stated.
 
 **Carry forward:** this closes the force-paper series. [Survey 1](survey-force-map.html) puts all eleven side by side with 22 more methods.
 
@@ -166,10 +180,24 @@ $$e_t = \lVert \hat F_t - F_t \rVert_1 = \sum_{j=1}^{6} \left| \hat F_{t,j} - F_
 | Task | phích USB, hai chấu, ba chấu; MuJoCo + Franka thật; 50 lượt mỗi task |
 | Baseline | ACT, FILIC, HG-DAgger, Retrain, Finetune |
 
-## 5. Lưu ý
+## 5. Kết quả
 
-- Số liệu trong bảng (≈ 77% trung bình, độ chính xác bộ phát hiện ≈ 98,8%) lấy từ bản tóm tắt của bài; chỉ con số "hơn 37%" là nguyên văn.
-- Giao diện vật lý con người dùng và giá trị độ cứng không được nêu.
+[[bars:%]] ACT=27.6; FILIC=25.6; HG-DAgger=31.6; Retrain=32.4; Finetune=40; *TER-DAgger=77.2* || Tỉ lệ thành công trung bình trên năm tác vụ, 50 lượt mỗi tác vụ (Bảng I của paper).
+
+| Phương pháp | USB mô phỏng | Phích hai chân mô phỏng | USB thật | Phích hai chân thật | Phích ba chân thật | Trung bình |
+|---|---|---|---|---|---|---|
+| ACT | 26% | 22% | 2% | 64% | 24% | 27,6% |
+| HG-DAgger | 50% | 44% | 16% | 36% | 12% | 31,6% |
+| Finetune | 68% | 54% | 10% | 28% | 40% | 40,0% |
+| TER-DAgger | 90% | 96% | 22% | 96% | 82% | 77,2% |
+
+- Bộ phát hiện sai số giữ recall 100% (ngưỡng được chọn cho điều đó) và đạt độ chính xác trung bình 98,8% với sai số dự đoán lực; KL loss, loss tái tạo và sai số vị trí cho độ chính xác thấp hơn.
+- Lưu ý ô yếu: lắp USB thật chỉ đạt 22%.
+
+## 6. Lưu ý
+
+- Đã đối chiếu với toàn văn: các số ở phần kết quả khớp Bảng I và Bảng II của paper (50 lượt mỗi tác vụ).
+- Bản hiệu chỉnh do người làm bằng tay khi độ cứng trở kháng đặt bằng 0; giao diện vật lý và các giá trị độ cứng còn lại không được nêu.
 
 **Mang sang bài sau:** bài này khép lại series paper lực. [Survey 1](survey-force-map.html) đặt cả mười một bài cạnh nhau cùng 22 phương pháp khác.
 

@@ -14,7 +14,7 @@ tags: [VLA, Tactile, Distillation, Paper Notes, SmolVLA]
 
 **PROBLEM** For a jar, waffles and an egg, success means the object stays intact, not just that it moved.
 
-**WHAT FAILED BEFORE** Baseline VLAs (SmolVLA, X-VLA, VLA-0) imitate every demonstration equally, including ones where the object was damaged; X-VLA and VLA-0 score 0%. The abstract adds that HapticVLA beats even versions "provided with direct tactile feedback during inference".
+**WHAT FAILED BEFORE** Baseline VLAs (SmolVLA, X-VLA, VLA-0) imitate every demonstration equally, including ones where the object was damaged; X-VLA and VLA-0 score 0%. The abstract adds that HapticVLA beats even versions "provided with direct tactile feedback at inference".
 
 **IDEA** Stage 1: compute a safety reward from tactile maps and train a teacher with reward-weighted flow matching. Stage 2: distil the teacher into a student that sees only vision and state.
 
@@ -86,7 +86,7 @@ $$w^{raw}_i = e^{\alpha A_i}, \qquad \bar w_i = \text{clip}(w^{raw}_i,\ w_{min},
 ## 6. Caveats
 
 - The abstract says the student predicts a "compact tactile token", but the only distillation loss given is on actions; token size and loss are not specified.
-- Optimiser, learning rate, steps and control rate are not stated.
+- Checked against the full text: action horizon $K = 50$ and a 6-dimensional joint action per arm. Optimiser, learning rate, steps and control rate are not stated.
 
 **Carry forward:** all arms so far stand on a fixed base. On a wheeled-legged robot, pushing a door also pushes the body. See [FWBC-VLA](fwbc-vla.html).
 
@@ -177,7 +177,7 @@ $$w^{raw}_i = e^{\alpha A_i}, \qquad \bar w_i = \text{clip}(w^{raw}_i,\ w_{min},
 ## 6. Lưu ý
 
 - Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss chưng cất duy nhất được nêu là trên hành động; kích thước và loss của token không được đặc tả.
-- Optimizer, learning rate, số bước và tần số điều khiển không được nêu.
+- Đã đối chiếu với toàn văn: horizon hành động $K = 50$ và hành động khớp 6 chiều cho mỗi tay. Optimizer, learning rate, số bước và tần số điều khiển không được nêu.
 
 **Mang sang bài sau:** mọi cánh tay tới đây đều đứng trên đế cố định. Trên robot bánh-chân, đẩy cửa cũng là đẩy cả thân. Xem [FWBC-VLA](fwbc-vla.html).
 
