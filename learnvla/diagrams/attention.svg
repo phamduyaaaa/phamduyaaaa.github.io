@@ -1,0 +1,16 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="110" width="130" height="56"/><text class="dg-t" x="85" y="134" text-anchor="middle">Tokens X</text><text class="dg-s" x="85" y="150" text-anchor="middle">n × d</text>
+<rect class="dg-box" x="210" y="30" width="120" height="44"/><text class="dg-t" x="270" y="50" text-anchor="middle">Q = X·W_Q</text><text class="dg-s" x="270" y="65" text-anchor="middle">what I look for</text>
+<rect class="dg-box" x="210" y="112" width="120" height="44"/><text class="dg-t" x="270" y="132" text-anchor="middle">K = X·W_K</text><text class="dg-s" x="270" y="147" text-anchor="middle">what I offer</text>
+<rect class="dg-box" x="210" y="204" width="120" height="44"/><text class="dg-t" x="270" y="224" text-anchor="middle">V = X·W_V</text><text class="dg-s" x="270" y="239" text-anchor="middle">what I carry</text>
+<path class="dg-a" d="M150 128 H180 V52 H210"/><path class="dg-a" d="M150 138 H210"/><path class="dg-a" d="M150 148 H180 V226 H210"/>
+<rect class="dg-key" x="400" y="70" width="170" height="56"/><text class="dg-t" x="485" y="92" text-anchor="middle">Scores Q·Kᵀ/√d</text><text class="dg-s" x="485" y="108" text-anchor="middle">n × n similarity</text>
+<path class="dg-a" d="M330 52 H365 V88 H400"/><path class="dg-a" d="M330 134 H365 V108 H400"/>
+<rect class="dg-key" x="620" y="70" width="130" height="56"/><text class="dg-t" x="685" y="92" text-anchor="middle">softmax</text><text class="dg-s" x="685" y="108" text-anchor="middle">rows sum to 1</text>
+<path class="dg-a" d="M570 98 H620"/>
+<rect class="dg-box" x="620" y="190" width="130" height="56"/><text class="dg-t" x="685" y="212" text-anchor="middle">weights × V</text><text class="dg-s" x="685" y="228" text-anchor="middle">weighted mix</text>
+<path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
+<rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
+<path class="dg-a" d="M750 218 H810"/>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+</svg>

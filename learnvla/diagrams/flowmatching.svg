@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="470" height="304"/><text class="dg-h" x="22" y="26">DIFFUSION (curved path, many steps)</text>
+<circle class="dg-m" cx="60" cy="230" r="6"/><text class="dg-s" x="60" y="256" text-anchor="middle">noise</text>
+<circle class="dg-m" cx="430" cy="80" r="6"/><text class="dg-s" x="430" y="104" text-anchor="middle">action</text>
+<path class="dg-a" d="M60 230 C 140 90, 200 280, 260 160 S 380 60, 430 80" style="stroke:#b3261e"/>
+<text class="dg-note dg-red" x="245" y="296" text-anchor="middle">tens to hundreds of denoise steps</text>
+<rect class="dg-grp" x="500" y="8" width="470" height="304"/><text class="dg-h" x="512" y="26">FLOW MATCHING (straight path)</text>
+<circle class="dg-m" cx="550" cy="230" r="6"/><text class="dg-s" x="550" y="256" text-anchor="middle">x0 noise</text>
+<circle class="dg-m" cx="920" cy="80" r="6"/><text class="dg-s" x="920" y="104" text-anchor="middle">x1 action</text>
+<path class="dg-a" d="M550 230 L920 80" style="stroke:#2e7d32"/>
+<circle class="dg-m" cx="642" cy="193" r="4"/><circle class="dg-m" cx="735" cy="155" r="4"/><circle class="dg-m" cx="827" cy="118" r="4"/>
+<text class="dg-l" x="760" y="250" text-anchor="middle">velocity u = x1 − x0 (constant)</text>
+<text class="dg-note dg-green" x="735" y="296" text-anchor="middle">about 10 Euler steps (π0: δ = 0.1)</text>
+</svg>

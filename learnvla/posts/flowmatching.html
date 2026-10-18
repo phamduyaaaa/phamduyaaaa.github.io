@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Diffusion policies denoise along a curved path in many steps. Flow matching trains a network to predict a constant velocity along a straight line, so about ten Euler steps are enough. Worked by hand in one dimension.">
+<title>Flow Matching: Straight Paths From Noise to Action · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Flow Matching: Straight Paths From Noise to Action">
+<meta property="og:description" content="Diffusion policies denoise along a curved path in many steps. Flow matching trains a network to predict a constant velocity along a straight line, so about ten Euler steps are enough. Worked by hand in one dimension.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Flow Matching: Straight Paths From Noise to Action</h1>
+    <h1 data-vi>Flow Matching: Đường thẳng từ nhiễu đến hành động</h1>
+
+    <p class="post-excerpt-lead" data-en>Diffusion policies denoise along a curved path in many steps. Flow matching trains a network to predict a constant velocity along a straight line, so about ten Euler steps are enough. Worked by hand in one dimension.</p>
+    <p class="post-excerpt-lead" data-vi>Diffusion policy khử nhiễu theo đường cong qua nhiều bước. Flow matching huấn luyện mạng dự đoán vận tốc không đổi dọc một đường thẳng, nên khoảng mười bước Euler là đủ. Tính tay trong một chiều.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Flow Matching</span><span class="pill">Diffusion</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Lipman et al., <em>Flow Matching for Generative Modeling</em>, <a href="https://arxiv.org/abs/2210.02747">arXiv 2210.02747</a> · 10/2022</p>
+<p><strong>PROBLEM</strong> A policy must output a <em>continuous</em> action chunk, possibly with several valid modes, not a single average.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Continuous normalizing flows could model this but were trained by simulating ODEs, which is expensive. Diffusion models train without simulation but are tied to Gaussian noise paths and sampling takes many denoising steps (tens to hundreds). Diffusion Policy inherits this cost.</p>
+<p><strong>IDEA</strong> Pick a simple path between noise $x_0$ and data $x_1$ (a straight line), and regress the network onto the path's velocity $x_1 - x_0$. Sample by integrating the learned velocity from noise.</p>
+<p><strong>RESULT</strong> Simple regression training and a few integration steps. π0 uses it in its action expert with $\delta = 0.1$ (ten steps).</p>
+</div>
+<h2>1. The problem: many steps for a curved path</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the path: a straight line has a constant velocity, so large steps stay accurate." class="dg-natural" width="721" height="206" viewBox="0 0 721 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Diffusion policy</text><rect class="dg-box" x="140" y="22" width="96" height="38"/><text class="dg-t" x="188" y="45" text-anchor="middle">Noise</text><path class="dg-a" d="M236 41 H268"/><rect class="dg-badbox" x="270" y="14" width="132" height="54"/><text class="dg-t" x="337" y="37" text-anchor="middle">Denoise step 1</text><text class="dg-s" x="337" y="53" text-anchor="middle">curved path</text><path class="dg-a" d="M403 41 H435"/><rect class="dg-badbox" x="437" y="22" width="140" height="38"/><text class="dg-t" x="507" y="45" text-anchor="middle">... step 50-100</text><path class="dg-a" d="M577 41 H609"/><rect class="dg-box" x="611" y="22" width="96" height="38"/><text class="dg-t" x="659" y="45" text-anchor="middle">Action</text><text class="dg-note dg-red" x="140.4" y="86">✗ many network calls per action chunk</text><text class="dg-lab dg-green" x="14" y="143">Flow matching</text><rect class="dg-box" x="140" y="120" width="96" height="38"/><text class="dg-t" x="188" y="143" text-anchor="middle">Noise</text><path class="dg-a" d="M236 139 H268"/><rect class="dg-key" x="270" y="112" width="132" height="54"/><text class="dg-t" x="337" y="135" text-anchor="middle">Velocity field</text><text class="dg-s" x="337" y="151" text-anchor="middle">straight line</text><path class="dg-a" d="M403 139 H435"/><rect class="dg-box" x="437" y="120" width="96" height="38"/><text class="dg-t" x="485" y="143" text-anchor="middle">Action</text><text class="dg-note dg-green" x="140.4" y="184">✓ about 10 Euler steps</text></svg><figcaption>The change is the path: a straight line has a constant velocity, so large steps stay accurate.</figcaption></figure>
+<h2>2. The mechanism</h2>
+<figure class="diagram"><svg role="img" aria-label="Left: diffusion path is curved and needs many steps. Right: the flow path from noise $x_0$ to action $x_1$ is a straight line with constant velocity $x_1 - x_0$." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="470" height="304"/><text class="dg-h" x="22" y="26">DIFFUSION (curved path, many steps)</text>
+<circle class="dg-m" cx="60" cy="230" r="6"/><text class="dg-s" x="60" y="256" text-anchor="middle">noise</text>
+<circle class="dg-m" cx="430" cy="80" r="6"/><text class="dg-s" x="430" y="104" text-anchor="middle">action</text>
+<path class="dg-a" d="M60 230 C 140 90, 200 280, 260 160 S 380 60, 430 80" style="stroke:#b3261e"/>
+<text class="dg-note dg-red" x="245" y="296" text-anchor="middle">tens to hundreds of denoise steps</text>
+<rect class="dg-grp" x="500" y="8" width="470" height="304"/><text class="dg-h" x="512" y="26">FLOW MATCHING (straight path)</text>
+<circle class="dg-m" cx="550" cy="230" r="6"/><text class="dg-s" x="550" y="256" text-anchor="middle">x0 noise</text>
+<circle class="dg-m" cx="920" cy="80" r="6"/><text class="dg-s" x="920" y="104" text-anchor="middle">x1 action</text>
+<path class="dg-a" d="M550 230 L920 80" style="stroke:#2e7d32"/>
+<circle class="dg-m" cx="642" cy="193" r="4"/><circle class="dg-m" cx="735" cy="155" r="4"/><circle class="dg-m" cx="827" cy="118" r="4"/>
+<text class="dg-l" x="760" y="250" text-anchor="middle">velocity u = x1 − x0 (constant)</text>
+<text class="dg-note dg-green" x="735" y="296" text-anchor="middle">about 10 Euler steps (π0: δ = 0.1)</text>
+</svg><figcaption>Left: diffusion path is curved and needs many steps. Right: the flow path from noise $x_0$ to action $x_1$ is a straight line with constant velocity $x_1 - x_0$.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interpolation</td>
+<td>$x_0$ (noise), $x_1$ (true action), $t$</td>
+<td>$x_t$</td>
+<td>a point on the straight path</td>
+</tr>
+<tr>
+<td>Network $v_\theta$</td>
+<td>$x_t$, $t$, observation</td>
+<td>predicted velocity</td>
+<td>learned during training</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>$v_\theta$, $x_1 - x_0$</td>
+<td>scalar</td>
+<td>squared error to the true velocity</td>
+</tr>
+<tr>
+<td>Sampler (Euler)</td>
+<td>$x_0$, $v_\theta$</td>
+<td>$x_1$ (action)</td>
+<td>follow the velocity in steps of $\delta$</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> One training example and one sampling pass in one dimension. It shows the network's target and why a straight path needs few steps.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x_0$</td>
+<td>noise sample</td>
+<td>input</td>
+<td>$-1$</td>
+</tr>
+<tr>
+<td>$x_1$</td>
+<td>true action</td>
+<td>input</td>
+<td>$2$</td>
+</tr>
+<tr>
+<td>$t$</td>
+<td>time, $0$ = noise, $1$ = data</td>
+<td>input</td>
+<td>$0.25$</td>
+</tr>
+<tr>
+<td>$x_t$</td>
+<td>point on the path at time $t$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>target velocity</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\delta$</td>
+<td>Euler step</td>
+<td>constant</td>
+<td>$0.1$</td>
+</tr>
+</tbody>
+</table>
+<p>(Convention of Lipman et al.: $t = 0$ is noise. Some robot papers flip the direction; check each paper.)</p>
+<p><strong>Formula</strong></p>
+<p>$$x_t = (1-t)\,x_0 + t\,x_1, \qquad u = x_1 - x_0, \qquad L = \| v_\theta(x_t, t) - u \|^2$$</p>
+<p>$$\text{sampling: } x \leftarrow x + \delta \, v_\theta(x, t)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$x_{0.25} = 0.75 \times (-1) + 0.25 \times 2 = -0.75 + 0.5 = -0.25$.</li>
+<li>$u = 2 - (-1) = 3$. The network must output $3$ here. If it outputs $2.5$, the loss is $(2.5-3)^2 = 0.25$.</li>
+<li>Sampling with a perfect $v = 3$ and $\delta = 0.1$: ten steps of $+0.3$ go from $-1$ to $-1 + 10 \times 0.3 = 2$. Exact.</li>
+</ol>
+<p><strong>Result.</strong> The target is the constant 3; ten steps reach the data point exactly.</p>
+<p><strong>Why it matters.</strong> On a straight path the velocity does not change, so even a big step lands on the right place. On a curved path, large steps overshoot and many small ones are needed. (In real data the true velocity at $x_t$ is an average over many possible data points, so the path is only approximately straight, and a few more steps still help.)</p>
+</div>
+<h2>3. In VLA</h2>
+<ul>
+<li>π0 and its relatives put a flow-matching action expert after the VLM: noise action chunk in, velocity out, ten Euler steps. TaF-VLA, ForceVLA and others reuse it.</li>
+<li>Force papers keep this action head and change what it is conditioned on or what it outputs: see the <a href="survey-force-output.html">force surveys</a>.</li>
+</ul>
+<p><strong>Carry forward:</strong> with imitation learning, tokens, attention, the Transformer and flow matching, you have the pieces of π0. The next layer is how a vision-language model (VLM) is plugged in.</p>
+<p><strong>Check question:</strong> $x_0 = 1$, $x_1 = 5$, $t = 0.5$. What are $x_t$ and $u$?</p>
+<details>
+<summary>Answer</summary>
+<p>$x_{0.5} = 0.5 \times 1 + 0.5 \times 5 = 3$; $u = 5 - 1 = 4$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Lipman et al., <em>Flow Matching for Generative Modeling</em>, <a href="https://arxiv.org/abs/2210.02747">arXiv 2210.02747</a> · 10/2022</p>
+<p><strong>VẤN ĐỀ</strong> Một chính sách phải xuất ra đoạn hành động <em>liên tục</em>, có thể có nhiều mode hợp lệ, chứ không phải một giá trị trung bình.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Continuous normalizing flow mô hình hóa được nhưng huấn luyện bằng cách mô phỏng ODE, rất tốn kém. Mô hình diffusion huấn luyện không cần mô phỏng nhưng gắn với đường nhiễu Gauss và việc lấy mẫu cần nhiều bước khử nhiễu (hàng chục đến hàng trăm). Diffusion Policy thừa hưởng chi phí này.</p>
+<p><strong>Ý TƯỞNG</strong> Chọn một đường đơn giản giữa nhiễu $x_0$ và dữ liệu $x_1$ (đường thẳng), và hồi quy mạng về vận tốc của đường đó $x_1 - x_0$. Lấy mẫu bằng cách tích phân vận tốc đã học từ nhiễu.</p>
+<p><strong>KẾT QUẢ</strong> Huấn luyện là hồi quy đơn giản và chỉ cần vài bước tích phân. π0 dùng nó trong action expert với $\delta = 0{,}1$ (mười bước).</p>
+</div>
+<h2>1. Vấn đề: đường cong cần nhiều bước</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở đường đi: đường thẳng có vận tốc không đổi nên bước lớn vẫn chính xác." class="dg-natural" width="736" height="206" viewBox="0 0 736 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Diffusion policy</text><rect class="dg-box" x="140" y="22" width="96" height="38"/><text class="dg-t" x="188" y="45" text-anchor="middle">Nhiễu</text><path class="dg-a" d="M236 41 H268"/><rect class="dg-badbox" x="270" y="14" width="148" height="54"/><text class="dg-t" x="344" y="37" text-anchor="middle">Khử nhiễu bước 1</text><text class="dg-s" x="344" y="53" text-anchor="middle">đường cong</text><path class="dg-a" d="M418 41 H450"/><rect class="dg-badbox" x="452" y="22" width="140" height="38"/><text class="dg-t" x="522" y="45" text-anchor="middle">... bước 50-100</text><path class="dg-a" d="M592 41 H624"/><rect class="dg-box" x="626" y="22" width="96" height="38"/><text class="dg-t" x="674" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="140.4" y="86">✗ nhiều lần gọi mạng cho mỗi đoạn hành động</text><text class="dg-lab dg-green" x="14" y="143">Flow matching</text><rect class="dg-box" x="140" y="120" width="96" height="38"/><text class="dg-t" x="188" y="143" text-anchor="middle">Nhiễu</text><path class="dg-a" d="M236 139 H268"/><rect class="dg-key" x="270" y="112" width="132" height="54"/><text class="dg-t" x="337" y="135" text-anchor="middle">Trường vận tốc</text><text class="dg-s" x="337" y="151" text-anchor="middle">đường thẳng</text><path class="dg-a" d="M403 139 H435"/><rect class="dg-box" x="437" y="120" width="96" height="38"/><text class="dg-t" x="485" y="143" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="140.4" y="184">✓ khoảng 10 bước Euler</text></svg><figcaption>Thay đổi nằm ở đường đi: đường thẳng có vận tốc không đổi nên bước lớn vẫn chính xác.</figcaption></figure>
+<h2>2. Cơ chế</h2>
+<figure class="diagram"><svg role="img" aria-label="Trái: đường của diffusion cong và cần nhiều bước. Phải: đường flow từ nhiễu $x_0$ đến hành động $x_1$ là đường thẳng với vận tốc không đổi $x_1 - x_0$." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="470" height="304"/><text class="dg-h" x="22" y="26">DIFFUSION (curved path, many steps)</text>
+<circle class="dg-m" cx="60" cy="230" r="6"/><text class="dg-s" x="60" y="256" text-anchor="middle">noise</text>
+<circle class="dg-m" cx="430" cy="80" r="6"/><text class="dg-s" x="430" y="104" text-anchor="middle">action</text>
+<path class="dg-a" d="M60 230 C 140 90, 200 280, 260 160 S 380 60, 430 80" style="stroke:#b3261e"/>
+<text class="dg-note dg-red" x="245" y="296" text-anchor="middle">tens to hundreds of denoise steps</text>
+<rect class="dg-grp" x="500" y="8" width="470" height="304"/><text class="dg-h" x="512" y="26">FLOW MATCHING (straight path)</text>
+<circle class="dg-m" cx="550" cy="230" r="6"/><text class="dg-s" x="550" y="256" text-anchor="middle">x0 noise</text>
+<circle class="dg-m" cx="920" cy="80" r="6"/><text class="dg-s" x="920" y="104" text-anchor="middle">x1 action</text>
+<path class="dg-a" d="M550 230 L920 80" style="stroke:#2e7d32"/>
+<circle class="dg-m" cx="642" cy="193" r="4"/><circle class="dg-m" cx="735" cy="155" r="4"/><circle class="dg-m" cx="827" cy="118" r="4"/>
+<text class="dg-l" x="760" y="250" text-anchor="middle">velocity u = x1 − x0 (constant)</text>
+<text class="dg-note dg-green" x="735" y="296" text-anchor="middle">about 10 Euler steps (π0: δ = 0.1)</text>
+</svg><figcaption>Trái: đường của diffusion cong và cần nhiều bước. Phải: đường flow từ nhiễu $x_0$ đến hành động $x_1$ là đường thẳng với vận tốc không đổi $x_1 - x_0$.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nội suy</td>
+<td>$x_0$ (nhiễu), $x_1$ (hành động thật), $t$</td>
+<td>$x_t$</td>
+<td>một điểm trên đường thẳng</td>
+</tr>
+<tr>
+<td>Mạng $v_\theta$</td>
+<td>$x_t$, $t$, quan sát</td>
+<td>vận tốc dự đoán</td>
+<td>được học khi huấn luyện</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>$v_\theta$, $x_1 - x_0$</td>
+<td>số vô hướng</td>
+<td>sai số bình phương so với vận tốc thật</td>
+</tr>
+<tr>
+<td>Bộ lấy mẫu (Euler)</td>
+<td>$x_0$, $v_\theta$</td>
+<td>$x_1$ (hành động)</td>
+<td>đi theo vận tốc từng bước $\delta$</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một ví dụ huấn luyện và một lượt lấy mẫu trong một chiều. Cho thấy mục tiêu của mạng và vì sao đường thẳng cần ít bước.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x_0$</td>
+<td>mẫu nhiễu</td>
+<td>input</td>
+<td>$-1$</td>
+</tr>
+<tr>
+<td>$x_1$</td>
+<td>hành động thật</td>
+<td>input</td>
+<td>$2$</td>
+</tr>
+<tr>
+<td>$t$</td>
+<td>thời gian, $0$ = nhiễu, $1$ = dữ liệu</td>
+<td>input</td>
+<td>$0{,}25$</td>
+</tr>
+<tr>
+<td>$x_t$</td>
+<td>điểm trên đường tại thời điểm $t$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>vận tốc mục tiêu</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\delta$</td>
+<td>bước Euler</td>
+<td>hằng số</td>
+<td>$0{,}1$</td>
+</tr>
+</tbody>
+</table>
+<p>(Quy ước của Lipman et al.: $t = 0$ là nhiễu. Một số paper robot đảo chiều; hãy kiểm tra từng paper.)</p>
+<p><strong>Công thức</strong></p>
+<p>$$x_t = (1-t)\,x_0 + t\,x_1, \qquad u = x_1 - x_0, \qquad L = \| v_\theta(x_t, t) - u \|^2$$</p>
+<p>$$\text{lấy mẫu: } x \leftarrow x + \delta \, v_\theta(x, t)$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$x_{0{,}25} = 0{,}75 \times (-1) + 0{,}25 \times 2 = -0{,}75 + 0{,}5 = -0{,}25$.</li>
+<li>$u = 2 - (-1) = 3$. Mạng phải xuất ra $3$ ở đây. Nếu xuất $2{,}5$, loss là $(2{,}5-3)^2 = 0{,}25$.</li>
+<li>Lấy mẫu với $v = 3$ hoàn hảo và $\delta = 0{,}1$: mười bước $+0{,}3$ đi từ $-1$ đến $-1 + 10 \times 0{,}3 = 2$. Chính xác.</li>
+</ol>
+<p><strong>Kết quả.</strong> Mục tiêu là hằng số 3; mười bước đến đúng điểm dữ liệu.</p>
+<p><strong>Ý nghĩa.</strong> Trên đường thẳng vận tốc không đổi, nên bước lớn vẫn tới đúng chỗ. Trên đường cong, bước lớn bị vọt và cần nhiều bước nhỏ. (Với dữ liệu thật, vận tốc đúng tại $x_t$ là trung bình trên nhiều điểm dữ liệu có thể, nên đường chỉ gần thẳng, và thêm vài bước vẫn có ích.)</p>
+</div>
+<h2>3. Trong VLA</h2>
+<ul>
+<li>π0 và các biến thể đặt một action expert flow-matching sau VLM: vào là đoạn hành động nhiễu, ra là vận tốc, mười bước Euler. TaF-VLA, ForceVLA và các paper khác dùng lại.</li>
+<li>Các paper lực giữ phần đầu ra hành động này và đổi thứ nó nhận vào hoặc xuất ra: xem <a href="survey-force-output.html">survey lực</a>.</li>
+</ul>
+<p><strong>Mang theo:</strong> với imitation learning, token, attention, Transformer và flow matching, bạn đã có các mảnh của π0. Lớp tiếp theo là cách cắm mô hình thị giác-ngôn ngữ (VLM) vào.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $x_0 = 1$, $x_1 = 5$, $t = 0{,}5$. $x_t$ và $u$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$x_{0{,}5} = 0{,}5 \times 1 + 0{,}5 \times 5 = 3$; $u = 5 - 1 = 4$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

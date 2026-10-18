@@ -16,6 +16,22 @@
     "read_min": 4
   },
   {
+    "slug": "attention",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Attention: Letting Each Token Look at the Others",
+    "title_vi": "Attention: Cho mỗi token nhìn sang các token khác",
+    "excerpt_en": "Earlier encoder-decoder models squeezed a whole sentence into one fixed vector. Attention lets the decoder look back at every input position and weight them. Worked by hand with two tokens.",
+    "excerpt_vi": "Các mô hình encoder-decoder trước nén cả câu vào một vector cố định. Attention cho decoder nhìn lại từng vị trí đầu vào và đánh trọng số. Tính tay với hai token.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Attention",
+      "Transformer"
+    ],
+    "read_min": 3
+  },
+  {
     "slug": "fd-vla",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",
@@ -31,6 +47,22 @@
       "SmolVLA"
     ],
     "read_min": 4
+  },
+  {
+    "slug": "flowmatching",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Flow Matching: Straight Paths From Noise to Action",
+    "title_vi": "Flow Matching: Đường thẳng từ nhiễu đến hành động",
+    "excerpt_en": "Diffusion policies denoise along a curved path in many steps. Flow matching trains a network to predict a constant velocity along a straight line, so about ten Euler steps are enough. Worked by hand in one dimension.",
+    "excerpt_vi": "Diffusion policy khử nhiễu theo đường cong qua nhiều bước. Flow matching huấn luyện mạng dự đoán vận tốc không đổi dọc một đường thẳng, nên khoảng mười bước Euler là đủ. Tính tay trong một chiều.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Flow Matching",
+      "Diffusion"
+    ],
+    "read_min": 3
   },
   {
     "slug": "forcevla",
@@ -99,6 +131,22 @@
       "SmolVLA"
     ],
     "read_min": 4
+  },
+  {
+    "slug": "imitation-learning",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Imitation Learning: Copying an Expert, and Why the Copy Drifts",
+    "title_vi": "Imitation Learning: Bắt chước chuyên gia, và vì sao bản sao bị trôi",
+    "excerpt_en": "Behavior cloning turns robot control into supervised learning, but the policy then meets states the expert never showed. DAgger fixes this by letting the expert label the policy's own states.",
+    "excerpt_vi": "Behavior cloning biến điều khiển robot thành bài học có giám sát, nhưng chính sách sẽ gặp những trạng thái mà chuyên gia chưa từng làm mẫu. DAgger sửa bằng cách để chuyên gia gán nhãn cho chính các trạng thái mà chính sách đi qua.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Imitation Learning",
+      "DAgger"
+    ],
+    "read_min": 3
   },
   {
     "slug": "mode-vla",
@@ -219,6 +267,22 @@
     "read_min": 4
   },
   {
+    "slug": "token",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Token: One Currency for Text, Images and Actions",
+    "title_vi": "Token: Một đơn vị chung cho chữ, ảnh và hành động",
+    "excerpt_en": "A token is a small piece of input turned into a vector by table lookup. Once text, image patches and actions are all tokens, one Transformer can read them together. Worked example: turning an action value into a token id.",
+    "excerpt_vi": "Token là một mẩu đầu vào nhỏ được đổi thành vector bằng tra bảng. Khi chữ, patch ảnh và hành động đều là token, một Transformer đọc được tất cả. Ví dụ tính tay: đổi một giá trị hành động thành id token.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Token",
+      "Tokenizer"
+    ],
+    "read_min": 3
+  },
+  {
     "slug": "torl-vla",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",
@@ -234,6 +298,22 @@
       "π0.5"
     ],
     "read_min": 4
+  },
+  {
+    "slug": "transformer",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Transformer: Attention Without Recurrence",
+    "title_vi": "Transformer: Attention không cần hồi quy",
+    "excerpt_en": "RNNs read tokens one by one, so they cannot run in parallel and distant tokens are many steps apart. The Transformer stacks self-attention and feed-forward blocks so every token sees every other in one hop.",
+    "excerpt_vi": "RNN đọc từng token một nên không chạy song song được và hai token xa nhau cách nhiều bước. Transformer xếp chồng self-attention và feed-forward để mọi token thấy mọi token khác chỉ trong một bước.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Transformer",
+      "Attention"
+    ],
+    "read_min": 3
   },
   {
     "slug": "vit",

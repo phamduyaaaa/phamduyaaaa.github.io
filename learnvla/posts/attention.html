@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Earlier encoder-decoder models squeezed a whole sentence into one fixed vector. Attention lets the decoder look back at every input position and weight them. Worked by hand with two tokens.">
+<title>Attention: Letting Each Token Look at the Others · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Attention: Letting Each Token Look at the Others">
+<meta property="og:description" content="Earlier encoder-decoder models squeezed a whole sentence into one fixed vector. Attention lets the decoder look back at every input position and weight them. Worked by hand with two tokens.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Attention: Letting Each Token Look at the Others</h1>
+    <h1 data-vi>Attention: Cho mỗi token nhìn sang các token khác</h1>
+
+    <p class="post-excerpt-lead" data-en>Earlier encoder-decoder models squeezed a whole sentence into one fixed vector. Attention lets the decoder look back at every input position and weight them. Worked by hand with two tokens.</p>
+    <p class="post-excerpt-lead" data-vi>Các mô hình encoder-decoder trước nén cả câu vào một vector cố định. Attention cho decoder nhìn lại từng vị trí đầu vào và đánh trọng số. Tính tay với hai token.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Attention</span><span class="pill">Transformer</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Bahdanau, Cho, Bengio, <em>Neural Machine Translation by Jointly Learning to Align and Translate</em>, <a href="https://arxiv.org/abs/1409.0473">arXiv 1409.0473</a> · 09/2014</p>
+<p><strong>PROBLEM</strong> To generate each output, a model must find which input pieces matter.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Encoder-decoder RNNs compressed the whole source sentence into one fixed-length vector. The paper argues this is a bottleneck, and quality drops on long sentences.</p>
+<p><strong>IDEA</strong> Keep one vector per input position. For each output, score every position, softmax the scores into weights, and take the weighted sum. The model learns where to look.</p>
+<p><strong>RESULT</strong> Better translation on long sentences. The Transformer later made this the only mechanism, with every token attending to every other token (self-attention).</p>
+</div>
+<h2>1. The problem: a fixed-size bottleneck</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is that the decoder is no longer limited to one summary vector." class="dg-natural" width="657" height="206" viewBox="0 0 657 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Encoder-decoder RNN</text><rect class="dg-box" x="160" y="22" width="140" height="38"/><text class="dg-t" x="230" y="45" text-anchor="middle">Source sentence</text><path class="dg-a" d="M300 41 H332"/><rect class="dg-badbox" x="334" y="14" width="180" height="54"/><text class="dg-t" x="423" y="37" text-anchor="middle">One fixed vector</text><text class="dg-s" x="423" y="53" text-anchor="middle">all information squeezed</text><path class="dg-a" d="M513 41 H545"/><rect class="dg-box" x="547" y="22" width="96" height="38"/><text class="dg-t" x="595" y="45" text-anchor="middle">Decoder</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ long inputs lose detail</text><text class="dg-lab dg-green" x="14" y="143">Attention</text><rect class="dg-box" x="160" y="120" width="125" height="38"/><text class="dg-t" x="222" y="143" text-anchor="middle">Source tokens</text><path class="dg-a" d="M284 139 H316"/><rect class="dg-key" x="318" y="112" width="178" height="54"/><text class="dg-t" x="407" y="135" text-anchor="middle">One vector per token</text><text class="dg-s" x="407" y="151" text-anchor="middle">weights by softmax</text><path class="dg-a" d="M496 139 H528"/><rect class="dg-box" x="530" y="120" width="96" height="38"/><text class="dg-t" x="578" y="143" text-anchor="middle">Decoder</text><text class="dg-note dg-green" x="159.60000000000002" y="184">✓ looks at what it needs, per output</text></svg><figcaption>The change is that the decoder is no longer limited to one summary vector.</figcaption></figure>
+<h2>2. The mechanism</h2>
+<figure class="diagram"><svg role="img" aria-label="Each token makes a query (what it needs), a key (what it offers) and a value (what it carries). Scores come from query·key; softmax gives weights; the output is a weighted mix of values." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="110" width="130" height="56"/><text class="dg-t" x="85" y="134" text-anchor="middle">Tokens X</text><text class="dg-s" x="85" y="150" text-anchor="middle">n × d</text>
+<rect class="dg-box" x="210" y="30" width="120" height="44"/><text class="dg-t" x="270" y="50" text-anchor="middle">Q = X·W_Q</text><text class="dg-s" x="270" y="65" text-anchor="middle">what I look for</text>
+<rect class="dg-box" x="210" y="112" width="120" height="44"/><text class="dg-t" x="270" y="132" text-anchor="middle">K = X·W_K</text><text class="dg-s" x="270" y="147" text-anchor="middle">what I offer</text>
+<rect class="dg-box" x="210" y="204" width="120" height="44"/><text class="dg-t" x="270" y="224" text-anchor="middle">V = X·W_V</text><text class="dg-s" x="270" y="239" text-anchor="middle">what I carry</text>
+<path class="dg-a" d="M150 128 H180 V52 H210"/><path class="dg-a" d="M150 138 H210"/><path class="dg-a" d="M150 148 H180 V226 H210"/>
+<rect class="dg-key" x="400" y="70" width="170" height="56"/><text class="dg-t" x="485" y="92" text-anchor="middle">Scores Q·Kᵀ/√d</text><text class="dg-s" x="485" y="108" text-anchor="middle">n × n similarity</text>
+<path class="dg-a" d="M330 52 H365 V88 H400"/><path class="dg-a" d="M330 134 H365 V108 H400"/>
+<rect class="dg-key" x="620" y="70" width="130" height="56"/><text class="dg-t" x="685" y="92" text-anchor="middle">softmax</text><text class="dg-s" x="685" y="108" text-anchor="middle">rows sum to 1</text>
+<path class="dg-a" d="M570 98 H620"/>
+<rect class="dg-box" x="620" y="190" width="130" height="56"/><text class="dg-t" x="685" y="212" text-anchor="middle">weights × V</text><text class="dg-s" x="685" y="228" text-anchor="middle">weighted mix</text>
+<path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
+<rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
+<path class="dg-a" d="M750 218 H810"/>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+</svg><figcaption>Each token makes a query (what it needs), a key (what it offers) and a value (what it carries). Scores come from query·key; softmax gives weights; the output is a weighted mix of values.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$W_Q, W_K, W_V$</td>
+<td>$X$ ($n \times d$)</td>
+<td>$Q, K, V$</td>
+<td>three learned views of the same tokens</td>
+</tr>
+<tr>
+<td>Scores</td>
+<td>$Q, K$</td>
+<td>$n \times n$ matrix</td>
+<td>how well each query matches each key</td>
+</tr>
+<tr>
+<td>Divide by $\sqrt{d}$</td>
+<td>scores</td>
+<td>scaled scores</td>
+<td>keeps values from growing with $d$</td>
+</tr>
+<tr>
+<td>Softmax</td>
+<td>scaled scores</td>
+<td>weights, each row sums to 1</td>
+<td>turns scores into a distribution</td>
+</tr>
+<tr>
+<td>Weights × $V$</td>
+<td>weights, $V$</td>
+<td>output ($n \times d$)</td>
+<td>context-aware token vectors</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> What does attention output for two tokens? This shows that the output is a <em>weighted average</em> of the values.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x_1, x_2$</td>
+<td>token vectors</td>
+<td>input</td>
+<td>$[1,0]$, $[0,1]$</td>
+</tr>
+<tr>
+<td>$Q = K = V$</td>
+<td>to keep the example short, identity projections</td>
+<td>assumption</td>
+<td>$= X$</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>vector size</td>
+<td>constant</td>
+<td>2</td>
+</tr>
+<tr>
+<td>$A$</td>
+<td>attention weights</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$O$</td>
+<td>output vectors</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$</p>
+<p><strong>Steps</strong> (token 1)</p>
+<ol>
+<li>Scores with $K$: $q_1 \cdot k_1 = 1$, $q_1 \cdot k_2 = 0$. Divide by $\sqrt{2} = 1.414$: $[0.707,\ 0]$.</li>
+<li>Exponentials: $e^{0.707} = 2.028$, $e^{0} = 1$. Sum $= 3.028$.</li>
+<li>Weights: $[2.028/3.028,\ 1/3.028] = [0.670,\ 0.330]$.</li>
+<li>Output: $0.670\,[1,0] + 0.330\,[0,1] = [0.670,\ 0.330]$.</li>
+</ol>
+<p><strong>Result.</strong> Token 1 now carries 67% of itself and 33% of token 2. By symmetry, token 2 gets $[0.330, 0.670]$.</p>
+<p><strong>Why it matters.</strong> Both tokens became vectors that contain information from the other. The $\sqrt{d}$ keeps scores from growing as vectors get longer, which would make softmax saturate to a one-hot.</p>
+</div>
+<h2>3. Cost and variants</h2>
+<ul>
+<li>$n$ tokens give an $n \times n$ score matrix: $N^2$ pairs. This is the reason ViT cuts images into patches.</li>
+<li><strong>Self-attention:</strong> $Q$, $K$, $V$ all come from the same sequence (this post).</li>
+<li><strong>Cross-attention:</strong> $Q$ from one sequence, $K, V$ from another (action expert reading the VLM: see <a href="cross-attention.html">cross-attention</a>).</li>
+</ul>
+<p><strong>Carry forward:</strong> attention alone only mixes vectors. The <a href="transformer.html">Transformer</a> stacks it with feed-forward layers and residual connections.</p>
+<p><strong>Check question:</strong> Same setup, but $x_1 = [2, 0]$, $x_2 = [0, 1]$. What is the first score $q_1 \cdot k_1$ before dividing by $\sqrt{d}$?</p>
+<details>
+<summary>Answer</summary>
+<p>$q_1 \cdot k_1 = 2 \times 2 + 0 \times 0 = 4$; $q_1 \cdot k_2 = 0$. Token 1 attends to itself much more strongly (after $/1.414$: 2.83 vs 0).</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Bahdanau, Cho, Bengio, <em>Neural Machine Translation by Jointly Learning to Align and Translate</em>, <a href="https://arxiv.org/abs/1409.0473">arXiv 1409.0473</a> · 09/2014</p>
+<p><strong>VẤN ĐỀ</strong> Để sinh mỗi đầu ra, mô hình phải tìm ra mẩu đầu vào nào quan trọng.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> RNN encoder-decoder nén cả câu nguồn vào một vector độ dài cố định. Paper cho rằng đó là nút thắt cổ chai, và chất lượng giảm trên câu dài.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ một vector cho mỗi vị trí đầu vào. Với mỗi đầu ra, chấm điểm mọi vị trí, softmax thành trọng số rồi lấy tổng có trọng số. Mô hình tự học nên nhìn vào đâu.</p>
+<p><strong>KẾT QUẢ</strong> Dịch tốt hơn trên câu dài. Về sau Transformer biến đây thành cơ chế duy nhất, mỗi token chú ý đến mọi token khác (self-attention).</p>
+</div>
+<h2>1. Vấn đề: nút thắt kích thước cố định</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là decoder không còn bị giới hạn bởi một vector tóm tắt." class="dg-natural" width="625" height="206" viewBox="0 0 625 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">RNN encoder-decoder</text><rect class="dg-box" x="160" y="22" width="96" height="38"/><text class="dg-t" x="208" y="45" text-anchor="middle">Câu nguồn</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="163" height="54"/><text class="dg-t" x="371" y="37" text-anchor="middle">Một vector cố định</text><text class="dg-s" x="371" y="53" text-anchor="middle">mọi thông tin bị nén</text><path class="dg-a" d="M452 41 H484"/><rect class="dg-box" x="486" y="22" width="96" height="38"/><text class="dg-t" x="534" y="45" text-anchor="middle">Decoder</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ đầu vào dài mất chi tiết</text><text class="dg-lab dg-green" x="14" y="143">Attention</text><rect class="dg-box" x="160" y="120" width="110" height="38"/><text class="dg-t" x="214" y="143" text-anchor="middle">Token nguồn</text><path class="dg-a" d="M269 139 H301"/><rect class="dg-key" x="303" y="112" width="178" height="54"/><text class="dg-t" x="392" y="135" text-anchor="middle">Một vector mỗi token</text><text class="dg-s" x="392" y="151" text-anchor="middle">trọng số bằng softmax</text><path class="dg-a" d="M481 139 H513"/><rect class="dg-box" x="515" y="120" width="96" height="38"/><text class="dg-t" x="563" y="143" text-anchor="middle">Decoder</text><text class="dg-note dg-green" x="159.60000000000002" y="184">✓ mỗi đầu ra nhìn đúng chỗ cần</text></svg><figcaption>Thay đổi là decoder không còn bị giới hạn bởi một vector tóm tắt.</figcaption></figure>
+<h2>2. Cơ chế</h2>
+<figure class="diagram"><svg role="img" aria-label="Mỗi token tạo ra một query (cần gì), một key (có gì) và một value (mang gì). Điểm lấy từ query·key; softmax cho trọng số; đầu ra là tổ hợp có trọng số của các value." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="110" width="130" height="56"/><text class="dg-t" x="85" y="134" text-anchor="middle">Tokens X</text><text class="dg-s" x="85" y="150" text-anchor="middle">n × d</text>
+<rect class="dg-box" x="210" y="30" width="120" height="44"/><text class="dg-t" x="270" y="50" text-anchor="middle">Q = X·W_Q</text><text class="dg-s" x="270" y="65" text-anchor="middle">what I look for</text>
+<rect class="dg-box" x="210" y="112" width="120" height="44"/><text class="dg-t" x="270" y="132" text-anchor="middle">K = X·W_K</text><text class="dg-s" x="270" y="147" text-anchor="middle">what I offer</text>
+<rect class="dg-box" x="210" y="204" width="120" height="44"/><text class="dg-t" x="270" y="224" text-anchor="middle">V = X·W_V</text><text class="dg-s" x="270" y="239" text-anchor="middle">what I carry</text>
+<path class="dg-a" d="M150 128 H180 V52 H210"/><path class="dg-a" d="M150 138 H210"/><path class="dg-a" d="M150 148 H180 V226 H210"/>
+<rect class="dg-key" x="400" y="70" width="170" height="56"/><text class="dg-t" x="485" y="92" text-anchor="middle">Scores Q·Kᵀ/√d</text><text class="dg-s" x="485" y="108" text-anchor="middle">n × n similarity</text>
+<path class="dg-a" d="M330 52 H365 V88 H400"/><path class="dg-a" d="M330 134 H365 V108 H400"/>
+<rect class="dg-key" x="620" y="70" width="130" height="56"/><text class="dg-t" x="685" y="92" text-anchor="middle">softmax</text><text class="dg-s" x="685" y="108" text-anchor="middle">rows sum to 1</text>
+<path class="dg-a" d="M570 98 H620"/>
+<rect class="dg-box" x="620" y="190" width="130" height="56"/><text class="dg-t" x="685" y="212" text-anchor="middle">weights × V</text><text class="dg-s" x="685" y="228" text-anchor="middle">weighted mix</text>
+<path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
+<rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
+<path class="dg-a" d="M750 218 H810"/>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+</svg><figcaption>Mỗi token tạo ra một query (cần gì), một key (có gì) và một value (mang gì). Điểm lấy từ query·key; softmax cho trọng số; đầu ra là tổ hợp có trọng số của các value.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$W_Q, W_K, W_V$</td>
+<td>$X$ ($n \times d$)</td>
+<td>$Q, K, V$</td>
+<td>ba góc nhìn học được của cùng các token</td>
+</tr>
+<tr>
+<td>Điểm</td>
+<td>$Q, K$</td>
+<td>ma trận $n \times n$</td>
+<td>mỗi query khớp mỗi key đến đâu</td>
+</tr>
+<tr>
+<td>Chia $\sqrt{d}$</td>
+<td>điểm</td>
+<td>điểm đã co</td>
+<td>không cho giá trị lớn theo $d$</td>
+</tr>
+<tr>
+<td>Softmax</td>
+<td>điểm đã co</td>
+<td>trọng số, mỗi hàng tổng 1</td>
+<td>biến điểm thành phân phối</td>
+</tr>
+<tr>
+<td>Trọng số × $V$</td>
+<td>trọng số, $V$</td>
+<td>đầu ra ($n \times d$)</td>
+<td>vector token có ngữ cảnh</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Attention cho ra gì với hai token? Ví dụ cho thấy đầu ra là một <em>trung bình có trọng số</em> của các value.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x_1, x_2$</td>
+<td>vector token</td>
+<td>input</td>
+<td>$[1,0]$, $[0,1]$</td>
+</tr>
+<tr>
+<td>$Q = K = V$</td>
+<td>để ví dụ ngắn, dùng phép chiếu đơn vị</td>
+<td>giả định</td>
+<td>$= X$</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>cỡ vector</td>
+<td>hằng số</td>
+<td>2</td>
+</tr>
+<tr>
+<td>$A$</td>
+<td>trọng số attention</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$O$</td>
+<td>vector đầu ra</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$</p>
+<p><strong>Các bước</strong> (token 1)</p>
+<ol>
+<li>Điểm với $K$: $q_1 \cdot k_1 = 1$, $q_1 \cdot k_2 = 0$. Chia $\sqrt{2} = 1{,}414$: $[0{,}707,\ 0]$.</li>
+<li>Hàm mũ: $e^{0{,}707} = 2{,}028$, $e^{0} = 1$. Tổng $= 3{,}028$.</li>
+<li>Trọng số: $[2{,}028/3{,}028,\ 1/3{,}028] = [0{,}670,\ 0{,}330]$.</li>
+<li>Đầu ra: $0{,}670\,[1,0] + 0{,}330\,[0,1] = [0{,}670,\ 0{,}330]$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Token 1 giờ mang 67% chính nó và 33% token 2. Theo đối xứng, token 2 ra $[0{,}330, 0{,}670]$.</p>
+<p><strong>Ý nghĩa.</strong> Cả hai token thành vector chứa thông tin của token kia. Chia $\sqrt{d}$ để điểm không phình ra khi vector dài, nếu không softmax sẽ bão hòa thành one-hot.</p>
+</div>
+<h2>3. Chi phí và biến thể</h2>
+<ul>
+<li>$n$ token cho ma trận điểm $n \times n$: $N^2$ cặp. Đây là lý do ViT cắt ảnh thành patch.</li>
+<li><strong>Self-attention:</strong> $Q$, $K$, $V$ đều từ cùng một chuỗi (bài này).</li>
+<li><strong>Cross-attention:</strong> $Q$ từ chuỗi này, $K, V$ từ chuỗi khác (action expert đọc VLM: xem <a href="cross-attention.html">cross-attention</a>).</li>
+</ul>
+<p><strong>Mang theo:</strong> attention chỉ trộn các vector. <a href="transformer.html">Transformer</a> xếp nó cùng lớp feed-forward và kết nối residual.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> Cùng thiết lập, nhưng $x_1 = [2, 0]$, $x_2 = [0, 1]$. Điểm đầu $q_1 \cdot k_1$ trước khi chia $\sqrt{d}$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$q_1 \cdot k_1 = 2 \times 2 + 0 \times 0 = 4$; $q_1 \cdot k_2 = 0$. Token 1 chú ý đến chính nó mạnh hơn nhiều (sau khi chia $1{,}414$: 2,83 so với 0).</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

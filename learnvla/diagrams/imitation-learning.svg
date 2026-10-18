@@ -1,0 +1,17 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="150"/><text class="dg-h" x="22" y="26">BEHAVIOR CLONING (offline, one pass)</text>
+<rect class="dg-ext" x="24" y="52" width="150" height="56"/><text class="dg-t" x="99" y="76" text-anchor="middle">Expert demos</text><text class="dg-s" x="99" y="92" text-anchor="middle">(o, a) pairs</text>
+<rect class="dg-box" x="230" y="52" width="170" height="56"/><text class="dg-t" x="315" y="76" text-anchor="middle">Supervised fit</text><text class="dg-s" x="315" y="92" text-anchor="middle">min ‖π(o) − a‖²</text>
+<rect class="dg-key" x="456" y="52" width="130" height="56"/><text class="dg-t" x="521" y="76" text-anchor="middle">Policy π</text><text class="dg-s" x="521" y="92" text-anchor="middle">o → a</text>
+<rect class="dg-badbox" x="650" y="52" width="150" height="56"/><text class="dg-t" x="725" y="76" text-anchor="middle">Own errors</text><text class="dg-s" x="725" y="92" text-anchor="middle">unseen states</text>
+<rect class="dg-badbox" x="840" y="52" width="120" height="56"/><text class="dg-t" x="900" y="76" text-anchor="middle">Drift</text><text class="dg-s" x="900" y="92" text-anchor="middle">cost ~ T²ε</text>
+<path class="dg-a" d="M174 80 H230"/><path class="dg-a" d="M400 80 H456"/><path class="dg-a" d="M586 80 H650"/><path class="dg-a" d="M800 80 H840"/>
+<text class="dg-note dg-red" x="22" y="140">Training data = states the expert visited. Test data = states the policy visits. They differ.</text>
+<rect class="dg-grp" x="10" y="176" width="960" height="146"/><text class="dg-h" x="22" y="194">DAGGER (online loop)</text>
+<rect class="dg-box" x="24" y="220" width="150" height="56"/><text class="dg-t" x="99" y="244" text-anchor="middle">Run policy π</text><text class="dg-s" x="99" y="260" text-anchor="middle">visits its own states</text>
+<rect class="dg-ext" x="230" y="220" width="170" height="56"/><text class="dg-t" x="315" y="244" text-anchor="middle">Expert labels</text><text class="dg-s" x="315" y="260" text-anchor="middle">a* for those states</text>
+<rect class="dg-key" x="456" y="220" width="170" height="56"/><text class="dg-t" x="541" y="244" text-anchor="middle">Aggregate dataset</text><text class="dg-s" x="541" y="260" text-anchor="middle">D ← D ∪ new pairs</text>
+<rect class="dg-box" x="682" y="220" width="130" height="56"/><text class="dg-t" x="747" y="244" text-anchor="middle">Retrain π</text><text class="dg-s" x="747" y="260" text-anchor="middle">cost ~ Tε</text>
+<path class="dg-a" d="M174 248 H230"/><path class="dg-a" d="M400 248 H456"/><path class="dg-a" d="M626 248 H682"/>
+<path class="dg-ad" d="M747 276 V304 H99 V276"/><text class="dg-l" x="420" y="298" text-anchor="middle">repeat</text>
+</svg>

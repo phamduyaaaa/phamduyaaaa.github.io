@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Behavior cloning turns robot control into supervised learning, but the policy then meets states the expert never showed. DAgger fixes this by letting the expert label the policy's own states.">
+<title>Imitation Learning: Copying an Expert, and Why the Copy Drifts · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Imitation Learning: Copying an Expert, and Why the Copy Drifts">
+<meta property="og:description" content="Behavior cloning turns robot control into supervised learning, but the policy then meets states the expert never showed. DAgger fixes this by letting the expert label the policy's own states.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Imitation Learning: Copying an Expert, and Why the Copy Drifts</h1>
+    <h1 data-vi>Imitation Learning: Bắt chước chuyên gia, và vì sao bản sao bị trôi</h1>
+
+    <p class="post-excerpt-lead" data-en>Behavior cloning turns robot control into supervised learning, but the policy then meets states the expert never showed. DAgger fixes this by letting the expert label the policy's own states.</p>
+    <p class="post-excerpt-lead" data-vi>Behavior cloning biến điều khiển robot thành bài học có giám sát, nhưng chính sách sẽ gặp những trạng thái mà chuyên gia chưa từng làm mẫu. DAgger sửa bằng cách để chuyên gia gán nhãn cho chính các trạng thái mà chính sách đi qua.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Imitation Learning</span><span class="pill">DAgger</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> DAgger (Ross, Gordon, Bagnell), <a href="https://arxiv.org/abs/1011.0686">arXiv 1011.0686</a> · 11/2010</p>
+<p><strong>PROBLEM</strong> Writing a controller by hand, or doing RL with a hand-made reward, is slow. Showing the robot what to do is easier, so we record (observation, action) pairs and fit a model.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Plain behavior cloning (BC) trains only on states the <em>expert</em> visited. Once the policy makes a small error it lands in a state never seen in training, errs more, and drifts. The error grows like $T^2\varepsilon$ over $T$ steps.</p>
+<p><strong>IDEA</strong> Run the <em>policy</em>, let the expert label the states the policy actually reaches, add them to the dataset, retrain, repeat.</p>
+<p><strong>RESULT</strong> Error grows only like $T\varepsilon$ in the paper's analysis. Every VLA in this site starts from BC; the force papers TER-DAgger and HG-DAgger-style methods extend DAgger.</p>
+</div>
+<h2>1. The problem: train states ≠ test states</h2>
+<figure class="diagram flow"><svg role="img" aria-label="BC turns control into plain supervised learning. The catch is hidden in the data: the policy is trained on the expert's states and tested on its own." class="dg-natural" width="638" height="206" viewBox="0 0 638 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Hand-coded / RL</text><rect class="dg-box" x="140" y="22" width="96" height="38"/><text class="dg-t" x="188" y="45" text-anchor="middle">Task</text><path class="dg-a" d="M236 41 H268"/><rect class="dg-badbox" x="270" y="14" width="224" height="54"/><text class="dg-t" x="382" y="37" text-anchor="middle">Write controller or reward</text><text class="dg-s" x="382" y="53" text-anchor="middle">slow, brittle</text><path class="dg-a" d="M494 41 H526"/><rect class="dg-box" x="528" y="22" width="96" height="38"/><text class="dg-t" x="576" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="140.4" y="86">✗ engineer time or millions of trials</text><text class="dg-lab dg-green" x="14" y="143">Behavior cloning</text><rect class="dg-box" x="140" y="120" width="117" height="38"/><text class="dg-t" x="199" y="143" text-anchor="middle">Expert demos</text><path class="dg-a" d="M258 139 H290"/><rect class="dg-key" x="292" y="112" width="186" height="54"/><text class="dg-t" x="384" y="135" text-anchor="middle">Supervised regression</text><text class="dg-s" x="384" y="151" text-anchor="middle">min ‖π(o) − a‖²</text><path class="dg-a" d="M477 139 H509"/><rect class="dg-box" x="511" y="120" width="96" height="38"/><text class="dg-t" x="559" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-green" x="140.4" y="184">✓ no reward needed; but only sees expert states</text></svg><figcaption>BC turns control into plain supervised learning. The catch is hidden in the data: the policy is trained on the expert's states and tested on its own.</figcaption></figure>
+<h2>2. How to read it</h2>
+<figure class="diagram"><svg role="img" aria-label="Top: BC fits once and then drifts. Bottom: DAgger keeps adding the states the policy itself visits, labelled by the expert." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="150"/><text class="dg-h" x="22" y="26">BEHAVIOR CLONING (offline, one pass)</text>
+<rect class="dg-ext" x="24" y="52" width="150" height="56"/><text class="dg-t" x="99" y="76" text-anchor="middle">Expert demos</text><text class="dg-s" x="99" y="92" text-anchor="middle">(o, a) pairs</text>
+<rect class="dg-box" x="230" y="52" width="170" height="56"/><text class="dg-t" x="315" y="76" text-anchor="middle">Supervised fit</text><text class="dg-s" x="315" y="92" text-anchor="middle">min ‖π(o) − a‖²</text>
+<rect class="dg-key" x="456" y="52" width="130" height="56"/><text class="dg-t" x="521" y="76" text-anchor="middle">Policy π</text><text class="dg-s" x="521" y="92" text-anchor="middle">o → a</text>
+<rect class="dg-badbox" x="650" y="52" width="150" height="56"/><text class="dg-t" x="725" y="76" text-anchor="middle">Own errors</text><text class="dg-s" x="725" y="92" text-anchor="middle">unseen states</text>
+<rect class="dg-badbox" x="840" y="52" width="120" height="56"/><text class="dg-t" x="900" y="76" text-anchor="middle">Drift</text><text class="dg-s" x="900" y="92" text-anchor="middle">cost ~ T²ε</text>
+<path class="dg-a" d="M174 80 H230"/><path class="dg-a" d="M400 80 H456"/><path class="dg-a" d="M586 80 H650"/><path class="dg-a" d="M800 80 H840"/>
+<text class="dg-note dg-red" x="22" y="140">Training data = states the expert visited. Test data = states the policy visits. They differ.</text>
+<rect class="dg-grp" x="10" y="176" width="960" height="146"/><text class="dg-h" x="22" y="194">DAGGER (online loop)</text>
+<rect class="dg-box" x="24" y="220" width="150" height="56"/><text class="dg-t" x="99" y="244" text-anchor="middle">Run policy π</text><text class="dg-s" x="99" y="260" text-anchor="middle">visits its own states</text>
+<rect class="dg-ext" x="230" y="220" width="170" height="56"/><text class="dg-t" x="315" y="244" text-anchor="middle">Expert labels</text><text class="dg-s" x="315" y="260" text-anchor="middle">a* for those states</text>
+<rect class="dg-key" x="456" y="220" width="170" height="56"/><text class="dg-t" x="541" y="244" text-anchor="middle">Aggregate dataset</text><text class="dg-s" x="541" y="260" text-anchor="middle">D ← D ∪ new pairs</text>
+<rect class="dg-box" x="682" y="220" width="130" height="56"/><text class="dg-t" x="747" y="244" text-anchor="middle">Retrain π</text><text class="dg-s" x="747" y="260" text-anchor="middle">cost ~ Tε</text>
+<path class="dg-a" d="M174 248 H230"/><path class="dg-a" d="M400 248 H456"/><path class="dg-a" d="M626 248 H682"/>
+<path class="dg-ad" d="M747 276 V304 H99 V276"/><text class="dg-l" x="420" y="298" text-anchor="middle">repeat</text>
+</svg><figcaption>Top: BC fits once and then drifts. Bottom: DAgger keeps adding the states the policy itself visits, labelled by the expert.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Observation $o$</td>
+<td>what the policy sees (images, robot state)</td>
+</tr>
+<tr>
+<td>Action $a$</td>
+<td>what the expert did (joint targets, end-effector delta)</td>
+</tr>
+<tr>
+<td>Policy $\pi(o)$</td>
+<td>the network being trained</td>
+</tr>
+<tr>
+<td>Horizon $T$</td>
+<td>number of steps in one episode</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>average per-step mistake of the policy on the expert's states</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How much worse than the expert is a cloned policy over a whole episode? The bound shows why BC drifts and DAgger does not.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$T$</td>
+<td>steps per episode</td>
+<td>input</td>
+<td>100</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>per-step error rate</td>
+<td>input</td>
+<td>0.001</td>
+</tr>
+<tr>
+<td>$J^*$</td>
+<td>expert's total cost</td>
+<td>reference</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta_{BC}$</td>
+<td>extra cost of BC</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta_{DAgger}$</td>
+<td>extra cost of DAgger</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (worst-case bounds from the DAgger analysis)</p>
+<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim T\varepsilon$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\Delta_{BC} = 100^2 \times 0.001 = 10{,}000 \times 0.001 = 10$.</li>
+<li>$\Delta_{DAgger} = 100 \times 0.001 = 0.1$.</li>
+<li>Ratio: $10 / 0.1 = 100 = T$.</li>
+</ol>
+<p><strong>Result.</strong> The extra cost of BC is $T$ times larger than DAgger's: 10 against 0.1.</p>
+<p><strong>Why it matters.</strong> A mistake in BC is paid for <em>every remaining step</em> (the policy is now lost), so mistakes add up quadratically. These are worst-case bounds, so real gaps are usually smaller, but they grow with $T$.</p>
+</div>
+<h2>3. Where it shows up in VLA</h2>
+<ul>
+<li>Every VLA (π0, OpenVLA, ForceVLA…) is trained by BC on teleoperation data.</li>
+<li>Contact-rich tasks drift fast, because a few millimetres of error in an insertion changes the force completely. <a href="ter-dagger.html">TER-DAgger</a> lets a force-error detector call the human back in.</li>
+</ul>
+<p><strong>Carry forward:</strong> BC needs a model that predicts actions well, so next comes the <a href="token.html">Token</a> idea: how images, text and actions all become one sequence.</p>
+<p><strong>Check question:</strong> $T = 50$, $\varepsilon = 0.002$. What are $\Delta_{BC}$ and $\Delta_{DAgger}$?</p>
+<details>
+<summary>Answer</summary>
+<p>$\Delta_{BC} = 50^2 \times 0.002 = 2500 \times 0.002 = 5$. $\Delta_{DAgger} = 50 \times 0.002 = 0.1$. Ratio 50 = $T$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> DAgger (Ross, Gordon, Bagnell), <a href="https://arxiv.org/abs/1011.0686">arXiv 1011.0686</a> · 11/2010</p>
+<p><strong>VẤN ĐỀ</strong> Viết bộ điều khiển bằng tay, hoặc làm RL với hàm thưởng tự thiết kế, rất chậm. Làm mẫu cho robot dễ hơn: ghi lại các cặp (quan sát, hành động) rồi khớp một mô hình.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Behavior cloning (BC) thuần chỉ huấn luyện trên các trạng thái mà <em>chuyên gia</em> đi qua. Khi chính sách mắc một lỗi nhỏ, nó rơi vào trạng thái chưa từng thấy, sai nhiều hơn và trôi dần. Lỗi tăng như $T^2\varepsilon$ qua $T$ bước.</p>
+<p><strong>Ý TƯỞNG</strong> Chạy <em>chính sách</em>, nhờ chuyên gia gán nhãn cho các trạng thái chính sách thực sự đến, thêm vào tập dữ liệu, huấn luyện lại, lặp.</p>
+<p><strong>KẾT QUẢ</strong> Trong phân tích của paper, lỗi chỉ tăng như $T\varepsilon$. Mọi VLA trên trang này đều khởi đầu từ BC; TER-DAgger và các phương pháp kiểu HG-DAgger mở rộng DAgger.</p>
+</div>
+<h2>1. Vấn đề: trạng thái lúc học ≠ trạng thái lúc chạy</h2>
+<figure class="diagram flow"><svg role="img" aria-label="BC biến điều khiển thành học có giám sát thông thường. Cái bẫy nằm trong dữ liệu: chính sách học trên trạng thái của chuyên gia nhưng chạy trên trạng thái của chính nó." class="dg-natural" width="705" height="206" viewBox="0 0 705 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Viết tay / RL</text><rect class="dg-box" x="140" y="22" width="96" height="38"/><text class="dg-t" x="188" y="45" text-anchor="middle">Tác vụ</text><path class="dg-a" d="M236 41 H268"/><rect class="dg-badbox" x="270" y="14" width="284" height="54"/><text class="dg-t" x="413" y="37" text-anchor="middle">Viết bộ điều khiển hoặc hàm thưởng</text><text class="dg-s" x="413" y="53" text-anchor="middle">chậm, dễ vỡ</text><path class="dg-a" d="M555 41 H587"/><rect class="dg-box" x="589" y="22" width="102" height="38"/><text class="dg-t" x="640" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="140.4" y="86">✗ tốn công kỹ sư hoặc hàng triệu lần thử</text><text class="dg-lab dg-green" x="14" y="143">Behavior cloning</text><rect class="dg-box" x="140" y="120" width="140" height="38"/><text class="dg-t" x="210" y="143" text-anchor="middle">Demo chuyên gia</text><path class="dg-a" d="M280 139 H312"/><rect class="dg-key" x="314" y="112" width="170" height="54"/><text class="dg-t" x="400" y="135" text-anchor="middle">Hồi quy có giám sát</text><text class="dg-s" x="400" y="151" text-anchor="middle">min ‖π(o) − a‖²</text><path class="dg-a" d="M485 139 H517"/><rect class="dg-box" x="519" y="120" width="102" height="38"/><text class="dg-t" x="570" y="143" text-anchor="middle">Chính sách</text><text class="dg-note dg-green" x="140.4" y="184">✓ không cần hàm thưởng; nhưng chỉ thấy trạng thái của chuyên gia</text></svg><figcaption>BC biến điều khiển thành học có giám sát thông thường. Cái bẫy nằm trong dữ liệu: chính sách học trên trạng thái của chuyên gia nhưng chạy trên trạng thái của chính nó.</figcaption></figure>
+<h2>2. Cách đọc</h2>
+<figure class="diagram"><svg role="img" aria-label="Trên: BC khớp một lần rồi trôi. Dưới: DAgger liên tục thêm các trạng thái mà chính sách tự đi qua, do chuyên gia gán nhãn." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="150"/><text class="dg-h" x="22" y="26">BEHAVIOR CLONING (offline, one pass)</text>
+<rect class="dg-ext" x="24" y="52" width="150" height="56"/><text class="dg-t" x="99" y="76" text-anchor="middle">Expert demos</text><text class="dg-s" x="99" y="92" text-anchor="middle">(o, a) pairs</text>
+<rect class="dg-box" x="230" y="52" width="170" height="56"/><text class="dg-t" x="315" y="76" text-anchor="middle">Supervised fit</text><text class="dg-s" x="315" y="92" text-anchor="middle">min ‖π(o) − a‖²</text>
+<rect class="dg-key" x="456" y="52" width="130" height="56"/><text class="dg-t" x="521" y="76" text-anchor="middle">Policy π</text><text class="dg-s" x="521" y="92" text-anchor="middle">o → a</text>
+<rect class="dg-badbox" x="650" y="52" width="150" height="56"/><text class="dg-t" x="725" y="76" text-anchor="middle">Own errors</text><text class="dg-s" x="725" y="92" text-anchor="middle">unseen states</text>
+<rect class="dg-badbox" x="840" y="52" width="120" height="56"/><text class="dg-t" x="900" y="76" text-anchor="middle">Drift</text><text class="dg-s" x="900" y="92" text-anchor="middle">cost ~ T²ε</text>
+<path class="dg-a" d="M174 80 H230"/><path class="dg-a" d="M400 80 H456"/><path class="dg-a" d="M586 80 H650"/><path class="dg-a" d="M800 80 H840"/>
+<text class="dg-note dg-red" x="22" y="140">Training data = states the expert visited. Test data = states the policy visits. They differ.</text>
+<rect class="dg-grp" x="10" y="176" width="960" height="146"/><text class="dg-h" x="22" y="194">DAGGER (online loop)</text>
+<rect class="dg-box" x="24" y="220" width="150" height="56"/><text class="dg-t" x="99" y="244" text-anchor="middle">Run policy π</text><text class="dg-s" x="99" y="260" text-anchor="middle">visits its own states</text>
+<rect class="dg-ext" x="230" y="220" width="170" height="56"/><text class="dg-t" x="315" y="244" text-anchor="middle">Expert labels</text><text class="dg-s" x="315" y="260" text-anchor="middle">a* for those states</text>
+<rect class="dg-key" x="456" y="220" width="170" height="56"/><text class="dg-t" x="541" y="244" text-anchor="middle">Aggregate dataset</text><text class="dg-s" x="541" y="260" text-anchor="middle">D ← D ∪ new pairs</text>
+<rect class="dg-box" x="682" y="220" width="130" height="56"/><text class="dg-t" x="747" y="244" text-anchor="middle">Retrain π</text><text class="dg-s" x="747" y="260" text-anchor="middle">cost ~ Tε</text>
+<path class="dg-a" d="M174 248 H230"/><path class="dg-a" d="M400 248 H456"/><path class="dg-a" d="M626 248 H682"/>
+<path class="dg-ad" d="M747 276 V304 H99 V276"/><text class="dg-l" x="420" y="298" text-anchor="middle">repeat</text>
+</svg><figcaption>Trên: BC khớp một lần rồi trôi. Dưới: DAgger liên tục thêm các trạng thái mà chính sách tự đi qua, do chuyên gia gán nhãn.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quan sát $o$</td>
+<td>thứ chính sách thấy (ảnh, trạng thái robot)</td>
+</tr>
+<tr>
+<td>Hành động $a$</td>
+<td>thứ chuyên gia đã làm (mục tiêu khớp, độ dời đầu kẹp)</td>
+</tr>
+<tr>
+<td>Chính sách $\pi(o)$</td>
+<td>mạng đang được huấn luyện</td>
+</tr>
+<tr>
+<td>Horizon $T$</td>
+<td>số bước trong một episode</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>lỗi trung bình mỗi bước của chính sách trên trạng thái của chuyên gia</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Bản sao BC tệ hơn chuyên gia bao nhiêu trên cả episode? Cận dưới đây cho thấy vì sao BC trôi còn DAgger thì không.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$T$</td>
+<td>số bước mỗi episode</td>
+<td>input</td>
+<td>100</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>tỉ lệ lỗi mỗi bước</td>
+<td>input</td>
+<td>0,001</td>
+</tr>
+<tr>
+<td>$J^*$</td>
+<td>tổng chi phí của chuyên gia</td>
+<td>tham chiếu</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta_{BC}$</td>
+<td>chi phí dư của BC</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta_{DAgger}$</td>
+<td>chi phí dư của DAgger</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (cận trường hợp xấu nhất từ phân tích DAgger)</p>
+<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim T\varepsilon$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$\Delta_{BC} = 100^2 \times 0{,}001 = 10\,000 \times 0{,}001 = 10$.</li>
+<li>$\Delta_{DAgger} = 100 \times 0{,}001 = 0{,}1$.</li>
+<li>Tỉ số: $10 / 0{,}1 = 100 = T$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Chi phí dư của BC lớn gấp $T$ lần DAgger: 10 so với 0,1.</p>
+<p><strong>Ý nghĩa.</strong> Một lỗi trong BC phải trả giá ở <em>mọi bước còn lại</em> (chính sách đã lạc), nên lỗi cộng dồn theo bình phương. Đây là cận xấu nhất nên khoảng cách thật thường nhỏ hơn, nhưng nó tăng theo $T$.</p>
+</div>
+<h2>3. Trong VLA nó xuất hiện ở đâu</h2>
+<ul>
+<li>Mọi VLA (π0, OpenVLA, ForceVLA…) đều được huấn luyện bằng BC trên dữ liệu teleoperation.</li>
+<li>Tác vụ giàu tiếp xúc trôi rất nhanh, vì vài milimét lệch khi lắp ghép làm lực đổi hoàn toàn. <a href="ter-dagger.html">TER-DAgger</a> để bộ phát hiện sai số lực gọi con người quay lại.</li>
+</ul>
+<p><strong>Mang theo:</strong> BC cần một mô hình dự đoán hành động tốt, nên tiếp theo là ý tưởng <a href="token.html">Token</a>: ảnh, chữ và hành động cùng thành một chuỗi.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $T = 50$, $\varepsilon = 0{,}002$. $\Delta_{BC}$ và $\Delta_{DAgger}$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\Delta_{BC} = 50^2 \times 0{,}002 = 2500 \times 0{,}002 = 5$. $\Delta_{DAgger} = 50 \times 0{,}002 = 0{,}1$. Tỉ số 50 = $T$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

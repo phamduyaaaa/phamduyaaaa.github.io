@@ -1,0 +1,12 @@
+<svg viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="700" height="324"/><text class="dg-h" x="22" y="26">ONE TRANSFORMER BLOCK (stacked N times)</text>
+<rect class="dg-ext" x="30" y="150" width="120" height="56"/><text class="dg-t" x="90" y="174" text-anchor="middle">Token vectors</text><text class="dg-s" x="90" y="190" text-anchor="middle">+ position info</text>
+<rect class="dg-key" x="210" y="60" width="170" height="64"/><text class="dg-t" x="295" y="86" text-anchor="middle">Multi-head</text><text class="dg-t" x="295" y="102" text-anchor="middle">self-attention</text><text class="dg-s" x="295" y="116" text-anchor="middle">tokens exchange info</text>
+<rect class="dg-box" x="210" y="226" width="170" height="64"/><text class="dg-t" x="295" y="252" text-anchor="middle">Feed-forward</text><text class="dg-s" x="295" y="268" text-anchor="middle">per-token MLP</text>
+<rect class="dg-box" x="440" y="60" width="130" height="64"/><text class="dg-t" x="505" y="86" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="102" text-anchor="middle">x + Attn(x)</text>
+<rect class="dg-box" x="440" y="226" width="130" height="64"/><text class="dg-t" x="505" y="252" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="268" text-anchor="middle">x + FFN(x)</text>
+<path class="dg-a" d="M90 150 V92 H210"/><path class="dg-a" d="M380 92 H440"/><path class="dg-a" d="M505 124 V175 H295 V226"/><path class="dg-a" d="M380 258 H440"/>
+<path class="dg-ad" d="M90 206 V312 H505 V290"/><text class="dg-l" x="300" y="306" text-anchor="middle">residual shortcut</text>
+<rect class="dg-box" x="760" y="140" width="190" height="76"/><text class="dg-t" x="855" y="168" text-anchor="middle">Why it won</text><text class="dg-s" x="855" y="186" text-anchor="middle">all tokens in parallel,</text><text class="dg-s" x="855" y="202" text-anchor="middle">any two tokens 1 hop apart</text>
+<path class="dg-ad" d="M570 258 H640 V178 H760"/>
+</svg>

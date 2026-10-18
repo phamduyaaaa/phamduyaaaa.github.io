@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RNNs read tokens one by one, so they cannot run in parallel and distant tokens are many steps apart. The Transformer stacks self-attention and feed-forward blocks so every token sees every other in one hop.">
+<title>Transformer: Attention Without Recurrence · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Transformer: Attention Without Recurrence">
+<meta property="og:description" content="RNNs read tokens one by one, so they cannot run in parallel and distant tokens are many steps apart. The Transformer stacks self-attention and feed-forward blocks so every token sees every other in one hop.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Transformer: Attention Without Recurrence</h1>
+    <h1 data-vi>Transformer: Attention không cần hồi quy</h1>
+
+    <p class="post-excerpt-lead" data-en>RNNs read tokens one by one, so they cannot run in parallel and distant tokens are many steps apart. The Transformer stacks self-attention and feed-forward blocks so every token sees every other in one hop.</p>
+    <p class="post-excerpt-lead" data-vi>RNN đọc từng token một nên không chạy song song được và hai token xa nhau cách nhiều bước. Transformer xếp chồng self-attention và feed-forward để mọi token thấy mọi token khác chỉ trong một bước.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Transformer</span><span class="pill">Attention</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Vaswani et al., <em>Attention Is All You Need</em>, <a href="https://arxiv.org/abs/1706.03762">arXiv 1706.03762</a> · 06/2017</p>
+<p><strong>PROBLEM</strong> Sequence models must connect distant tokens and train fast on big data.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Recurrent networks (LSTM, GRU) process token $t$ only after token $t-1$. Training cannot be parallelised along the sequence, and information between two far tokens must pass through many steps. Attention was used, but only on top of the RNN.</p>
+<p><strong>IDEA</strong> Drop the recurrence. Use self-attention to mix tokens, a feed-forward layer per token, residual connections and layer norm, and add position information because attention itself has no order.</p>
+<p><strong>RESULT</strong> 28.4 BLEU on WMT14 English→German (the paper's headline), with far less training cost than recurrent models. Every VLA backbone since is a Transformer.</p>
+</div>
+<h2>1. The problem: sequential and far apart</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is that the n tokens are processed together and any two are connected directly." class="dg-natural" width="652" height="206" viewBox="0 0 652 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">RNN / LSTM</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Token 1</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="135" height="54"/><text class="dg-t" x="321" y="37" text-anchor="middle">Token 2</text><text class="dg-s" x="321" y="53" text-anchor="middle">waits for token 1</text><path class="dg-a" d="M389 41 H421"/><rect class="dg-badbox" x="423" y="14" width="154" height="54"/><text class="dg-t" x="500" y="37" text-anchor="middle">Token n</text><text class="dg-s" x="500" y="53" text-anchor="middle">n steps from token 1</text><text class="dg-note dg-red" x="124" y="86">✗ cannot parallelise; long path</text><text class="dg-lab dg-green" x="14" y="143">Transformer</text><rect class="dg-box" x="124" y="120" width="102" height="38"/><text class="dg-t" x="175" y="143" text-anchor="middle">All tokens</text><path class="dg-a" d="M226 139 H258"/><rect class="dg-key" x="260" y="112" width="173" height="54"/><text class="dg-t" x="347" y="135" text-anchor="middle">Self-attention</text><text class="dg-s" x="347" y="151" text-anchor="middle">every pair in one layer</text><path class="dg-a" d="M433 139 H465"/><rect class="dg-box" x="467" y="120" width="170" height="38"/><text class="dg-t" x="552" y="143" text-anchor="middle">All outputs at once</text><text class="dg-note dg-green" x="124" y="184">✓ path length 1</text></svg><figcaption>The change is that the n tokens are processed together and any two are connected directly.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Maximum steps between two positions for a 256-token sequence." class="dg-natural" width="640" height="72" viewBox="0 0 640 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="180" y="23" text-anchor="end">RNN, token 1 to token 256</text><rect class="dg-bar" x="190" y="10" width="313" height="18"/><text class="dg-barval" x="512" y="23">256 steps</text><text class="dg-barlabel" x="180" y="53" text-anchor="end">Self-attention</text><rect class="dg-key" x="190" y="40" width="2" height="18"/><text class="dg-barval" x="200" y="53">1 steps</text></svg><figcaption>Maximum steps between two positions for a 256-token sequence.</figcaption></figure>
+<h2>2. The block</h2>
+<figure class="diagram"><svg role="img" aria-label="One block = multi-head self-attention, then a per-token feed-forward network. Each is wrapped by &quot;add the input back&quot; (residual) and layer norm. The stack repeats this N times." viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="700" height="324"/><text class="dg-h" x="22" y="26">ONE TRANSFORMER BLOCK (stacked N times)</text>
+<rect class="dg-ext" x="30" y="150" width="120" height="56"/><text class="dg-t" x="90" y="174" text-anchor="middle">Token vectors</text><text class="dg-s" x="90" y="190" text-anchor="middle">+ position info</text>
+<rect class="dg-key" x="210" y="60" width="170" height="64"/><text class="dg-t" x="295" y="86" text-anchor="middle">Multi-head</text><text class="dg-t" x="295" y="102" text-anchor="middle">self-attention</text><text class="dg-s" x="295" y="116" text-anchor="middle">tokens exchange info</text>
+<rect class="dg-box" x="210" y="226" width="170" height="64"/><text class="dg-t" x="295" y="252" text-anchor="middle">Feed-forward</text><text class="dg-s" x="295" y="268" text-anchor="middle">per-token MLP</text>
+<rect class="dg-box" x="440" y="60" width="130" height="64"/><text class="dg-t" x="505" y="86" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="102" text-anchor="middle">x + Attn(x)</text>
+<rect class="dg-box" x="440" y="226" width="130" height="64"/><text class="dg-t" x="505" y="252" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="268" text-anchor="middle">x + FFN(x)</text>
+<path class="dg-a" d="M90 150 V92 H210"/><path class="dg-a" d="M380 92 H440"/><path class="dg-a" d="M505 124 V175 H295 V226"/><path class="dg-a" d="M380 258 H440"/>
+<path class="dg-ad" d="M90 206 V312 H505 V290"/><text class="dg-l" x="300" y="306" text-anchor="middle">residual shortcut</text>
+<rect class="dg-box" x="760" y="140" width="190" height="76"/><text class="dg-t" x="855" y="168" text-anchor="middle">Why it won</text><text class="dg-s" x="855" y="186" text-anchor="middle">all tokens in parallel,</text><text class="dg-s" x="855" y="202" text-anchor="middle">any two tokens 1 hop apart</text>
+<path class="dg-ad" d="M570 258 H640 V178 H760"/>
+</svg><figcaption>One block = multi-head self-attention, then a per-token feed-forward network. Each is wrapped by "add the input back" (residual) and layer norm. The stack repeats this N times.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Position info</td>
+<td>token vectors</td>
+<td>vectors with order</td>
+<td>attention is order-blind, so add positions</td>
+</tr>
+<tr>
+<td>Multi-head self-attention</td>
+<td>$n \times d$</td>
+<td>$n \times d$</td>
+<td>several attention "views" in parallel; tokens exchange information</td>
+</tr>
+<tr>
+<td>Add + Norm</td>
+<td>$x$, sublayer($x$)</td>
+<td>$x + $ sublayer($x$), normalised</td>
+<td>keeps gradients flowing in deep stacks</td>
+</tr>
+<tr>
+<td>Feed-forward</td>
+<td>$n \times d$</td>
+<td>$n \times d$</td>
+<td>same small MLP applied to each token</td>
+</tr>
+</tbody>
+</table>
+<p>The base model in the paper: $d = 512$, 8 heads, feed-forward width 2048, 6 layers.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Why is self-attention better than a recurrent layer for long sequences with fast hardware? Compare the cost of a layer and the path between positions (the paper's Table 1).</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>sequence length</td>
+<td>input</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>vector size</td>
+<td>input</td>
+<td>512 (paper's base model)</td>
+</tr>
+<tr>
+<td>$C_{attn}$</td>
+<td>operations in self-attention</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$C_{rnn}$</td>
+<td>operations in a recurrent layer</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (per layer, up to constants)</p>
+<p>$$C_{attn} = n^2 d \ (\text{sequential steps } O(1)) \qquad C_{rnn} = n\, d^2 \ (\text{sequential steps } O(n))$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$C_{attn} = 256^2 \times 512 = 65{,}536 \times 512 = 33{,}554{,}432$.</li>
+<li>$C_{rnn} = 256 \times 512^2 = 256 \times 262{,}144 = 67{,}108{,}864$.</li>
+<li>Sequential steps: attention 1, recurrent 256.</li>
+</ol>
+<p><strong>Result.</strong> For $n = 256 &lt; d = 512$, attention needs about half the operations of the RNN, and they can all run at once; the RNN's 256 steps must run in order.</p>
+<p><strong>Why it matters.</strong> Attention wins when $n &lt; d$. When $n$ becomes large, $n^2$ explodes. That is why images are cut into patches (ViT) and why long contexts are costly.</p>
+</div>
+<h2>3. Why VLAs use it</h2>
+<ul>
+<li>A VLA puts image tokens, text tokens and action tokens in one sequence; one Transformer lets them all attend to each other.</li>
+<li>Variants you will meet: decoder-only (next-token prediction, e.g. language models), encoder (ViT), and the action expert of π0, a smaller Transformer that reads the VLM's tokens.</li>
+</ul>
+<p><strong>Carry forward:</strong> a Transformer is a general sequence machine. Next, how to make it <em>generate continuous actions</em>: <a href="flowmatching.html">Flow matching</a>.</p>
+<p><strong>Check question:</strong> $n = 1024$, $d = 512$. Which is cheaper per layer, attention or RNN?</p>
+<details>
+<summary>Answer</summary>
+<p>$C_{attn} = 1024^2 \times 512 = 536{,}870{,}912$; $C_{rnn} = 1024 \times 512^2 = 268{,}435{,}456$. Now the RNN needs half the operations, because $n &gt; d$; but attention is still parallel and has path length 1.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Vaswani et al., <em>Attention Is All You Need</em>, <a href="https://arxiv.org/abs/1706.03762">arXiv 1706.03762</a> · 06/2017</p>
+<p><strong>VẤN ĐỀ</strong> Mô hình chuỗi phải nối các token xa nhau và huấn luyện nhanh trên dữ liệu lớn.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Mạng hồi quy (LSTM, GRU) chỉ xử lý token $t$ sau khi xong token $t-1$. Không song song hóa được theo chiều chuỗi, và thông tin giữa hai token xa phải đi qua nhiều bước. Attention đã được dùng, nhưng chỉ đặt trên RNN.</p>
+<p><strong>Ý TƯỞNG</strong> Bỏ hồi quy. Dùng self-attention để trộn token, một lớp feed-forward cho từng token, kết nối residual và layer norm, cộng thêm thông tin vị trí vì bản thân attention không biết thứ tự.</p>
+<p><strong>KẾT QUẢ</strong> 28,4 BLEU trên WMT14 Anh→Đức (số nổi bật của paper), với chi phí huấn luyện thấp hơn nhiều so với mô hình hồi quy. Mọi backbone VLA từ đó đều là Transformer.</p>
+</div>
+<h2>1. Vấn đề: tuần tự và cách xa nhau</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là n token được xử lý cùng lúc và hai token bất kỳ nối trực tiếp với nhau." class="dg-natural" width="633" height="206" viewBox="0 0 633 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">RNN / LSTM</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Token 1</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="96" height="54"/><text class="dg-t" x="302" y="37" text-anchor="middle">Token 2</text><text class="dg-s" x="302" y="53" text-anchor="middle">chờ token 1</text><path class="dg-a" d="M350 41 H382"/><rect class="dg-badbox" x="384" y="14" width="148" height="54"/><text class="dg-t" x="458" y="37" text-anchor="middle">Token n</text><text class="dg-s" x="458" y="53" text-anchor="middle">cách token 1 n bước</text><text class="dg-note dg-red" x="124" y="86">✗ không song song được; đường đi dài</text><text class="dg-lab dg-green" x="14" y="143">Transformer</text><rect class="dg-box" x="124" y="120" width="96" height="38"/><text class="dg-t" x="172" y="143" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 139 H252"/><rect class="dg-key" x="254" y="112" width="160" height="54"/><text class="dg-t" x="334" y="135" text-anchor="middle">Self-attention</text><text class="dg-s" x="334" y="151" text-anchor="middle">mọi cặp trong một lớp</text><path class="dg-a" d="M414 139 H446"/><rect class="dg-box" x="448" y="120" width="170" height="38"/><text class="dg-t" x="534" y="143" text-anchor="middle">Mọi đầu ra cùng lúc</text><text class="dg-note dg-green" x="124" y="184">✓ đường đi dài 1</text></svg><figcaption>Thay đổi là n token được xử lý cùng lúc và hai token bất kỳ nối trực tiếp với nhau.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Số bước tối đa giữa hai vị trí với chuỗi 256 token." class="dg-natural" width="647" height="72" viewBox="0 0 647 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="187" y="23" text-anchor="end">RNN, token 1 đến token 256</text><rect class="dg-bar" x="197" y="10" width="313" height="18"/><text class="dg-barval" x="518" y="23">256 bước</text><text class="dg-barlabel" x="187" y="53" text-anchor="end">Self-attention</text><rect class="dg-key" x="197" y="40" width="2" height="18"/><text class="dg-barval" x="207" y="53">1 bước</text></svg><figcaption>Số bước tối đa giữa hai vị trí với chuỗi 256 token.</figcaption></figure>
+<h2>2. Khối cơ bản</h2>
+<figure class="diagram"><svg role="img" aria-label="Một khối = self-attention nhiều đầu, rồi mạng feed-forward cho từng token. Mỗi phần được bọc bởi &quot;cộng đầu vào trở lại&quot; (residual) và layer norm. Chồng này lặp N lần." viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="700" height="324"/><text class="dg-h" x="22" y="26">ONE TRANSFORMER BLOCK (stacked N times)</text>
+<rect class="dg-ext" x="30" y="150" width="120" height="56"/><text class="dg-t" x="90" y="174" text-anchor="middle">Token vectors</text><text class="dg-s" x="90" y="190" text-anchor="middle">+ position info</text>
+<rect class="dg-key" x="210" y="60" width="170" height="64"/><text class="dg-t" x="295" y="86" text-anchor="middle">Multi-head</text><text class="dg-t" x="295" y="102" text-anchor="middle">self-attention</text><text class="dg-s" x="295" y="116" text-anchor="middle">tokens exchange info</text>
+<rect class="dg-box" x="210" y="226" width="170" height="64"/><text class="dg-t" x="295" y="252" text-anchor="middle">Feed-forward</text><text class="dg-s" x="295" y="268" text-anchor="middle">per-token MLP</text>
+<rect class="dg-box" x="440" y="60" width="130" height="64"/><text class="dg-t" x="505" y="86" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="102" text-anchor="middle">x + Attn(x)</text>
+<rect class="dg-box" x="440" y="226" width="130" height="64"/><text class="dg-t" x="505" y="252" text-anchor="middle">Add + Norm</text><text class="dg-s" x="505" y="268" text-anchor="middle">x + FFN(x)</text>
+<path class="dg-a" d="M90 150 V92 H210"/><path class="dg-a" d="M380 92 H440"/><path class="dg-a" d="M505 124 V175 H295 V226"/><path class="dg-a" d="M380 258 H440"/>
+<path class="dg-ad" d="M90 206 V312 H505 V290"/><text class="dg-l" x="300" y="306" text-anchor="middle">residual shortcut</text>
+<rect class="dg-box" x="760" y="140" width="190" height="76"/><text class="dg-t" x="855" y="168" text-anchor="middle">Why it won</text><text class="dg-s" x="855" y="186" text-anchor="middle">all tokens in parallel,</text><text class="dg-s" x="855" y="202" text-anchor="middle">any two tokens 1 hop apart</text>
+<path class="dg-ad" d="M570 258 H640 V178 H760"/>
+</svg><figcaption>Một khối = self-attention nhiều đầu, rồi mạng feed-forward cho từng token. Mỗi phần được bọc bởi "cộng đầu vào trở lại" (residual) và layer norm. Chồng này lặp N lần.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thông tin vị trí</td>
+<td>vector token</td>
+<td>vector có thứ tự</td>
+<td>attention không biết thứ tự nên phải cộng vị trí</td>
+</tr>
+<tr>
+<td>Self-attention nhiều đầu</td>
+<td>$n \times d$</td>
+<td>$n \times d$</td>
+<td>nhiều "góc nhìn" attention song song; token trao đổi thông tin</td>
+</tr>
+<tr>
+<td>Add + Norm</td>
+<td>$x$, sublayer($x$)</td>
+<td>$x + $ sublayer($x$), đã chuẩn hóa</td>
+<td>giữ gradient chảy trong chồng sâu</td>
+</tr>
+<tr>
+<td>Feed-forward</td>
+<td>$n \times d$</td>
+<td>$n \times d$</td>
+<td>cùng một MLP nhỏ áp cho từng token</td>
+</tr>
+</tbody>
+</table>
+<p>Mô hình base trong paper: $d = 512$, 8 đầu, độ rộng feed-forward 2048, 6 lớp.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Vì sao self-attention tốt hơn lớp hồi quy với chuỗi dài trên phần cứng nhanh? So chi phí một lớp và đường đi giữa các vị trí (Bảng 1 của paper).</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>độ dài chuỗi</td>
+<td>input</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>cỡ vector</td>
+<td>input</td>
+<td>512 (mô hình base của paper)</td>
+</tr>
+<tr>
+<td>$C_{attn}$</td>
+<td>số phép tính của self-attention</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$C_{rnn}$</td>
+<td>số phép tính của lớp hồi quy</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (mỗi lớp, sai khác hằng số)</p>
+<p>$$C_{attn} = n^2 d \ (\text{số bước tuần tự } O(1)) \qquad C_{rnn} = n\, d^2 \ (\text{số bước tuần tự } O(n))$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$C_{attn} = 256^2 \times 512 = 65\,536 \times 512 = 33\,554\,432$.</li>
+<li>$C_{rnn} = 256 \times 512^2 = 256 \times 262\,144 = 67\,108\,864$.</li>
+<li>Số bước tuần tự: attention 1, hồi quy 256.</li>
+</ol>
+<p><strong>Kết quả.</strong> Với $n = 256 &lt; d = 512$, attention cần khoảng một nửa số phép tính của RNN, và chạy được tất cả cùng lúc; 256 bước của RNN phải chạy lần lượt.</p>
+<p><strong>Ý nghĩa.</strong> Attention thắng khi $n &lt; d$. Khi $n$ rất lớn, $n^2$ bùng nổ. Vì vậy ảnh được cắt thành patch (ViT) và ngữ cảnh dài tốn kém.</p>
+</div>
+<h2>3. Vì sao VLA dùng nó</h2>
+<ul>
+<li>VLA đặt token ảnh, token chữ và token hành động vào một chuỗi; một Transformer cho chúng chú ý lẫn nhau.</li>
+<li>Các biến thể sẽ gặp: decoder-only (dự đoán token kế tiếp, như mô hình ngôn ngữ), encoder (ViT), và action expert của π0, một Transformer nhỏ đọc token của VLM.</li>
+</ul>
+<p><strong>Mang theo:</strong> Transformer là cỗ máy chuỗi tổng quát. Tiếp theo: làm sao để nó <em>sinh hành động liên tục</em>: <a href="flowmatching.html">Flow matching</a>.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $n = 1024$, $d = 512$. Mỗi lớp, attention hay RNN rẻ hơn?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$C_{attn} = 1024^2 \times 512 = 536\,870\,912$; $C_{rnn} = 1024 \times 512^2 = 268\,435\,456$. Lúc này RNN cần ít phép tính hơn một nửa, vì $n &gt; d$; nhưng attention vẫn song song và có đường đi dài 1.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

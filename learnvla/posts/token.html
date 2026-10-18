@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A token is a small piece of input turned into a vector by table lookup. Once text, image patches and actions are all tokens, one Transformer can read them together. Worked example: turning an action value into a token id.">
+<title>Token: One Currency for Text, Images and Actions · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Token: One Currency for Text, Images and Actions">
+<meta property="og:description" content="A token is a small piece of input turned into a vector by table lookup. Once text, image patches and actions are all tokens, one Transformer can read them together. Worked example: turning an action value into a token id.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Token: One Currency for Text, Images and Actions</h1>
+    <h1 data-vi>Token: Một đơn vị chung cho chữ, ảnh và hành động</h1>
+
+    <p class="post-excerpt-lead" data-en>A token is a small piece of input turned into a vector by table lookup. Once text, image patches and actions are all tokens, one Transformer can read them together. Worked example: turning an action value into a token id.</p>
+    <p class="post-excerpt-lead" data-vi>Token là một mẩu đầu vào nhỏ được đổi thành vector bằng tra bảng. Khi chữ, patch ảnh và hành động đều là token, một Transformer đọc được tất cả. Ví dụ tính tay: đổi một giá trị hành động thành id token.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Token</span><span class="pill">Tokenizer</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>CONCEPT</strong> Token. No single paper; the text version is byte-pair encoding, <a href="https://arxiv.org/abs/1508.07909">arXiv 1508.07909</a> · 08/2015</p>
+<p><strong>PROBLEM</strong> A neural network eats numbers. Text is characters, images are pixels, actions are joint values. Each needs a way into the same network.</p>
+<p><strong>WHAT FAILED BEFORE</strong> One specialised model per modality (a CNN for images, an RNN for text, a regression head for actions), glued by hand. Words as units fail on rare words; characters as units make sequences very long.</p>
+<p><strong>IDEA</strong> Cut every input into small pieces, give each piece an integer id, and look up its vector in a learned table. A sequence of vectors is all a Transformer needs.</p>
+<p><strong>RESULT</strong> A VLA reads "pick up the cup" (text tokens), 196 image-patch tokens and action tokens in one sequence.</p>
+</div>
+<h2>1. The problem: three modalities, one network</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the shared interface: everything becomes a list of vectors of the same size $d$." class="dg-natural" width="727" height="206" viewBox="0 0 727 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Separate models</text><rect class="dg-box" x="134" y="22" width="170" height="38"/><text class="dg-t" x="219" y="45" text-anchor="middle">Text, image, action</text><path class="dg-a" d="M304 41 H336"/><rect class="dg-badbox" x="338" y="14" width="186" height="54"/><text class="dg-t" x="431" y="37" text-anchor="middle">One model each</text><text class="dg-s" x="431" y="53" text-anchor="middle">RNN, CNN, regression head</text><path class="dg-a" d="M524 41 H556"/><rect class="dg-box" x="558" y="22" width="132" height="38"/><text class="dg-t" x="625" y="45" text-anchor="middle">Fusion by hand</text><text class="dg-note dg-red" x="134.0" y="86">✗ glued together manually</text><text class="dg-lab dg-green" x="14" y="143">Tokens</text><rect class="dg-box" x="134" y="120" width="186" height="38"/><text class="dg-t" x="227" y="143" text-anchor="middle">Text / image / action</text><path class="dg-a" d="M320 139 H352"/><rect class="dg-key" x="354" y="112" width="186" height="54"/><text class="dg-t" x="446" y="135" text-anchor="middle">Cut into pieces → ids</text><text class="dg-s" x="446" y="151" text-anchor="middle">lookup table</text><path class="dg-a" d="M539 139 H571"/><rect class="dg-box" x="573" y="120" width="140" height="38"/><text class="dg-t" x="643" y="143" text-anchor="middle">One Transformer</text><text class="dg-note dg-green" x="134.0" y="184">✓ one sequence, one model</text></svg><figcaption>The change is the shared interface: everything becomes a list of vectors of the same size $d$.</figcaption></figure>
+<h2>2. Three ways to make a token</h2>
+<table>
+<thead>
+<tr>
+<th>Modality</th>
+<th>Piece</th>
+<th>How</th>
+<th>Count (example)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Text</td>
+<td>sub-word</td>
+<td>BPE: merge the most frequent symbol pairs</td>
+<td>a short sentence: a few to ~10</td>
+</tr>
+<tr>
+<td>Image</td>
+<td>patch</td>
+<td>cut into squares, flatten, project (<a href="vit.html">ViT</a>)</td>
+<td>224×224 with 16×16 patches: 196</td>
+</tr>
+<tr>
+<td>Action</td>
+<td>bin</td>
+<td>quantise each action dimension (<a href="action-tokenization.html">action tokenization</a>)</td>
+<td>one token per dimension per step</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Tokens for a 224×224 image. Patches cut the count by 256×." class="dg-natural" width="599" height="72" viewBox="0 0 599 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">One token per pixel</text><rect class="dg-bar" x="149" y="10" width="313" height="18"/><text class="dg-barval" x="470" y="23">50176 tokens</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">16×16 patches</text><rect class="dg-key" x="149" y="40" width="2" height="18"/><text class="dg-barval" x="159" y="53">196 tokens</text></svg><figcaption>Tokens for a 224×224 image. Patches cut the count by 256×.</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How is a continuous action value turned into a token id, and how much is lost? This is the simplest "action tokenizer", binning (used with 256 bins per dimension in RT-1/RT-2-style models).</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a$</td>
+<td>one action dimension, in $[-1, 1]$</td>
+<td>input</td>
+<td>0.30</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>number of bins</td>
+<td>constant</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$i$</td>
+<td>token id</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a$</td>
+<td>value decoded from the id</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$i = \left\lfloor \frac{a+1}{2}\,K \right\rfloor \qquad \hat a = \frac{i + 0.5}{K}\cdot 2 - 1$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$(0.30 + 1)/2 = 0.65$.</li>
+<li>$0.65 \times 256 = 166.4$, so $i = 166$.</li>
+<li>Decode: $(166 + 0.5)/256 = 0.6504$, then $0.6504 \times 2 - 1 = 0.3008$.</li>
+</ol>
+<p><strong>Result.</strong> The value 0.30 becomes token id 166 and decodes back to 0.3008. Error 0.0008.</p>
+<p><strong>Why it matters.</strong> The worst error is half a bin, $1/K = 0.0039$. More bins give a finer action but a bigger vocabulary; fewer bins are coarse. This is why later work such as FAST compresses whole action chunks instead.</p>
+</div>
+<h2>3. From id to vector</h2>
+<p>The id is just a row number. A table $E$ of shape (vocabulary size $V$) × ($d$) is learned with the model; the token's vector is row $i$ of $E$.</p>
+<p>Example with $V = 5$, $d = 3$: ids $[2, 4]$ pick rows 2 and 4 of $E$ and give a $2 \times 3$ matrix. No arithmetic, only lookup.</p>
+<p><strong>Carry forward:</strong> a sequence of vectors still has no way for tokens to talk to each other. That is <a href="attention.html">Attention</a>.</p>
+<p><strong>Check question:</strong> $a = -0.5$, $K = 256$. What is $i$?</p>
+<details>
+<summary>Answer</summary>
+<p>$(-0.5 + 1)/2 = 0.25$; $0.25 \times 256 = 64$; $i = 64$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>KHÁI NIỆM</strong> Token. Không có paper riêng; bản cho văn bản là byte-pair encoding, <a href="https://arxiv.org/abs/1508.07909">arXiv 1508.07909</a> · 08/2015</p>
+<p><strong>VẤN ĐỀ</strong> Mạng nơ-ron ăn số. Văn bản là ký tự, ảnh là pixel, hành động là giá trị khớp. Mỗi thứ cần một đường vào cùng một mạng.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Mỗi phương thức một mô hình riêng (CNN cho ảnh, RNN cho chữ, đầu hồi quy cho hành động) rồi ghép bằng tay. Dùng từ làm đơn vị thì thất bại với từ hiếm; dùng ký tự thì chuỗi quá dài.</p>
+<p><strong>Ý TƯỞNG</strong> Cắt mọi đầu vào thành các mẩu nhỏ, gán mỗi mẩu một id nguyên, rồi tra vector của nó trong một bảng học được. Một dãy vector là tất cả những gì Transformer cần.</p>
+<p><strong>KẾT QUẢ</strong> VLA đọc "pick up the cup" (token chữ), 196 token patch ảnh và token hành động trong cùng một chuỗi.</p>
+</div>
+<h2>1. Vấn đề: ba phương thức, một mạng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở giao diện chung: mọi thứ thành một danh sách vector cùng kích thước $d$." class="dg-natural" width="694" height="206" viewBox="0 0 694 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Mô hình riêng</text><rect class="dg-box" x="124" y="22" width="170" height="38"/><text class="dg-t" x="209" y="45" text-anchor="middle">Chữ, ảnh, hành động</text><path class="dg-a" d="M294 41 H326"/><rect class="dg-badbox" x="328" y="14" width="170" height="54"/><text class="dg-t" x="414" y="37" text-anchor="middle">Mỗi thứ một mô hình</text><text class="dg-s" x="414" y="53" text-anchor="middle">RNN, CNN, đầu hồi quy</text><path class="dg-a" d="M499 41 H531"/><rect class="dg-box" x="533" y="22" width="125" height="38"/><text class="dg-t" x="595" y="45" text-anchor="middle">Ghép bằng tay</text><text class="dg-note dg-red" x="124" y="86">✗ phải ghép thủ công</text><text class="dg-lab dg-green" x="14" y="143">Token</text><rect class="dg-box" x="124" y="120" width="186" height="38"/><text class="dg-t" x="217" y="143" text-anchor="middle">Chữ / ảnh / hành động</text><path class="dg-a" d="M310 139 H342"/><rect class="dg-key" x="344" y="112" width="163" height="54"/><text class="dg-t" x="425" y="135" text-anchor="middle">Cắt thành mẩu → id</text><text class="dg-s" x="425" y="151" text-anchor="middle">bảng tra</text><path class="dg-a" d="M506 139 H538"/><rect class="dg-box" x="540" y="120" width="140" height="38"/><text class="dg-t" x="610" y="143" text-anchor="middle">Một Transformer</text><text class="dg-note dg-green" x="124" y="184">✓ một chuỗi, một mô hình</text></svg><figcaption>Thay đổi nằm ở giao diện chung: mọi thứ thành một danh sách vector cùng kích thước $d$.</figcaption></figure>
+<h2>2. Ba cách tạo token</h2>
+<table>
+<thead>
+<tr>
+<th>Phương thức</th>
+<th>Mẩu</th>
+<th>Cách làm</th>
+<th>Số lượng (ví dụ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chữ</td>
+<td>sub-word</td>
+<td>BPE: gộp các cặp ký hiệu hay gặp nhất</td>
+<td>một câu ngắn: vài đến ~10</td>
+</tr>
+<tr>
+<td>Ảnh</td>
+<td>patch</td>
+<td>cắt ô vuông, duỗi phẳng, chiếu (<a href="vit.html">ViT</a>)</td>
+<td>224×224 patch 16×16: 196</td>
+</tr>
+<tr>
+<td>Hành động</td>
+<td>bin</td>
+<td>lượng tử hóa từng chiều (<a href="action-tokenization.html">action tokenization</a>)</td>
+<td>một token mỗi chiều mỗi bước</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Số token của ảnh 224×224. Patch giảm số token 256 lần." class="dg-natural" width="599" height="72" viewBox="0 0 599 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">Một token mỗi pixel</text><rect class="dg-bar" x="149" y="10" width="313" height="18"/><text class="dg-barval" x="470" y="23">50176 token</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">patch 16×16</text><rect class="dg-key" x="149" y="40" width="2" height="18"/><text class="dg-barval" x="159" y="53">196 token</text></svg><figcaption>Số token của ảnh 224×224. Patch giảm số token 256 lần.</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một giá trị hành động liên tục được đổi thành id token thế nào, và mất bao nhiêu? Đây là "tokenizer hành động" đơn giản nhất, chia bin (256 bin mỗi chiều như các mô hình kiểu RT-1/RT-2).</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a$</td>
+<td>một chiều hành động, trong $[-1, 1]$</td>
+<td>input</td>
+<td>0,30</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>số bin</td>
+<td>hằng số</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$i$</td>
+<td>id token</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a$</td>
+<td>giá trị giải mã từ id</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$i = \left\lfloor \frac{a+1}{2}\,K \right\rfloor \qquad \hat a = \frac{i + 0{,}5}{K}\cdot 2 - 1$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$(0{,}30 + 1)/2 = 0{,}65$.</li>
+<li>$0{,}65 \times 256 = 166{,}4$, nên $i = 166$.</li>
+<li>Giải mã: $(166 + 0{,}5)/256 = 0{,}6504$, rồi $0{,}6504 \times 2 - 1 = 0{,}3008$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Giá trị 0,30 thành token id 166 và giải mã lại 0,3008. Sai số 0,0008.</p>
+<p><strong>Ý nghĩa.</strong> Sai số tệ nhất là nửa bin, $1/K = 0{,}0039$. Nhiều bin thì hành động mịn hơn nhưng từ vựng lớn hơn; ít bin thì thô. Vì vậy các công trình sau như FAST nén cả đoạn hành động thay vì chia bin.</p>
+</div>
+<h2>3. Từ id đến vector</h2>
+<p>Id chỉ là số thứ tự hàng. Một bảng $E$ kích thước (cỡ từ vựng $V$) × ($d$) được học cùng mô hình; vector của token là hàng $i$ của $E$.</p>
+<p>Ví dụ $V = 5$, $d = 3$: các id $[2, 4]$ lấy hàng 2 và 4 của $E$, cho ma trận $2 \times 3$. Không có phép tính, chỉ tra bảng.</p>
+<p><strong>Mang theo:</strong> một chuỗi vector vẫn chưa cho các token nói chuyện với nhau. Đó là <a href="attention.html">Attention</a>.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $a = -0{,}5$, $K = 256$. $i$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$(-0{,}5 + 1)/2 = 0{,}25$; $0{,}25 \times 256 = 64$; $i = 64$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
