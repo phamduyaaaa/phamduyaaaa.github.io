@@ -182,6 +182,22 @@
     "read_min": 4
   },
   {
+    "slug": "pi0",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "π0: A VLM With a Flow-Matching Action Expert",
+    "title_vi": "π0: VLM kèm action expert dùng flow matching",
+    "excerpt_en": "Earlier VLAs write actions as text-like tokens one at a time, which struggles with dexterous, high-frequency control. π0 attaches a 300M flow-matching action expert to a 3B VLM and outputs a 50-step action chunk in 10 integration steps.",
+    "excerpt_vi": "Các VLA trước viết hành động như token giống chữ, từng token một, nên khó với điều khiển khéo léo, tần số cao. π0 gắn một action expert flow matching 300M vào VLM 3B và xuất đoạn hành động 50 bước chỉ với 10 bước tích phân.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "π0",
+      "Flow Matching"
+    ],
+    "read_min": 4
+  },
+  {
     "slug": "survey-force-map",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",

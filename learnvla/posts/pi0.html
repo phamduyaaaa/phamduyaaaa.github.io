@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Earlier VLAs write actions as text-like tokens one at a time, which struggles with dexterous, high-frequency control. π0 attaches a 300M flow-matching action expert to a 3B VLM and outputs a 50-step action chunk in 10 integration steps.">
+<title>π0: A VLM With a Flow-Matching Action Expert · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="π0: A VLM With a Flow-Matching Action Expert">
+<meta property="og:description" content="Earlier VLAs write actions as text-like tokens one at a time, which struggles with dexterous, high-frequency control. π0 attaches a 300M flow-matching action expert to a 3B VLM and outputs a 50-step action chunk in 10 integration steps.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>π0: A VLM With a Flow-Matching Action Expert</h1>
+    <h1 data-vi>π0: VLM kèm action expert dùng flow matching</h1>
+
+    <p class="post-excerpt-lead" data-en>Earlier VLAs write actions as text-like tokens one at a time, which struggles with dexterous, high-frequency control. π0 attaches a 300M flow-matching action expert to a 3B VLM and outputs a 50-step action chunk in 10 integration steps.</p>
+    <p class="post-excerpt-lead" data-vi>Các VLA trước viết hành động như token giống chữ, từng token một, nên khó với điều khiển khéo léo, tần số cao. π0 gắn một action expert flow matching 300M vào VLM 3B và xuất đoạn hành động 50 bước chỉ với 10 bước tích phân.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">π0</span><span class="pill">Flow Matching</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Physical Intelligence, <em>π0: A Vision-Language-Action Flow Model for General Robot Control</em>, <a href="https://arxiv.org/abs/2410.24164">arXiv 2410.24164</a> · 10/2024</p>
+<p><strong>PROBLEM</strong> One model should follow language and also handle dexterous, high-frequency control (the paper's tasks include folding laundry).</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper says prior VLAs "employ autoregressive discretization to represent actions in a manner analogous to text tokens", and that high-frequency action chunks (up to 50 Hz) and dexterous tasks "pose a major challenge" for such VLAs.</p>
+<p><strong>IDEA</strong> Keep a pre-trained VLM (PaliGemma, 3B) for semantics. Add a separate 300M "action expert" that outputs a continuous action chunk by flow matching, attending to the VLM's tokens.</p>
+<p><strong>RESULT</strong> 3.3B parameters, chunk of $H = 50$ actions, up to 50 Hz, 10 Euler steps. Pre-trained on about 10,000 hours from 7 robot configurations, then fine-tuned per task.</p>
+</div>
+<h2>1. The problem: actions as text are slow and coarse</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the output head: continuous chunk by flow matching instead of text-like tokens." class="dg-natural" width="663" height="206" viewBox="0 0 663 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Autoregressive VLA</text><rect class="dg-box" x="153" y="22" width="117" height="38"/><text class="dg-t" x="212" y="45" text-anchor="middle">Image + text</text><path class="dg-a" d="M270 41 H302"/><rect class="dg-badbox" x="304" y="14" width="170" height="54"/><text class="dg-t" x="390" y="37" text-anchor="middle">Bin each action dim</text><text class="dg-s" x="390" y="53" text-anchor="middle">one token at a time</text><path class="dg-a" d="M475 41 H507"/><rect class="dg-box" x="509" y="22" width="96" height="38"/><text class="dg-t" x="557" y="45" text-anchor="middle">Action</text><text class="dg-note dg-red" x="153.2" y="86">✗ one network pass per token; hard at high frequency</text><text class="dg-lab dg-green" x="14" y="143">π0</text><rect class="dg-box" x="153" y="120" width="117" height="38"/><text class="dg-t" x="212" y="143" text-anchor="middle">Image + text</text><path class="dg-a" d="M270 139 H302"/><rect class="dg-key" x="304" y="112" width="186" height="54"/><text class="dg-t" x="397" y="135" text-anchor="middle">Action expert</text><text class="dg-s" x="397" y="151" text-anchor="middle">flow matching, continuous</text><path class="dg-a" d="M490 139 H522"/><rect class="dg-box" x="524" y="120" width="125" height="38"/><text class="dg-t" x="587" y="143" text-anchor="middle">50-step chunk</text><text class="dg-note dg-green" x="153.2" y="184">✓ 10 passes of a small expert</text></svg><figcaption>The change is the output head: continuous chunk by flow matching instead of text-like tokens.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Image and language tokens go through the VLM. Robot-specific tokens (state and noisy actions) use a separate set of weights, the action expert, and attend to the VLM's tokens. The expert is run 10 times to turn noise into an action chunk." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="40" width="150" height="56"/><text class="dg-t" x="95" y="64" text-anchor="middle">Camera images</text><text class="dg-s" x="95" y="80" text-anchor="middle">2-3 per robot</text>
+<rect class="dg-ext" x="20" y="120" width="150" height="56"/><text class="dg-t" x="95" y="144" text-anchor="middle">Language l</text><text class="dg-s" x="95" y="160" text-anchor="middle">task instruction</text>
+<rect class="dg-grp" x="230" y="24" width="250" height="170"/><text class="dg-h" x="242" y="42">VLM BACKBONE (PaliGemma, 3B)</text>
+<rect class="dg-box" x="250" y="62" width="210" height="110"/><text class="dg-t" x="355" y="100" text-anchor="middle">Image + text tokens</text><text class="dg-s" x="355" y="118" text-anchor="middle">Transformer layers</text><text class="dg-s" x="355" y="134" text-anchor="middle">internet-scale knowledge</text>
+<path class="dg-a" d="M170 68 H200 V90 H250"/><path class="dg-a" d="M170 148 H200 V140 H250"/>
+<rect class="dg-grp" x="230" y="214" width="530" height="150"/><text class="dg-h" x="242" y="232">ACTION EXPERT (300M, separate weights, from scratch)</text>
+<rect class="dg-ext" x="20" y="248" width="150" height="48"/><text class="dg-t" x="95" y="268" text-anchor="middle">State q_t</text><text class="dg-s" x="95" y="284" text-anchor="middle">joint angles</text>
+<rect class="dg-box" x="250" y="252" width="130" height="44"/><text class="dg-t" x="315" y="272" text-anchor="middle">State token</text><text class="dg-s" x="315" y="287" text-anchor="middle">linear projection</text>
+<path class="dg-a" d="M170 272 H250"/>
+<rect class="dg-ext" x="20" y="312" width="150" height="48"/><text class="dg-t" x="95" y="332" text-anchor="middle">Noisy actions</text><text class="dg-s" x="95" y="348" text-anchor="middle">A^τ, H=50 steps</text>
+<rect class="dg-key" x="410" y="252" width="190" height="96"/><text class="dg-t" x="505" y="286" text-anchor="middle">Action tokens</text><text class="dg-s" x="505" y="304" text-anchor="middle">+ timestep τ embedding</text><text class="dg-s" x="505" y="320" text-anchor="middle">bidirectional among actions</text>
+<path class="dg-a" d="M170 336 H300 V320 H410"/><path class="dg-a" d="M380 274 H410"/>
+<path class="dg-ad" d="M355 172 V214 H500 V252"/><text class="dg-l" x="430" y="208">attend to image+text (cached)</text>
+<rect class="dg-key" x="650" y="262" width="90" height="76"/><text class="dg-t" x="695" y="296" text-anchor="middle">v_θ</text><text class="dg-s" x="695" y="314" text-anchor="middle">velocity</text>
+<path class="dg-a" d="M600 300 H650"/>
+<rect class="dg-box" x="800" y="262" width="160" height="76"/><text class="dg-t" x="880" y="288" text-anchor="middle">Euler step</text><text class="dg-s" x="880" y="306" text-anchor="middle">A ← A + δ·v_θ</text><text class="dg-s" x="880" y="322" text-anchor="middle">10 steps, δ = 0.1</text>
+<path class="dg-a" d="M740 300 H800"/>
+<path class="dg-ad" d="M880 262 V236 H400 V252"/><text class="dg-l" x="730" y="228" text-anchor="middle">repeat with updated A^τ</text>
+<rect class="dg-box" x="800" y="130" width="160" height="60"/><text class="dg-t" x="880" y="156" text-anchor="middle">Action chunk</text><text class="dg-s" x="880" y="174" text-anchor="middle">50 steps, up to 50 Hz</text>
+<path class="dg-a" d="M900 262 V190"/>
+</svg><figcaption>Image and language tokens go through the VLM. Robot-specific tokens (state and noisy actions) use a separate set of weights, the action expert, and attend to the VLM's tokens. The expert is run 10 times to turn noise into an action chunk.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLM (PaliGemma, 3B)</td>
+<td>2-3 images, language</td>
+<td>tokens with semantics</td>
+<td>inherits internet-scale knowledge</td>
+</tr>
+<tr>
+<td>State token</td>
+<td>joint configuration $q_t$</td>
+<td>one token</td>
+<td>robot state</td>
+</tr>
+<tr>
+<td>Action tokens</td>
+<td>noisy chunk $A^\tau_t$, timestep $\tau$</td>
+<td>tokens for 50 steps</td>
+<td>what the expert denoises</td>
+</tr>
+<tr>
+<td>Action expert (300M)</td>
+<td>the three above, plus VLM tokens</td>
+<td>velocity $v_\theta$</td>
+<td>separate weights, trained from scratch; actions attend to each other bidirectionally</td>
+</tr>
+<tr>
+<td>Euler integration</td>
+<td>$A^\tau_t$, $v_\theta$</td>
+<td>$A^{\tau+\delta}_t$</td>
+<td>10 steps, $\delta = 0.1$</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Parameters in billions. π0-small is the paper's baseline without VLM initialisation." class="dg-natural" width="585" height="132" viewBox="0 0 585 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">VLM backbone</text><rect class="dg-bar" x="135" y="10" width="285" height="18"/><text class="dg-barval" x="428" y="23">3 B</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">Action expert</text><rect class="dg-bar" x="135" y="40" width="28" height="18"/><text class="dg-barval" x="172" y="53">0.3 B</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">π0 total</text><rect class="dg-key" x="135" y="70" width="313" height="18"/><text class="dg-barval" x="456" y="83">3.3 B</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">π0-small (no VLM)</text><rect class="dg-bar" x="135" y="100" width="45" height="18"/><text class="dg-barval" x="188" y="113">0.47 B</text></svg><figcaption>Parameters in billions. π0-small is the paper's baseline without VLM initialisation.</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How many <em>sequential</em> network passes does one action chunk need with text-like tokens, versus with π0's flow expert? This is the reason for the new head.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$H$</td>
+<td>actions per chunk</td>
+<td>input</td>
+<td>50 (paper)</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>action dimensions (the paper pads to 18)</td>
+<td>input</td>
+<td>18</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>Euler steps</td>
+<td>input</td>
+<td>10 (paper)</td>
+</tr>
+<tr>
+<td>$P_{AR}$</td>
+<td>sequential passes, one token per value</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$P_{flow}$</td>
+<td>sequential passes, flow expert</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$P_{AR} = H \times d, \qquad P_{flow} = N$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$P_{AR} = 50 \times 18 = 900$.</li>
+<li>$P_{flow} = 10$.</li>
+<li>Ratio $900 / 10 = 90$.</li>
+</ol>
+<p><strong>Result.</strong> 900 sequential passes against 10.</p>
+<p><strong>Why it matters.</strong> The 90× is an illustration of the sequential depth: it ignores compression such as FAST, and passes differ in cost. π0 also caches the VLM's keys and values and re-runs only the 300M expert in each of the 10 steps, so each pass is cheaper than a full-model pass.</p>
+</div>
+<h2>3. Training</h2>
+<ul>
+<li><strong>Loss:</strong> flow matching with $\tau = 0$ noise and $\tau = 1$ data: $A^\tau_t = \tau A_t + (1-\tau)\varepsilon$, target velocity $A_t - \varepsilon$. Details in <a href="flowmatching.html">flow matching</a>.</li>
+<li><strong>Timestep sampling:</strong> a Beta distribution that emphasises lower (noisier) $\tau$.</li>
+<li><strong>Pre-training data:</strong> 903M timesteps from the authors' own robots (68 tasks, 7 robot configurations including single-arm, bimanual and mobile) plus open-source data (OXE, Bridge v2, DROID) as 9.1% of the mixture.</li>
+<li><strong>Post-training:</strong> fine-tune on curated data for the target task: from 5 hours (simplest) to 100+ hours (hardest), as the paper states.</li>
+</ul>
+<h2>4. What the paper reports</h2>
+<ul>
+<li>Pre-trained π0 follows language better than the 470M π0-small baseline and beats prior VLAs in the paper's comparisons.</li>
+<li>Pre-training helps fine-tuning, in the paper's summary up to about 2× on some tasks.</li>
+<li>On multi-stage tasks the paper reports more than 50% of the maximum score across tasks.</li>
+</ul>
+<h2>5. Caveats</h2>
+<ul>
+<li>These results come from a summary of the paper's later sections; I did not read the numbers in the figures, so none are quoted.</li>
+<li>Appendix A (architecture and inference details) was not read verbatim. The attention layout of the three token groups is from a summary, not checked.</li>
+<li>The paper says not all evaluated tasks work reliably, and the comparison with π0-small is confounded by model size.</li>
+</ul>
+<p><strong>Carry forward:</strong> force papers build on this: <a href="forcevla.html">ForceVLA</a> adds force tokens to a π0-style model, and <a href="taf-vla.html">TaF-VLA</a> plugs tactile tokens into the action expert of π0.5.</p>
+<p><strong>Check question:</strong> $H = 50$, $d = 14$. How many sequential passes would one-token-per-value need, and how many does flow with $N = 10$ need?</p>
+<details>
+<summary>Answer</summary>
+<p>$P_{AR} = 50 \times 14 = 700$; $P_{flow} = 10$. Ratio 70.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Physical Intelligence, <em>π0: A Vision-Language-Action Flow Model for General Robot Control</em>, <a href="https://arxiv.org/abs/2410.24164">arXiv 2410.24164</a> · 10/2024</p>
+<p><strong>VẤN ĐỀ</strong> Một mô hình vừa theo được ngôn ngữ vừa xử lý điều khiển khéo léo, tần số cao (các tác vụ của paper gồm gấp quần áo).</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper nói các VLA trước "dùng rời rạc hóa tự hồi quy để biểu diễn hành động giống như token chữ", và rằng đoạn hành động tần số cao (đến 50 Hz) cùng tác vụ khéo léo "là thách thức lớn" với loại VLA này.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ một VLM tiền huấn luyện (PaliGemma, 3B) cho ngữ nghĩa. Thêm một "action expert" riêng 300M xuất đoạn hành động liên tục bằng flow matching, chú ý đến token của VLM.</p>
+<p><strong>KẾT QUẢ</strong> 3,3B tham số, đoạn $H = 50$ hành động, tới 50 Hz, 10 bước Euler. Tiền huấn luyện trên khoảng 10.000 giờ từ 7 cấu hình robot, rồi tinh chỉnh theo từng tác vụ.</p>
+</div>
+<h2>1. Vấn đề: hành động dạng chữ chậm và thô</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là đầu ra: đoạn liên tục bằng flow matching thay cho token giống chữ." class="dg-natural" width="596" height="206" viewBox="0 0 596 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">VLA tự hồi quy</text><rect class="dg-box" x="128" y="22" width="96" height="38"/><text class="dg-t" x="176" y="45" text-anchor="middle">Ảnh + chữ</text><path class="dg-a" d="M224 41 H256"/><rect class="dg-badbox" x="258" y="14" width="170" height="54"/><text class="dg-t" x="343" y="37" text-anchor="middle">Chia bin từng chiều</text><text class="dg-s" x="343" y="53" text-anchor="middle">một token mỗi lần</text><path class="dg-a" d="M428 41 H460"/><rect class="dg-box" x="462" y="22" width="96" height="38"/><text class="dg-t" x="510" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ một lượt qua mạng cho mỗi token; khó ở tần số cao</text><text class="dg-lab dg-green" x="14" y="143">π0</text><rect class="dg-box" x="128" y="120" width="96" height="38"/><text class="dg-t" x="176" y="143" text-anchor="middle">Ảnh + chữ</text><path class="dg-a" d="M224 139 H256"/><rect class="dg-key" x="258" y="112" width="173" height="54"/><text class="dg-t" x="344" y="135" text-anchor="middle">Action expert</text><text class="dg-s" x="344" y="151" text-anchor="middle">flow matching, liên tục</text><path class="dg-a" d="M431 139 H463"/><rect class="dg-box" x="465" y="120" width="117" height="38"/><text class="dg-t" x="523" y="143" text-anchor="middle">Đoạn 50 bước</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ 10 lượt của một expert nhỏ</text></svg><figcaption>Thay đổi là đầu ra: đoạn liên tục bằng flow matching thay cho token giống chữ.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Token ảnh và ngôn ngữ đi qua VLM. Token riêng của robot (trạng thái và hành động nhiễu) dùng một bộ trọng số riêng, action expert, và chú ý đến token của VLM. Expert chạy 10 lần để biến nhiễu thành đoạn hành động." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="40" width="150" height="56"/><text class="dg-t" x="95" y="64" text-anchor="middle">Camera images</text><text class="dg-s" x="95" y="80" text-anchor="middle">2-3 per robot</text>
+<rect class="dg-ext" x="20" y="120" width="150" height="56"/><text class="dg-t" x="95" y="144" text-anchor="middle">Language l</text><text class="dg-s" x="95" y="160" text-anchor="middle">task instruction</text>
+<rect class="dg-grp" x="230" y="24" width="250" height="170"/><text class="dg-h" x="242" y="42">VLM BACKBONE (PaliGemma, 3B)</text>
+<rect class="dg-box" x="250" y="62" width="210" height="110"/><text class="dg-t" x="355" y="100" text-anchor="middle">Image + text tokens</text><text class="dg-s" x="355" y="118" text-anchor="middle">Transformer layers</text><text class="dg-s" x="355" y="134" text-anchor="middle">internet-scale knowledge</text>
+<path class="dg-a" d="M170 68 H200 V90 H250"/><path class="dg-a" d="M170 148 H200 V140 H250"/>
+<rect class="dg-grp" x="230" y="214" width="530" height="150"/><text class="dg-h" x="242" y="232">ACTION EXPERT (300M, separate weights, from scratch)</text>
+<rect class="dg-ext" x="20" y="248" width="150" height="48"/><text class="dg-t" x="95" y="268" text-anchor="middle">State q_t</text><text class="dg-s" x="95" y="284" text-anchor="middle">joint angles</text>
+<rect class="dg-box" x="250" y="252" width="130" height="44"/><text class="dg-t" x="315" y="272" text-anchor="middle">State token</text><text class="dg-s" x="315" y="287" text-anchor="middle">linear projection</text>
+<path class="dg-a" d="M170 272 H250"/>
+<rect class="dg-ext" x="20" y="312" width="150" height="48"/><text class="dg-t" x="95" y="332" text-anchor="middle">Noisy actions</text><text class="dg-s" x="95" y="348" text-anchor="middle">A^τ, H=50 steps</text>
+<rect class="dg-key" x="410" y="252" width="190" height="96"/><text class="dg-t" x="505" y="286" text-anchor="middle">Action tokens</text><text class="dg-s" x="505" y="304" text-anchor="middle">+ timestep τ embedding</text><text class="dg-s" x="505" y="320" text-anchor="middle">bidirectional among actions</text>
+<path class="dg-a" d="M170 336 H300 V320 H410"/><path class="dg-a" d="M380 274 H410"/>
+<path class="dg-ad" d="M355 172 V214 H500 V252"/><text class="dg-l" x="430" y="208">attend to image+text (cached)</text>
+<rect class="dg-key" x="650" y="262" width="90" height="76"/><text class="dg-t" x="695" y="296" text-anchor="middle">v_θ</text><text class="dg-s" x="695" y="314" text-anchor="middle">velocity</text>
+<path class="dg-a" d="M600 300 H650"/>
+<rect class="dg-box" x="800" y="262" width="160" height="76"/><text class="dg-t" x="880" y="288" text-anchor="middle">Euler step</text><text class="dg-s" x="880" y="306" text-anchor="middle">A ← A + δ·v_θ</text><text class="dg-s" x="880" y="322" text-anchor="middle">10 steps, δ = 0.1</text>
+<path class="dg-a" d="M740 300 H800"/>
+<path class="dg-ad" d="M880 262 V236 H400 V252"/><text class="dg-l" x="730" y="228" text-anchor="middle">repeat with updated A^τ</text>
+<rect class="dg-box" x="800" y="130" width="160" height="60"/><text class="dg-t" x="880" y="156" text-anchor="middle">Action chunk</text><text class="dg-s" x="880" y="174" text-anchor="middle">50 steps, up to 50 Hz</text>
+<path class="dg-a" d="M900 262 V190"/>
+</svg><figcaption>Token ảnh và ngôn ngữ đi qua VLM. Token riêng của robot (trạng thái và hành động nhiễu) dùng một bộ trọng số riêng, action expert, và chú ý đến token của VLM. Expert chạy 10 lần để biến nhiễu thành đoạn hành động.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLM (PaliGemma, 3B)</td>
+<td>2-3 ảnh, ngôn ngữ</td>
+<td>token có ngữ nghĩa</td>
+<td>thừa hưởng tri thức quy mô internet</td>
+</tr>
+<tr>
+<td>Token trạng thái</td>
+<td>cấu hình khớp $q_t$</td>
+<td>một token</td>
+<td>trạng thái robot</td>
+</tr>
+<tr>
+<td>Token hành động</td>
+<td>đoạn nhiễu $A^\tau_t$, bước $\tau$</td>
+<td>token cho 50 bước</td>
+<td>thứ expert khử nhiễu</td>
+</tr>
+<tr>
+<td>Action expert (300M)</td>
+<td>ba thứ trên, cùng token VLM</td>
+<td>vận tốc $v_\theta$</td>
+<td>trọng số riêng, huấn luyện từ đầu; các token hành động chú ý hai chiều lẫn nhau</td>
+</tr>
+<tr>
+<td>Tích phân Euler</td>
+<td>$A^\tau_t$, $v_\theta$</td>
+<td>$A^{\tau+\delta}_t$</td>
+<td>10 bước, $\delta = 0{,}1$</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Số tham số, đơn vị tỉ. π0-small là baseline của paper, không khởi tạo từ VLM." class="dg-natural" width="606" height="132" viewBox="0 0 606 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="146" y="23" text-anchor="end">Backbone VLM</text><rect class="dg-bar" x="156" y="10" width="285" height="18"/><text class="dg-barval" x="449" y="23">3 B</text><text class="dg-barlabel" x="146" y="53" text-anchor="end">Action expert</text><rect class="dg-bar" x="156" y="40" width="28" height="18"/><text class="dg-barval" x="192" y="53">0,3 B</text><text class="dg-barlabel" x="146" y="83" text-anchor="end">π0 tổng</text><rect class="dg-key" x="156" y="70" width="313" height="18"/><text class="dg-barval" x="477" y="83">3,3 B</text><text class="dg-barlabel" x="146" y="113" text-anchor="end">π0-small (không VLM)</text><rect class="dg-bar" x="156" y="100" width="45" height="18"/><text class="dg-barval" x="209" y="113">0,47 B</text></svg><figcaption>Số tham số, đơn vị tỉ. π0-small là baseline của paper, không khởi tạo từ VLM.</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một đoạn hành động cần bao nhiêu lượt qua mạng <em>tuần tự</em> với token giống chữ, so với flow expert của π0? Đây là lý do của đầu ra mới.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$H$</td>
+<td>số hành động mỗi đoạn</td>
+<td>input</td>
+<td>50 (paper)</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>số chiều hành động (paper đệm thành 18)</td>
+<td>input</td>
+<td>18</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>số bước Euler</td>
+<td>input</td>
+<td>10 (paper)</td>
+</tr>
+<tr>
+<td>$P_{AR}$</td>
+<td>số lượt tuần tự, một token mỗi giá trị</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$P_{flow}$</td>
+<td>số lượt tuần tự, flow expert</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$P_{AR} = H \times d, \qquad P_{flow} = N$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$P_{AR} = 50 \times 18 = 900$.</li>
+<li>$P_{flow} = 10$.</li>
+<li>Tỉ số $900 / 10 = 90$.</li>
+</ol>
+<p><strong>Kết quả.</strong> 900 lượt tuần tự so với 10.</p>
+<p><strong>Ý nghĩa.</strong> 90 lần là minh họa độ sâu tuần tự: bỏ qua nén như FAST, và các lượt có chi phí khác nhau. π0 còn lưu cache key và value của VLM và chỉ chạy lại expert 300M ở mỗi trong 10 bước, nên mỗi lượt rẻ hơn lượt toàn mô hình.</p>
+</div>
+<h2>3. Huấn luyện</h2>
+<ul>
+<li><strong>Loss:</strong> flow matching với $\tau = 0$ là nhiễu và $\tau = 1$ là dữ liệu: $A^\tau_t = \tau A_t + (1-\tau)\varepsilon$, vận tốc mục tiêu $A_t - \varepsilon$. Chi tiết trong <a href="flowmatching.html">flow matching</a>.</li>
+<li><strong>Lấy mẫu bước thời gian:</strong> phân phối Beta nhấn vào $\tau$ thấp (nhiễu hơn).</li>
+<li><strong>Dữ liệu tiền huấn luyện:</strong> 903 triệu timestep từ robot của chính nhóm (68 tác vụ, 7 cấu hình robot gồm một tay, hai tay và di động) cùng dữ liệu mở (OXE, Bridge v2, DROID) chiếm 9,1% hỗn hợp.</li>
+<li><strong>Hậu huấn luyện:</strong> tinh chỉnh trên dữ liệu chọn lọc cho tác vụ đích: từ 5 giờ (đơn giản nhất) đến hơn 100 giờ (khó nhất), theo paper.</li>
+</ul>
+<h2>4. Paper báo cáo gì</h2>
+<ul>
+<li>π0 tiền huấn luyện theo ngôn ngữ tốt hơn baseline π0-small 470M và vượt các VLA trước trong các so sánh của paper.</li>
+<li>Tiền huấn luyện giúp tinh chỉnh, theo tóm tắt paper tới khoảng 2 lần trên một số tác vụ.</li>
+<li>Với tác vụ nhiều giai đoạn, paper báo cáo trên 50% điểm tối đa ở mọi tác vụ.</li>
+</ul>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Các kết quả này đến từ bản tóm tắt phần sau của paper; tôi chưa đọc số trong các hình nên không trích số.</li>
+<li>Phụ lục A (chi tiết kiến trúc và suy luận) chưa đọc nguyên văn. Cách chia ba nhóm token trong attention lấy từ bản tóm tắt, chưa kiểm.</li>
+<li>Paper nói không phải tác vụ nào được đánh giá cũng chạy ổn định, và so sánh với π0-small bị lẫn yếu tố kích thước mô hình.</li>
+</ul>
+<p><strong>Mang theo:</strong> các paper lực xây trên nó: <a href="forcevla.html">ForceVLA</a> thêm token lực vào mô hình kiểu π0, và <a href="taf-vla.html">TaF-VLA</a> cắm token xúc giác vào action expert của π0.5.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $H = 50$, $d = 14$. Một token mỗi giá trị cần bao nhiêu lượt tuần tự, còn flow với $N = 10$ cần bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$P_{AR} = 50 \times 14 = 700$; $P_{flow} = 10$. Tỉ số 70.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
