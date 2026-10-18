@@ -119,7 +119,7 @@ def render_post_html(post: dict, section: str) -> str:
 <meta property="og:description" content="{post['excerpt_en']}">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css">
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
 <link rel="stylesheet" href="{section_styles}">
 </head>
 <body>
