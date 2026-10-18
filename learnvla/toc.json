@@ -52,6 +52,15 @@
     ]
   },
   {
+    "title_vi": "Force-Survey",
+    "title_en": "Force Surveys",
+    "items": [
+      { "title": "Survey 1: Lực đi vào VLA ở đâu? (bản đồ 33 phương pháp)", "slug": "survey-force-map" },
+      { "title": "Survey 2: Đo cái gì, và nó thành token ra sao", "slug": "survey-force-sensing" },
+      { "title": "Survey 3: Chính sách xuất ra gì, và học bằng cách nào", "slug": "survey-force-output" }
+    ]
+  },
+  {
     "title_vi": "Force-Paper",
     "title_en": "Force Papers",
     "items": [
@@ -67,8 +76,6 @@
       { "title": "HapticVLA", "slug": "hapticvla" },
       { "title": "FWBC-VLA", "slug": "fwbc-vla" },
       { "title": "TORL-VLA", "slug": "torl-vla" },
-      { "title": "TER-Dagger", "slug": "ter-dagger" },
-      { "title": "So sánh các cách ghép Force vào VLA", "slug": "force-integration-comparison" }
-    ]
+      { "title": "TER-Dagger", "slug": "ter-dagger" }    ]
   }
 ]

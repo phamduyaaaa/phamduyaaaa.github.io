@@ -1,0 +1,34 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="230" height="304"/><text class="dg-h" x="22" y="28">(a) POSE ONLY</text>
+<rect class="dg-box" x="35" y="44" width="180" height="36"/><text class="dg-t" x="125" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M125 80 V128"/><text class="dg-l" x="133" y="108">x_target</text>
+<rect class="dg-box" x="35" y="128" width="180" height="48"/><text class="dg-t" x="125" y="148" text-anchor="middle">Impedance, fixed K</text><text class="dg-s" x="125" y="164" text-anchor="middle">F = K·Δx (implied)</text>
+<path class="dg-a" d="M125 176 V214"/>
+<rect class="dg-ext" x="35" y="214" width="180" height="32"/><text class="dg-t" x="125" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="125" y="274" text-anchor="middle">ForceVLA · FD-VLA · TaF-VLA</text><text class="dg-s" x="125" y="290" text-anchor="middle">LIFT · FM-VLA · HapticVLA</text>
+<rect class="dg-grp" x="250" y="8" width="230" height="304"/><text class="dg-h" x="262" y="28">(b) POSE + FORCE TARGET</text>
+<rect class="dg-box" x="275" y="44" width="180" height="36"/><text class="dg-t" x="365" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M365 80 V128"/><text class="dg-l" x="373" y="108">x_target + F*</text>
+<rect class="dg-key" x="275" y="128" width="180" height="48"/><text class="dg-t" x="365" y="148" text-anchor="middle">Hybrid force-position</text><text class="dg-s" x="365" y="164" text-anchor="middle">tracks F* using F_meas</text>
+<path class="dg-a" d="M365 176 V214"/>
+<rect class="dg-ext" x="275" y="214" width="180" height="32"/><text class="dg-t" x="365" y="235" text-anchor="middle">Robot</text>
+<path class="dg-ad" d="M455 230 H468 V152 H455"/>
+<text class="dg-s" x="365" y="274" text-anchor="middle">ForceVLA2 · Tabero · Tactile-VLA</text><text class="dg-s" x="365" y="290" text-anchor="middle">Opt2VLA · CR-VLA-Force</text>
+<rect class="dg-grp" x="490" y="8" width="230" height="304"/><text class="dg-h" x="502" y="28">(c) POSE + STIFFNESS</text>
+<rect class="dg-box" x="515" y="44" width="180" height="36"/><text class="dg-t" x="605" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M605 80 V128"/><text class="dg-l" x="613" y="108">x_target + K(t)</text>
+<rect class="dg-key" x="515" y="128" width="180" height="48"/><text class="dg-t" x="605" y="148" text-anchor="middle">Variable impedance</text><text class="dg-s" x="605" y="164" text-anchor="middle">VLA sets how soft to be</text>
+<path class="dg-a" d="M605 176 V214"/>
+<rect class="dg-ext" x="515" y="214" width="180" height="32"/><text class="dg-t" x="605" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="605" y="274" text-anchor="middle">CompVLA</text><text class="dg-s" x="605" y="290" text-anchor="middle">CompliantVLA-adaptor</text>
+<rect class="dg-grp" x="730" y="8" width="240" height="304"/><text class="dg-h" x="742" y="28">(d) BASE + RESIDUAL</text>
+<rect class="dg-box" x="745" y="44" width="95" height="36"/><text class="dg-t" x="792" y="66" text-anchor="middle">Base VLA</text>
+<rect class="dg-key" x="860" y="44" width="95" height="36"/><text class="dg-t" x="907" y="60" text-anchor="middle">Residual</text><text class="dg-s" x="907" y="73" text-anchor="middle">sees force</text>
+<circle class="dg-box" cx="850" cy="104" r="12"/><text class="dg-t" x="850" y="109" text-anchor="middle">+</text>
+<path class="dg-a" d="M792 80 V104 H838"/><path class="dg-a" d="M907 80 V104 H862"/><text class="dg-l" x="775" y="96">a</text><text class="dg-l" x="915" y="96">Δa</text>
+<path class="dg-a" d="M850 116 V128"/>
+<rect class="dg-box" x="760" y="128" width="180" height="48"/><text class="dg-t" x="850" y="148" text-anchor="middle">Controller</text><text class="dg-s" x="850" y="164" text-anchor="middle">executes a + Δa</text>
+<path class="dg-a" d="M850 176 V214"/>
+<rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
+</svg>

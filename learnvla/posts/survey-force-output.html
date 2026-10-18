@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Four output interfaces (pose only, pose plus force, pose plus stiffness, base plus residual), seven ways of learning from force, the speed gap between a VLA and a contact, and what is still missing: benchmarks and comparable numbers.">
+<title>Survey 3: What the Policy Outputs, and How It Learns · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Survey 3: What the Policy Outputs, and How It Learns">
+<meta property="og:description" content="Four output interfaces (pose only, pose plus force, pose plus stiffness, base plus residual), seven ways of learning from force, the speed gap between a VLA and a contact, and what is still missing: benchmarks and comparable numbers.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Survey 3: What the Policy Outputs, and How It Learns</h1>
+    <h1 data-vi>Survey 3: Chính sách xuất ra gì, và học bằng cách nào</h1>
+
+    <p class="post-excerpt-lead" data-en>Four output interfaces (pose only, pose plus force, pose plus stiffness, base plus residual), seven ways of learning from force, the speed gap between a VLA and a contact, and what is still missing: benchmarks and comparable numbers.</p>
+    <p class="post-excerpt-lead" data-vi>Bốn giao diện đầu ra (chỉ pose, pose cộng lực, pose cộng độ cứng, nền cộng residual), bảy cách học từ lực, khoảng cách tốc độ giữa VLA và tiếp xúc, và những gì còn thiếu: benchmark và số liệu so sánh được.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Survey</span><span class="pill">Control</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>Last of three survey notes. <a href="survey-force-map.html">Survey 1</a> maps where force enters; <a href="survey-force-sensing.html">Survey 2</a> covers what is measured.</p>
+<h2>The pain</h2>
+<p>A VLA that <em>reads</em> force perfectly can still fail if it can only <em>answer</em> with a pose. The force it applies is then decided by the low-level controller and by where the surface really is, not by the policy. So the output interface matters as much as the input.</p>
+<h2>Four output interfaces</h2>
+<figure class="diagram"><svg role="img" aria-label="Four ways a force-aware policy can talk to the robot: a pose with fixed stiffness, a pose plus a force target, a pose plus a stiffness, or a base action plus a force-driven residual." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="230" height="304"/><text class="dg-h" x="22" y="28">(a) POSE ONLY</text>
+<rect class="dg-box" x="35" y="44" width="180" height="36"/><text class="dg-t" x="125" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M125 80 V128"/><text class="dg-l" x="133" y="108">x_target</text>
+<rect class="dg-box" x="35" y="128" width="180" height="48"/><text class="dg-t" x="125" y="148" text-anchor="middle">Impedance, fixed K</text><text class="dg-s" x="125" y="164" text-anchor="middle">F = K·Δx (implied)</text>
+<path class="dg-a" d="M125 176 V214"/>
+<rect class="dg-ext" x="35" y="214" width="180" height="32"/><text class="dg-t" x="125" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="125" y="274" text-anchor="middle">ForceVLA · FD-VLA · TaF-VLA</text><text class="dg-s" x="125" y="290" text-anchor="middle">LIFT · FM-VLA · HapticVLA</text>
+<rect class="dg-grp" x="250" y="8" width="230" height="304"/><text class="dg-h" x="262" y="28">(b) POSE + FORCE TARGET</text>
+<rect class="dg-box" x="275" y="44" width="180" height="36"/><text class="dg-t" x="365" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M365 80 V128"/><text class="dg-l" x="373" y="108">x_target + F*</text>
+<rect class="dg-key" x="275" y="128" width="180" height="48"/><text class="dg-t" x="365" y="148" text-anchor="middle">Hybrid force-position</text><text class="dg-s" x="365" y="164" text-anchor="middle">tracks F* using F_meas</text>
+<path class="dg-a" d="M365 176 V214"/>
+<rect class="dg-ext" x="275" y="214" width="180" height="32"/><text class="dg-t" x="365" y="235" text-anchor="middle">Robot</text>
+<path class="dg-ad" d="M455 230 H468 V152 H455"/>
+<text class="dg-s" x="365" y="274" text-anchor="middle">ForceVLA2 · Tabero · Tactile-VLA</text><text class="dg-s" x="365" y="290" text-anchor="middle">Opt2VLA · CR-VLA-Force</text>
+<rect class="dg-grp" x="490" y="8" width="230" height="304"/><text class="dg-h" x="502" y="28">(c) POSE + STIFFNESS</text>
+<rect class="dg-box" x="515" y="44" width="180" height="36"/><text class="dg-t" x="605" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M605 80 V128"/><text class="dg-l" x="613" y="108">x_target + K(t)</text>
+<rect class="dg-key" x="515" y="128" width="180" height="48"/><text class="dg-t" x="605" y="148" text-anchor="middle">Variable impedance</text><text class="dg-s" x="605" y="164" text-anchor="middle">VLA sets how soft to be</text>
+<path class="dg-a" d="M605 176 V214"/>
+<rect class="dg-ext" x="515" y="214" width="180" height="32"/><text class="dg-t" x="605" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="605" y="274" text-anchor="middle">CompVLA</text><text class="dg-s" x="605" y="290" text-anchor="middle">CompliantVLA-adaptor</text>
+<rect class="dg-grp" x="730" y="8" width="240" height="304"/><text class="dg-h" x="742" y="28">(d) BASE + RESIDUAL</text>
+<rect class="dg-box" x="745" y="44" width="95" height="36"/><text class="dg-t" x="792" y="66" text-anchor="middle">Base VLA</text>
+<rect class="dg-key" x="860" y="44" width="95" height="36"/><text class="dg-t" x="907" y="60" text-anchor="middle">Residual</text><text class="dg-s" x="907" y="73" text-anchor="middle">sees force</text>
+<circle class="dg-box" cx="850" cy="104" r="12"/><text class="dg-t" x="850" y="109" text-anchor="middle">+</text>
+<path class="dg-a" d="M792 80 V104 H838"/><path class="dg-a" d="M907 80 V104 H862"/><text class="dg-l" x="775" y="96">a</text><text class="dg-l" x="915" y="96">Δa</text>
+<path class="dg-a" d="M850 116 V128"/>
+<rect class="dg-box" x="760" y="128" width="180" height="48"/><text class="dg-t" x="850" y="148" text-anchor="middle">Controller</text><text class="dg-s" x="850" y="164" text-anchor="middle">executes a + Δa</text>
+<path class="dg-a" d="M850 176 V214"/>
+<rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
+</svg><figcaption>Four ways a force-aware policy can talk to the robot: a pose with fixed stiffness, a pose plus a force target, a pose plus a stiffness, or a base action plus a force-driven residual.</figcaption></figure>
+<ul>
+<li><strong>(a) Pose only.</strong> Most methods. Force improves <em>which</em> pose is chosen, but the applied force is only implied through the controller's stiffness.</li>
+<li><strong>(b) Pose + force target.</strong> A hybrid force-position or admittance controller tracks the requested force using the measured one: ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force.</li>
+<li><strong>(c) Pose + stiffness.</strong> The policy decides how soft to be, per axis and over time: CompVLA, CompliantVLA-adaptor.</li>
+<li><strong>(d) Base + residual.</strong> A slow base policy proposes; a small, fast, force-aware model corrects: ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC.</li>
+</ul>
+<h2>Work it by hand: one spring, three interfaces</h2>
+<p>Model contact as a spring: an impedance controller with stiffness $K$ commanded $\Delta x$ into a surface applies $F = K\,\Delta x$. The task needs 10 N, and the policy's estimate of the surface is off by $\delta = 5$ mm.</p>
+<p><strong>(a) Pose only, stiff controller,</strong> $K = 1000$ N/m. Command $10/1000 = 10$ mm. The force error is $K\delta = 1000 \times 0.005 = 5$ N, or 50%.</p>
+<p><strong>(c) Pose + low stiffness,</strong> $K = 200$ N/m. Command $10/200 = 50$ mm. The force error drops to $200 \times 0.005 = 1$ N. The price: a 2 N disturbance in free space now moves the arm $2/200 = 10$ mm instead of $2/1000 = 2$ mm. That is why the stiffness should <strong>change over time</strong>: stiff while moving, soft at contact. Hence time-varying $K(t)$.</p>
+<p><strong>(b) Pose + force target.</strong> The controller measures $F$ and adjusts until it reads 10 N, so the 5 mm error no longer becomes a force error (up to sensor noise and controller tracking). The price: the robot needs a force measurement at run time, and the policy must predict a sensible $F^*$.</p>
+<p><strong>(d) Residual.</strong> The base still commands 10 mm at $K = 1000$; a residual that sees the measured 15 N (surface 5 mm closer) can back off by 5 mm between two base updates. It fixes the error only as fast as it runs, which is why these residuals run at tens of hertz.</p>
+<h2>The speed gap</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Slow part</th>
+<th>Fast part</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>base policy 1 Hz</td>
+<td>residual and error detector 50 Hz, impedance 1 kHz</td>
+</tr>
+<tr>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>VLA 15 Hz</td>
+<td>force estimator 200 Hz</td>
+</tr>
+<tr>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>VLA chunk of 64 steps</td>
+<td>refined actions executed at up to 8 Hz</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
+<td>pretrained backbone</td>
+<td>latent buffers read by a 100 Hz action head</td>
+</tr>
+</tbody>
+</table>
+<p>Sensors report forces at 30–300 Hz in these papers, while VLAs replan a few times per second. Every design in the "outside the VLA" column of <a href="survey-force-map.html">Survey 1</a> is, at heart, a way to close this gap.</p>
+<h2>Seven ways to learn from force</h2>
+<table>
+<thead>
+<tr>
+<th>Regime</th>
+<th>Idea</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Imitation fine-tuning</td>
+<td>add force inputs, fine-tune on demonstrations</td>
+<td>ForceVLA, ForceVLA2, MoDE-VLA, TaF-VLA, Tabero, FWBC-VLA</td>
+</tr>
+<tr>
+<td>Post-training, curriculum</td>
+<td>adapt a pretrained VLA in stages</td>
+<td>LIFT (reactive expert + DAgger), CRAFT (force first, then full input)</td>
+</tr>
+<tr>
+<td>Distillation</td>
+<td>a teacher with force trains a student</td>
+<td>FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA (alignment)</td>
+</tr>
+<tr>
+<td>Reward weighting, RL</td>
+<td>force defines what is good</td>
+<td>HapticVLA (tactile reward), TORL-VLA (online RL), ForceRFT (residual RL), MoDE-VLA (PPO hand skill)</td>
+</tr>
+<tr>
+<td>Human in the loop</td>
+<td>humans correct contact failures</td>
+<td>TER-DAgger, LIFT, TORL-VLA, ForceRFT</td>
+</tr>
+<tr>
+<td>Preference learning</td>
+<td>rank better and worse actions</td>
+<td>VTLA (DPO)</td>
+</tr>
+<tr>
+<td>World-model pretraining</td>
+<td>learn to predict touch first</td>
+<td>DexTacWAM, H-Tac / TTP</td>
+</tr>
+</tbody>
+</table>
+<p>Two trends stand out: <strong>human corrections</strong> are becoming the main source of contact data, because contact failures are hard to script; and <strong>credit assignment</strong> around those corrections needs care. TORL-VLA and ForceRFT both stop value bootstrapping across human takeovers.</p>
+<h2>What is still missing</h2>
+<ul>
+<li><strong>Shared benchmarks.</strong> Almost every paper builds its own tasks. Tabero is the only simulated force benchmark in this survey.</li>
+<li><strong>Comparable numbers.</strong> ForceVLA is the most common baseline, yet it scores 54.4% in ForceDelta-VLA, 15/30 full tasks in TORL-VLA and 24% / 12% final-stage in FWBC-VLA, on different tasks and robots. These numbers cannot be compared across papers.</li>
+<li><strong>Metrics beyond success.</strong> A task can succeed while crushing the object. Only some papers report force quality: Tabero's average and peak grip force, ForceDelta-VLA's 26% lower peak contact force.</li>
+<li><strong>Sensor diversity.</strong> A method tuned to one wrist sensor or one gel may not transfer; TaF-VLA's cross-sensor test is a start.</li>
+</ul>
+<h2>How to choose (a rough guide)</h2>
+<ul>
+<li>You have a wrist F/T sensor and want a quick gain: fuse <strong>after the VLM</strong> with a protected path (ForceVLA-style MoE, zero-initialised bypass).</li>
+<li>The task is about <em>how hard</em> (press, polish, gentle grasp): output a <strong>force target</strong> or a <strong>stiffness</strong>, not only a pose.</li>
+<li>Contacts change fast: add a <strong>fast residual or controller</strong> next to the VLA.</li>
+<li>No sensor on the deployed robot: <strong>distil</strong> from a sensorised teacher, or estimate from joint torques.</li>
+<li>The robot keeps failing the same contact: collect <strong>human corrections</strong> and refine online.</li>
+</ul>
+<h2>Caveats</h2>
+<p>The guide follows from the papers surveyed, not from a controlled comparison. The spring model ignores damping, friction and sensor noise; it shows the direction of each trade-off, not exact values.</p>
+<p><strong>Carry forward:</strong> the series closes here. The next notes to write are the foundations these surveys lean on: Mixture of Experts, Cross-attention, Distillation and Impedance control.</p>
+<p><strong>Check question:</strong> with a stiffness of $K = 300$ N/m, the surface estimate is off by 4 mm. What is the force error for a pose-only command, and how far into the surface must the policy command to get 6 N?</p>
+<p><em>Answer:</em> error $= 300 \times 0.004 = 1.2$ N. Command $= 6 / 300 = 0.02$ m = 20 mm.</p>
+    </div>
+    <div data-vi>
+<p>Bài cuối trong ba ghi chú survey. <a href="survey-force-map.html">Survey 1</a> vẽ bản đồ lực vào ở đâu; <a href="survey-force-sensing.html">Survey 2</a> nói về đo cái gì.</p>
+<h2>Vấn đề</h2>
+<p>Một VLA <em>đọc</em> lực hoàn hảo vẫn có thể thất bại nếu nó chỉ <em>trả lời</em> được bằng một pose. Khi đó lực thực sự tác dụng do bộ điều khiển mức thấp và vị trí thật của bề mặt quyết định, không phải do chính sách. Vì vậy giao diện đầu ra quan trọng ngang đầu vào.</p>
+<h2>Bốn giao diện đầu ra</h2>
+<figure class="diagram"><svg role="img" aria-label="Bốn cách một chính sách nhận biết lực nói chuyện với robot: một pose với độ cứng cố định, pose cộng lực mục tiêu, pose cộng độ cứng, hoặc hành động nền cộng một residual do lực điều khiển." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="230" height="304"/><text class="dg-h" x="22" y="28">(a) POSE ONLY</text>
+<rect class="dg-box" x="35" y="44" width="180" height="36"/><text class="dg-t" x="125" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M125 80 V128"/><text class="dg-l" x="133" y="108">x_target</text>
+<rect class="dg-box" x="35" y="128" width="180" height="48"/><text class="dg-t" x="125" y="148" text-anchor="middle">Impedance, fixed K</text><text class="dg-s" x="125" y="164" text-anchor="middle">F = K·Δx (implied)</text>
+<path class="dg-a" d="M125 176 V214"/>
+<rect class="dg-ext" x="35" y="214" width="180" height="32"/><text class="dg-t" x="125" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="125" y="274" text-anchor="middle">ForceVLA · FD-VLA · TaF-VLA</text><text class="dg-s" x="125" y="290" text-anchor="middle">LIFT · FM-VLA · HapticVLA</text>
+<rect class="dg-grp" x="250" y="8" width="230" height="304"/><text class="dg-h" x="262" y="28">(b) POSE + FORCE TARGET</text>
+<rect class="dg-box" x="275" y="44" width="180" height="36"/><text class="dg-t" x="365" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M365 80 V128"/><text class="dg-l" x="373" y="108">x_target + F*</text>
+<rect class="dg-key" x="275" y="128" width="180" height="48"/><text class="dg-t" x="365" y="148" text-anchor="middle">Hybrid force-position</text><text class="dg-s" x="365" y="164" text-anchor="middle">tracks F* using F_meas</text>
+<path class="dg-a" d="M365 176 V214"/>
+<rect class="dg-ext" x="275" y="214" width="180" height="32"/><text class="dg-t" x="365" y="235" text-anchor="middle">Robot</text>
+<path class="dg-ad" d="M455 230 H468 V152 H455"/>
+<text class="dg-s" x="365" y="274" text-anchor="middle">ForceVLA2 · Tabero · Tactile-VLA</text><text class="dg-s" x="365" y="290" text-anchor="middle">Opt2VLA · CR-VLA-Force</text>
+<rect class="dg-grp" x="490" y="8" width="230" height="304"/><text class="dg-h" x="502" y="28">(c) POSE + STIFFNESS</text>
+<rect class="dg-box" x="515" y="44" width="180" height="36"/><text class="dg-t" x="605" y="66" text-anchor="middle">VLA</text>
+<path class="dg-a" d="M605 80 V128"/><text class="dg-l" x="613" y="108">x_target + K(t)</text>
+<rect class="dg-key" x="515" y="128" width="180" height="48"/><text class="dg-t" x="605" y="148" text-anchor="middle">Variable impedance</text><text class="dg-s" x="605" y="164" text-anchor="middle">VLA sets how soft to be</text>
+<path class="dg-a" d="M605 176 V214"/>
+<rect class="dg-ext" x="515" y="214" width="180" height="32"/><text class="dg-t" x="605" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="605" y="274" text-anchor="middle">CompVLA</text><text class="dg-s" x="605" y="290" text-anchor="middle">CompliantVLA-adaptor</text>
+<rect class="dg-grp" x="730" y="8" width="240" height="304"/><text class="dg-h" x="742" y="28">(d) BASE + RESIDUAL</text>
+<rect class="dg-box" x="745" y="44" width="95" height="36"/><text class="dg-t" x="792" y="66" text-anchor="middle">Base VLA</text>
+<rect class="dg-key" x="860" y="44" width="95" height="36"/><text class="dg-t" x="907" y="60" text-anchor="middle">Residual</text><text class="dg-s" x="907" y="73" text-anchor="middle">sees force</text>
+<circle class="dg-box" cx="850" cy="104" r="12"/><text class="dg-t" x="850" y="109" text-anchor="middle">+</text>
+<path class="dg-a" d="M792 80 V104 H838"/><path class="dg-a" d="M907 80 V104 H862"/><text class="dg-l" x="775" y="96">a</text><text class="dg-l" x="915" y="96">Δa</text>
+<path class="dg-a" d="M850 116 V128"/>
+<rect class="dg-box" x="760" y="128" width="180" height="48"/><text class="dg-t" x="850" y="148" text-anchor="middle">Controller</text><text class="dg-s" x="850" y="164" text-anchor="middle">executes a + Δa</text>
+<path class="dg-a" d="M850 176 V214"/>
+<rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
+<text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
+</svg><figcaption>Bốn cách một chính sách nhận biết lực nói chuyện với robot: một pose với độ cứng cố định, pose cộng lực mục tiêu, pose cộng độ cứng, hoặc hành động nền cộng một residual do lực điều khiển.</figcaption></figure>
+<ul>
+<li><strong>(a) Chỉ pose.</strong> Đa số phương pháp. Lực giúp chọn <em>pose nào</em>, nhưng lực tác dụng chỉ được ngầm định qua độ cứng của bộ điều khiển.</li>
+<li><strong>(b) Pose + lực mục tiêu.</strong> Bộ điều khiển lai lực-vị trí hoặc admittance bám theo lực được yêu cầu bằng lực đo được: ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force.</li>
+<li><strong>(c) Pose + độ cứng.</strong> Chính sách quyết định mềm đến đâu, theo từng trục và theo thời gian: CompVLA, CompliantVLA-adaptor.</li>
+<li><strong>(d) Nền + residual.</strong> Một chính sách nền chậm đề xuất; một mô hình nhỏ, nhanh, nhận biết lực hiệu chỉnh: ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC.</li>
+</ul>
+<h2>Tính tay: một lò xo, ba giao diện</h2>
+<p>Mô hình tiếp xúc như một lò xo: bộ điều khiển impedance độ cứng $K$ được ra lệnh ấn $\Delta x$ vào bề mặt sẽ tác dụng $F = K\,\Delta x$. Task cần 10 N, và ước lượng bề mặt của chính sách lệch $\delta = 5$ mm.</p>
+<p><strong>(a) Chỉ pose, bộ điều khiển cứng,</strong> $K = 1000$ N/m. Ra lệnh $10/1000 = 10$ mm. Sai số lực là $K\delta = 1000 \times 0.005 = 5$ N, tức 50%.</p>
+<p><strong>(c) Pose + độ cứng thấp,</strong> $K = 200$ N/m. Ra lệnh $10/200 = 50$ mm. Sai số lực giảm còn $200 \times 0.005 = 1$ N. Cái giá: một nhiễu 2 N khi di chuyển tự do giờ làm cánh tay lệch $2/200 = 10$ mm thay vì $2/1000 = 2$ mm. Vì vậy độ cứng nên <strong>thay đổi theo thời gian</strong>: cứng khi di chuyển, mềm khi tiếp xúc. Đó là lý do có $K(t)$.</p>
+<p><strong>(b) Pose + lực mục tiêu.</strong> Bộ điều khiển đo $F$ và chỉnh tới khi đọc được 10 N, nên sai số 5 mm không còn thành sai số lực (trong giới hạn nhiễu cảm biến và độ bám của bộ điều khiển). Cái giá: robot cần đo lực lúc chạy, và chính sách phải dự đoán được một $F^*$ hợp lý.</p>
+<p><strong>(d) Residual.</strong> Nền vẫn ra lệnh 10 mm ở $K = 1000$; một residual thấy lực đo được 15 N (bề mặt gần hơn 5 mm) có thể lùi lại 5 mm giữa hai lần cập nhật của nền. Nó chỉ sửa lỗi nhanh bằng tốc độ nó chạy, nên các residual này chạy ở vài chục hertz.</p>
+<h2>Khoảng cách tốc độ</h2>
+<table>
+<thead>
+<tr>
+<th>Hệ thống</th>
+<th>Phần chậm</th>
+<th>Phần nhanh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>chính sách nền 1 Hz</td>
+<td>residual và bộ phát hiện lỗi 50 Hz, impedance 1 kHz</td>
+</tr>
+<tr>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>VLA 15 Hz</td>
+<td>bộ ước lượng lực 200 Hz</td>
+</tr>
+<tr>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>chunk VLA 64 bước</td>
+<td>hành động tinh chỉnh thực thi tối đa 8 Hz</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
+<td>backbone đã pretrain</td>
+<td>bộ đệm latent được đầu hành động 100 Hz đọc</td>
+</tr>
+</tbody>
+</table>
+<p>Trong các bài này cảm biến báo lực ở 30–300 Hz, còn VLA chỉ lập kế hoạch lại vài lần mỗi giây. Mọi thiết kế ở cột "bên ngoài VLA" trong <a href="survey-force-map.html">Survey 1</a>, về bản chất, là một cách lấp khoảng cách này.</p>
+<h2>Bảy cách học từ lực</h2>
+<table>
+<thead>
+<tr>
+<th>Cách học</th>
+<th>Ý tưởng</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fine-tune bắt chước</td>
+<td>thêm đầu vào lực, fine-tune trên demo</td>
+<td>ForceVLA, ForceVLA2, MoDE-VLA, TaF-VLA, Tabero, FWBC-VLA</td>
+</tr>
+<tr>
+<td>Post-training, giáo trình</td>
+<td>thích nghi VLA đã pretrain theo từng giai đoạn</td>
+<td>LIFT (expert phản xạ + DAgger), CRAFT (lực trước, rồi đủ đầu vào)</td>
+</tr>
+<tr>
+<td>Chưng cất</td>
+<td>teacher có lực dạy student</td>
+<td>FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA (căn chỉnh)</td>
+</tr>
+<tr>
+<td>Trọng số phần thưởng, RL</td>
+<td>lực định nghĩa thế nào là tốt</td>
+<td>HapticVLA (phần thưởng xúc giác), TORL-VLA (RL online), ForceRFT (RL residual), MoDE-VLA (kỹ năng tay PPO)</td>
+</tr>
+<tr>
+<td>Có người trong vòng lặp</td>
+<td>con người sửa lỗi tiếp xúc</td>
+<td>TER-DAgger, LIFT, TORL-VLA, ForceRFT</td>
+</tr>
+<tr>
+<td>Học theo sở thích</td>
+<td>xếp hạng hành động tốt và kém</td>
+<td>VTLA (DPO)</td>
+</tr>
+<tr>
+<td>Pretrain world model</td>
+<td>học dự đoán xúc giác trước</td>
+<td>DexTacWAM, H-Tac / TTP</td>
+</tr>
+</tbody>
+</table>
+<p>Hai xu hướng nổi bật: <strong>chỉnh sửa của con người</strong> đang thành nguồn dữ liệu tiếp xúc chính, vì lỗi tiếp xúc khó viết kịch bản trước; và việc <strong>ghi công</strong> quanh những chỉnh sửa đó cần cẩn thận. TORL-VLA và ForceRFT đều ngừng bootstrap giá trị qua các lần con người tiếp quản.</p>
+<h2>Những gì còn thiếu</h2>
+<ul>
+<li><strong>Benchmark chung.</strong> Gần như bài nào cũng tự dựng task. Tabero là benchmark lực mô phỏng duy nhất trong survey này.</li>
+<li><strong>Số liệu so sánh được.</strong> ForceVLA là baseline phổ biến nhất, nhưng đạt 54,4% trong ForceDelta-VLA, 15/30 cả chuỗi trong TORL-VLA và 24% / 12% ở bước cuối trong FWBC-VLA, trên task và robot khác nhau. Các con số này không so sánh được giữa các bài.</li>
+<li><strong>Chỉ số ngoài thành công.</strong> Một task có thể thành công trong khi làm bẹp vật. Chỉ một số bài báo cáo chất lượng lực: lực kẹp trung bình và đỉnh của Tabero, lực tiếp xúc đỉnh thấp hơn 26% của ForceDelta-VLA.</li>
+<li><strong>Đa dạng cảm biến.</strong> Phương pháp chỉnh cho một cảm biến cổ tay hay một loại gel có thể không chuyển được sang cảm biến khác; thử nghiệm chéo cảm biến của TaF-VLA mới là bước đầu.</li>
+</ul>
+<h2>Chọn thế nào (hướng dẫn sơ bộ)</h2>
+<ul>
+<li>Có cảm biến F/T cổ tay và muốn cải thiện nhanh: gộp <strong>sau VLM</strong> với một đường được bảo vệ (MoE kiểu ForceVLA, bypass khởi tạo bằng 0).</li>
+<li>Task xoay quanh <em>mạnh hay nhẹ</em> (ấn, đánh bóng, nắm nhẹ): xuất <strong>lực mục tiêu</strong> hoặc <strong>độ cứng</strong>, không chỉ pose.</li>
+<li>Tiếp xúc thay đổi nhanh: thêm một <strong>residual hoặc bộ điều khiển nhanh</strong> cạnh VLA.</li>
+<li>Robot triển khai không có cảm biến: <strong>chưng cất</strong> từ teacher có cảm biến, hoặc ước lượng từ mô men khớp.</li>
+<li>Robot cứ hỏng ở cùng một tiếp xúc: thu <strong>chỉnh sửa của con người</strong> và tinh chỉnh online.</li>
+</ul>
+<h2>Lưu ý</h2>
+<p>Hướng dẫn rút ra từ các bài trong survey, không phải từ một so sánh có kiểm soát. Mô hình lò xo bỏ qua giảm chấn, ma sát và nhiễu cảm biến; nó cho thấy hướng của từng đánh đổi, không cho giá trị chính xác.</p>
+<p><strong>Mang theo sang bài sau:</strong> series khép lại ở đây. Các ghi chú nên viết tiếp là những nền tảng mà các survey này dựa vào: Mixture of Experts, Cross-attention, Distillation và điều khiển Impedance.</p>
+<p><strong>Câu kiểm tra:</strong> với độ cứng $K = 300$ N/m, ước lượng bề mặt lệch 4 mm. Sai số lực của lệnh chỉ-pose là bao nhiêu, và chính sách phải ra lệnh ấn sâu bao nhiêu để được 6 N?</p>
+<p><em>Đáp án:</em> sai số $= 300 \times 0.004 = 1.2$ N. Lệnh $= 6 / 300 = 0.02$ m = 20 mm.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

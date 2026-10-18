@@ -119,6 +119,54 @@
     "read_min": 4
   },
   {
+    "slug": "survey-force-map",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Survey 1: Where Does Force Enter a VLA?",
+    "title_vi": "Survey 1: Lực đi vào VLA ở đâu?",
+    "excerpt_en": "A map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all have to make: at which point of the pipeline the contact signal comes in.",
+    "excerpt_vi": "Bản đồ 33 phương pháp VLA dùng lực, mô men và xúc giác (2025–2026), xếp theo lựa chọn thiết kế mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc đi vào pipeline ở điểm nào.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Survey"
+    ],
+    "read_min": 7
+  },
+  {
+    "slug": "survey-force-output",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Survey 3: What the Policy Outputs, and How It Learns",
+    "title_vi": "Survey 3: Chính sách xuất ra gì, và học bằng cách nào",
+    "excerpt_en": "Four output interfaces (pose only, pose plus force, pose plus stiffness, base plus residual), seven ways of learning from force, the speed gap between a VLA and a contact, and what is still missing: benchmarks and comparable numbers.",
+    "excerpt_vi": "Bốn giao diện đầu ra (chỉ pose, pose cộng lực, pose cộng độ cứng, nền cộng residual), bảy cách học từ lực, khoảng cách tốc độ giữa VLA và tiếp xúc, và những gì còn thiếu: benchmark và số liệu so sánh được.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Survey",
+      "Control"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "survey-force-sensing",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Survey 2: What Is Measured, and How It Becomes a Token",
+    "title_vi": "Survey 2: Đo cái gì, và nó thành token ra sao",
+    "excerpt_en": "'Force' in force-aware VLAs means five different measurements: a wrist wrench, joint torques, a gel image, a pressure grid, or nothing at all. And each reaches the network in one of six forms, from a raw number to a sentence.",
+    "excerpt_vi": "'Lực' trong các VLA nhận biết lực là năm phép đo khác nhau: wrench ở cổ tay, mô men khớp, ảnh gel, lưới áp suất, hoặc không đo gì. Mỗi loại tới mạng dưới một trong sáu dạng, từ con số thô đến một câu văn.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Survey"
+    ],
+    "read_min": 4
+  },
+  {
     "slug": "tabero",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",

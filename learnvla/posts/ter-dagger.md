@@ -72,7 +72,7 @@ The aggregation loop itself (when the dataset is merged and models retrained) is
 - **outside the VLA, in a refiner or a controller:** VLA-Touch, Tabero, TER-DAgger, FWBC-VLA's body compensation
 - **only at training time:** FD-VLA, HapticVLA
 
-A planned comparison post will put them side by side.
+[Survey 1](survey-force-map.html) puts them side by side with 22 more methods.
 
 **Check question:** $\hat F = (0,\ 0,\ -4,\ 0,\ 0,\ 0)$, $F = (0.2,\ -0.3,\ -5,\ 0.1,\ 0,\ 0)$, $c = 3$. Does the detector fire? And what is $D$ for $d_p = 0.006$ m, $d_q = 0.01$ rad?
 
@@ -144,7 +144,7 @@ Bản thân vòng tổng hợp dữ liệu (khi nào gộp dataset và huấn lu
 - **bên ngoài VLA, trong bộ tinh chỉnh hoặc bộ điều khiển:** VLA-Touch, Tabero, TER-DAgger, phần bù thân của FWBC-VLA
 - **chỉ lúc huấn luyện:** FD-VLA, HapticVLA
 
-Một bài so sánh sắp tới sẽ đặt chúng cạnh nhau.
+[Survey 1](survey-force-map.html) đặt chúng cạnh nhau cùng 22 phương pháp khác.
 
 **Câu kiểm tra:** $\hat F = (0,\ 0,\ -4,\ 0,\ 0,\ 0)$, $F = (0.2,\ -0.3,\ -5,\ 0.1,\ 0,\ 0)$, $c = 3$. Bộ phát hiện có kích hoạt không? Và $D$ bằng bao nhiêu với $d_p = 0.006$ m, $d_q = 0.01$ rad?
 

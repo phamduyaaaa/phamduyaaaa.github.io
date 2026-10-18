@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all have to make: at which point of the pipeline the contact signal comes in.">
+<title>Survey 1: Where Does Force Enter a VLA? · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Survey 1: Where Does Force Enter a VLA?">
+<meta property="og:description" content="A map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all have to make: at which point of the pipeline the contact signal comes in.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">7 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Survey 1: Where Does Force Enter a VLA?</h1>
+    <h1 data-vi>Survey 1: Lực đi vào VLA ở đâu?</h1>
+
+    <p class="post-excerpt-lead" data-en>A map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all have to make: at which point of the pipeline the contact signal comes in.</p>
+    <p class="post-excerpt-lead" data-vi>Bản đồ 33 phương pháp VLA dùng lực, mô men và xúc giác (2025–2026), xếp theo lựa chọn thiết kế mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc đi vào pipeline ở điểm nào.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Survey</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<p>This is the first of three survey notes. <a href="survey-force-sensing.html">Survey 2</a> covers sensors and representations; <a href="survey-force-output.html">Survey 3</a> covers outputs and learning.</p>
+<h2>The pain</h2>
+<p>A camera sees where the plug is, not how hard it is pressing. Contact force is hidden at exactly the moments that decide a contact-rich task: the plug catches on the socket rim, the hand covers the egg, the sponge is already flat on the board. A VLA trained on images and language must guess force from geometry, and the guesses fail when friction, stiffness or a millimetre of misalignment change.</p>
+<h2>The naive fix, and why it is not enough</h2>
+<p>Append the force reading to the robot state and fine-tune. <a href="forcevla.html">ForceVLA</a> measured this: π0-base improved from 37.3% to 40.2%, while π0-fast fell from 31.0% to 14.2%.</p>
+<h2>Work it by hand: one token in a crowd</h2>
+<p>Why does a single force token get ignored? Count the tokens a π0-style VLM sees: 3 camera views × 256 patch tokens = 768, plus about 20 language tokens, plus 1 force token: 789 tokens in all.</p>
+<p>If a query spreads its attention evenly, the force token receives</p>
+<p>$$\frac{1}{789} \approx 0.0013$$</p>
+<p>of it. For the force token to take half of the attention, its logit must beat each other token's logit by $\Delta$ with</p>
+<p>$$\frac{e^{\Delta}}{e^{\Delta} + 788} = 0.5 \;\Rightarrow\; e^{\Delta} = 788 \;\Rightarrow\; \Delta = \ln 788 \approx 6.7$$</p>
+<p>A gap of 6.7 logits has to be learned from a few hundred demonstrations, and only on the steps where contact happens. That is why most methods below give force a <strong>dedicated path</strong>: a fusion module, an adapter, a bypass, or a separate controller.</p>
+<h2>The map: six places force can enter</h2>
+<figure class="diagram"><svg role="img" aria-label="Six entry points for force, torque or touch in a VLA pipeline, with the methods that use each one. Many methods use two. DAM-VLA (*) handles an unnamed high-frequency modality." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
+<rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
+<rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
+<rect class="dg-box" x="430" y="20" width="150" height="70"/><text class="dg-t" x="505" y="52" text-anchor="middle">Action expert</text><text class="dg-s" x="505" y="68" text-anchor="middle">decoder / flow head</text>
+<rect class="dg-box" x="660" y="20" width="150" height="70"/><text class="dg-t" x="735" y="52" text-anchor="middle">Low-level</text><text class="dg-t" x="735" y="67" text-anchor="middle">controller</text>
+<rect class="dg-ext" x="860" y="20" width="105" height="70"/><text class="dg-t" x="912" y="60" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M155 40 H200"/><path class="dg-a" d="M350 55 H430"/><path class="dg-a" d="M580 55 H660"/><path class="dg-a" d="M810 55 H860"/>
+<path class="dg-ad" d="M155 84 H180 V75 H200"/><text class="dg-l" x="184" y="70">①</text>
+<path class="dg-ad" d="M155 96 H390 V61"/><text class="dg-l" x="396" y="82">②</text>
+<path class="dg-ad" d="M155 108 H505 V90"/><text class="dg-l" x="511" y="102">③</text>
+<path class="dg-ad" d="M155 120 H735 V90"/><text class="dg-l" x="741" y="102">④</text>
+<rect class="dg-box" x="15" y="148" width="150" height="250"/><text class="dg-t" x="90" y="168" text-anchor="middle">① VLM input</text><text class="dg-s" x="90" y="184" text-anchor="middle">token or language</text>
+<text class="dg-s" x="25" y="208">ForceVLA2 (prompt)</text><text class="dg-s" x="25" y="223">FD-VLA</text><text class="dg-s" x="25" y="238">Tabero</text><text class="dg-s" x="25" y="253">VLA-Touch (planner)</text><text class="dg-s" x="25" y="268">VTLA</text><text class="dg-s" x="25" y="283">OmniVTLA</text><text class="dg-s" x="25" y="298">Tactile-VLA</text>
+<rect class="dg-key" x="175" y="148" width="150" height="250"/><text class="dg-t" x="250" y="168" text-anchor="middle">② After the VLM</text><text class="dg-s" x="250" y="184" text-anchor="middle">fusion module</text>
+<text class="dg-s" x="185" y="208">ForceVLA</text><text class="dg-s" x="185" y="223">ForceVLA2</text><text class="dg-s" x="185" y="238">MoDE-VLA</text><text class="dg-s" x="185" y="253">TORL-VLA</text><text class="dg-s" x="185" y="268">CR-VLA-Force</text><text class="dg-s" x="185" y="283">DeCAL</text><text class="dg-s" x="185" y="298">ForceU-VLA</text>
+<rect class="dg-key" x="335" y="148" width="150" height="250"/><text class="dg-t" x="410" y="168" text-anchor="middle">③ Action expert</text><text class="dg-s" x="410" y="184" text-anchor="middle">tokens, adapters</text>
+<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA*</text>
+<rect class="dg-key" x="495" y="148" width="150" height="250"/><text class="dg-t" x="570" y="168" text-anchor="middle">④ Outside the VLA</text><text class="dg-s" x="570" y="184" text-anchor="middle">controller, residual</text>
+<text class="dg-s" x="505" y="208">VLA-Touch (refiner)</text><text class="dg-s" x="505" y="223">Tabero · Tactile-VLA</text><text class="dg-s" x="505" y="238">FWBC-VLA (body)</text><text class="dg-s" x="505" y="253">TER-DAgger</text><text class="dg-s" x="505" y="268">ForceDelta-VLA</text><text class="dg-s" x="505" y="283">ForceRFT</text><text class="dg-s" x="505" y="298">CompVLA</text><text class="dg-s" x="505" y="313">CompliantVLA-adapt.</text><text class="dg-s" x="505" y="328">CR-VLA-Force</text><text class="dg-s" x="505" y="343">Opt2VLA</text><text class="dg-s" x="505" y="358">TacPAC · UniTacVLA</text>
+<rect class="dg-box" x="655" y="148" width="150" height="250"/><text class="dg-t" x="730" y="168" text-anchor="middle">⑤ Training only</text><text class="dg-s" x="730" y="184" text-anchor="middle">no sensor at run time</text>
+<text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
+<rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
+<text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
+</svg><figcaption>Six entry points for force, torque or touch in a VLA pipeline, with the methods that use each one. Many methods use two. DAM-VLA (*) handles an unnamed high-frequency modality.</figcaption></figure>
+<ol>
+<li><strong>① VLM input.</strong> Force becomes a token or <strong>text</strong> next to the image and the instruction. This reuses the VLM's reasoning, but the signal passes through a model pretrained without it.</li>
+<li><strong>② After the VLM.</strong> A fusion module (often a <strong>mixture of experts</strong>) mixes force with the finished vision-language features. This is the most common choice for force/torque.</li>
+<li><strong>③ Inside the action expert.</strong> Force conditions the action decoder directly: extra tokens, adapters in several layers, cross-attention, or a grafted reactive expert.</li>
+<li><strong>④ Outside the VLA.</strong> The VLA stays as it is. A controller, refiner or small residual policy uses force to change the executed action, at a higher rate than the VLA.</li>
+<li><strong>⑤ Training only.</strong> Force shapes the weights (as a teacher, a reward or a curriculum) and is absent at run time.</li>
+<li><strong>⑥ Predicted.</strong> The model forecasts future touch, torque or force, either as an auxiliary target or inside a world model.</li>
+</ol>
+<h2>The full table</h2>
+<p>"Read" says how deeply I read the paper: <strong>full</strong> = a detailed note on this site; <strong>abstract</strong> = classified from the arXiv abstract only, so entry points and outputs may be incomplete. n/s = not stated in what I read. Numbers in the entry column refer to the map above.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Year</th>
+<th>Signal</th>
+<th>Enters at</th>
+<th>Output</th>
+<th>Learning</th>
+<th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="forcevla.html">ForceVLA</a></td>
+<td>2025</td>
+<td>wrist F/T</td>
+<td>②</td>
+<td>pose</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>2025</td>
+<td>GelSight</td>
+<td>① planner text, ④ refiner</td>
+<td>refined chunk</td>
+<td>refiner only, RDT</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="forcevla2.html">ForceVLA2</a></td>
+<td>2026</td>
+<td>wrist F/T, force prompt</td>
+<td>① ②</td>
+<td>pose + force</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="mode-vla.html">MoDE-VLA</a></td>
+<td>2026</td>
+<td>joint torque, fingertip tactile</td>
+<td>②</td>
+<td>arm/hand residual</td>
+<td>imitation + RL hand skill, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="taf-vla.html">TaF-VLA</a></td>
+<td>2026</td>
+<td>vision tactile aligned to F/T</td>
+<td>③ ⑤</td>
+<td>actions</td>
+<td>contrastive pretraining, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="tabero.html">Tabero</a></td>
+<td>2026</td>
+<td>simulated tactile + fingertip force</td>
+<td>① ④</td>
+<td>pose + grip/applied force</td>
+<td>LoRA imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="fd-vla.html">FD-VLA</a></td>
+<td>2026</td>
+<td>F/T (training only)</td>
+<td>① ⑤</td>
+<td>actions</td>
+<td>distillation, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="hapticvla.html">HapticVLA</a></td>
+<td>2026</td>
+<td>taxel arrays (training only)</td>
+<td>⑤</td>
+<td>actions</td>
+<td>reward-weighted + distillation, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>2026</td>
+<td>sensorless, from joint torque</td>
+<td>③ ④</td>
+<td>actions + base residual</td>
+<td>imitation, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+<td>2026</td>
+<td>piezo pads → wrench</td>
+<td>② ⑥</td>
+<td>actions + future wrench</td>
+<td>imitation + online RL, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>2026</td>
+<td>wrench from joint torque</td>
+<td>④ ⑥</td>
+<td>base + residual</td>
+<td>DAgger, ACT (not a VLA)</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2505.09577">VTLA</a></td>
+<td>2025</td>
+<td>tactile</td>
+<td>①</td>
+<td>actions</td>
+<td>preference learning (DPO)</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2507.09160">Tactile-VLA</a></td>
+<td>2025</td>
+<td>tactile</td>
+<td>① ④</td>
+<td>to hybrid position-force control</td>
+<td>few demonstrations</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2508.01361">VLH</a></td>
+<td>2025</td>
+<td>none (haptics is an output to a human)</td>
+<td>–</td>
+<td>motion + haptic commands</td>
+<td>LoRA, OpenVLA</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2508.08706">OmniVTLA</a></td>
+<td>2025</td>
+<td>vision- and force-based tactile</td>
+<td>①</td>
+<td>actions</td>
+<td>semantic-aligned encoder</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
+<td>2025</td>
+<td>torque</td>
+<td>③ ⑥</td>
+<td>actions + torque</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2601.15541">CompliantVLA-adaptor</a></td>
+<td>2026</td>
+<td>F/T at the controller</td>
+<td>④</td>
+<td>stiffness + damping</td>
+<td>VLM-guided</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2602.12532">CRAFT</a></td>
+<td>2026</td>
+<td>force</td>
+<td>⑤</td>
+<td>actions</td>
+<td>curriculum fine-tuning</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2602.23648">FAVLA</a></td>
+<td>2026</td>
+<td>F/T</td>
+<td>③</td>
+<td>fast actions</td>
+<td>fast–slow</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
+<td>2026</td>
+<td>unnamed high-rate modality</td>
+<td>③</td>
+<td>100 Hz actions</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
+<td>2026</td>
+<td>tactile</td>
+<td>④ ⑥</td>
+<td>chunk + fast corrections</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.01067">H-Tac / TTP</a></td>
+<td>2026</td>
+<td>tactile, human video</td>
+<td>⑤ ⑥</td>
+<td>actions + future touch</td>
+<td>human pretraining</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.14236">LIFT</a></td>
+<td>2026</td>
+<td>6D end-effector force</td>
+<td>③</td>
+<td>actions</td>
+<td>post-training + DAgger</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.18231">FM-VLA</a></td>
+<td>2026</td>
+<td>force history</td>
+<td>③</td>
+<td>actions</td>
+<td>VAE memory</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
+<td>2026</td>
+<td>force, ultrasound probe</td>
+<td>②</td>
+<td>probe motion</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.05266">TacPAC</a></td>
+<td>2026</td>
+<td>tactile images</td>
+<td>④ ⑥</td>
+<td>corrected chunk</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.05832">CR-VLA-Force</a></td>
+<td>2026</td>
+<td>F/T sequence</td>
+<td>② ④</td>
+<td>via compliance controller</td>
+<td>multi-stage imitation</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
+<td>2026</td>
+<td>tactile</td>
+<td>② ⑥</td>
+<td>actions</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.18242">ForceDelta-VLA</a></td>
+<td>2026</td>
+<td>force history</td>
+<td>④</td>
+<td>corrected actions</td>
+<td>distillation</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
+<td>2026</td>
+<td>none stated (RGB + language)</td>
+<td>④</td>
+<td>stiffness + virtual displacement</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.22840">ForceRFT</a></td>
+<td>2026</td>
+<td>wrist wrench</td>
+<td>④</td>
+<td>pose residuals</td>
+<td>residual RL, SmolVLA prior</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
+<td>2026</td>
+<td>n/s</td>
+<td>④</td>
+<td>motion + force references</td>
+<td>trajectory-optimisation data</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.24976">DexTacWAM</a></td>
+<td>2026</td>
+<td>fingertip tactile</td>
+<td>⑥</td>
+<td>actions + predicted touch</td>
+<td>video world model</td>
+<td>abstract</td>
+</tr>
+</tbody>
+</table>
+<h2>Five patterns across the table</h2>
+<ol>
+<li><strong>"After the VLM" beats "before".</strong> ForceVLA's ablation (0% for a MoE before the VLM, 80% after) and TA-VLA's abstract (adapters in the decoder beat the encoder) point the same way: let vision and language finish first.</li>
+<li><strong>Protect the pretrained model.</strong> Residual connections (MoDE-VLA), zero-initialised paths (TORL-VLA, LIFT) and gated cross-attention (DAM-VLA) all start from "add nothing", so the new signal cannot damage what the VLA already knows.</li>
+<li><strong>Fast and slow.</strong> Force changes in milliseconds, a VLA replans a few times per second. FAVLA, LIFT, ForceDelta-VLA, DAM-VLA, TacPAC and TER-DAgger all add a faster path next to the slow one.</li>
+<li><strong>Remove the sensor.</strong> FD-VLA and HapticVLA keep the sensor only for training; FWBC-VLA estimates force from joint torques. Sensors are expensive and fragile, so this direction is growing.</li>
+<li><strong>Output more than a pose.</strong> ForceVLA2, Tabero, Tactile-VLA and Opt2VLA output force targets; CompVLA and CompliantVLA-adaptor output stiffness. <a href="survey-force-output.html">Survey 3</a> explains why.</li>
+</ol>
+<h2>Further reading</h2>
+<p>Two broader surveys exist: <em>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning</em> (<a href="https://arxiv.org/abs/2608.07558">arXiv 2608.07558</a>), which proposes the TF-ART taxonomy, and <em>Tactile-based Multimodal Fusion in Embodied Intelligence</em> (<a href="https://arxiv.org/abs/2605.17336">arXiv 2605.17336</a>), covering work up to early 2026. Both go beyond VLAs; this note stays with VLA-style policies.</p>
+<h2>Caveats</h2>
+<p>Twenty-two rows are classified from abstracts only. Abstracts rarely state the backbone or the sensor type, so "n/s" means "I could not tell", not "they do not have one". The list is what I found by searching in October 2026, not an exhaustive census.</p>
+<p><strong>Carry forward:</strong> the map says <em>where</em> force enters. Before that comes a more basic choice: <em>what</em> is measured, and in what form it reaches the network. See <a href="survey-force-sensing.html">Survey 2</a>.</p>
+<p><strong>Check question:</strong> a VLM sees 3 × 256 image tokens, 30 language tokens and 1 force token. What share of attention does the force token get under uniform attention, and what logit advantage $\Delta$ gives it half?</p>
+<p><em>Answer:</em> $N = 768 + 30 + 1 = 799$, so $1/799 \approx 0.00125$. Half needs $e^{\Delta} = 798$, so $\Delta = \ln 798 \approx 6.7$.</p>
+    </div>
+    <div data-vi>
+<p>Đây là bài đầu trong ba ghi chú survey. <a href="survey-force-sensing.html">Survey 2</a> nói về cảm biến và biểu diễn; <a href="survey-force-output.html">Survey 3</a> nói về đầu ra và cách học.</p>
+<h2>Vấn đề</h2>
+<p>Camera thấy phích đang ở đâu, không thấy nó đang ấn mạnh đến đâu. Lực tiếp xúc bị che đúng vào lúc quyết định một task giàu tiếp xúc: phích vướng vào mép ổ, bàn tay che kín quả trứng, miếng bọt biển đã áp phẳng lên bảng. Một VLA học từ ảnh và ngôn ngữ phải đoán lực từ hình học, và đoán sai khi ma sát, độ cứng hay một milimét lệch thay đổi.</p>
+<h2>Cách sửa ngây thơ, và vì sao chưa đủ</h2>
+<p>Nối số đo lực vào state của robot rồi fine-tune. <a href="forcevla.html">ForceVLA</a> đã đo điều này: π0-base tăng từ 37,3% lên 40,2%, còn π0-fast tụt từ 31,0% xuống 14,2%.</p>
+<h2>Tính tay: một token giữa đám đông</h2>
+<p>Vì sao một token lực bị bỏ qua? Đếm số token mà một VLM kiểu π0 nhìn thấy: 3 góc camera × 256 token patch = 768, cộng khoảng 20 token ngôn ngữ, cộng 1 token lực: tổng cộng 789 token.</p>
+<p>Nếu một query rải attention đều, token lực nhận được</p>
+<p>$$\frac{1}{789} \approx 0.0013$$</p>
+<p>phần attention. Để token lực chiếm một nửa, logit của nó phải hơn logit của mỗi token khác một khoảng $\Delta$ với</p>
+<p>$$\frac{e^{\Delta}}{e^{\Delta} + 788} = 0.5 \;\Rightarrow\; e^{\Delta} = 788 \;\Rightarrow\; \Delta = \ln 788 \approx 6.7$$</p>
+<p>Khoảng cách 6,7 logit phải được học từ vài trăm demo, và chỉ ở những bước có tiếp xúc. Đó là lý do hầu hết các phương pháp dưới đây cho lực một <strong>đường đi riêng</strong>: một module gộp, một adapter, một bypass hoặc một bộ điều khiển riêng.</p>
+<h2>Bản đồ: sáu chỗ lực có thể đi vào</h2>
+<figure class="diagram"><svg role="img" aria-label="Sáu điểm vào cho lực, mô men hoặc xúc giác trong pipeline VLA, kèm các phương pháp dùng từng điểm. Nhiều phương pháp dùng hai điểm. DAM-VLA (*) xử lý một modality tần số cao không được nêu tên." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
+<rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
+<rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
+<rect class="dg-box" x="430" y="20" width="150" height="70"/><text class="dg-t" x="505" y="52" text-anchor="middle">Action expert</text><text class="dg-s" x="505" y="68" text-anchor="middle">decoder / flow head</text>
+<rect class="dg-box" x="660" y="20" width="150" height="70"/><text class="dg-t" x="735" y="52" text-anchor="middle">Low-level</text><text class="dg-t" x="735" y="67" text-anchor="middle">controller</text>
+<rect class="dg-ext" x="860" y="20" width="105" height="70"/><text class="dg-t" x="912" y="60" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M155 40 H200"/><path class="dg-a" d="M350 55 H430"/><path class="dg-a" d="M580 55 H660"/><path class="dg-a" d="M810 55 H860"/>
+<path class="dg-ad" d="M155 84 H180 V75 H200"/><text class="dg-l" x="184" y="70">①</text>
+<path class="dg-ad" d="M155 96 H390 V61"/><text class="dg-l" x="396" y="82">②</text>
+<path class="dg-ad" d="M155 108 H505 V90"/><text class="dg-l" x="511" y="102">③</text>
+<path class="dg-ad" d="M155 120 H735 V90"/><text class="dg-l" x="741" y="102">④</text>
+<rect class="dg-box" x="15" y="148" width="150" height="250"/><text class="dg-t" x="90" y="168" text-anchor="middle">① VLM input</text><text class="dg-s" x="90" y="184" text-anchor="middle">token or language</text>
+<text class="dg-s" x="25" y="208">ForceVLA2 (prompt)</text><text class="dg-s" x="25" y="223">FD-VLA</text><text class="dg-s" x="25" y="238">Tabero</text><text class="dg-s" x="25" y="253">VLA-Touch (planner)</text><text class="dg-s" x="25" y="268">VTLA</text><text class="dg-s" x="25" y="283">OmniVTLA</text><text class="dg-s" x="25" y="298">Tactile-VLA</text>
+<rect class="dg-key" x="175" y="148" width="150" height="250"/><text class="dg-t" x="250" y="168" text-anchor="middle">② After the VLM</text><text class="dg-s" x="250" y="184" text-anchor="middle">fusion module</text>
+<text class="dg-s" x="185" y="208">ForceVLA</text><text class="dg-s" x="185" y="223">ForceVLA2</text><text class="dg-s" x="185" y="238">MoDE-VLA</text><text class="dg-s" x="185" y="253">TORL-VLA</text><text class="dg-s" x="185" y="268">CR-VLA-Force</text><text class="dg-s" x="185" y="283">DeCAL</text><text class="dg-s" x="185" y="298">ForceU-VLA</text>
+<rect class="dg-key" x="335" y="148" width="150" height="250"/><text class="dg-t" x="410" y="168" text-anchor="middle">③ Action expert</text><text class="dg-s" x="410" y="184" text-anchor="middle">tokens, adapters</text>
+<text class="dg-s" x="345" y="208">TaF-VLA</text><text class="dg-s" x="345" y="223">FWBC-VLA</text><text class="dg-s" x="345" y="238">TA-VLA</text><text class="dg-s" x="345" y="253">FAVLA</text><text class="dg-s" x="345" y="268">FM-VLA</text><text class="dg-s" x="345" y="283">LIFT</text><text class="dg-s" x="345" y="298">DAM-VLA*</text>
+<rect class="dg-key" x="495" y="148" width="150" height="250"/><text class="dg-t" x="570" y="168" text-anchor="middle">④ Outside the VLA</text><text class="dg-s" x="570" y="184" text-anchor="middle">controller, residual</text>
+<text class="dg-s" x="505" y="208">VLA-Touch (refiner)</text><text class="dg-s" x="505" y="223">Tabero · Tactile-VLA</text><text class="dg-s" x="505" y="238">FWBC-VLA (body)</text><text class="dg-s" x="505" y="253">TER-DAgger</text><text class="dg-s" x="505" y="268">ForceDelta-VLA</text><text class="dg-s" x="505" y="283">ForceRFT</text><text class="dg-s" x="505" y="298">CompVLA</text><text class="dg-s" x="505" y="313">CompliantVLA-adapt.</text><text class="dg-s" x="505" y="328">CR-VLA-Force</text><text class="dg-s" x="505" y="343">Opt2VLA</text><text class="dg-s" x="505" y="358">TacPAC · UniTacVLA</text>
+<rect class="dg-box" x="655" y="148" width="150" height="250"/><text class="dg-t" x="730" y="168" text-anchor="middle">⑤ Training only</text><text class="dg-s" x="730" y="184" text-anchor="middle">no sensor at run time</text>
+<text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
+<rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
+<text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
+</svg><figcaption>Sáu điểm vào cho lực, mô men hoặc xúc giác trong pipeline VLA, kèm các phương pháp dùng từng điểm. Nhiều phương pháp dùng hai điểm. DAM-VLA (*) xử lý một modality tần số cao không được nêu tên.</figcaption></figure>
+<ol>
+<li><strong>① Đầu vào VLM.</strong> Lực thành một token hoặc <strong>văn bản</strong> cạnh ảnh và câu lệnh. Cách này tận dụng khả năng suy luận của VLM, nhưng tín hiệu phải đi qua một mô hình được pretrain không có nó.</li>
+<li><strong>② Sau VLM.</strong> Một module gộp (thường là <strong>mixture of experts</strong>) trộn lực với đặc trưng thị giác-ngôn ngữ đã hoàn chỉnh. Đây là lựa chọn phổ biến nhất cho lực/mô men.</li>
+<li><strong>③ Bên trong action expert.</strong> Lực điều kiện trực tiếp bộ giải mã hành động: token thêm, adapter ở nhiều lớp, cross-attention, hoặc một expert phản xạ được ghép thêm.</li>
+<li><strong>④ Bên ngoài VLA.</strong> VLA giữ nguyên. Một bộ điều khiển, bộ tinh chỉnh hoặc chính sách residual nhỏ dùng lực để thay đổi hành động được thực thi, ở tần số cao hơn VLA.</li>
+<li><strong>⑤ Chỉ lúc huấn luyện.</strong> Lực định hình trọng số (làm teacher, phần thưởng hoặc giáo trình) và vắng mặt lúc chạy.</li>
+<li><strong>⑥ Dự đoán.</strong> Mô hình dự báo xúc giác, mô men hoặc lực tương lai, dưới dạng mục tiêu phụ hoặc bên trong một world model.</li>
+</ol>
+<h2>Bảng đầy đủ</h2>
+<p>Cột "Đọc" cho biết tôi đọc bài sâu đến đâu: <strong>full</strong> = có ghi chú chi tiết trên trang này; <strong>abstract</strong> = phân loại chỉ từ abstract trên arXiv, nên điểm vào và đầu ra có thể chưa đủ. n/s = không được nêu trong phần tôi đọc. Các số ở cột "Vào ở" ứng với bản đồ trên.</p>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Năm</th>
+<th>Tín hiệu</th>
+<th>Vào ở</th>
+<th>Đầu ra</th>
+<th>Cách học</th>
+<th>Đọc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="forcevla.html">ForceVLA</a></td>
+<td>2025</td>
+<td>F/T cổ tay</td>
+<td>②</td>
+<td>pose</td>
+<td>bắt chước, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>2025</td>
+<td>GelSight</td>
+<td>① văn bản cho planner, ④ bộ tinh chỉnh</td>
+<td>chunk đã tinh chỉnh</td>
+<td>chỉ huấn luyện bộ tinh chỉnh, RDT</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="forcevla2.html">ForceVLA2</a></td>
+<td>2026</td>
+<td>F/T cổ tay, force prompt</td>
+<td>① ②</td>
+<td>pose + lực</td>
+<td>bắt chước, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="mode-vla.html">MoDE-VLA</a></td>
+<td>2026</td>
+<td>mô men khớp, xúc giác đầu ngón</td>
+<td>②</td>
+<td>residual tay-cánh tay</td>
+<td>bắt chước + kỹ năng RL, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="taf-vla.html">TaF-VLA</a></td>
+<td>2026</td>
+<td>xúc giác thị giác căn với F/T</td>
+<td>③ ⑤</td>
+<td>hành động</td>
+<td>pretrain tương phản, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="tabero.html">Tabero</a></td>
+<td>2026</td>
+<td>xúc giác mô phỏng + lực đầu ngón</td>
+<td>① ④</td>
+<td>pose + lực kẹp/lực tác dụng</td>
+<td>LoRA bắt chước, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="fd-vla.html">FD-VLA</a></td>
+<td>2026</td>
+<td>F/T (chỉ khi huấn luyện)</td>
+<td>① ⑤</td>
+<td>hành động</td>
+<td>chưng cất, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="hapticvla.html">HapticVLA</a></td>
+<td>2026</td>
+<td>mảng taxel (chỉ khi huấn luyện)</td>
+<td>⑤</td>
+<td>hành động</td>
+<td>trọng số phần thưởng + chưng cất, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>2026</td>
+<td>không cảm biến, từ mô men khớp</td>
+<td>③ ④</td>
+<td>hành động + residual thân</td>
+<td>bắt chước, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+<td>2026</td>
+<td>miếng áp điện → wrench</td>
+<td>② ⑥</td>
+<td>hành động + wrench tương lai</td>
+<td>bắt chước + RL online, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>2026</td>
+<td>wrench từ mô men khớp</td>
+<td>④ ⑥</td>
+<td>nền + residual</td>
+<td>DAgger, ACT (không phải VLA)</td>
+<td>full</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2505.09577">VTLA</a></td>
+<td>2025</td>
+<td>xúc giác</td>
+<td>①</td>
+<td>hành động</td>
+<td>học theo sở thích (DPO)</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2507.09160">Tactile-VLA</a></td>
+<td>2025</td>
+<td>xúc giác</td>
+<td>① ④</td>
+<td>sang điều khiển lai vị trí-lực</td>
+<td>ít demo</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2508.01361">VLH</a></td>
+<td>2025</td>
+<td>không (haptic là đầu ra cho người)</td>
+<td>–</td>
+<td>chuyển động + lệnh haptic</td>
+<td>LoRA, OpenVLA</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2508.08706">OmniVTLA</a></td>
+<td>2025</td>
+<td>xúc giác thị giác và xúc giác lực</td>
+<td>①</td>
+<td>hành động</td>
+<td>encoder căn ngữ nghĩa</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
+<td>2025</td>
+<td>mô men</td>
+<td>③ ⑥</td>
+<td>hành động + mô men</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2601.15541">CompliantVLA-adaptor</a></td>
+<td>2026</td>
+<td>F/T ở bộ điều khiển</td>
+<td>④</td>
+<td>độ cứng + giảm chấn</td>
+<td>VLM dẫn hướng</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2602.12532">CRAFT</a></td>
+<td>2026</td>
+<td>lực</td>
+<td>⑤</td>
+<td>hành động</td>
+<td>fine-tune theo giáo trình</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2602.23648">FAVLA</a></td>
+<td>2026</td>
+<td>F/T</td>
+<td>③</td>
+<td>hành động nhanh</td>
+<td>nhanh–chậm</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
+<td>2026</td>
+<td>modality tần số cao không nêu tên</td>
+<td>③</td>
+<td>hành động 100 Hz</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
+<td>2026</td>
+<td>xúc giác</td>
+<td>④ ⑥</td>
+<td>chunk + hiệu chỉnh nhanh</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.01067">H-Tac / TTP</a></td>
+<td>2026</td>
+<td>xúc giác, video người</td>
+<td>⑤ ⑥</td>
+<td>hành động + xúc giác tương lai</td>
+<td>pretrain từ người</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.14236">LIFT</a></td>
+<td>2026</td>
+<td>lực end-effector 6D</td>
+<td>③</td>
+<td>hành động</td>
+<td>post-training + DAgger</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2607.18231">FM-VLA</a></td>
+<td>2026</td>
+<td>lịch sử lực</td>
+<td>③</td>
+<td>hành động</td>
+<td>bộ nhớ VAE</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
+<td>2026</td>
+<td>lực, đầu dò siêu âm</td>
+<td>②</td>
+<td>chuyển động đầu dò</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.05266">TacPAC</a></td>
+<td>2026</td>
+<td>ảnh xúc giác</td>
+<td>④ ⑥</td>
+<td>chunk đã hiệu chỉnh</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.05832">CR-VLA-Force</a></td>
+<td>2026</td>
+<td>chuỗi F/T</td>
+<td>② ④</td>
+<td>qua bộ điều khiển compliance</td>
+<td>bắt chước nhiều giai đoạn</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
+<td>2026</td>
+<td>xúc giác</td>
+<td>② ⑥</td>
+<td>hành động</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.18242">ForceDelta-VLA</a></td>
+<td>2026</td>
+<td>lịch sử lực</td>
+<td>④</td>
+<td>hành động đã hiệu chỉnh</td>
+<td>chưng cất</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
+<td>2026</td>
+<td>không nêu (RGB + ngôn ngữ)</td>
+<td>④</td>
+<td>độ cứng + dịch chuyển ảo</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.22840">ForceRFT</a></td>
+<td>2026</td>
+<td>wrench cổ tay</td>
+<td>④</td>
+<td>residual pose</td>
+<td>RL residual, nền SmolVLA</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
+<td>2026</td>
+<td>n/s</td>
+<td>④</td>
+<td>chuyển động + lực tham chiếu</td>
+<td>dữ liệu tối ưu quỹ đạo</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2609.24976">DexTacWAM</a></td>
+<td>2026</td>
+<td>xúc giác đầu ngón</td>
+<td>⑥</td>
+<td>hành động + xúc giác dự đoán</td>
+<td>video world model</td>
+<td>abstract</td>
+</tr>
+</tbody>
+</table>
+<h2>Năm khuôn mẫu xuyên suốt bảng</h2>
+<ol>
+<li><strong>"Sau VLM" thắng "trước VLM".</strong> Ablation của ForceVLA (MoE trước VLM 0%, sau VLM 80%) và abstract của TA-VLA (adapter trong decoder tốt hơn trong encoder) cùng chỉ một hướng: để thị giác và ngôn ngữ xử lý xong trước.</li>
+<li><strong>Bảo vệ mô hình đã pretrain.</strong> Kết nối residual (MoDE-VLA), đường khởi tạo bằng 0 (TORL-VLA, LIFT) và cross-attention có gate (DAM-VLA) đều bắt đầu từ "không cộng gì", để tín hiệu mới không làm hỏng những gì VLA đã biết.</li>
+<li><strong>Nhanh và chậm.</strong> Lực đổi trong vài mili giây, còn VLA chỉ lập kế hoạch lại vài lần mỗi giây. FAVLA, LIFT, ForceDelta-VLA, DAM-VLA, TacPAC và TER-DAgger đều thêm một đường nhanh cạnh đường chậm.</li>
+<li><strong>Bỏ cảm biến.</strong> FD-VLA và HapticVLA chỉ giữ cảm biến lúc huấn luyện; FWBC-VLA ước lượng lực từ mô men khớp. Cảm biến đắt và dễ hỏng, nên hướng này đang lớn dần.</li>
+<li><strong>Xuất nhiều hơn một pose.</strong> ForceVLA2, Tabero, Tactile-VLA và Opt2VLA xuất lực mục tiêu; CompVLA và CompliantVLA-adaptor xuất độ cứng. <a href="survey-force-output.html">Survey 3</a> giải thích vì sao.</li>
+</ol>
+<h2>Đọc thêm</h2>
+<p>Có hai survey rộng hơn: <em>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning</em> (<a href="https://arxiv.org/abs/2608.07558">arXiv 2608.07558</a>), đề xuất phân loại TF-ART, và <em>Tactile-based Multimodal Fusion in Embodied Intelligence</em> (<a href="https://arxiv.org/abs/2605.17336">arXiv 2605.17336</a>), bao quát tới đầu năm 2026. Cả hai vượt ra ngoài VLA; ghi chú này chỉ bàn các chính sách kiểu VLA.</p>
+<h2>Lưu ý</h2>
+<p>Hai mươi hai dòng được phân loại chỉ từ abstract. Abstract hiếm khi nêu backbone hay loại cảm biến, nên "n/s" nghĩa là "tôi không xác định được", không phải "họ không có". Danh sách là những gì tôi tìm được vào tháng 10/2026, không phải thống kê đầy đủ.</p>
+<p><strong>Mang theo sang bài sau:</strong> bản đồ cho biết lực vào <em>ở đâu</em>. Trước đó còn một lựa chọn cơ bản hơn: đo <em>cái gì</em>, và nó tới mạng dưới dạng nào. Xem <a href="survey-force-sensing.html">Survey 2</a>.</p>
+<p><strong>Câu kiểm tra:</strong> VLM thấy 3 × 256 token ảnh, 30 token ngôn ngữ và 1 token lực. Với attention đều, token lực nhận bao nhiêu phần, và cần lợi thế logit $\Delta$ bao nhiêu để nó nhận một nửa?</p>
+<p><em>Đáp án:</em> $N = 768 + 30 + 1 = 799$, nên $1/799 \approx 0.00125$. Một nửa cần $e^{\Delta} = 798$, nên $\Delta = \ln 798 \approx 6.7$.</p>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
