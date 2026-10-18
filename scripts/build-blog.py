@@ -2,12 +2,13 @@
 """
 build-blog.py
 =============
-Quét blog/posts/*.md, build ra:
-  - blog/posts/<slug>.html   (1 file HTML mỗi bài, song ngữ EN/VI trong cùng 1 trang)
-  - blog/posts.json          (manifest cho blog/index.html đọc để render danh sách)
+Quét <section>/posts/*.md, build ra:
+  - <section>/posts/<slug>.html (1 file HTML mỗi bài, song ngữ EN/VI)
+  - <section>/posts.json        (manifest cho trang section đọc để render danh sách)
 
 Cách dùng:
-    python3 scripts/build-blog.py
+    python3 scripts/build-blog.py                  # build blog (mặc định)
+    python3 scripts/build-blog.py --section learnvla
 
 Yêu cầu mỗi file .md có frontmatter dạng:
     ---
@@ -27,6 +28,7 @@ File bắt đầu bằng "_" (như _template.md) sẽ bị bỏ qua khi build.
 import json
 import re
 import sys
+import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -34,8 +36,6 @@ import markdown
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-POSTS_DIR = REPO_ROOT / "blog" / "posts"
-MANIFEST_PATH = REPO_ROOT / "blog" / "posts.json"
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?\n)---\s*\n(.*)$", re.DOTALL)
 LANG_BLOCK_RE = re.compile(r":::(en|vi)\s*\n(.*?)\n:::", re.DOTALL)
@@ -95,15 +95,20 @@ def parse_post(path: Path) -> dict:
     }
 
 
-def render_post_html(post: dict) -> str:
+def render_post_html(post: dict, section: str) -> str:
     tags_html = "".join(f'<span class="pill">{t}</span>' for t in post["tags"])
+  section_title = "Learn VLA" if section == "learnvla" else "Blog"
+  section_styles = "../../blog/styles/blog.css" if section == "learnvla" else "../styles/blog.css"
+  section_i18n = "../../blog/js/i18n.js" if section == "learnvla" else "../js/i18n.js"
+  blog_url = "../../blog/" if section == "learnvla" else "../"
+  learnvla_url = "../" if section == "learnvla" else "../../learnvla/"
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="{post['excerpt_en']}">
-<title>{post['title_en']} · Phạm Đức Duy</title>
+<title>{post['title_en']} · {section_title} · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,13 +120,14 @@ def render_post_html(post: dict) -> str:
 <meta property="og:type" content="article">
 
 <link rel="stylesheet" href="../../styles/main.css">
-<link rel="stylesheet" href="../styles/blog.css">
+<link rel="stylesheet" href="{section_styles}">
 </head>
 <body>
 
 <div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
 <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
-  <a href="../" onclick="toggleMenu(false)">Blog</a>
+  <a href="{blog_url}" onclick="toggleMenu(false)">Blog</a>
+  <a href="{learnvla_url}" onclick="toggleMenu(false)">Learn VLA</a>
   <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
   <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
 </div>
@@ -130,7 +136,8 @@ def render_post_html(post: dict) -> str:
   <div class="nav-inner">
     <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
     <ul class="nav-links" role="navigation" aria-label="Main navigation">
-      <li><a href="../">Blog</a></li>
+      <li><a href="{blog_url}">Blog</a></li>
+      <li><a href="{learnvla_url}">Learn VLA</a></li>
       <li><a href="../../#projects">Projects</a></li>
       <li><a href="../../#contact">Contact</a></li>
     </ul>
@@ -186,7 +193,7 @@ def render_post_html(post: dict) -> str:
 </div>
 
 <script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
-<script src="../js/i18n.js"></script>
+<script src="{section_i18n}"></script>
 <script>
 function toggleMenu(force) {{
   var menu = document.getElementById('mobileMenu');
@@ -205,11 +212,18 @@ function toggleMenu(force) {{
 
 
 def main():
-    if not POSTS_DIR.exists():
-        print(f"Không tìm thấy thư mục {POSTS_DIR}", file=sys.stderr)
+  parser = argparse.ArgumentParser(description="Build a Markdown article section.")
+  parser.add_argument("--section", choices=("blog", "learnvla"), default="blog")
+  section = parser.parse_args().section
+  section_dir = REPO_ROOT / section
+  posts_dir = section_dir / "posts"
+  manifest_path = section_dir / "posts.json"
+
+  if not posts_dir.exists():
+    print(f"Không tìm thấy thư mục {posts_dir}", file=sys.stderr)
         sys.exit(1)
 
-    md_files = sorted(p for p in POSTS_DIR.glob("*.md") if not p.name.startswith("_"))
+  md_files = sorted(p for p in posts_dir.glob("*.md") if not p.name.startswith("_"))
     if not md_files:
         print("Không có file .md nào để build (bỏ qua các file bắt đầu bằng '_').")
 
@@ -219,10 +233,10 @@ def main():
         try:
             post = parse_post(path)
             posts.append(post)
-            html = render_post_html(post)
-            out_path = POSTS_DIR / f"{post['slug']}.html"
+            html = render_post_html(post, section)
+            out_path = posts_dir / f"{post['slug']}.html"
             out_path.write_text(html, encoding="utf-8")
-            print(f"  ✓ {path.name} → blog/posts/{post['slug']}.html")
+            print(f"  ✓ {path.name} → {section}/posts/{post['slug']}.html")
         except ValueError as e:
             errors.append(str(e))
             print(f"  ✗ {e}", file=sys.stderr)
@@ -244,8 +258,8 @@ def main():
         }
         for p in posts
     ]
-    MANIFEST_PATH.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n  → blog/posts.json ({len(posts)} bài viết)")
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n  → {section}/posts.json ({len(posts)} bài viết)")
 
     if errors:
         print(f"\n{len(errors)} file lỗi, xem chi tiết ở trên.", file=sys.stderr)
