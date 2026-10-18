@@ -1,0 +1,105 @@
+/* Learn VLA · mục lục (khớp phong cách cubism: viền ink, bóng offset) */
+.toc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16, 64px);
+  padding: var(--sp-10) 0 var(--sp-24);
+}
+
+.toc-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  border-bottom: 2px solid var(--ink);
+}
+.toc-group-num {
+  font: 700 12px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  color: var(--amber-a11y);
+}
+.toc-group-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.toc-group-count {
+  margin-left: auto;
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-5);
+}
+.toc-list > li { margin: 0; padding: 0; }
+.toc-list > li::marker { content: none; }
+
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 52px;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--cream-2);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--t), box-shadow var(--t);
+}
+a.toc-item:hover,
+a.toc-item:focus-visible {
+  transform: translate(2px, -2px);
+  box-shadow: 6px 6px 0 var(--amber);
+}
+
+.toc-mark {
+  flex: none;
+  width: 1.1em;
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--amber-a11y);
+}
+.toc-label { min-width: 0; overflow-wrap: anywhere; }
+.toc-status {
+  flex: none;
+  margin-left: auto;
+  padding-left: var(--sp-3);
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--amber-a11y);
+}
+
+/* Chưa có nội dung: nét đứt, nhạt, không bấm được */
+.toc-item.is-draft {
+  background: transparent;
+  border: 2px dashed rgba(var(--ink-rgb), 0.35);
+  box-shadow: none;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.toc-item.is-draft .toc-mark,
+.toc-item.is-draft .toc-status { color: var(--ink-4); }
+
+@media (max-width: 720px) {
+  .toc-list { grid-template-columns: 1fr; }
+  .toc-group-head { flex-wrap: wrap; row-gap: var(--sp-2); }
+}

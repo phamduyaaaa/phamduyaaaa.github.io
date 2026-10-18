@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="../styles/main.css?v=cursor-fix">
 <link rel="stylesheet" href="../blog/styles/blog.css">
 <link rel="stylesheet" href="../blog/styles/cubism.css?v=cubism-2">
+<link rel="stylesheet" href="toc.css?v=1">
 </head>
 <body>
 
@@ -133,21 +134,28 @@ function toggleMenu(force) {
     var done = {};
     posts.forEach(function (p) { done[p.slug] = true; });
 
-    listEl.innerHTML = toc.map(function (g) {
+    listEl.innerHTML = toc.map(function (g, gi) {
+      var ready = 0;
       var items = g.items.map(function (it) {
-        var t = escapeHtml(it.title);
+        var t = '<span class="toc-label">' + escapeHtml(it.title) + '</span>';
         if (done[it.slug]) {
+          ready++;
           return '<li><a class="toc-item" href="posts/' + encodeURIComponent(it.slug) + '.html">' +
             '<span class="toc-mark" aria-hidden="true">●</span>' + t +
-            '<span class="toc-status">→</span></a></li>';
+            '<span class="toc-status" aria-hidden="true">→</span></a></li>';
         }
         return '<li><div class="toc-item is-draft">' +
           '<span class="toc-mark" aria-hidden="true">○</span>' + t +
           '<span class="toc-status"><span data-en>Coming soon</span><span data-vi>Sắp có</span></span></div></li>';
       }).join('');
+      var num = (gi + 1 < 10 ? '0' : '') + (gi + 1);
       return '<div class="toc-group">' +
-        '<div class="toc-group-title" data-en>' + escapeHtml(g.title_en) + '</div>' +
-        '<div class="toc-group-title" data-vi>' + escapeHtml(g.title_vi) + '</div>' +
+        '<div class="toc-group-head">' +
+          '<span class="toc-group-num">' + num + '</span>' +
+          '<h2 class="toc-group-title" data-en>' + escapeHtml(g.title_en) + '</h2>' +
+          '<h2 class="toc-group-title" data-vi>' + escapeHtml(g.title_vi) + '</h2>' +
+          '<span class="toc-group-count">' + ready + ' / ' + g.items.length + '</span>' +
+        '</div>' +
         '<ul class="toc-list">' + items + '</ul></div>';
     }).join('');
   }
