@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="'Force' in force-aware VLAs means five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. A cheatsheet of both, with the joint-torque-to-force calculation worked out.">
+<meta name="description" content="'Force' in a force-aware VLA can mean five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. Includes the joint-torque-to-force calculation, a speed comparison and references.">
 <title>Survey 2: What Is Measured, and How It Becomes a Token · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Survey 2: What Is Measured, and How It Becomes a Token">
-<meta property="og:description" content="'Force' in force-aware VLAs means five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. A cheatsheet of both, with the joint-torque-to-force calculation worked out.">
+<meta property="og:description" content="'Force' in a force-aware VLA can mean five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. Includes the joint-torque-to-force calculation, a speed comparison and references.">
 <meta property="og:type" content="article">
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
@@ -60,14 +60,14 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">8 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Survey 2: What Is Measured, and How It Becomes a Token</h1>
     <h1 data-vi>Survey 2: Đo cái gì, và nó thành token ra sao</h1>
 
-    <p class="post-excerpt-lead" data-en>'Force' in force-aware VLAs means five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. A cheatsheet of both, with the joint-torque-to-force calculation worked out.</p>
-    <p class="post-excerpt-lead" data-vi>'Lực' trong các VLA nhận biết lực là năm phép đo khác nhau, và mỗi loại tới mạng dưới một trong sáu dạng, từ con số thô đến một câu văn. Cheatsheet cho cả hai, kèm phép tính từ mô men khớp ra lực.</p>
+    <p class="post-excerpt-lead" data-en>'Force' in a force-aware VLA can mean five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. Includes the joint-torque-to-force calculation, a speed comparison and references.</p>
+    <p class="post-excerpt-lead" data-vi>'Lực' trong một VLA có nhận biết lực có thể là năm phép đo khác nhau, và mỗi loại đến mạng dưới một trong sáu dạng, từ con số thô đến một câu văn. Có phép tính từ mô-men khớp ra lực, so sánh tốc độ và tài liệu tham khảo.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Survey</span></div>
   </header>
@@ -76,12 +76,13 @@
     <div data-en>
 <div class="tldr">
 <p><strong>SERIES</strong> Survey 2 of 3 · <a href="survey-force-map.html">Survey 1: where force enters</a> · <a href="survey-force-output.html">Survey 3: outputs and learning</a></p>
-<p><strong>PROBLEM</strong> Two papers that both say "force-aware" may share no input at all: one reads a wrist sensor, one reads a gel image, one reads nothing and infers force from vision.</p>
-<p><strong>FIVE MEASUREMENTS</strong> wrist F/T · joint torque · vision-based tactile · taxel arrays · none at run time.</p>
+<p><strong>THE PROBLEM</strong> Two papers that both say "force-aware" may have nothing in common at the input. One reads a wrist sensor, one reads a camera image of a squashed gel, one reads no sensor at all and infers force from motion.</p>
+<p><strong>FIVE MEASUREMENTS</strong> wrist force/torque · joint torque · vision-based touch · pressure arrays · none at run time.</p>
 <p><strong>SIX FORMS</strong> raw token · history encoder · physically structured · aligned latent · language · predicted.</p>
-<p><strong>TAKEAWAY</strong> The higher the form, the more meaning and robustness, and the less detail and speed.</p>
+<p><strong>TAKEAWAY</strong> The further right you go on the six forms, the more meaning and robustness you get, and the less detail and speed. Numbers in brackets are reference numbers from <a href="survey-force-map.html">Survey 1</a>.</p>
 </div>
 <h2>1. Five kinds of measurement</h2>
+<p>Think of what a hand can feel. A wrist sensor is like holding a tool and sensing the total push. Joint torque is like feeling how hard your muscles work. A gel sensor is like pressing a finger into clay and looking at the dent. A pressure array is a patch of skin with a few dozen pressure points. The fifth option is a numb hand that has learned what contact feels like.</p>
 <table>
 <thead>
 <tr>
@@ -97,42 +98,43 @@
 <td><strong>Wrist F/T</strong></td>
 <td>one 6D wrench for the whole tool</td>
 <td>net push, insertion</td>
-<td>which finger slips</td>
-<td>ForceVLA, ForceVLA2, ForceRFT, CompliantVLA-adaptor</td>
+<td>cannot tell which finger slips</td>
+<td>ForceVLA [2], ForceVLA2 [15], ForceRFT [30], CompliantVLA-adaptor [8]</td>
 </tr>
 <tr>
 <td><strong>Joint torque</strong> (measured or estimated)</td>
 <td>one number per joint</td>
 <td>no extra hardware</td>
-<td>must subtract own motion</td>
-<td>MoDE-VLA, FWBC-VLA, TER-DAgger, TA-VLA</td>
+<td>must remove the arm's own motion</td>
+<td>MoDE-VLA [14], FWBC-VLA [25], TER-DAgger [13], TA-VLA [7]</td>
 </tr>
 <tr>
-<td><strong>Vision tactile</strong> (GelSight-type)</td>
-<td>image of gel deformation</td>
+<td><strong>Vision-based touch</strong> (GelSight-type)</td>
+<td>an image of how the gel deforms</td>
 <td>shape, shear, slip</td>
 <td>force needs calibration</td>
-<td>VLA-Touch, TaF-VLA, Tabero, OmniVTLA</td>
+<td>VLA-Touch [4], TaF-VLA [9], Tabero [17], OmniVTLA [6]</td>
 </tr>
 <tr>
-<td><strong>Taxel / piezo arrays</strong></td>
-<td>coarse pressure grid</td>
-<td>pressure spread</td>
+<td><strong>Pressure arrays</strong> (taxels, piezo)</td>
+<td>a coarse grid of pressure</td>
+<td>how pressure spreads</td>
 <td>low resolution</td>
-<td>HapticVLA (10×10), TORL-VLA (6×8)</td>
+<td>HapticVLA [16] (10×10), TORL-VLA [18] (6×8)</td>
 </tr>
 <tr>
 <td><strong>None at run time</strong></td>
 <td>force learned or inferred</td>
 <td>no sensor to break</td>
 <td>only as good as training</td>
-<td>FD-VLA, HapticVLA, CompVLA</td>
+<td>FD-VLA [10], HapticVLA [16], CompVLA [31]</td>
 </tr>
 </tbody>
 </table>
-<p>Rates reported in the papers read in full: F/T 300 Hz (ForceVLA2), torque estimator 200 Hz (FWBC-VLA), taxels 120 Hz (HapticVLA), gel images 30 Hz (TaF-VLA).</p>
+<figure class="diagram compact"><svg role="img" aria-label="How often each part runs, in Hz, as reported by the papers read in full. Sensors are fast; the model that reads them is slow. That gap shapes the designs in [Survey 3](survey-force-output.html)." class="dg-natural" width="682" height="192" viewBox="0 0 682 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Force/torque sensor (ForceVLA2)</text><rect class="dg-bar" x="232" y="10" width="313" height="18"/><text class="dg-barval" x="553" y="23">300 Hz</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Torque estimator (FWBC-VLA)</text><rect class="dg-bar" x="232" y="40" width="209" height="18"/><text class="dg-barval" x="449" y="53">200 Hz</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Pressure taxels (HapticVLA)</text><rect class="dg-bar" x="232" y="70" width="125" height="18"/><text class="dg-barval" x="365" y="83">120 Hz</text><text class="dg-barlabel" x="222" y="113" text-anchor="end">Gel images (TaF-VLA)</text><rect class="dg-bar" x="232" y="100" width="31" height="18"/><text class="dg-barval" x="271" y="113">30 Hz</text><text class="dg-barlabel" x="222" y="143" text-anchor="end">VLA planner (FWBC-VLA)</text><rect class="dg-bar" x="232" y="130" width="16" height="18"/><text class="dg-barval" x="256" y="143">15 Hz</text><text class="dg-barlabel" x="222" y="173" text-anchor="end">Base policy (TER-DAgger)</text><rect class="dg-key" x="232" y="160" width="2" height="18"/><text class="dg-barval" x="242" y="173">1 Hz</text></svg><figcaption>How often each part runs, in Hz, as reported by the papers read in full. Sensors are fast; the model that reads them is slow. That gap shapes the designs in [Survey 3](survey-force-output.html).</figcaption></figure>
 <h2>2. Getting force without a force sensor</h2>
-<figure class="diagram flow"><svg role="img" aria-label="Joint torques mix contact with gravity, friction and motion. Remove the part the robot's own motion explains, then map what remains to a force at the fingertip." class="dg-natural" width="1097" height="94" viewBox="0 0 1097 94" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-mute" x="14" y="38">Sensorless chain</text><rect class="dg-box" x="140" y="15" width="186" height="38"/><text class="dg-t" x="233" y="38" text-anchor="middle">Measured joint torque</text><path class="dg-a" d="M326 34 H358"/><rect class="dg-key" x="360" y="15" width="201" height="38"/><text class="dg-t" x="460" y="38" text-anchor="middle">Minus free-motion model</text><path class="dg-a" d="M561 34 H593"/><rect class="dg-box" x="595" y="15" width="132" height="38"/><text class="dg-t" x="661" y="38" text-anchor="middle">Contact torque</text><path class="dg-a" d="M727 34 H759"/><rect class="dg-key" x="761" y="15" width="148" height="38"/><text class="dg-t" x="835" y="38" text-anchor="middle">Jacobian inverse</text><path class="dg-a" d="M909 34 H941"/><rect class="dg-box" x="943" y="15" width="140" height="38"/><text class="dg-t" x="1013" y="38" text-anchor="middle">Fingertip force</text><text class="dg-note dg-mute" x="140.4" y="72">used by FWBC-VLA and TER-DAgger</text></svg><figcaption>Joint torques mix contact with gravity, friction and motion. Remove the part the robot's own motion explains, then map what remains to a force at the fingertip.</figcaption></figure>
+<p>The idea in one line: the motors know how hard they push. If you subtract the push needed just to move the arm, what is left is the world pushing back.</p>
+<figure class="diagram flow"><svg role="img" aria-label="Joint torque mixes contact with gravity, friction and motion. Remove what the arm's own motion explains, then convert what remains to a force at the fingertip." class="dg-natural" width="1097" height="94" viewBox="0 0 1097 94" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-mute" x="14" y="38">Sensorless chain</text><rect class="dg-box" x="140" y="15" width="186" height="38"/><text class="dg-t" x="233" y="38" text-anchor="middle">Measured joint torque</text><path class="dg-a" d="M326 34 H358"/><rect class="dg-key" x="360" y="15" width="201" height="38"/><text class="dg-t" x="460" y="38" text-anchor="middle">Minus free-motion model</text><path class="dg-a" d="M561 34 H593"/><rect class="dg-box" x="595" y="15" width="132" height="38"/><text class="dg-t" x="661" y="38" text-anchor="middle">Contact torque</text><path class="dg-a" d="M727 34 H759"/><rect class="dg-key" x="761" y="15" width="148" height="38"/><text class="dg-t" x="835" y="38" text-anchor="middle">Jacobian inverse</text><path class="dg-a" d="M909 34 H941"/><rect class="dg-box" x="943" y="15" width="140" height="38"/><text class="dg-t" x="1013" y="38" text-anchor="middle">Fingertip force</text><text class="dg-note dg-mute" x="140.4" y="72">used by FWBC-VLA and TER-DAgger</text></svg><figcaption>Joint torque mixes contact with gravity, friction and motion. Remove what the arm's own motion explains, then convert what remains to a force at the fingertip.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Recover the fingertip force from joint torques on a planar two-link arm. This is the core step of every sensorless method, and it shows why the free-motion model matters.</p>
@@ -154,7 +156,7 @@
 </tr>
 <tr>
 <td>$J$</td>
-<td>Jacobian: joint speeds → fingertip speed</td>
+<td>Jacobian: how joint speeds map to fingertip speed</td>
 <td>from $q$</td>
 <td>$\begin{pmatrix} -1 &amp; -1 \\ 1 &amp; 0 \end{pmatrix}$</td>
 </tr>
@@ -166,7 +168,7 @@
 </tr>
 <tr>
 <td>$\tau_{free}$</td>
-<td>torques the robot's own motion explains (model)</td>
+<td>torques the arm's own motion explains (from a model)</td>
 <td>input</td>
 <td>$(-2,\ -1.5)$ N·m</td>
 </tr>
@@ -191,13 +193,25 @@
 <li>Fingertip position: $(\cos 0 + \cos 90°,\ \sin 0 + \sin 90°) = (1, 1)$.</li>
 <li>$\tau_{ext} = (-12, -1.5) - (-2, -1.5) = (-10,\ 0)$ N·m.</li>
 <li>$F = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$ N.</li>
-<li>Sanity check: joint 2 sits at $(1, 0)$; a vertical force at $x = 1$ passes through it, so its contact torque is 0. ✓</li>
+<li>Sanity check: joint 2 sits at $(1, 0)$; a vertical force at $x = 1$ passes through it, so it adds no torque there. ✓</li>
 </ol>
 <p><strong>Result.</strong> A 10 N downward force at the fingertip.</p>
-<p><strong>Why it matters.</strong> Without step 2, gravity and friction would be read as contact. The free-motion model is what FWBC-VLA's HSR-Force learns.</p>
+<p><strong>Why it matters.</strong> Skip step 2 and gravity and friction look like contact. Learning a good free-motion model is the job of FWBC-VLA's force estimator [25].</p>
 </div>
-<p><strong>Why history matters.</strong> Two contacts both read 5 N now: one came from $2, 3, 5$ (pressing harder), the other from $8, 6, 5$ (releasing). The last change ($+2$ vs $-1$) tells them apart; a single sample cannot. Hence windows and memories in rung 2 below.</p>
+<p><strong>Why history matters.</strong> Two contacts both read 5 N right now: one came from $2, 3, 5$ (pressing harder), the other from $8, 6, 5$ (letting go). The last change ($+2$ against $-1$) tells them apart; a single sample cannot. That is why many methods keep a window or a memory (form 2 below).</p>
 <h2>3. Six forms a signal can take</h2>
+<figure class="diagram"><svg role="img" aria-label="Left forms stay close to the raw signal; right forms are closer to meaning." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">SIX FORMS, FROM CLOSE TO THE SENSOR (LEFT) TO CLOSE TO MEANING (RIGHT)</text>
+<rect class="dg-box" x="20" y="48" width="140" height="120"/><text class="dg-t" x="90" y="72" text-anchor="middle">1 Raw token</text><text class="dg-s" x="90" y="94" text-anchor="middle">one linear layer</text><text class="dg-s" x="90" y="118" text-anchor="middle">ForceVLA</text><text class="dg-s" x="90" y="134" text-anchor="middle">ForceVLA2</text>
+<rect class="dg-box" x="180" y="48" width="140" height="120"/><text class="dg-t" x="250" y="72" text-anchor="middle">2 History</text><text class="dg-s" x="250" y="94" text-anchor="middle">window, GRU, memory</text><text class="dg-s" x="250" y="118" text-anchor="middle">TORL-VLA</text><text class="dg-s" x="250" y="134" text-anchor="middle">FWBC-VLA</text><text class="dg-s" x="250" y="150" text-anchor="middle">FM-VLA</text>
+<rect class="dg-box" x="340" y="48" width="140" height="120"/><text class="dg-t" x="410" y="72" text-anchor="middle">3 Structured</text><text class="dg-s" x="410" y="94" text-anchor="middle">wrench, grip vs push</text><text class="dg-s" x="410" y="118" text-anchor="middle">TER-DAgger</text><text class="dg-s" x="410" y="134" text-anchor="middle">Tabero</text>
+<rect class="dg-key" x="500" y="48" width="140" height="120"/><text class="dg-t" x="570" y="72" text-anchor="middle">4 Aligned</text><text class="dg-s" x="570" y="94" text-anchor="middle">agrees with another</text><text class="dg-s" x="570" y="108" text-anchor="middle">modality</text><text class="dg-s" x="570" y="134" text-anchor="middle">TaF-VLA</text><text class="dg-s" x="570" y="150" text-anchor="middle">OmniVTLA</text>
+<rect class="dg-box" x="660" y="48" width="140" height="120"/><text class="dg-t" x="730" y="72" text-anchor="middle">5 Language</text><text class="dg-s" x="730" y="94" text-anchor="middle">a sentence</text><text class="dg-s" x="730" y="118" text-anchor="middle">VLA-Touch</text><text class="dg-s" x="730" y="134" text-anchor="middle">VTLA</text>
+<rect class="dg-box" x="820" y="48" width="140" height="120"/><text class="dg-t" x="890" y="72" text-anchor="middle">6 Predicted</text><text class="dg-s" x="890" y="94" text-anchor="middle">no sensor at run time</text><text class="dg-s" x="890" y="118" text-anchor="middle">FD-VLA</text><text class="dg-s" x="890" y="134" text-anchor="middle">HapticVLA</text>
+<path class="dg-a" d="M20 214 H960"/><text class="dg-l" x="20" y="238">more detail, more speed</text><text class="dg-l" x="960" y="238" text-anchor="end">more meaning, more robustness</text>
+<text class="dg-note dg-red" x="20" y="274">Cost of moving right: the policy depends more on the encoder, the language model or the training set.</text>
+<text class="dg-note dg-green" x="20" y="298">Benefit: a VLM can use the signal without learning a new physical vocabulary from a few demos.</text>
+</svg><figcaption>Left forms stay close to the raw signal; right forms are closer to meaning.</figcaption></figure>
 <table>
 <thead>
 <tr>
@@ -214,72 +228,116 @@
 <td><strong>Raw token</strong> (one linear layer)</td>
 <td>every number</td>
 <td>context, trend</td>
-<td>ForceVLA, ForceVLA2</td>
+<td>ForceVLA [2], ForceVLA2 [15]</td>
 </tr>
 <tr>
 <td>2</td>
 <td><strong>History encoder</strong></td>
-<td>trend over time</td>
+<td>the trend over time</td>
 <td>some detail</td>
-<td>TORL-VLA (MLP window), FWBC-VLA (GRU, 13 steps), FM-VLA (VAE memory), LIFT, ForceDelta-VLA</td>
+<td>TORL-VLA [18] (MLP window), FWBC-VLA [25] (GRU, 13 steps), FM-VLA [23] (VAE memory), LIFT [22], ForceDelta-VLA [29]</td>
 </tr>
 <tr>
 <td>3</td>
 <td><strong>Physically structured</strong></td>
-<td>meaning (wrench, grip vs push)</td>
+<td>meaning (wrench, grip against push)</td>
 <td>needs a model</td>
-<td>TER-DAgger (wrench), Tabero (grip/applied), VLA-Touch (summed shear)</td>
+<td>TER-DAgger [13] (wrench), Tabero [17] (grip/applied), VLA-Touch [4] (summed shear)</td>
 </tr>
 <tr>
 <td>4</td>
 <td><strong>Aligned latent</strong></td>
 <td>agreement with another modality</td>
-<td>interpretability</td>
-<td>TaF-VLA (tactile ↔ force), OmniVTLA (tactile ↔ language)</td>
+<td>easy interpretation</td>
+<td>TaF-VLA [9] (touch with force), OmniVTLA [6] (touch with language)</td>
 </tr>
 <tr>
 <td>5</td>
 <td><strong>Language</strong></td>
 <td>easy for a VLM to use</td>
 <td>speed, precision</td>
-<td>VLA-Touch (Octopi), ForceVLA2 (prompt), VTLA, Tactile-VLA</td>
+<td>VLA-Touch [4] (Octopi), ForceVLA2 [15] (prompt), VTLA [1], Tactile-VLA [3]</td>
 </tr>
 <tr>
 <td>6</td>
 <td><strong>Predicted</strong></td>
 <td>works without a sensor</td>
 <td>depends on training</td>
-<td>FD-VLA, HapticVLA, TORL-VLA, TA-VLA, DexTacWAM</td>
+<td>FD-VLA [10], HapticVLA [16], TORL-VLA [18], TA-VLA [7], DexTacWAM [33]</td>
 </tr>
 </tbody>
 </table>
 <h2>4. Caveats</h2>
 <ul>
-<li>FAVLA, LIFT, CompliantVLA-adaptor and CR-VLA-Force say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.</li>
+<li>FAVLA [12], LIFT [22], CompliantVLA-adaptor [8] and CR-VLA-Force [27] say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.</li>
 <li>Rates are what the papers report, not properties of the sensor type.</li>
+<li>Methods marked "abstract" in Survey 1 were classified from abstracts only.</li>
 </ul>
-<p><strong>Carry forward:</strong> once force is measured and encoded, the policy must do something with it: still output a pose, or a force, a stiffness, a correction? See <a href="survey-force-output.html">Survey 3</a>.</p>
+<p><strong>Carry forward:</strong> once force is measured and encoded, the policy must do something with it. Still output a pose, or a force, a stiffness, a correction? See <a href="survey-force-output.html">Survey 3</a>.</p>
 <p><strong>Check question:</strong> same arm and pose, $\tau_{ext} = (-5,\ -5)$ N·m. What force acts at the fingertip?</p>
 <details>
 <summary>Answer</summary>
 <p>$F = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N: a 5 N push along $+x$. Check: $J^\top F = (-5, -5)$.</p>
 </details>
+<h2>References</h2>
+<p>Same numbering as <a href="survey-force-map.html">Survey 1</a>. Titles are as listed on arXiv.</p>
+<ol>
+<li>VTLA: Vision-Tactile-Language-Action Model with Preference Learning for Insertion Manipulation. <a href="https://arxiv.org/abs/2505.09577">arXiv:2505.09577</a>, 2025-05-14.</li>
+<li>ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2505.22159">arXiv:2505.22159</a>, 2025-05-28.</li>
+<li>Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization. <a href="https://arxiv.org/abs/2507.09160">arXiv:2507.09160</a>, 2025-07-12.</li>
+<li>VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback. <a href="https://arxiv.org/abs/2507.17294">arXiv:2507.17294</a>, 2025-07-23.</li>
+<li>VLH: Vision-Language-Haptics Foundation Model. <a href="https://arxiv.org/abs/2508.01361">arXiv:2508.01361</a>, 2025-08-02.</li>
+<li>OmniVTLA: Vision-Tactile-Language-Action Models with Semantic-Aligned Tactile Sensing. <a href="https://arxiv.org/abs/2508.08706">arXiv:2508.08706</a>, 2025-08-12.</li>
+<li>TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models. <a href="https://arxiv.org/abs/2509.07962">arXiv:2509.07962</a>, 2025-09-09.</li>
+<li>CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2601.15541">arXiv:2601.15541</a>, 2026-01-21.</li>
+<li>TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation. <a href="https://arxiv.org/abs/2601.20321">arXiv:2601.20321</a>, 2026-01-28.</li>
+<li>FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2602.02142">arXiv:2602.02142</a>, 2026-02-02.</li>
+<li>CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning. <a href="https://arxiv.org/abs/2602.12532">arXiv:2602.12532</a>, 2026-02-13.</li>
+<li>FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation. <a href="https://arxiv.org/abs/2602.23648">arXiv:2602.23648</a>, 2026-02-27.</li>
+<li>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control. <a href="https://arxiv.org/abs/2603.04038">arXiv:2603.04038</a>, 2026-03-04.</li>
+<li>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA. <a href="https://arxiv.org/abs/2603.08122">arXiv:2603.08122</a>, 2026-03-09.</li>
+<li>ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2603.15169">arXiv:2603.15169</a>, 2026-03-16.</li>
+<li>HapticVLA: Contact-Rich Manipulation via Vision-Language-Action Model without Inference-Time Tactile Sensing. <a href="https://arxiv.org/abs/2603.15257">arXiv:2603.15257</a>, 2026-03-16.</li>
+<li>Tabero: Learning Gentle Manipulation with Closed-Loop Force Feedback from Vision, Touch, and Language. <a href="https://arxiv.org/abs/2605.27886">arXiv:2605.27886</a>, 2026-05-27.</li>
+<li>TORL-VLA: Tactile Guided Online Reinforcement Learning for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2606.09337">arXiv:2606.09337</a>, 2026-06-08.</li>
+<li>DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model. <a href="https://arxiv.org/abs/2606.12105">arXiv:2606.12105</a>, 2026-06-10.</li>
+<li>UniTacVLA: Unified Tactile Understanding and Prediction in Vision Language Action Models. <a href="https://arxiv.org/abs/2606.31723">arXiv:2606.31723</a>, 2026-06-30.</li>
+<li>Human-Centric Transferable Tactile Pre-Training for Dexterous Robotic Manipulation. <a href="https://arxiv.org/abs/2607.01067">arXiv:2607.01067</a>, 2026-07-01.</li>
+<li>Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection. <a href="https://arxiv.org/abs/2607.14236">arXiv:2607.14236</a>, 2026-07-15.</li>
+<li>FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2607.18231">arXiv:2607.18231</a>, 2026-07-20.</li>
+<li>ForceU-VLA: A Force-Aware Vision-Language-Action Model for Embodied Ultrasound Scanning. <a href="https://arxiv.org/abs/2608.15009">arXiv:2608.15009</a>, 2026-08-15.</li>
+<li>FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation. <a href="https://arxiv.org/abs/2609.03889">arXiv:2609.03889</a>, 2026-09-03.</li>
+<li>TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.05266">arXiv:2609.05266</a>, 2026-09-04.</li>
+<li>CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation. <a href="https://arxiv.org/abs/2609.05832">arXiv:2609.05832</a>, 2026-09-05.</li>
+<li>DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination. <a href="https://arxiv.org/abs/2609.09119">arXiv:2609.09119</a>, 2026-09-08.</li>
+<li>ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.18242">arXiv:2609.18242</a>, 2026-09-16.</li>
+<li>ForceRFT: Refining VLA Actions through Force-Guided Residual Reinforcement Learning. <a href="https://arxiv.org/abs/2609.22840">arXiv:2609.22840</a>, 2026-09-19.</li>
+<li>CompVLA: A Variable Compliance Vision-Language-Action Model for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2609.23614">arXiv:2609.23614</a>, 2026-09-20.</li>
+<li>Opt2VLA: Force-Aware Vision-Language-Action for Contact-Rich Humanoid Whole-Body Manipulation. <a href="https://arxiv.org/abs/2609.23968">arXiv:2609.23968</a>, 2026-09-21.</li>
+<li>DexTacWAM: A Visuo-Tactile World-Action Model for Dexterous Manipulation. <a href="https://arxiv.org/abs/2609.24976">arXiv:2609.24976</a>, 2026-09-21.</li>
+</ol>
+<p>Broader surveys:</p>
+<ul>
+<li>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning. <a href="https://arxiv.org/abs/2608.07558">arXiv:2608.07558</a>, 2026-08-02.</li>
+<li>Tactile-based Multimodal Fusion in Embodied Intelligence: A Survey of Vision, Language, and Contact-Driven Paradigms. <a href="https://arxiv.org/abs/2605.17336">arXiv:2605.17336</a>, 2026-05-17.</li>
+</ul>
     </div>
     <div data-vi>
 <div class="tldr">
-<p><strong>SERIES</strong> Survey 2 / 3 · <a href="survey-force-map.html">Survey 1: lực vào ở đâu</a> · <a href="survey-force-output.html">Survey 3: đầu ra và cách học</a></p>
-<p><strong>VẤN ĐỀ</strong> Hai bài cùng gọi mình là "nhận biết lực" có thể không chung đầu vào nào: bài này đọc cảm biến cổ tay, bài kia đọc ảnh gel, bài thứ ba không đọc gì và suy ra lực từ thị giác.</p>
-<p><strong>NĂM PHÉP ĐO</strong> F/T cổ tay · mô men khớp · xúc giác thị giác · mảng taxel · không đo lúc chạy.</p>
-<p><strong>SÁU DẠNG</strong> token thô · bộ mã hóa lịch sử · có cấu trúc vật lý · latent đã căn · ngôn ngữ · dự đoán.</p>
-<p><strong>RÚT RA</strong> Dạng càng cao càng thêm ý nghĩa và độ bền, nhưng càng mất chi tiết và tốc độ.</p>
+<p><strong>SERIES</strong> Survey 2 / 3 · <a href="survey-force-map.html">Survey 1: lực đi vào đâu</a> · <a href="survey-force-output.html">Survey 3: đầu ra và cách học</a></p>
+<p><strong>VẤN ĐỀ</strong> Hai paper cùng tự nhận "có nhận biết lực" vẫn có thể chẳng giống nhau ở đầu vào. Một paper đọc cảm biến cổ tay, một đọc ảnh chụp lớp gel bị ép, một không dùng cảm biến nào mà suy lực từ chuyển động.</p>
+<p><strong>NĂM LOẠI PHÉP ĐO</strong> lực/mô-men ở cổ tay · mô-men khớp · xúc giác dựa ảnh · lưới áp suất · không có gì khi chạy thật.</p>
+<p><strong>SÁU DẠNG BIỂU DIỄN</strong> token thô · bộ mã hóa lịch sử · có cấu trúc vật lý · không gian ẩn đã căn · ngôn ngữ · được dự đoán.</p>
+<p><strong>RÚT RA</strong> Càng đi sang phải trong sáu dạng, bạn càng được nhiều ý nghĩa và độ bền, nhưng mất dần chi tiết và tốc độ. Số trong ngoặc vuông là số tài liệu tham khảo của <a href="survey-force-map.html">Survey 1</a>.</p>
 </div>
 <h2>1. Năm loại phép đo</h2>
+<p>Hãy nghĩ xem một bàn tay cảm nhận được gì. Cảm biến cổ tay giống như cầm một dụng cụ và cảm nhận tổng lực đẩy. Mô-men khớp giống như cảm nhận cơ bắp đang gắng sức đến đâu. Cảm biến gel giống như ấn ngón tay vào đất sét rồi nhìn vết lõm. Lưới áp suất là một mảng da có vài chục điểm cảm nhận. Lựa chọn thứ năm là một bàn tay tê dại nhưng đã học được tiếp xúc "thường cảm thấy thế nào".</p>
 <table>
 <thead>
 <tr>
 <th>Phép đo</th>
-<th>Cho ra gì</th>
-<th>Mạnh ở</th>
+<th>Cho bạn gì</th>
+<th>Giỏi ở</th>
 <th>Yếu ở</th>
 <th>Ví dụ</th>
 </tr>
@@ -289,45 +347,46 @@
 <td><strong>F/T cổ tay</strong></td>
 <td>một wrench 6D cho cả dụng cụ</td>
 <td>lực đẩy tổng, lắp ghép</td>
-<td>ngón nào đang trượt</td>
-<td>ForceVLA, ForceVLA2, ForceRFT, CompliantVLA-adaptor</td>
+<td>không biết ngón nào đang trượt</td>
+<td>ForceVLA [2], ForceVLA2 [15], ForceRFT [30], CompliantVLA-adaptor [8]</td>
 </tr>
 <tr>
-<td><strong>Mô men khớp</strong> (đo hoặc ước lượng)</td>
-<td>mỗi khớp một số</td>
+<td><strong>Mô-men khớp</strong> (đo hoặc ước lượng)</td>
+<td>một số cho mỗi khớp</td>
 <td>không cần phần cứng thêm</td>
-<td>phải trừ chuyển động của chính robot</td>
-<td>MoDE-VLA, FWBC-VLA, TER-DAgger, TA-VLA</td>
+<td>phải trừ chuyển động của chính cánh tay</td>
+<td>MoDE-VLA [14], FWBC-VLA [25], TER-DAgger [13], TA-VLA [7]</td>
 </tr>
 <tr>
-<td><strong>Xúc giác thị giác</strong> (kiểu GelSight)</td>
-<td>ảnh biến dạng gel</td>
-<td>hình dạng, trượt</td>
-<td>ra lực cần hiệu chuẩn</td>
-<td>VLA-Touch, TaF-VLA, Tabero, OmniVTLA</td>
+<td><strong>Xúc giác dựa ảnh</strong> (kiểu GelSight)</td>
+<td>ảnh cho thấy gel biến dạng ra sao</td>
+<td>hình dạng, lực cắt, trượt</td>
+<td>muốn ra lực phải hiệu chuẩn</td>
+<td>VLA-Touch [4], TaF-VLA [9], Tabero [17], OmniVTLA [6]</td>
 </tr>
 <tr>
-<td><strong>Mảng taxel / áp điện</strong></td>
+<td><strong>Lưới áp suất</strong> (taxel, piezo)</td>
 <td>lưới áp suất thô</td>
-<td>phân bố áp suất</td>
+<td>áp suất phân bố thế nào</td>
 <td>độ phân giải thấp</td>
-<td>HapticVLA (10×10), TORL-VLA (6×8)</td>
+<td>HapticVLA [16] (10×10), TORL-VLA [18] (6×8)</td>
 </tr>
 <tr>
-<td><strong>Không đo lúc chạy</strong></td>
+<td><strong>Không có khi chạy</strong></td>
 <td>lực được học hoặc suy ra</td>
 <td>không có cảm biến để hỏng</td>
 <td>chỉ tốt bằng dữ liệu huấn luyện</td>
-<td>FD-VLA, HapticVLA, CompVLA</td>
+<td>FD-VLA [10], HapticVLA [16], CompVLA [31]</td>
 </tr>
 </tbody>
 </table>
-<p>Tần số báo cáo trong các bài đọc đầy đủ: F/T 300 Hz (ForceVLA2), bộ ước lượng mô men 200 Hz (FWBC-VLA), taxel 120 Hz (HapticVLA), ảnh gel 30 Hz (TaF-VLA).</p>
-<h2>2. Có lực mà không cần cảm biến lực</h2>
-<figure class="diagram flow"><svg role="img" aria-label="Mô men khớp lẫn cả tiếp xúc với trọng lực, ma sát và chuyển động. Bỏ phần do chuyển động của chính robot gây ra, rồi đổi phần còn lại thành lực ở đầu ngón." class="dg-natural" width="1176" height="94" viewBox="0 0 1176 94" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-mute" x="14" y="38">Chuỗi không cảm biến</text><rect class="dg-box" x="166" y="15" width="170" height="38"/><text class="dg-t" x="251" y="38" text-anchor="middle">Mô men khớp đo được</text><path class="dg-a" d="M336 34 H368"/><rect class="dg-key" x="370" y="15" width="246" height="38"/><text class="dg-t" x="494" y="38" text-anchor="middle">Trừ mô hình chuyển động tự do</text><path class="dg-a" d="M617 34 H649"/><rect class="dg-box" x="651" y="15" width="140" height="38"/><text class="dg-t" x="721" y="38" text-anchor="middle">Mô men tiếp xúc</text><path class="dg-a" d="M791 34 H823"/><rect class="dg-key" x="825" y="15" width="170" height="38"/><text class="dg-t" x="910" y="38" text-anchor="middle">Nghịch đảo Jacobian</text><path class="dg-a" d="M995 34 H1027"/><rect class="dg-box" x="1029" y="15" width="132" height="38"/><text class="dg-t" x="1095" y="38" text-anchor="middle">Lực ở đầu ngón</text><text class="dg-note dg-mute" x="166.0" y="72">FWBC-VLA và TER-DAgger dùng chuỗi này</text></svg><figcaption>Mô men khớp lẫn cả tiếp xúc với trọng lực, ma sát và chuyển động. Bỏ phần do chuyển động của chính robot gây ra, rồi đổi phần còn lại thành lực ở đầu ngón.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Mỗi bộ phận chạy bao nhiêu lần mỗi giây (Hz), theo các paper đã đọc đầy đủ. Cảm biến thì nhanh; mô hình đọc chúng lại chậm. Khoảng cách này định hình các thiết kế ở [Survey 3](survey-force-output.html)." class="dg-natural" width="675" height="192" viewBox="0 0 675 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="215" y="23" text-anchor="end">Cảm biến F/T (ForceVLA2)</text><rect class="dg-bar" x="225" y="10" width="313" height="18"/><text class="dg-barval" x="546" y="23">300 Hz</text><text class="dg-barlabel" x="215" y="53" text-anchor="end">Bộ ước lượng mô-men (FWBC-VLA)</text><rect class="dg-bar" x="225" y="40" width="209" height="18"/><text class="dg-barval" x="442" y="53">200 Hz</text><text class="dg-barlabel" x="215" y="83" text-anchor="end">Taxel áp suất (HapticVLA)</text><rect class="dg-bar" x="225" y="70" width="125" height="18"/><text class="dg-barval" x="358" y="83">120 Hz</text><text class="dg-barlabel" x="215" y="113" text-anchor="end">Ảnh gel (TaF-VLA)</text><rect class="dg-bar" x="225" y="100" width="31" height="18"/><text class="dg-barval" x="264" y="113">30 Hz</text><text class="dg-barlabel" x="215" y="143" text-anchor="end">Planner VLA (FWBC-VLA)</text><rect class="dg-bar" x="225" y="130" width="16" height="18"/><text class="dg-barval" x="249" y="143">15 Hz</text><text class="dg-barlabel" x="215" y="173" text-anchor="end">Chính sách nền (TER-DAgger)</text><rect class="dg-key" x="225" y="160" width="2" height="18"/><text class="dg-barval" x="235" y="173">1 Hz</text></svg><figcaption>Mỗi bộ phận chạy bao nhiêu lần mỗi giây (Hz), theo các paper đã đọc đầy đủ. Cảm biến thì nhanh; mô hình đọc chúng lại chậm. Khoảng cách này định hình các thiết kế ở [Survey 3](survey-force-output.html).</figcaption></figure>
+<h2>2. Lấy lực mà không cần cảm biến lực</h2>
+<p>Ý chính trong một câu: động cơ biết nó đang đẩy mạnh bao nhiêu. Trừ đi phần lực cần để chỉ riêng việc di chuyển cánh tay, phần còn lại chính là thế giới đẩy ngược lại.</p>
+<figure class="diagram flow"><svg role="img" aria-label="Mô-men khớp là hỗn hợp của tiếp xúc, trọng lực, ma sát và chuyển động. Hãy bỏ phần mà chuyển động của chính cánh tay giải thích được, rồi đổi phần còn lại thành lực tại đầu ngón." class="dg-natural" width="1214" height="94" viewBox="0 0 1214 94" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-mute" x="14" y="38">Chuỗi không cảm biến</text><rect class="dg-box" x="166" y="15" width="170" height="38"/><text class="dg-t" x="251" y="38" text-anchor="middle">Mô-men khớp đo được</text><path class="dg-a" d="M336 34 H368"/><rect class="dg-key" x="370" y="15" width="246" height="38"/><text class="dg-t" x="494" y="38" text-anchor="middle">Trừ mô hình chuyển động tự do</text><path class="dg-a" d="M617 34 H649"/><rect class="dg-box" x="651" y="15" width="163" height="38"/><text class="dg-t" x="732" y="38" text-anchor="middle">Mô-men do tiếp xúc</text><path class="dg-a" d="M814 34 H846"/><rect class="dg-key" x="848" y="15" width="170" height="38"/><text class="dg-t" x="933" y="38" text-anchor="middle">Nghịch đảo Jacobian</text><path class="dg-a" d="M1018 34 H1050"/><rect class="dg-box" x="1052" y="15" width="148" height="38"/><text class="dg-t" x="1126" y="38" text-anchor="middle">Lực tại đầu ngón</text><text class="dg-note dg-mute" x="166.0" y="72">FWBC-VLA và TER-DAgger dùng</text></svg><figcaption>Mô-men khớp là hỗn hợp của tiếp xúc, trọng lực, ma sát và chuyển động. Hãy bỏ phần mà chuyển động của chính cánh tay giải thích được, rồi đổi phần còn lại thành lực tại đầu ngón.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
-<p><strong>Tính gì và vì sao.</strong> Tìm lại lực ở đầu ngón từ mô men khớp trên một cánh tay phẳng hai khâu. Đây là bước lõi của mọi phương pháp không cảm biến, và nó cho thấy vì sao mô hình chuyển động tự do quan trọng.</p>
+<p><strong>Tính gì và vì sao.</strong> Tìm lại lực tại đầu ngón từ mô-men khớp trên một cánh tay phẳng hai khâu. Đây là bước lõi của mọi phương pháp không cảm biến, và nó cho thấy vì sao mô hình chuyển động tự do quan trọng.</p>
 <table>
 <thead>
 <tr>
@@ -346,31 +405,31 @@
 </tr>
 <tr>
 <td>$J$</td>
-<td>Jacobian: tốc độ khớp → tốc độ đầu ngón</td>
+<td>Jacobian: ánh xạ tốc độ khớp sang tốc độ đầu ngón</td>
 <td>tính từ $q$</td>
 <td>$\begin{pmatrix} -1 &amp; -1 \\ 1 &amp; 0 \end{pmatrix}$</td>
 </tr>
 <tr>
 <td>$\tau_{meas}$</td>
-<td>mô men khớp đo được</td>
+<td>mô-men khớp đo được</td>
 <td>input</td>
-<td>$(-12,\ -1.5)$ N·m</td>
+<td>$(-12,\ -1{,}5)$ N·m</td>
 </tr>
 <tr>
 <td>$\tau_{free}$</td>
-<td>mô men do chuyển động của chính robot (mô hình)</td>
+<td>mô-men mà chuyển động của chính cánh tay giải thích (từ mô hình)</td>
 <td>input</td>
-<td>$(-2,\ -1.5)$ N·m</td>
+<td>$(-2,\ -1{,}5)$ N·m</td>
 </tr>
 <tr>
 <td>$\tau_{ext}$</td>
-<td>mô men do tiếp xúc</td>
+<td>mô-men do tiếp xúc</td>
 <td>trung gian</td>
 <td>–</td>
 </tr>
 <tr>
 <td>$F$</td>
-<td>lực ở đầu ngón</td>
+<td>lực tại đầu ngón</td>
 <td>output</td>
 <td>–</td>
 </tr>
@@ -381,81 +440,136 @@
 <p><strong>Từng bước</strong></p>
 <ol>
 <li>Vị trí đầu ngón: $(\cos 0 + \cos 90°,\ \sin 0 + \sin 90°) = (1, 1)$.</li>
-<li>$\tau_{ext} = (-12, -1.5) - (-2, -1.5) = (-10,\ 0)$ N·m.</li>
+<li>$\tau_{ext} = (-12, -1{,}5) - (-2, -1{,}5) = (-10,\ 0)$ N·m.</li>
 <li>$F = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$ N.</li>
-<li>Kiểm tra: khớp 2 nằm ở $(1, 0)$; một lực thẳng đứng tại $x = 1$ đi xuyên qua nó, nên mô men tiếp xúc ở khớp 2 bằng 0. ✓</li>
+<li>Kiểm tra lại: khớp 2 nằm ở $(1, 0)$; một lực thẳng đứng tại $x = 1$ đi qua đúng khớp đó nên không gây mô-men ở đó. ✓</li>
 </ol>
-<p><strong>Kết quả.</strong> Một lực 10 N hướng xuống tại đầu ngón.</p>
-<p><strong>Ý nghĩa.</strong> Bỏ bước 2 thì trọng lực và ma sát sẽ bị đọc thành tiếp xúc. Mô hình chuyển động tự do chính là thứ HSR-Force của FWBC-VLA học.</p>
+<p><strong>Kết quả.</strong> Lực 10 N hướng xuống tại đầu ngón.</p>
+<p><strong>Ý nghĩa.</strong> Bỏ bước 2 thì trọng lực và ma sát sẽ bị tưởng là tiếp xúc. Học một mô hình chuyển động tự do tốt chính là việc của bộ ước lượng lực trong FWBC-VLA [25].</p>
 </div>
-<p><strong>Vì sao cần lịch sử.</strong> Hai tiếp xúc cùng đọc 5 N lúc này: một cái đến từ $2, 3, 5$ (đang ấn thêm), cái kia từ $8, 6, 5$ (đang nhả). Thay đổi cuối ($+2$ so với $-1$) phân biệt được chúng; một mẫu đơn lẻ thì không. Vì thế có cửa sổ và bộ nhớ ở bậc 2 bên dưới.</p>
-<h2>3. Sáu dạng tín hiệu có thể mang</h2>
+<p><strong>Vì sao lịch sử quan trọng.</strong> Hai tiếp xúc cùng đọc 5 N ngay lúc này: một cái đến từ $2, 3, 5$ (đang ấn mạnh dần), cái kia từ $8, 6, 5$ (đang thả ra). Chính độ thay đổi cuối ($+2$ so với $-1$) phân biệt chúng, một mẫu đơn lẻ thì không. Vì vậy nhiều phương pháp giữ một cửa sổ hoặc bộ nhớ (dạng 2 bên dưới).</p>
+<h2>3. Sáu dạng mà tín hiệu có thể mang</h2>
+<figure class="diagram"><svg role="img" aria-label="Các dạng bên trái còn sát tín hiệu thô; các dạng bên phải gần với ý nghĩa hơn." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">SIX FORMS, FROM CLOSE TO THE SENSOR (LEFT) TO CLOSE TO MEANING (RIGHT)</text>
+<rect class="dg-box" x="20" y="48" width="140" height="120"/><text class="dg-t" x="90" y="72" text-anchor="middle">1 Raw token</text><text class="dg-s" x="90" y="94" text-anchor="middle">one linear layer</text><text class="dg-s" x="90" y="118" text-anchor="middle">ForceVLA</text><text class="dg-s" x="90" y="134" text-anchor="middle">ForceVLA2</text>
+<rect class="dg-box" x="180" y="48" width="140" height="120"/><text class="dg-t" x="250" y="72" text-anchor="middle">2 History</text><text class="dg-s" x="250" y="94" text-anchor="middle">window, GRU, memory</text><text class="dg-s" x="250" y="118" text-anchor="middle">TORL-VLA</text><text class="dg-s" x="250" y="134" text-anchor="middle">FWBC-VLA</text><text class="dg-s" x="250" y="150" text-anchor="middle">FM-VLA</text>
+<rect class="dg-box" x="340" y="48" width="140" height="120"/><text class="dg-t" x="410" y="72" text-anchor="middle">3 Structured</text><text class="dg-s" x="410" y="94" text-anchor="middle">wrench, grip vs push</text><text class="dg-s" x="410" y="118" text-anchor="middle">TER-DAgger</text><text class="dg-s" x="410" y="134" text-anchor="middle">Tabero</text>
+<rect class="dg-key" x="500" y="48" width="140" height="120"/><text class="dg-t" x="570" y="72" text-anchor="middle">4 Aligned</text><text class="dg-s" x="570" y="94" text-anchor="middle">agrees with another</text><text class="dg-s" x="570" y="108" text-anchor="middle">modality</text><text class="dg-s" x="570" y="134" text-anchor="middle">TaF-VLA</text><text class="dg-s" x="570" y="150" text-anchor="middle">OmniVTLA</text>
+<rect class="dg-box" x="660" y="48" width="140" height="120"/><text class="dg-t" x="730" y="72" text-anchor="middle">5 Language</text><text class="dg-s" x="730" y="94" text-anchor="middle">a sentence</text><text class="dg-s" x="730" y="118" text-anchor="middle">VLA-Touch</text><text class="dg-s" x="730" y="134" text-anchor="middle">VTLA</text>
+<rect class="dg-box" x="820" y="48" width="140" height="120"/><text class="dg-t" x="890" y="72" text-anchor="middle">6 Predicted</text><text class="dg-s" x="890" y="94" text-anchor="middle">no sensor at run time</text><text class="dg-s" x="890" y="118" text-anchor="middle">FD-VLA</text><text class="dg-s" x="890" y="134" text-anchor="middle">HapticVLA</text>
+<path class="dg-a" d="M20 214 H960"/><text class="dg-l" x="20" y="238">more detail, more speed</text><text class="dg-l" x="960" y="238" text-anchor="end">more meaning, more robustness</text>
+<text class="dg-note dg-red" x="20" y="274">Cost of moving right: the policy depends more on the encoder, the language model or the training set.</text>
+<text class="dg-note dg-green" x="20" y="298">Benefit: a VLM can use the signal without learning a new physical vocabulary from a few demos.</text>
+</svg><figcaption>Các dạng bên trái còn sát tín hiệu thô; các dạng bên phải gần với ý nghĩa hơn.</figcaption></figure>
 <table>
 <thead>
 <tr>
 <th>#</th>
 <th>Dạng</th>
-<th>Giữ được</th>
-<th>Mất</th>
+<th>Giữ lại</th>
+<th>Mất đi</th>
 <th>Ví dụ</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1</td>
-<td><strong>Token thô</strong> (một lớp linear)</td>
+<td><strong>Token thô</strong> (một lớp tuyến tính)</td>
 <td>mọi con số</td>
 <td>ngữ cảnh, xu hướng</td>
-<td>ForceVLA, ForceVLA2</td>
+<td>ForceVLA [2], ForceVLA2 [15]</td>
 </tr>
 <tr>
 <td>2</td>
 <td><strong>Bộ mã hóa lịch sử</strong></td>
 <td>xu hướng theo thời gian</td>
 <td>một phần chi tiết</td>
-<td>TORL-VLA (MLP cửa sổ), FWBC-VLA (GRU, 13 bước), FM-VLA (bộ nhớ VAE), LIFT, ForceDelta-VLA</td>
+<td>TORL-VLA [18] (cửa sổ MLP), FWBC-VLA [25] (GRU, 13 bước), FM-VLA [23] (bộ nhớ VAE), LIFT [22], ForceDelta-VLA [29]</td>
 </tr>
 <tr>
 <td>3</td>
 <td><strong>Có cấu trúc vật lý</strong></td>
-<td>ý nghĩa (wrench, siết và đẩy)</td>
-<td>cần mô hình</td>
-<td>TER-DAgger (wrench), Tabero (kẹp/tác dụng), VLA-Touch (trượt tổng)</td>
+<td>ý nghĩa (wrench, kẹp so với đẩy)</td>
+<td>cần có mô hình</td>
+<td>TER-DAgger [13] (wrench), Tabero [17] (kẹp/tác dụng), VLA-Touch [4] (tổng lực cắt)</td>
 </tr>
 <tr>
 <td>4</td>
-<td><strong>Latent đã căn</strong></td>
-<td>khớp với modality khác</td>
-<td>khả năng diễn giải</td>
-<td>TaF-VLA (xúc giác ↔ lực), OmniVTLA (xúc giác ↔ ngôn ngữ)</td>
+<td><strong>Không gian ẩn đã căn</strong></td>
+<td>sự thống nhất với một phương thức khác</td>
+<td>dễ diễn giải</td>
+<td>TaF-VLA [9] (xúc giác với lực), OmniVTLA [6] (xúc giác với ngôn ngữ)</td>
 </tr>
 <tr>
 <td>5</td>
 <td><strong>Ngôn ngữ</strong></td>
-<td>VLM dùng dễ</td>
+<td>VLM dễ dùng</td>
 <td>tốc độ, độ chính xác</td>
-<td>VLA-Touch (Octopi), ForceVLA2 (prompt), VTLA, Tactile-VLA</td>
+<td>VLA-Touch [4] (Octopi), ForceVLA2 [15] (prompt), VTLA [1], Tactile-VLA [3]</td>
 </tr>
 <tr>
 <td>6</td>
-<td><strong>Dự đoán</strong></td>
-<td>chạy không cần cảm biến</td>
+<td><strong>Được dự đoán</strong></td>
+<td>chạy được khi không có cảm biến</td>
 <td>phụ thuộc huấn luyện</td>
-<td>FD-VLA, HapticVLA, TORL-VLA, TA-VLA, DexTacWAM</td>
+<td>FD-VLA [10], HapticVLA [16], TORL-VLA [18], TA-VLA [7], DexTacWAM [33]</td>
 </tr>
 </tbody>
 </table>
 <h2>4. Lưu ý</h2>
 <ul>
-<li>FAVLA, LIFT, CompliantVLA-adaptor và CR-VLA-Force ghi "force/torque" hoặc "lực 6D" mà không nói đo ở đâu; có bài có thể ước lượng từ mô men khớp.</li>
-<li>Tần số là con số các bài báo cáo, không phải thuộc tính của loại cảm biến.</li>
+<li>FAVLA [12], LIFT [22], CompliantVLA-adaptor [8] và CR-VLA-Force [27] ghi "lực/mô-men" hay "lực 6D" mà không nói đo ở đâu; có thể chúng ước lượng từ mô-men khớp.</li>
+<li>Tốc độ là con số các paper báo cáo, không phải đặc tính cố hữu của loại cảm biến.</li>
+<li>Các phương pháp ghi "abstract" ở Survey 1 chỉ được phân loại từ abstract.</li>
 </ul>
-<p><strong>Mang sang bài sau:</strong> khi lực đã được đo và mã hóa, chính sách phải làm gì đó với nó: vẫn xuất pose, hay xuất lực, độ cứng, phần hiệu chỉnh? Xem <a href="survey-force-output.html">Survey 3</a>.</p>
-<p><strong>Câu kiểm tra:</strong> cùng cánh tay và tư thế, $\tau_{ext} = (-5,\ -5)$ N·m. Lực nào tác dụng ở đầu ngón?</p>
+<p><strong>Mang theo:</strong> khi lực đã được đo và mã hóa, chính sách phải làm gì đó với nó. Vẫn chỉ xuất một pose, hay xuất lực, độ cứng, hay một bản hiệu chỉnh? Xem <a href="survey-force-output.html">Survey 3</a>.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> cùng cánh tay và tư thế, $\tau_{ext} = (-5,\ -5)$ N·m. Lực tại đầu ngón là bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>
-<p>$F = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N: đẩy 5 N theo $+x$. Kiểm tra: $J^\top F = (-5, -5)$.</p>
+<p>$F = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N: lực đẩy 5 N theo chiều $+x$. Kiểm tra: $J^\top F = (-5, -5)$.</p>
 </details>
+<h2>Tài liệu tham khảo</h2>
+<p>Số thứ tự giống <a href="survey-force-map.html">Survey 1</a>. Tiêu đề giữ nguyên như trên arXiv.</p>
+<ol>
+<li>VTLA: Vision-Tactile-Language-Action Model with Preference Learning for Insertion Manipulation. <a href="https://arxiv.org/abs/2505.09577">arXiv:2505.09577</a>, 2025-05-14.</li>
+<li>ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2505.22159">arXiv:2505.22159</a>, 2025-05-28.</li>
+<li>Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization. <a href="https://arxiv.org/abs/2507.09160">arXiv:2507.09160</a>, 2025-07-12.</li>
+<li>VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback. <a href="https://arxiv.org/abs/2507.17294">arXiv:2507.17294</a>, 2025-07-23.</li>
+<li>VLH: Vision-Language-Haptics Foundation Model. <a href="https://arxiv.org/abs/2508.01361">arXiv:2508.01361</a>, 2025-08-02.</li>
+<li>OmniVTLA: Vision-Tactile-Language-Action Models with Semantic-Aligned Tactile Sensing. <a href="https://arxiv.org/abs/2508.08706">arXiv:2508.08706</a>, 2025-08-12.</li>
+<li>TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models. <a href="https://arxiv.org/abs/2509.07962">arXiv:2509.07962</a>, 2025-09-09.</li>
+<li>CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2601.15541">arXiv:2601.15541</a>, 2026-01-21.</li>
+<li>TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation. <a href="https://arxiv.org/abs/2601.20321">arXiv:2601.20321</a>, 2026-01-28.</li>
+<li>FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2602.02142">arXiv:2602.02142</a>, 2026-02-02.</li>
+<li>CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning. <a href="https://arxiv.org/abs/2602.12532">arXiv:2602.12532</a>, 2026-02-13.</li>
+<li>FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation. <a href="https://arxiv.org/abs/2602.23648">arXiv:2602.23648</a>, 2026-02-27.</li>
+<li>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control. <a href="https://arxiv.org/abs/2603.04038">arXiv:2603.04038</a>, 2026-03-04.</li>
+<li>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA. <a href="https://arxiv.org/abs/2603.08122">arXiv:2603.08122</a>, 2026-03-09.</li>
+<li>ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2603.15169">arXiv:2603.15169</a>, 2026-03-16.</li>
+<li>HapticVLA: Contact-Rich Manipulation via Vision-Language-Action Model without Inference-Time Tactile Sensing. <a href="https://arxiv.org/abs/2603.15257">arXiv:2603.15257</a>, 2026-03-16.</li>
+<li>Tabero: Learning Gentle Manipulation with Closed-Loop Force Feedback from Vision, Touch, and Language. <a href="https://arxiv.org/abs/2605.27886">arXiv:2605.27886</a>, 2026-05-27.</li>
+<li>TORL-VLA: Tactile Guided Online Reinforcement Learning for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2606.09337">arXiv:2606.09337</a>, 2026-06-08.</li>
+<li>DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model. <a href="https://arxiv.org/abs/2606.12105">arXiv:2606.12105</a>, 2026-06-10.</li>
+<li>UniTacVLA: Unified Tactile Understanding and Prediction in Vision Language Action Models. <a href="https://arxiv.org/abs/2606.31723">arXiv:2606.31723</a>, 2026-06-30.</li>
+<li>Human-Centric Transferable Tactile Pre-Training for Dexterous Robotic Manipulation. <a href="https://arxiv.org/abs/2607.01067">arXiv:2607.01067</a>, 2026-07-01.</li>
+<li>Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection. <a href="https://arxiv.org/abs/2607.14236">arXiv:2607.14236</a>, 2026-07-15.</li>
+<li>FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2607.18231">arXiv:2607.18231</a>, 2026-07-20.</li>
+<li>ForceU-VLA: A Force-Aware Vision-Language-Action Model for Embodied Ultrasound Scanning. <a href="https://arxiv.org/abs/2608.15009">arXiv:2608.15009</a>, 2026-08-15.</li>
+<li>FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation. <a href="https://arxiv.org/abs/2609.03889">arXiv:2609.03889</a>, 2026-09-03.</li>
+<li>TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.05266">arXiv:2609.05266</a>, 2026-09-04.</li>
+<li>CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation. <a href="https://arxiv.org/abs/2609.05832">arXiv:2609.05832</a>, 2026-09-05.</li>
+<li>DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination. <a href="https://arxiv.org/abs/2609.09119">arXiv:2609.09119</a>, 2026-09-08.</li>
+<li>ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.18242">arXiv:2609.18242</a>, 2026-09-16.</li>
+<li>ForceRFT: Refining VLA Actions through Force-Guided Residual Reinforcement Learning. <a href="https://arxiv.org/abs/2609.22840">arXiv:2609.22840</a>, 2026-09-19.</li>
+<li>CompVLA: A Variable Compliance Vision-Language-Action Model for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2609.23614">arXiv:2609.23614</a>, 2026-09-20.</li>
+<li>Opt2VLA: Force-Aware Vision-Language-Action for Contact-Rich Humanoid Whole-Body Manipulation. <a href="https://arxiv.org/abs/2609.23968">arXiv:2609.23968</a>, 2026-09-21.</li>
+<li>DexTacWAM: A Visuo-Tactile World-Action Model for Dexterous Manipulation. <a href="https://arxiv.org/abs/2609.24976">arXiv:2609.24976</a>, 2026-09-21.</li>
+</ol>
+<p>Broader surveys:</p>
+<ul>
+<li>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning. <a href="https://arxiv.org/abs/2608.07558">arXiv:2608.07558</a>, 2026-08-02.</li>
+<li>Tactile-based Multimodal Fusion in Embodied Intelligence: A Survey of Vision, Language, and Contact-Driven Paradigms. <a href="https://arxiv.org/abs/2605.17336">arXiv:2605.17336</a>, 2026-05-17.</li>
+</ul>
     </div>
   </article>
 

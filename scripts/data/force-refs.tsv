@@ -1,0 +1,35 @@
+2505.22159	ForceVLA	ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation	2025-05-28
+2603.15169	ForceVLA2	ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation	2026-03-16
+2603.08122	MoDE-VLA	Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA	2026-03-09
+2507.17294	VLA-Touch	VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback	2025-07-23
+2601.20321	TaF-VLA	TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation	2026-01-28
+2605.27886	Tabero	Tabero: Learning Gentle Manipulation with Closed-Loop Force Feedback from Vision, Touch, and Language	2026-05-27
+2602.02142	FD-VLA	FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation	2026-02-02
+2603.15257	HapticVLA	HapticVLA: Contact-Rich Manipulation via Vision-Language-Action Model without Inference-Time Tactile Sensing	2026-03-16
+2609.03889	FWBC-VLA	FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation	2026-09-03
+2606.09337	TORL-VLA	TORL-VLA: Tactile Guided Online Reinforcement Learning for Contact-Rich Manipulation	2026-06-08
+2603.04038	TER-DAgger	Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control	2026-03-04
+2505.09577	VTLA	VTLA: Vision-Tactile-Language-Action Model with Preference Learning for Insertion Manipulation	2025-05-14
+2507.09160	Tactile-VLA	Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization	2025-07-12
+2508.01361	VLH	VLH: Vision-Language-Haptics Foundation Model	2025-08-02
+2508.08706	OmniVTLA	OmniVTLA: Vision-Tactile-Language-Action Models with Semantic-Aligned Tactile Sensing	2025-08-12
+2509.07962	TA-VLA	TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models	2025-09-09
+2601.15541	CompliantVLA-adaptor	CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation	2026-01-21
+2602.12532	CRAFT	CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning	2026-02-13
+2602.23648	FAVLA	FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation	2026-02-27
+2606.12105	DAM-VLA	DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model	2026-06-10
+2606.31723	UniTacVLA	UniTacVLA: Unified Tactile Understanding and Prediction in Vision Language Action Models	2026-06-30
+2607.01067	H-Tac	Human-Centric Transferable Tactile Pre-Training for Dexterous Robotic Manipulation	2026-07-01
+2607.14236	LIFT	Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection	2026-07-15
+2607.18231	FM-VLA	FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation	2026-07-20
+2608.15009	ForceU-VLA	ForceU-VLA: A Force-Aware Vision-Language-Action Model for Embodied Ultrasound Scanning	2026-08-15
+2609.05266	TacPAC	TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation	2026-09-04
+2609.05832	CR-VLA-Force	CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation	2026-09-05
+2609.09119	DeCAL	DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination	2026-09-08
+2609.18242	ForceDelta-VLA	ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation	2026-09-16
+2609.22840	ForceRFT	ForceRFT: Refining VLA Actions through Force-Guided Residual Reinforcement Learning	2026-09-19
+2609.23614	CompVLA	CompVLA: A Variable Compliance Vision-Language-Action Model for Contact-rich Manipulation	2026-09-20
+2609.23968	Opt2VLA	Opt2VLA: Force-Aware Vision-Language-Action for Contact-Rich Humanoid Whole-Body Manipulation	2026-09-21
+2609.24976	DexTacWAM	DexTacWAM: A Visuo-Tactile World-Action Model for Dexterous Manipulation	2026-09-21
+2608.07558	Survey-TF-ART	Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning	2026-08-02
+2605.17336	Survey-Tactile-Fusion	Tactile-based Multimodal Fusion in Embodied Intelligence: A Survey of Vision, Language, and Contact-Driven Paradigms	2026-05-17

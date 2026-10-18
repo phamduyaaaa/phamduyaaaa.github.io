@@ -1,0 +1,18 @@
+<svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">READING ORDER</text>
+<rect class="dg-ext" x="20" y="40" width="170" height="124"/><text class="dg-t" x="105" y="62" text-anchor="middle">0. Basics</text>
+<text class="dg-s" x="34" y="84">Imitation learning</text><text class="dg-s" x="34" y="100">Token · Attention</text><text class="dg-s" x="34" y="116">Transformer</text><text class="dg-s" x="34" y="132">Flow matching</text><text class="dg-s" x="34" y="148">Action chunking</text>
+<rect class="dg-box" x="240" y="62" width="130" height="80"/><text class="dg-t" x="305" y="96" text-anchor="middle">1. π0</text><text class="dg-s" x="305" y="114" text-anchor="middle">the base most</text><text class="dg-s" x="305" y="128" text-anchor="middle">force papers extend</text>
+<rect class="dg-key" x="420" y="62" width="150" height="80"/><text class="dg-t" x="495" y="90" text-anchor="middle">2. Survey 1</text><text class="dg-s" x="495" y="108" text-anchor="middle">the map: where</text><text class="dg-s" x="495" y="122" text-anchor="middle">force enters</text>
+<rect class="dg-box" x="620" y="40" width="150" height="56"/><text class="dg-t" x="695" y="64" text-anchor="middle">3a. Survey 2</text><text class="dg-s" x="695" y="82" text-anchor="middle">what is measured</text>
+<rect class="dg-box" x="620" y="110" width="150" height="56"/><text class="dg-t" x="695" y="134" text-anchor="middle">3b. Survey 3</text><text class="dg-s" x="695" y="152" text-anchor="middle">what is output</text>
+<rect class="dg-box" x="820" y="62" width="140" height="80"/><text class="dg-t" x="890" y="92" text-anchor="middle">4. Papers</text><text class="dg-s" x="890" y="110" text-anchor="middle">pick by entry</text><text class="dg-s" x="890" y="124" text-anchor="middle">point ①–⑥</text>
+<path class="dg-a" d="M190 102 H240"/><path class="dg-a" d="M370 102 H420"/><path class="dg-a" d="M570 90 H595 V68 H620"/><path class="dg-a" d="M570 114 H595 V138 H620"/><path class="dg-a" d="M770 68 H795 V92 H820"/><path class="dg-a" d="M770 138 H795 V112 H820"/>
+<text class="dg-h" x="20" y="196">THREE ROUTES</text>
+<rect class="dg-grp" x="20" y="208" width="300" height="136"/><text class="dg-t" x="36" y="232">5 minutes</text>
+<text class="dg-s" x="36" y="256">Read the TL;DR of Survey 1,</text><text class="dg-s" x="36" y="272">look at the matrix figure,</text><text class="dg-s" x="36" y="288">find your entry point.</text><text class="dg-s dg-mute" x="36" y="324">Goal: know the landscape.</text>
+<rect class="dg-grp" x="340" y="208" width="300" height="136"/><text class="dg-t" x="356" y="232">30 minutes</text>
+<text class="dg-s" x="356" y="256">Survey 1, then 2 and 3.</text><text class="dg-s" x="356" y="272">Do the three calculation cards</text><text class="dg-s" x="356" y="288">with a pen.</text><text class="dg-s dg-mute" x="356" y="324">Goal: choose a design.</text>
+<rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Deep</text>
+<text class="dg-s" x="676" y="256">Basics, π0, Survey 1,</text><text class="dg-s" x="676" y="272">then the paper notes of the</text><text class="dg-s" x="676" y="288">entry point you chose.</text><text class="dg-s dg-mute" x="676" y="324">Goal: reproduce or extend.</text>
+</svg>

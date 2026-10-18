@@ -220,15 +220,15 @@
     "date_display": "18 Oct 2026",
     "title_en": "Survey 1: Where Does Force Enter a VLA?",
     "title_vi": "Survey 1: Lực đi vào VLA ở đâu?",
-    "excerpt_en": "A cheatsheet map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all make: where in the pipeline the contact signal comes in.",
-    "excerpt_vi": "Bản đồ dạng cheatsheet của 33 phương pháp VLA dùng lực, mô men, xúc giác (2025–2026), xếp theo lựa chọn mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc đi vào pipeline ở đâu.",
+    "excerpt_en": "Start here. A map of 33 force, torque and touch VLA methods (2025-2026), sorted by the one choice every one of them has to make: where the contact signal joins the pipeline. With a reading order, a one-page matrix, and references.",
+    "excerpt_vi": "Bắt đầu từ đây. Bản đồ 33 phương pháp VLA dùng lực, mô-men và xúc giác (2025-2026), xếp theo một lựa chọn mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc nhập vào pipeline ở chỗ nào. Có lộ trình đọc, ma trận một trang và tài liệu tham khảo.",
     "tags": [
       "VLA",
       "Force",
       "Tactile",
       "Survey"
     ],
-    "read_min": 6
+    "read_min": 13
   },
   {
     "slug": "survey-force-output",
@@ -236,15 +236,15 @@
     "date_display": "18 Oct 2026",
     "title_en": "Survey 3: What the Policy Outputs, and How It Learns",
     "title_vi": "Survey 3: Chính sách xuất ra gì, và học bằng cách nào",
-    "excerpt_en": "A VLA that reads force perfectly can still fail if it can only answer with a pose. Four output interfaces, seven ways of learning from force, the speed gap, and why results across papers cannot be compared yet.",
-    "excerpt_vi": "Một VLA đọc lực hoàn hảo vẫn có thể thất bại nếu chỉ trả lời được bằng pose. Bốn giao diện đầu ra, bảy cách học từ lực, khoảng cách tốc độ, và vì sao kết quả giữa các bài chưa so sánh được.",
+    "excerpt_en": "A VLA that reads force perfectly can still fail if it can only answer with a pose. Four output interfaces, seven ways of learning from force, the speed gap, a decision chart for choosing, and references.",
+    "excerpt_vi": "Một VLA đọc lực hoàn hảo vẫn có thể thất bại nếu chỉ trả lời được bằng pose. Bốn giao diện đầu ra, bảy cách học từ lực, khoảng cách tốc độ, sơ đồ giúp chọn thiết kế, và tài liệu tham khảo.",
     "tags": [
       "VLA",
       "Force",
       "Survey",
       "Control"
     ],
-    "read_min": 5
+    "read_min": 9
   },
   {
     "slug": "survey-force-sensing",
@@ -252,15 +252,15 @@
     "date_display": "18 Oct 2026",
     "title_en": "Survey 2: What Is Measured, and How It Becomes a Token",
     "title_vi": "Survey 2: Đo cái gì, và nó thành token ra sao",
-    "excerpt_en": "'Force' in force-aware VLAs means five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. A cheatsheet of both, with the joint-torque-to-force calculation worked out.",
-    "excerpt_vi": "'Lực' trong các VLA nhận biết lực là năm phép đo khác nhau, và mỗi loại tới mạng dưới một trong sáu dạng, từ con số thô đến một câu văn. Cheatsheet cho cả hai, kèm phép tính từ mô men khớp ra lực.",
+    "excerpt_en": "'Force' in a force-aware VLA can mean five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. Includes the joint-torque-to-force calculation, a speed comparison and references.",
+    "excerpt_vi": "'Lực' trong một VLA có nhận biết lực có thể là năm phép đo khác nhau, và mỗi loại đến mạng dưới một trong sáu dạng, từ con số thô đến một câu văn. Có phép tính từ mô-men khớp ra lực, so sánh tốc độ và tài liệu tham khảo.",
     "tags": [
       "VLA",
       "Force",
       "Tactile",
       "Survey"
     ],
-    "read_min": 4
+    "read_min": 8
   },
   {
     "slug": "tabero",

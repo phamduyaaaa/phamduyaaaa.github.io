@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A cheatsheet map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all make: where in the pipeline the contact signal comes in.">
+<meta name="description" content="Start here. A map of 33 force, torque and touch VLA methods (2025-2026), sorted by the one choice every one of them has to make: where the contact signal joins the pipeline. With a reading order, a one-page matrix, and references.">
 <title>Survey 1: Where Does Force Enter a VLA? · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Survey 1: Where Does Force Enter a VLA?">
-<meta property="og:description" content="A cheatsheet map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all make: where in the pipeline the contact signal comes in.">
+<meta property="og:description" content="Start here. A map of 33 force, torque and touch VLA methods (2025-2026), sorted by the one choice every one of them has to make: where the contact signal joins the pipeline. With a reading order, a one-page matrix, and references.">
 <meta property="og:type" content="article">
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
@@ -60,14 +60,14 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">13 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Survey 1: Where Does Force Enter a VLA?</h1>
     <h1 data-vi>Survey 1: Lực đi vào VLA ở đâu?</h1>
 
-    <p class="post-excerpt-lead" data-en>A cheatsheet map of 33 force, torque and tactile VLA methods (2025–2026), sorted by the one design choice they all make: where in the pipeline the contact signal comes in.</p>
-    <p class="post-excerpt-lead" data-vi>Bản đồ dạng cheatsheet của 33 phương pháp VLA dùng lực, mô men, xúc giác (2025–2026), xếp theo lựa chọn mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc đi vào pipeline ở đâu.</p>
+    <p class="post-excerpt-lead" data-en>Start here. A map of 33 force, torque and touch VLA methods (2025-2026), sorted by the one choice every one of them has to make: where the contact signal joins the pipeline. With a reading order, a one-page matrix, and references.</p>
+    <p class="post-excerpt-lead" data-vi>Bắt đầu từ đây. Bản đồ 33 phương pháp VLA dùng lực, mô-men và xúc giác (2025-2026), xếp theo một lựa chọn mà phương pháp nào cũng phải đưa ra: tín hiệu tiếp xúc nhập vào pipeline ở chỗ nào. Có lộ trình đọc, ma trận một trang và tài liệu tham khảo.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Survey</span></div>
   </header>
@@ -76,16 +76,66 @@
     <div data-en>
 <div class="tldr">
 <p><strong>SERIES</strong> Survey 1 of 3 · <a href="survey-force-sensing.html">Survey 2: sensing</a> · <a href="survey-force-output.html">Survey 3: outputs and learning</a></p>
-<p><strong>PROBLEM THE FIELD ADDRESSES</strong> VLAs such as π0, OpenVLA and RDT see images and words, not force. They fail exactly when contact decides the task: insertion, wiping, fragile grasps, occluded hands.</p>
-<p><strong>WHY THE OBVIOUS FIX FAILS</strong> Appending force to the robot state: +2.9 points for π0-base, −16.8 for π0-fast (<a href="forcevla.html">ForceVLA</a>). One force token is lost among ~800 image and text tokens (worked below).</p>
-<p><strong>THE MAP</strong> Six places force can enter: VLM input, after the VLM, inside the action expert, outside the VLA, training only, or predicted.</p>
-<p><strong>TAKEAWAY</strong> Most recent methods give force a <em>dedicated, protected, fast</em> path, and more of them remove the sensor at run time.</p>
+<p><strong>THE PROBLEM</strong> Models like π0, OpenVLA and RDT see pictures and read words. They cannot feel. So they fail exactly where touch decides the job: pushing a part into a slot, wiping a table, holding an egg, working with a hand hidden from the camera.</p>
+<p><strong>THE OBVIOUS FIX THAT DOES NOT WORK</strong> Just append the force reading to the robot state. In ForceVLA's tests this gave +2.9 points for π0-base and −16.8 for π0-fast [2]. One force number gets lost among about 800 image and text tokens (worked out below).</p>
+<p><strong>THE MAP</strong> Six places where force can join: the VLM's input, right after the VLM, inside the action expert, outside the VLA, in training only, or as something the model predicts.</p>
+<p><strong>TAKEAWAY</strong> Most recent methods give force its own protected and fast path, and a growing number drop the force sensor at run time.</p>
 </div>
-<h2>1. Why a single force token gets ignored</h2>
-<figure class="diagram flow"><svg role="img" aria-label="The pattern behind almost every design in this survey." class="dg-natural" width="724" height="192" viewBox="0 0 724 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Naive</text><text class="dg-lab dg-red" x="14" y="46">force in the crowd</text><rect class="dg-box" x="153" y="15" width="224" height="38"/><text class="dg-t" x="265" y="38" text-anchor="middle">768 image + 20 text tokens</text><path class="dg-a" d="M377 34 H409"/><rect class="dg-badbox" x="411" y="15" width="140" height="38"/><text class="dg-t" x="481" y="38" text-anchor="middle">+ 1 force token</text><path class="dg-a" d="M551 34 H583"/><rect class="dg-box" x="585" y="15" width="125" height="38"/><text class="dg-t" x="647" y="38" text-anchor="middle">VLM attention</text><text class="dg-note dg-red" x="153.2" y="72">✗ gets ~0.1% of attention</text><text class="dg-lab dg-green" x="14" y="129">Most methods</text><rect class="dg-box" x="153" y="106" width="96" height="38"/><text class="dg-t" x="201" y="129" text-anchor="middle">force</text><path class="dg-a" d="M249 125 H281"/><rect class="dg-key" x="283" y="98" width="231" height="54"/><text class="dg-t" x="399" y="121" text-anchor="middle">Dedicated path</text><text class="dg-s" x="399" y="137" text-anchor="middle">MoE, adapter, bypass, controller</text><path class="dg-a" d="M514 125 H546"/><rect class="dg-box" x="548" y="106" width="96" height="38"/><text class="dg-t" x="596" y="129" text-anchor="middle">Action</text><text class="dg-note dg-green" x="153.2" y="170">✓ force cannot be drowned out</text></svg><figcaption>The pattern behind almost every design in this survey.</figcaption></figure>
+<h2>0. How to read this page (and this site)</h2>
+<figure class="diagram"><svg role="img" aria-label="Read basics once, then π0, then this map. Surveys 2 and 3 zoom in on two questions the map raises. Paper notes come last, picked by the entry point you care about." viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">READING ORDER</text>
+<rect class="dg-ext" x="20" y="40" width="170" height="124"/><text class="dg-t" x="105" y="62" text-anchor="middle">0. Basics</text>
+<text class="dg-s" x="34" y="84">Imitation learning</text><text class="dg-s" x="34" y="100">Token · Attention</text><text class="dg-s" x="34" y="116">Transformer</text><text class="dg-s" x="34" y="132">Flow matching</text><text class="dg-s" x="34" y="148">Action chunking</text>
+<rect class="dg-box" x="240" y="62" width="130" height="80"/><text class="dg-t" x="305" y="96" text-anchor="middle">1. π0</text><text class="dg-s" x="305" y="114" text-anchor="middle">the base most</text><text class="dg-s" x="305" y="128" text-anchor="middle">force papers extend</text>
+<rect class="dg-key" x="420" y="62" width="150" height="80"/><text class="dg-t" x="495" y="90" text-anchor="middle">2. Survey 1</text><text class="dg-s" x="495" y="108" text-anchor="middle">the map: where</text><text class="dg-s" x="495" y="122" text-anchor="middle">force enters</text>
+<rect class="dg-box" x="620" y="40" width="150" height="56"/><text class="dg-t" x="695" y="64" text-anchor="middle">3a. Survey 2</text><text class="dg-s" x="695" y="82" text-anchor="middle">what is measured</text>
+<rect class="dg-box" x="620" y="110" width="150" height="56"/><text class="dg-t" x="695" y="134" text-anchor="middle">3b. Survey 3</text><text class="dg-s" x="695" y="152" text-anchor="middle">what is output</text>
+<rect class="dg-box" x="820" y="62" width="140" height="80"/><text class="dg-t" x="890" y="92" text-anchor="middle">4. Papers</text><text class="dg-s" x="890" y="110" text-anchor="middle">pick by entry</text><text class="dg-s" x="890" y="124" text-anchor="middle">point ①–⑥</text>
+<path class="dg-a" d="M190 102 H240"/><path class="dg-a" d="M370 102 H420"/><path class="dg-a" d="M570 90 H595 V68 H620"/><path class="dg-a" d="M570 114 H595 V138 H620"/><path class="dg-a" d="M770 68 H795 V92 H820"/><path class="dg-a" d="M770 138 H795 V112 H820"/>
+<text class="dg-h" x="20" y="196">THREE ROUTES</text>
+<rect class="dg-grp" x="20" y="208" width="300" height="136"/><text class="dg-t" x="36" y="232">5 minutes</text>
+<text class="dg-s" x="36" y="256">Read the TL;DR of Survey 1,</text><text class="dg-s" x="36" y="272">look at the matrix figure,</text><text class="dg-s" x="36" y="288">find your entry point.</text><text class="dg-s dg-mute" x="36" y="324">Goal: know the landscape.</text>
+<rect class="dg-grp" x="340" y="208" width="300" height="136"/><text class="dg-t" x="356" y="232">30 minutes</text>
+<text class="dg-s" x="356" y="256">Survey 1, then 2 and 3.</text><text class="dg-s" x="356" y="272">Do the three calculation cards</text><text class="dg-s" x="356" y="288">with a pen.</text><text class="dg-s dg-mute" x="356" y="324">Goal: choose a design.</text>
+<rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Deep</text>
+<text class="dg-s" x="676" y="256">Basics, π0, Survey 1,</text><text class="dg-s" x="676" y="272">then the paper notes of the</text><text class="dg-s" x="676" y="288">entry point you chose.</text><text class="dg-s dg-mute" x="676" y="324">Goal: reproduce or extend.</text>
+</svg><figcaption>Read basics once, then π0, then this map. Surveys 2 and 3 zoom in on two questions the map raises. Paper notes come last, picked by the entry point you care about.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Time</th>
+<th>What to read</th>
+<th>You end up knowing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quick look</td>
+<td>5 min</td>
+<td>the summary box above, the matrix in section 3</td>
+<td>which design families exist</td>
+</tr>
+<tr>
+<td>Working knowledge</td>
+<td>30 min</td>
+<td>this survey, then <a href="survey-force-sensing.html">Survey 2</a> and <a href="survey-force-output.html">Survey 3</a>; do the three calculation cards</td>
+<td>how to choose a design for your robot</td>
+</tr>
+<tr>
+<td>Deep</td>
+<td>a few evenings</td>
+<td>the basics, <a href="pi0.html">π0</a>, the surveys, then the paper notes for your entry point</td>
+<td>enough to reproduce or extend a method</td>
+</tr>
+</tbody>
+</table>
+<h2>1. Why one force number gets ignored</h2>
+<p>Picture a meeting of 789 people where one person has something important to say but speaks at the same volume as everyone else. Nobody notices. A transformer's attention works the same way: every token competes for attention, and one force token competes with hundreds of image tokens.</p>
+<figure class="diagram flow"><svg role="img" aria-label="The pattern behind almost every design in this survey." class="dg-natural" width="724" height="192" viewBox="0 0 724 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Naive</text><text class="dg-lab dg-red" x="14" y="46">force in the crowd</text><rect class="dg-box" x="153" y="15" width="224" height="38"/><text class="dg-t" x="265" y="38" text-anchor="middle">768 image + 20 text tokens</text><path class="dg-a" d="M377 34 H409"/><rect class="dg-badbox" x="411" y="15" width="140" height="38"/><text class="dg-t" x="481" y="38" text-anchor="middle">+ 1 force token</text><path class="dg-a" d="M551 34 H583"/><rect class="dg-box" x="585" y="15" width="125" height="38"/><text class="dg-t" x="647" y="38" text-anchor="middle">VLM attention</text><text class="dg-note dg-red" x="153.2" y="72">✗ gets about 0.1% of attention</text><text class="dg-lab dg-green" x="14" y="129">Most methods</text><rect class="dg-box" x="153" y="106" width="96" height="38"/><text class="dg-t" x="201" y="129" text-anchor="middle">force</text><path class="dg-a" d="M249 125 H281"/><rect class="dg-key" x="283" y="98" width="231" height="54"/><text class="dg-t" x="399" y="121" text-anchor="middle">Its own path</text><text class="dg-s" x="399" y="137" text-anchor="middle">MoE, adapter, bypass, controller</text><path class="dg-a" d="M514 125 H546"/><rect class="dg-box" x="548" y="106" width="96" height="38"/><text class="dg-t" x="596" y="129" text-anchor="middle">Action</text><text class="dg-note dg-green" x="153.2" y="170">✓ force cannot be drowned out</text></svg><figcaption>The pattern behind almost every design in this survey.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
-<p><strong>What and why.</strong> Estimate how much attention one force token gets among a π0-style VLM's tokens, and how large an advantage it would need. This explains why methods build separate paths for force.</p>
+<p><strong>What and why.</strong> How much attention does one force token get, and how much louder must it be to matter? The answer explains why so many methods build a separate path for force.</p>
 <table>
 <thead>
 <tr>
@@ -98,37 +148,55 @@
 <tbody>
 <tr>
 <td>$N$</td>
-<td>total tokens: 3 views × 256 + text + 1 force</td>
+<td>total tokens: 3 views × 256 image tokens + text + 1 force token</td>
 <td>input</td>
 <td>$768 + 20 + 1 = 789$</td>
 </tr>
 <tr>
 <td>$\Delta$</td>
-<td>how much larger the force token's logit is than every other token's</td>
+<td>how much larger the force token's score is than every other token's</td>
 <td>unknown</td>
 <td>–</td>
 </tr>
 <tr>
 <td>$p_F$</td>
-<td>share of attention on the force token</td>
+<td>share of attention that lands on the force token</td>
 <td>output</td>
 <td>–</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Formula</strong> (softmax with all other logits equal)</p>
+<p><strong>Formula</strong> (softmax, every other score equal)</p>
 <p>$$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$</p>
 <p><strong>Steps</strong></p>
 <ol>
-<li>Uniform attention ($\Delta = 0$): $p_F = 1/789 \approx 0.0013$.</li>
-<li>For $p_F = 0.5$: $e^{\Delta} = N - 1 = 788$.</li>
-<li>$\Delta = \ln 788 \approx 6.7$.</li>
+<li>Equal scores ($\Delta = 0$): $p_F = 1/789 \approx 0.0013$.</li>
+<li>To reach $p_F = 0.5$ we need $e^{\Delta} = N - 1 = 788$.</li>
+<li>So $\Delta = \ln 788 \approx 6.7$.</li>
 </ol>
-<p><strong>Result.</strong> The force token must beat every other token by about 6.7 logits to get half the attention.</p>
-<p><strong>Why it matters.</strong> Such a gap must be learned from a few hundred demonstrations and only on contact steps. A dedicated path avoids the competition altogether.</p>
+<p><strong>Result.</strong> The force token must outscore every other token by about 6.7 to get half the attention.</p>
+<p><strong>Why it matters.</strong> The model would have to learn that gap from a few hundred demonstrations, and only on the few steps where contact happens. A dedicated path skips the competition.</p>
 </div>
 <h2>2. The map: six entry points</h2>
-<figure class="diagram"><svg role="img" aria-label="Six entry points for force, torque or touch in a VLA pipeline, with the methods that use each one. DAM-VLA (*) handles an unnamed high-frequency modality." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<figure class="diagram"><svg role="img" aria-label="Animated: a force signal travelling along each of the four paths that touch the running pipeline (entry points ① to ④). Entry points ⑤ and ⑥ are about training and prediction, so they are not on this picture." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
+<rect class="dg-ext" x="15" y="150" width="140" height="52"/><text class="dg-t" x="85" y="172" text-anchor="middle">Force / touch</text><text class="dg-s" x="85" y="190" text-anchor="middle">signal</text>
+<rect class="dg-box" x="230" y="20" width="150" height="70"/><text class="dg-t" x="305" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="305" y="68" text-anchor="middle">vision + language</text>
+<rect class="dg-box" x="460" y="20" width="150" height="70"/><text class="dg-t" x="535" y="52" text-anchor="middle">Action expert</text><text class="dg-s" x="535" y="68" text-anchor="middle">decoder / flow head</text>
+<rect class="dg-box" x="690" y="20" width="130" height="70"/><text class="dg-t" x="755" y="52" text-anchor="middle">Controller</text><text class="dg-s" x="755" y="68" text-anchor="middle">fast loop</text>
+<rect class="dg-ext" x="870" y="20" width="95" height="70"/><text class="dg-t" x="917" y="60" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M155 40 H230"/><path class="dg-a" d="M380 55 H460"/><path class="dg-a" d="M610 55 H690"/><path class="dg-a" d="M820 55 H870"/>
+<path id="p1" class="dg-ad" d="M155 165 H190 V70 H230"/>
+<path id="p2" class="dg-ad" d="M155 170 H420 V90"/>
+<path id="p3" class="dg-ad" d="M155 175 H535 V90"/>
+<path id="p4" class="dg-ad" d="M155 180 H755 V90"/>
+<text class="dg-l" x="330" y="215">① VLM input</text><text class="dg-l" x="330" y="235">② after the VLM</text><text class="dg-l" x="330" y="255">③ action expert</text><text class="dg-l" x="330" y="275">④ outside the VLA</text>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0;.2;1"><mpath href="#p1"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.01;.19;.2;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.25;.45;1"><mpath href="#p2"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.25;.26;.44;.45;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.5;.7;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.5;.51;.69;.7;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.75;.95;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.75;.76;.94;.95;1"/></circle>
+</svg><figcaption>Animated: a force signal travelling along each of the four paths that touch the running pipeline (entry points ① to ④). Entry points ⑤ and ⑥ are about training and prediction, so they are not on this picture.</figcaption></figure>
+<figure class="diagram"><svg role="img" aria-label="The same six entry points with the methods that use each. DAM-VLA (*) handles a high-rate input the paper does not name." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
 <rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
 <rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
@@ -152,13 +220,13 @@
 <text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
-</svg><figcaption>Six entry points for force, torque or touch in a VLA pipeline, with the methods that use each one. DAM-VLA (*) handles an unnamed high-frequency modality.</figcaption></figure>
+</svg><figcaption>The same six entry points with the methods that use each. DAM-VLA (*) handles a high-rate input the paper does not name.</figcaption></figure>
 <table>
 <thead>
 <tr>
 <th>#</th>
 <th>Entry point</th>
-<th>What it means</th>
+<th>In plain words</th>
 <th>Typical form</th>
 </tr>
 </thead>
@@ -166,84 +234,314 @@
 <tr>
 <td>①</td>
 <td>VLM input</td>
-<td>force as a token or as words next to the image</td>
+<td>force goes in next to the image, as a token or as words</td>
 <td>token, text, prompt</td>
 </tr>
 <tr>
 <td>②</td>
 <td>After the VLM</td>
-<td>fusion module on finished vision-language features</td>
+<td>the VLM finishes first; a separate module then mixes in force</td>
 <td>MoE, cross-attention</td>
 </tr>
 <tr>
 <td>③</td>
 <td>Inside the action expert</td>
-<td>condition the action decoder directly</td>
+<td>force goes straight into the part that produces actions</td>
 <td>extra tokens, adapters, grafted expert</td>
 </tr>
 <tr>
 <td>④</td>
 <td>Outside the VLA</td>
-<td>controller, refiner or residual changes the executed action</td>
-<td>fast loop next to the VLA</td>
+<td>a faster controller or small corrector changes the action the VLA chose</td>
+<td>fast loop beside the VLA</td>
 </tr>
 <tr>
 <td>⑤</td>
 <td>Training only</td>
-<td>force shapes the weights, absent at run time</td>
+<td>force teaches the model but is absent when it runs</td>
 <td>teacher, reward, curriculum</td>
 </tr>
 <tr>
 <td>⑥</td>
 <td>Predicted</td>
-<td>the model forecasts future force/touch</td>
-<td>auxiliary target, world model</td>
+<td>the model forecasts future force or touch</td>
+<td>extra training target, world model</td>
 </tr>
 </tbody>
 </table>
-<figure class="diagram compact"><svg role="img" aria-label="Number of the 33 methods using each entry point (many use two)." class="dg-natural" width="585" height="192" viewBox="0 0 585 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">① VLM input</text><rect class="dg-bar" x="135" y="10" width="169" height="18"/><text class="dg-barval" x="312" y="23">7</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">② After the VLM</text><rect class="dg-bar" x="135" y="40" width="169" height="18"/><text class="dg-barval" x="312" y="53">7</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="135" y="70" width="169" height="18"/><text class="dg-barval" x="312" y="83">7</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">④ Outside the VLA</text><rect class="dg-key" x="135" y="100" width="313" height="18"/><text class="dg-barval" x="456" y="113">13</text><text class="dg-barlabel" x="125" y="143" text-anchor="end">⑤ Training only</text><rect class="dg-bar" x="135" y="130" width="120" height="18"/><text class="dg-barval" x="264" y="143">5</text><text class="dg-barlabel" x="125" y="173" text-anchor="end">⑥ Predicted</text><rect class="dg-bar" x="135" y="160" width="193" height="18"/><text class="dg-barval" x="336" y="173">8</text></svg><figcaption>Number of the 33 methods using each entry point (many use two).</figcaption></figure>
-<h2>3. Five patterns</h2>
+<figure class="diagram compact"><svg role="img" aria-label="How many of the 33 methods use each entry point (many use two, so the total is above 33)." class="dg-natural" width="585" height="192" viewBox="0 0 585 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">① VLM input</text><rect class="dg-bar" x="135" y="10" width="169" height="18"/><text class="dg-barval" x="312" y="23">7</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">② After the VLM</text><rect class="dg-bar" x="135" y="40" width="169" height="18"/><text class="dg-barval" x="312" y="53">7</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="135" y="70" width="169" height="18"/><text class="dg-barval" x="312" y="83">7</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">④ Outside the VLA</text><rect class="dg-key" x="135" y="100" width="313" height="18"/><text class="dg-barval" x="456" y="113">13</text><text class="dg-barlabel" x="125" y="143" text-anchor="end">⑤ Training only</text><rect class="dg-bar" x="135" y="130" width="120" height="18"/><text class="dg-barval" x="264" y="143">5</text><text class="dg-barlabel" x="125" y="173" text-anchor="end">⑥ Predicted</text><rect class="dg-bar" x="135" y="160" width="193" height="18"/><text class="dg-barval" x="336" y="173">8</text></svg><figcaption>How many of the 33 methods use each entry point (many use two, so the total is above 33).</figcaption></figure>
+<h2>3. All 33 on one page</h2>
+<figure class="diagram"><svg role="img" aria-label="One row per method, ordered by arXiv date; a dot means the method uses that entry point. Filled yellow dots mark methods that have a full note on this site. Look down a column to see what a design family looks like; look along a row to see how a method combines choices." viewBox="0 0 980 846" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-t" x="330" y="40" text-anchor="middle">①</text>
+<text class="dg-s" x="330" y="58" text-anchor="middle">VLM input</text>
+<path class="dg-grp" d="M330 76 V810"/>
+<text class="dg-t" x="430" y="40" text-anchor="middle">②</text>
+<text class="dg-s" x="430" y="58" text-anchor="middle">After VLM</text>
+<path class="dg-grp" d="M430 76 V810"/>
+<text class="dg-t" x="530" y="40" text-anchor="middle">③</text>
+<text class="dg-s" x="530" y="58" text-anchor="middle">Action expert</text>
+<path class="dg-grp" d="M530 76 V810"/>
+<text class="dg-t" x="630" y="40" text-anchor="middle">④</text>
+<text class="dg-s" x="630" y="58" text-anchor="middle">Outside VLA</text>
+<path class="dg-grp" d="M630 76 V810"/>
+<text class="dg-t" x="730" y="40" text-anchor="middle">⑤</text>
+<text class="dg-s" x="730" y="58" text-anchor="middle">Training only</text>
+<path class="dg-grp" d="M730 76 V810"/>
+<text class="dg-t" x="830" y="40" text-anchor="middle">⑥</text>
+<text class="dg-s" x="830" y="58" text-anchor="middle">Predicted</text>
+<path class="dg-grp" d="M830 76 V810"/>
+<rect x="10" y="80" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="95"> 1</text>
+<text class="dg-s" x="54" y="95">VTLA</text>
+<text class="dg-mute dg-s" x="250" y="95">2025-05</text>
+<circle cx="330" cy="91" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="117"> 2</text>
+<text class="dg-t" x="54" y="117">ForceVLA</text>
+<text class="dg-mute dg-s" x="250" y="117">2025-05</text>
+<circle cx="430" cy="113" r="6.5" class="dg-key"/>
+<rect x="10" y="124" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="139"> 3</text>
+<text class="dg-s" x="54" y="139">Tactile-VLA</text>
+<text class="dg-mute dg-s" x="250" y="139">2025-07</text>
+<circle cx="330" cy="135" r="6.5" class="dg-box"/>
+<circle cx="630" cy="135" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="161"> 4</text>
+<text class="dg-t" x="54" y="161">VLA-Touch</text>
+<text class="dg-mute dg-s" x="250" y="161">2025-07</text>
+<circle cx="330" cy="157" r="6.5" class="dg-key"/>
+<circle cx="630" cy="157" r="6.5" class="dg-key"/>
+<rect x="10" y="168" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="183"> 5</text>
+<text class="dg-s" x="54" y="183">VLH</text>
+<text class="dg-mute dg-s" x="250" y="183">2025-08</text>
+<text class="dg-s dg-mute" x="330" y="183">no sensor input: haptics is an output</text>
+<text class="dg-s" x="24" y="205"> 6</text>
+<text class="dg-s" x="54" y="205">OmniVTLA</text>
+<text class="dg-mute dg-s" x="250" y="205">2025-08</text>
+<circle cx="330" cy="201" r="6.5" class="dg-box"/>
+<rect x="10" y="212" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="227"> 7</text>
+<text class="dg-s" x="54" y="227">TA-VLA</text>
+<text class="dg-mute dg-s" x="250" y="227">2025-09</text>
+<circle cx="530" cy="223" r="6.5" class="dg-box"/>
+<circle cx="830" cy="223" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="249"> 8</text>
+<text class="dg-s" x="54" y="249">CompliantVLA-adaptor</text>
+<text class="dg-mute dg-s" x="250" y="249">2026-01</text>
+<circle cx="630" cy="245" r="6.5" class="dg-box"/>
+<rect x="10" y="256" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="271"> 9</text>
+<text class="dg-t" x="54" y="271">TaF-VLA</text>
+<text class="dg-mute dg-s" x="250" y="271">2026-01</text>
+<circle cx="530" cy="267" r="6.5" class="dg-key"/>
+<circle cx="730" cy="267" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="293">10</text>
+<text class="dg-t" x="54" y="293">FD-VLA</text>
+<text class="dg-mute dg-s" x="250" y="293">2026-02</text>
+<circle cx="330" cy="289" r="6.5" class="dg-key"/>
+<circle cx="730" cy="289" r="6.5" class="dg-key"/>
+<rect x="10" y="300" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="315">11</text>
+<text class="dg-s" x="54" y="315">CRAFT</text>
+<text class="dg-mute dg-s" x="250" y="315">2026-02</text>
+<circle cx="730" cy="311" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="337">12</text>
+<text class="dg-s" x="54" y="337">FAVLA</text>
+<text class="dg-mute dg-s" x="250" y="337">2026-02</text>
+<circle cx="530" cy="333" r="6.5" class="dg-box"/>
+<rect x="10" y="344" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="359">13</text>
+<text class="dg-t" x="54" y="359">TER-DAgger</text>
+<text class="dg-mute dg-s" x="250" y="359">2026-03</text>
+<circle cx="630" cy="355" r="6.5" class="dg-key"/>
+<circle cx="830" cy="355" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="381">14</text>
+<text class="dg-t" x="54" y="381">MoDE-VLA</text>
+<text class="dg-mute dg-s" x="250" y="381">2026-03</text>
+<circle cx="430" cy="377" r="6.5" class="dg-key"/>
+<rect x="10" y="388" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="403">15</text>
+<text class="dg-t" x="54" y="403">ForceVLA2</text>
+<text class="dg-mute dg-s" x="250" y="403">2026-03</text>
+<circle cx="330" cy="399" r="6.5" class="dg-key"/>
+<circle cx="430" cy="399" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="425">16</text>
+<text class="dg-t" x="54" y="425">HapticVLA</text>
+<text class="dg-mute dg-s" x="250" y="425">2026-03</text>
+<circle cx="730" cy="421" r="6.5" class="dg-key"/>
+<rect x="10" y="432" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="447">17</text>
+<text class="dg-t" x="54" y="447">Tabero</text>
+<text class="dg-mute dg-s" x="250" y="447">2026-05</text>
+<circle cx="330" cy="443" r="6.5" class="dg-key"/>
+<circle cx="630" cy="443" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="469">18</text>
+<text class="dg-t" x="54" y="469">TORL-VLA</text>
+<text class="dg-mute dg-s" x="250" y="469">2026-06</text>
+<circle cx="430" cy="465" r="6.5" class="dg-key"/>
+<circle cx="830" cy="465" r="6.5" class="dg-key"/>
+<rect x="10" y="476" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="491">19</text>
+<text class="dg-s" x="54" y="491">DAM-VLA</text>
+<text class="dg-mute dg-s" x="250" y="491">2026-06</text>
+<circle cx="530" cy="487" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="513">20</text>
+<text class="dg-s" x="54" y="513">UniTacVLA</text>
+<text class="dg-mute dg-s" x="250" y="513">2026-06</text>
+<circle cx="630" cy="509" r="6.5" class="dg-box"/>
+<circle cx="830" cy="509" r="6.5" class="dg-box"/>
+<rect x="10" y="520" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="535">21</text>
+<text class="dg-s" x="54" y="535">H-Tac</text>
+<text class="dg-mute dg-s" x="250" y="535">2026-07</text>
+<circle cx="730" cy="531" r="6.5" class="dg-box"/>
+<circle cx="830" cy="531" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="557">22</text>
+<text class="dg-s" x="54" y="557">LIFT</text>
+<text class="dg-mute dg-s" x="250" y="557">2026-07</text>
+<circle cx="530" cy="553" r="6.5" class="dg-box"/>
+<rect x="10" y="564" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="579">23</text>
+<text class="dg-s" x="54" y="579">FM-VLA</text>
+<text class="dg-mute dg-s" x="250" y="579">2026-07</text>
+<circle cx="530" cy="575" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="601">24</text>
+<text class="dg-s" x="54" y="601">ForceU-VLA</text>
+<text class="dg-mute dg-s" x="250" y="601">2026-08</text>
+<circle cx="430" cy="597" r="6.5" class="dg-box"/>
+<rect x="10" y="608" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="623">25</text>
+<text class="dg-t" x="54" y="623">FWBC-VLA</text>
+<text class="dg-mute dg-s" x="250" y="623">2026-09</text>
+<circle cx="530" cy="619" r="6.5" class="dg-key"/>
+<circle cx="630" cy="619" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="645">26</text>
+<text class="dg-s" x="54" y="645">TacPAC</text>
+<text class="dg-mute dg-s" x="250" y="645">2026-09</text>
+<circle cx="630" cy="641" r="6.5" class="dg-box"/>
+<circle cx="830" cy="641" r="6.5" class="dg-box"/>
+<rect x="10" y="652" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="667">27</text>
+<text class="dg-s" x="54" y="667">CR-VLA-Force</text>
+<text class="dg-mute dg-s" x="250" y="667">2026-09</text>
+<circle cx="430" cy="663" r="6.5" class="dg-box"/>
+<circle cx="630" cy="663" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="689">28</text>
+<text class="dg-s" x="54" y="689">DeCAL</text>
+<text class="dg-mute dg-s" x="250" y="689">2026-09</text>
+<circle cx="430" cy="685" r="6.5" class="dg-box"/>
+<circle cx="830" cy="685" r="6.5" class="dg-box"/>
+<rect x="10" y="696" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="711">29</text>
+<text class="dg-s" x="54" y="711">ForceDelta-VLA</text>
+<text class="dg-mute dg-s" x="250" y="711">2026-09</text>
+<circle cx="630" cy="707" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="733">30</text>
+<text class="dg-s" x="54" y="733">ForceRFT</text>
+<text class="dg-mute dg-s" x="250" y="733">2026-09</text>
+<circle cx="630" cy="729" r="6.5" class="dg-box"/>
+<rect x="10" y="740" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="755">31</text>
+<text class="dg-s" x="54" y="755">CompVLA</text>
+<text class="dg-mute dg-s" x="250" y="755">2026-09</text>
+<circle cx="630" cy="751" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="777">32</text>
+<text class="dg-s" x="54" y="777">Opt2VLA</text>
+<text class="dg-mute dg-s" x="250" y="777">2026-09</text>
+<circle cx="630" cy="773" r="6.5" class="dg-box"/>
+<rect x="10" y="784" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="799">33</text>
+<text class="dg-s" x="54" y="799">DexTacWAM</text>
+<text class="dg-mute dg-s" x="250" y="799">2026-09</text>
+<circle cx="830" cy="795" r="6.5" class="dg-box"/>
+<circle cx="30" cy="832" r="6.5" class="dg-key"/><text class="dg-s" x="44" y="836">bold name: full note on this site</text>
+<circle cx="320" cy="832" r="6.5" class="dg-box"/><text class="dg-s" x="334" y="836">plain name: classified from the abstract</text>
+</svg><figcaption>One row per method, ordered by arXiv date; a dot means the method uses that entry point. Filled yellow dots mark methods that have a full note on this site. Look down a column to see what a design family looks like; look along a row to see how a method combines choices.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="New methods per quarter (arXiv first submission, from the 33 below). My search found none for Q4 2025; the surge in Q3 2026 may partly reflect how recent the search was." class="dg-natural" width="516" height="192" viewBox="0 0 516 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Q2 2025</text><rect class="dg-bar" x="66" y="10" width="48" height="18"/><text class="dg-barval" x="122" y="23">2</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">Q3 2025</text><rect class="dg-bar" x="66" y="40" width="120" height="18"/><text class="dg-barval" x="195" y="53">5</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Q4 2025</text><rect class="dg-bar" x="66" y="70" width="2" height="18"/><text class="dg-barval" x="76" y="83">0</text><text class="dg-barlabel" x="56" y="113" text-anchor="end">Q1 2026</text><rect class="dg-bar" x="66" y="100" width="217" height="18"/><text class="dg-barval" x="291" y="113">9</text><text class="dg-barlabel" x="56" y="143" text-anchor="end">Q2 2026</text><rect class="dg-bar" x="66" y="130" width="96" height="18"/><text class="dg-barval" x="171" y="143">4</text><text class="dg-barlabel" x="56" y="173" text-anchor="end">Q3 2026</text><rect class="dg-key" x="66" y="160" width="313" height="18"/><text class="dg-barval" x="387" y="173">13</text></svg><figcaption>New methods per quarter (arXiv first submission, from the 33 below). My search found none for Q4 2025; the surge in Q3 2026 may partly reflect how recent the search was.</figcaption></figure>
+<h2>4. Five patterns that keep showing up</h2>
 <table>
 <thead>
 <tr>
 <th>Pattern</th>
+<th>What it means</th>
 <th>Evidence</th>
 <th>Methods</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>After the VLM beats before</td>
-<td>MoE before VLM 0%, after 80% (ForceVLA); decoder adapters beat encoder (TA-VLA)</td>
-<td>ForceVLA, TA-VLA</td>
+<td>Fuse after the VLM, not before</td>
+<td>give force its own module once the VLM has understood the scene</td>
+<td>MoE before the VLM scored 0%, after it 80% (ForceVLA); decoder adapters beat encoder ones (TA-VLA)</td>
+<td>ForceVLA [2], TA-VLA [7]</td>
 </tr>
 <tr>
-<td>Protect the pretrained model</td>
-<td>residuals, zero-initialised paths, gated cross-attention start from "add nothing"</td>
-<td>MoDE-VLA, TORL-VLA, LIFT, DAM-VLA</td>
+<td>Do not disturb the pretrained model</td>
+<td>new paths start at "add nothing" and grow</td>
+<td>residuals, zero-initialised paths, gated cross-attention</td>
+<td>MoDE-VLA [14], TORL-VLA [18], LIFT [22], DAM-VLA [19]</td>
 </tr>
 <tr>
 <td>Fast next to slow</td>
-<td>force changes in ms, VLAs replan a few times per second</td>
-<td>FAVLA, LIFT, ForceDelta-VLA, DAM-VLA, TacPAC, TER-DAgger</td>
+<td>force changes in milliseconds, a VLA replans a few times per second</td>
+<td>a fast part runs beside the VLA</td>
+<td>FAVLA [12], LIFT [22], ForceDelta-VLA [29], DAM-VLA [19], TacPAC [26], TER-DAgger [13]</td>
 </tr>
 <tr>
 <td>Remove the sensor</td>
-<td>sensor only in training, or estimate from joint torques</td>
-<td>FD-VLA, HapticVLA, FWBC-VLA</td>
+<td>use force only to train, or infer it from joint torque</td>
+<td>no sensor to break or buy</td>
+<td>FD-VLA [10], HapticVLA [16], FWBC-VLA [25]</td>
 </tr>
 <tr>
 <td>Output more than a pose</td>
-<td>force targets or stiffness (<a href="survey-force-output.html">Survey 3</a>)</td>
-<td>ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CompVLA</td>
+<td>the policy asks for a force or a stiffness (<a href="survey-force-output.html">Survey 3</a>)</td>
+<td>force target or stiffness in the action</td>
+<td>ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31]</td>
 </tr>
 </tbody>
 </table>
-<h2>4. The full table</h2>
-<p>"Read": <strong>full</strong> = detailed note on this site; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read.</p>
+<h2>5. Which note should I read?</h2>
 <table>
 <thead>
 <tr>
+<th>If your situation is...</th>
+<th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a wrist force/torque sensor and you want a quick gain</td>
+<td><a href="forcevla.html">ForceVLA</a>, <a href="torl-vla.html">TORL-VLA</a></td>
+</tr>
+<tr>
+<td>the task is about <em>how hard</em> to press</td>
+<td><a href="forcevla2.html">ForceVLA2</a>, <a href="tabero.html">Tabero</a></td>
+</tr>
+<tr>
+<td>only a gel-type touch sensor</td>
+<td><a href="taf-vla.html">TaF-VLA</a>, <a href="vla-touch.html">VLA-Touch</a></td>
+</tr>
+<tr>
+<td>no sensor on the deployed robot</td>
+<td><a href="fd-vla.html">FD-VLA</a>, <a href="hapticvla.html">HapticVLA</a>, <a href="fwbc-vla.html">FWBC-VLA</a></td>
+</tr>
+<tr>
+<td>contact changes fast, as in insertion</td>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+</tr>
+<tr>
+<td>a dexterous hand</td>
+<td><a href="mode-vla.html">MoDE-VLA</a>, <a href="hapticvla.html">HapticVLA</a></td>
+</tr>
+</tbody>
+</table>
+<h2>6. The full table</h2>
+<p>"Read": <strong>full</strong> = detailed note on this site; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
 <th>Method</th>
 <th>Date</th>
 <th>Signal</th>
@@ -255,105 +553,7 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="forcevla.html">ForceVLA</a></td>
-<td>05/2025</td>
-<td>wrist F/T</td>
-<td>②</td>
-<td>pose</td>
-<td>imitation, π0</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="vla-touch.html">VLA-Touch</a></td>
-<td>07/2025</td>
-<td>GelSight</td>
-<td>① planner text, ④ refiner</td>
-<td>refined chunk</td>
-<td>refiner only, RDT</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="forcevla2.html">ForceVLA2</a></td>
-<td>03/2026</td>
-<td>wrist F/T, force prompt</td>
-<td>① ②</td>
-<td>pose + force</td>
-<td>imitation, π0</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="mode-vla.html">MoDE-VLA</a></td>
-<td>03/2026</td>
-<td>joint torque, fingertip tactile</td>
-<td>②</td>
-<td>arm/hand residual</td>
-<td>imitation + RL hand skill, π0</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="taf-vla.html">TaF-VLA</a></td>
-<td>01/2026</td>
-<td>vision tactile aligned to F/T</td>
-<td>③ ⑤</td>
-<td>actions</td>
-<td>contrastive pretraining, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="tabero.html">Tabero</a></td>
-<td>05/2026</td>
-<td>simulated tactile + fingertip force</td>
-<td>① ④</td>
-<td>pose + grip/applied force</td>
-<td>LoRA imitation, π0</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="fd-vla.html">FD-VLA</a></td>
-<td>02/2026</td>
-<td>F/T (training only)</td>
-<td>① ⑤</td>
-<td>actions</td>
-<td>distillation, SmolVLA</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="hapticvla.html">HapticVLA</a></td>
-<td>03/2026</td>
-<td>taxel arrays (training only)</td>
-<td>⑤</td>
-<td>actions</td>
-<td>reward-weighted + distillation, SmolVLA</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
-<td>09/2026</td>
-<td>sensorless, from joint torque</td>
-<td>③ ④</td>
-<td>actions + base residual</td>
-<td>imitation, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="torl-vla.html">TORL-VLA</a></td>
-<td>06/2026</td>
-<td>piezo pads → wrench</td>
-<td>② ⑥</td>
-<td>actions + future wrench</td>
-<td>imitation + online RL, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="ter-dagger.html">TER-DAgger</a></td>
-<td>03/2026</td>
-<td>wrench from joint torque</td>
-<td>④ ⑥</td>
-<td>base + residual</td>
-<td>DAgger, ACT (not a VLA)</td>
-<td>full</td>
-</tr>
-<tr>
+<td>1</td>
 <td><a href="https://arxiv.org/abs/2505.09577">VTLA</a></td>
 <td>05/2025</td>
 <td>tactile</td>
@@ -363,6 +563,17 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>2</td>
+<td><a href="forcevla.html">ForceVLA</a></td>
+<td>05/2025</td>
+<td>wrist F/T</td>
+<td>②</td>
+<td>pose</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>3</td>
 <td><a href="https://arxiv.org/abs/2507.09160">Tactile-VLA</a></td>
 <td>07/2025</td>
 <td>tactile</td>
@@ -372,6 +583,17 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>4</td>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>07/2025</td>
+<td>GelSight</td>
+<td>① planner text, ④ refiner</td>
+<td>refined chunk</td>
+<td>refiner only, RDT</td>
+<td>full</td>
+</tr>
+<tr>
+<td>5</td>
 <td><a href="https://arxiv.org/abs/2508.01361">VLH</a></td>
 <td>08/2025</td>
 <td>none (haptics is an output to a human)</td>
@@ -381,6 +603,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>6</td>
 <td><a href="https://arxiv.org/abs/2508.08706">OmniVTLA</a></td>
 <td>08/2025</td>
 <td>vision- and force-based tactile</td>
@@ -390,6 +613,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>7</td>
 <td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
 <td>09/2025</td>
 <td>torque</td>
@@ -399,6 +623,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>8</td>
 <td><a href="https://arxiv.org/abs/2601.15541">CompliantVLA-adaptor</a></td>
 <td>01/2026</td>
 <td>F/T at the controller</td>
@@ -408,6 +633,27 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>9</td>
+<td><a href="taf-vla.html">TaF-VLA</a></td>
+<td>01/2026</td>
+<td>vision tactile aligned to F/T</td>
+<td>③ ⑤</td>
+<td>actions</td>
+<td>contrastive pretraining, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="fd-vla.html">FD-VLA</a></td>
+<td>02/2026</td>
+<td>F/T (training only)</td>
+<td>① ⑤</td>
+<td>actions</td>
+<td>distillation, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td>11</td>
 <td><a href="https://arxiv.org/abs/2602.12532">CRAFT</a></td>
 <td>02/2026</td>
 <td>force</td>
@@ -417,15 +663,77 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>12</td>
 <td><a href="https://arxiv.org/abs/2602.23648">FAVLA</a></td>
 <td>02/2026</td>
 <td>F/T</td>
 <td>③</td>
 <td>fast actions</td>
-<td>fast–slow</td>
+<td>fast-slow</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>13</td>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>03/2026</td>
+<td>wrench from joint torque</td>
+<td>④ ⑥</td>
+<td>base + residual</td>
+<td>DAgger, ACT (not a VLA)</td>
+<td>full</td>
+</tr>
+<tr>
+<td>14</td>
+<td><a href="mode-vla.html">MoDE-VLA</a></td>
+<td>03/2026</td>
+<td>joint torque, fingertip tactile</td>
+<td>②</td>
+<td>arm/hand residual</td>
+<td>imitation + RL hand skill, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>15</td>
+<td><a href="forcevla2.html">ForceVLA2</a></td>
+<td>03/2026</td>
+<td>wrist F/T, force prompt</td>
+<td>① ②</td>
+<td>pose + force</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>16</td>
+<td><a href="hapticvla.html">HapticVLA</a></td>
+<td>03/2026</td>
+<td>taxel arrays (training only)</td>
+<td>⑤</td>
+<td>actions</td>
+<td>reward-weighted + distillation, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td>17</td>
+<td><a href="tabero.html">Tabero</a></td>
+<td>05/2026</td>
+<td>simulated tactile + fingertip force</td>
+<td>① ④</td>
+<td>pose + grip/applied force</td>
+<td>LoRA imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>18</td>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+<td>06/2026</td>
+<td>piezo pads → wrench</td>
+<td>② ⑥</td>
+<td>actions + future wrench</td>
+<td>imitation + online RL, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>19</td>
 <td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
 <td>06/2026</td>
 <td>unnamed high-rate modality</td>
@@ -435,6 +743,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>20</td>
 <td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
 <td>06/2026</td>
 <td>tactile</td>
@@ -444,6 +753,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>21</td>
 <td><a href="https://arxiv.org/abs/2607.01067">H-Tac / TTP</a></td>
 <td>07/2026</td>
 <td>tactile, human video</td>
@@ -453,6 +763,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>22</td>
 <td><a href="https://arxiv.org/abs/2607.14236">LIFT</a></td>
 <td>07/2026</td>
 <td>6D end-effector force</td>
@@ -462,6 +773,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>23</td>
 <td><a href="https://arxiv.org/abs/2607.18231">FM-VLA</a></td>
 <td>07/2026</td>
 <td>force history</td>
@@ -471,6 +783,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>24</td>
 <td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
 <td>08/2026</td>
 <td>force, ultrasound probe</td>
@@ -480,6 +793,17 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>25</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>09/2026</td>
+<td>sensorless, from joint torque</td>
+<td>③ ④</td>
+<td>actions + base residual</td>
+<td>imitation, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>26</td>
 <td><a href="https://arxiv.org/abs/2609.05266">TacPAC</a></td>
 <td>09/2026</td>
 <td>tactile images</td>
@@ -489,6 +813,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>27</td>
 <td><a href="https://arxiv.org/abs/2609.05832">CR-VLA-Force</a></td>
 <td>09/2026</td>
 <td>F/T sequence</td>
@@ -498,6 +823,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>28</td>
 <td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
 <td>09/2026</td>
 <td>tactile</td>
@@ -507,6 +833,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>29</td>
 <td><a href="https://arxiv.org/abs/2609.18242">ForceDelta-VLA</a></td>
 <td>09/2026</td>
 <td>force history</td>
@@ -516,15 +843,7 @@
 <td>abstract</td>
 </tr>
 <tr>
-<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
-<td>09/2026</td>
-<td>none stated (RGB + language)</td>
-<td>④</td>
-<td>stiffness + virtual displacement</td>
-<td>n/s</td>
-<td>abstract</td>
-</tr>
-<tr>
+<td>30</td>
 <td><a href="https://arxiv.org/abs/2609.22840">ForceRFT</a></td>
 <td>09/2026</td>
 <td>wrist wrench</td>
@@ -534,6 +853,17 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>31</td>
+<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
+<td>09/2026</td>
+<td>none stated (RGB + language)</td>
+<td>④</td>
+<td>stiffness + virtual displacement</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td>32</td>
 <td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
 <td>09/2026</td>
 <td>n/s</td>
@@ -543,6 +873,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>33</td>
 <td><a href="https://arxiv.org/abs/2609.24976">DexTacWAM</a></td>
 <td>09/2026</td>
 <td>fingertip tactile</td>
@@ -553,31 +884,126 @@
 </tr>
 </tbody>
 </table>
-<h2>5. Further reading and caveats</h2>
+<h2>7. Caveats</h2>
 <ul>
-<li>Broader surveys: <em>Learning Physical Interaction</em> (<a href="https://arxiv.org/abs/2608.07558">arXiv 2608.07558</a>, TF-ART taxonomy) and <em>Tactile-based Multimodal Fusion in Embodied Intelligence</em> (<a href="https://arxiv.org/abs/2605.17336">arXiv 2605.17336</a>).</li>
-<li>22 rows come from abstracts only; "n/s" means I could not tell, not that it is absent. The list reflects a search in October 2026.</li>
+<li>22 of the 33 rows come from abstracts only; "n/s" means I could not tell, not that the paper lacks it.</li>
+<li>The set reflects one search in October 2026. It is a snapshot, not a complete census.</li>
+<li>Dates are the first arXiv submission (v1).</li>
+<li>Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.</li>
 </ul>
-<p><strong>Carry forward:</strong> the map says <em>where</em> force enters. Before that: <em>what</em> is measured, and in what form it reaches the network. See <a href="survey-force-sensing.html">Survey 2</a>.</p>
-<p><strong>Check question:</strong> 3 × 256 image tokens, 30 text tokens, 1 force token. What is $p_F$ under uniform attention, and what $\Delta$ gives $p_F = 0.5$?</p>
+<p><strong>Carry forward:</strong> the map says <em>where</em> force enters. Before that comes <em>what</em> is measured and in what form it reaches the network: <a href="survey-force-sensing.html">Survey 2</a>.</p>
+<p><strong>Check question:</strong> 3 × 256 image tokens, 30 text tokens, 1 force token. What is $p_F$ under equal scores, and what $\Delta$ gives $p_F = 0.5$?</p>
 <details>
 <summary>Answer</summary>
 <p>$N = 799$: $p_F = 1/799 \approx 0.00125$. $e^{\Delta} = 798$, so $\Delta = \ln 798 \approx 6.7$.</p>
 </details>
+<h2>References</h2>
+<p>Numbers match the first column of the table. Titles are as listed on arXiv.</p>
+<ol>
+<li>VTLA: Vision-Tactile-Language-Action Model with Preference Learning for Insertion Manipulation. <a href="https://arxiv.org/abs/2505.09577">arXiv:2505.09577</a>, 2025-05-14.</li>
+<li>ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2505.22159">arXiv:2505.22159</a>, 2025-05-28.</li>
+<li>Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization. <a href="https://arxiv.org/abs/2507.09160">arXiv:2507.09160</a>, 2025-07-12.</li>
+<li>VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback. <a href="https://arxiv.org/abs/2507.17294">arXiv:2507.17294</a>, 2025-07-23.</li>
+<li>VLH: Vision-Language-Haptics Foundation Model. <a href="https://arxiv.org/abs/2508.01361">arXiv:2508.01361</a>, 2025-08-02.</li>
+<li>OmniVTLA: Vision-Tactile-Language-Action Models with Semantic-Aligned Tactile Sensing. <a href="https://arxiv.org/abs/2508.08706">arXiv:2508.08706</a>, 2025-08-12.</li>
+<li>TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models. <a href="https://arxiv.org/abs/2509.07962">arXiv:2509.07962</a>, 2025-09-09.</li>
+<li>CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2601.15541">arXiv:2601.15541</a>, 2026-01-21.</li>
+<li>TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation. <a href="https://arxiv.org/abs/2601.20321">arXiv:2601.20321</a>, 2026-01-28.</li>
+<li>FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2602.02142">arXiv:2602.02142</a>, 2026-02-02.</li>
+<li>CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning. <a href="https://arxiv.org/abs/2602.12532">arXiv:2602.12532</a>, 2026-02-13.</li>
+<li>FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation. <a href="https://arxiv.org/abs/2602.23648">arXiv:2602.23648</a>, 2026-02-27.</li>
+<li>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control. <a href="https://arxiv.org/abs/2603.04038">arXiv:2603.04038</a>, 2026-03-04.</li>
+<li>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA. <a href="https://arxiv.org/abs/2603.08122">arXiv:2603.08122</a>, 2026-03-09.</li>
+<li>ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2603.15169">arXiv:2603.15169</a>, 2026-03-16.</li>
+<li>HapticVLA: Contact-Rich Manipulation via Vision-Language-Action Model without Inference-Time Tactile Sensing. <a href="https://arxiv.org/abs/2603.15257">arXiv:2603.15257</a>, 2026-03-16.</li>
+<li>Tabero: Learning Gentle Manipulation with Closed-Loop Force Feedback from Vision, Touch, and Language. <a href="https://arxiv.org/abs/2605.27886">arXiv:2605.27886</a>, 2026-05-27.</li>
+<li>TORL-VLA: Tactile Guided Online Reinforcement Learning for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2606.09337">arXiv:2606.09337</a>, 2026-06-08.</li>
+<li>DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model. <a href="https://arxiv.org/abs/2606.12105">arXiv:2606.12105</a>, 2026-06-10.</li>
+<li>UniTacVLA: Unified Tactile Understanding and Prediction in Vision Language Action Models. <a href="https://arxiv.org/abs/2606.31723">arXiv:2606.31723</a>, 2026-06-30.</li>
+<li>Human-Centric Transferable Tactile Pre-Training for Dexterous Robotic Manipulation. <a href="https://arxiv.org/abs/2607.01067">arXiv:2607.01067</a>, 2026-07-01.</li>
+<li>Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection. <a href="https://arxiv.org/abs/2607.14236">arXiv:2607.14236</a>, 2026-07-15.</li>
+<li>FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2607.18231">arXiv:2607.18231</a>, 2026-07-20.</li>
+<li>ForceU-VLA: A Force-Aware Vision-Language-Action Model for Embodied Ultrasound Scanning. <a href="https://arxiv.org/abs/2608.15009">arXiv:2608.15009</a>, 2026-08-15.</li>
+<li>FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation. <a href="https://arxiv.org/abs/2609.03889">arXiv:2609.03889</a>, 2026-09-03.</li>
+<li>TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.05266">arXiv:2609.05266</a>, 2026-09-04.</li>
+<li>CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation. <a href="https://arxiv.org/abs/2609.05832">arXiv:2609.05832</a>, 2026-09-05.</li>
+<li>DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination. <a href="https://arxiv.org/abs/2609.09119">arXiv:2609.09119</a>, 2026-09-08.</li>
+<li>ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.18242">arXiv:2609.18242</a>, 2026-09-16.</li>
+<li>ForceRFT: Refining VLA Actions through Force-Guided Residual Reinforcement Learning. <a href="https://arxiv.org/abs/2609.22840">arXiv:2609.22840</a>, 2026-09-19.</li>
+<li>CompVLA: A Variable Compliance Vision-Language-Action Model for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2609.23614">arXiv:2609.23614</a>, 2026-09-20.</li>
+<li>Opt2VLA: Force-Aware Vision-Language-Action for Contact-Rich Humanoid Whole-Body Manipulation. <a href="https://arxiv.org/abs/2609.23968">arXiv:2609.23968</a>, 2026-09-21.</li>
+<li>DexTacWAM: A Visuo-Tactile World-Action Model for Dexterous Manipulation. <a href="https://arxiv.org/abs/2609.24976">arXiv:2609.24976</a>, 2026-09-21.</li>
+</ol>
+<p>Broader surveys:</p>
+<ul>
+<li>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning. <a href="https://arxiv.org/abs/2608.07558">arXiv:2608.07558</a>, 2026-08-02.</li>
+<li>Tactile-based Multimodal Fusion in Embodied Intelligence: A Survey of Vision, Language, and Contact-Driven Paradigms. <a href="https://arxiv.org/abs/2605.17336">arXiv:2605.17336</a>, 2026-05-17.</li>
+</ul>
+<p>Base models mentioned: π0 (<a href="https://arxiv.org/abs/2410.24164">arXiv:2410.24164</a>), see also the <a href="pi0.html">π0 note</a>.</p>
     </div>
     <div data-vi>
 <div class="tldr">
 <p><strong>SERIES</strong> Survey 1 / 3 · <a href="survey-force-sensing.html">Survey 2: cảm biến</a> · <a href="survey-force-output.html">Survey 3: đầu ra và cách học</a></p>
-<p><strong>VẤN ĐỀ CẢ NGÀNH GIẢI QUYẾT</strong> Các VLA như π0, OpenVLA, RDT thấy ảnh và chữ, không thấy lực. Chúng hỏng đúng lúc tiếp xúc quyết định task: lắp ghép, lau chùi, nắm đồ dễ vỡ, tay bị che.</p>
-<p><strong>VÌ SAO CÁCH SỬA HIỂN NHIÊN THẤT BẠI</strong> Nối lực vào state của robot: π0-base +2,9 điểm, π0-fast −16,8 (<a href="forcevla.html">ForceVLA</a>). Một token lực lạc giữa ~800 token ảnh và chữ (tính bên dưới).</p>
-<p><strong>BẢN ĐỒ</strong> Sáu chỗ lực có thể đi vào: đầu vào VLM, sau VLM, trong action expert, ngoài VLA, chỉ khi huấn luyện, hoặc được dự đoán.</p>
-<p><strong>RÚT RA</strong> Hầu hết phương pháp gần đây cho lực một đường <em>riêng, được bảo vệ, nhanh</em>, và ngày càng nhiều phương pháp bỏ cảm biến lúc chạy.</p>
+<p><strong>VẤN ĐỀ</strong> Các mô hình như π0, OpenVLA, RDT nhìn được ảnh và đọc được chữ, nhưng không "sờ" được. Vì thế chúng hỏng đúng lúc xúc giác quyết định thành bại: nhét chi tiết vào khe, lau bàn, cầm quả trứng, hay làm việc khi bàn tay bị che khỏi camera.</p>
+<p><strong>CÁCH SỬA HIỂN NHIÊN NHƯNG KHÔNG ĂN THUA</strong> Cứ nối số đo lực vào trạng thái robot. Trong thí nghiệm của ForceVLA, cách này chỉ hơn 2,9 điểm với π0-base và còn tệ đi 16,8 điểm với π0-fast [2]. Một con số lực lạc giữa khoảng 800 token ảnh và chữ (tính ngay bên dưới).</p>
+<p><strong>BẢN ĐỒ</strong> Có sáu chỗ để lực đi vào: đầu vào của VLM, ngay sau VLM, bên trong action expert, ở ngoài VLA, chỉ lúc huấn luyện, hoặc là thứ mô hình tự dự đoán.</p>
+<p><strong>RÚT RA</strong> Phần lớn phương pháp gần đây cho lực một đường đi riêng, được bảo vệ và nhanh. Ngày càng nhiều phương pháp bỏ hẳn cảm biến lực khi chạy thật.</p>
 </div>
-<h2>1. Vì sao một token lực bị bỏ qua</h2>
-<figure class="diagram flow"><svg role="img" aria-label="Khuôn mẫu đứng sau gần như mọi thiết kế trong survey này." class="dg-natural" width="760" height="192" viewBox="0 0 760 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Ngây thơ</text><text class="dg-lab dg-red" x="14" y="46">lực giữa đám đông</text><rect class="dg-box" x="160" y="15" width="239" height="38"/><text class="dg-t" x="279" y="38" text-anchor="middle">768 token ảnh + 20 token chữ</text><path class="dg-a" d="M398 34 H430"/><rect class="dg-badbox" x="432" y="15" width="125" height="38"/><text class="dg-t" x="495" y="38" text-anchor="middle">+ 1 token lực</text><path class="dg-a" d="M557 34 H589"/><rect class="dg-box" x="591" y="15" width="155" height="38"/><text class="dg-t" x="669" y="38" text-anchor="middle">Attention của VLM</text><text class="dg-note dg-red" x="159.60000000000002" y="72">✗ chỉ nhận ~0,1% attention</text><text class="dg-lab dg-green" x="14" y="129">Hầu hết phương pháp</text><rect class="dg-box" x="160" y="106" width="96" height="38"/><text class="dg-t" x="208" y="129" text-anchor="middle">lực</text><path class="dg-a" d="M256 125 H288"/><rect class="dg-key" x="290" y="98" width="250" height="54"/><text class="dg-t" x="415" y="121" text-anchor="middle">Đường riêng</text><text class="dg-s" x="415" y="137" text-anchor="middle">MoE, adapter, bypass, bộ điều khiển</text><path class="dg-a" d="M540 125 H572"/><rect class="dg-box" x="574" y="106" width="96" height="38"/><text class="dg-t" x="622" y="129" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="159.60000000000002" y="170">✓ lực không bị nhấn chìm</text></svg><figcaption>Khuôn mẫu đứng sau gần như mọi thiết kế trong survey này.</figcaption></figure>
+<h2>0. Cách đọc trang này (và cả site này)</h2>
+<figure class="diagram"><svg role="img" aria-label="Đọc phần cơ bản một lần, rồi đến π0, rồi đến bản đồ này. Survey 2 và 3 phóng to vào hai câu hỏi mà bản đồ gợi ra. Các bài về từng paper để cuối, chọn theo chỗ lực đi vào mà bạn quan tâm." viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">READING ORDER</text>
+<rect class="dg-ext" x="20" y="40" width="170" height="124"/><text class="dg-t" x="105" y="62" text-anchor="middle">0. Basics</text>
+<text class="dg-s" x="34" y="84">Imitation learning</text><text class="dg-s" x="34" y="100">Token · Attention</text><text class="dg-s" x="34" y="116">Transformer</text><text class="dg-s" x="34" y="132">Flow matching</text><text class="dg-s" x="34" y="148">Action chunking</text>
+<rect class="dg-box" x="240" y="62" width="130" height="80"/><text class="dg-t" x="305" y="96" text-anchor="middle">1. π0</text><text class="dg-s" x="305" y="114" text-anchor="middle">the base most</text><text class="dg-s" x="305" y="128" text-anchor="middle">force papers extend</text>
+<rect class="dg-key" x="420" y="62" width="150" height="80"/><text class="dg-t" x="495" y="90" text-anchor="middle">2. Survey 1</text><text class="dg-s" x="495" y="108" text-anchor="middle">the map: where</text><text class="dg-s" x="495" y="122" text-anchor="middle">force enters</text>
+<rect class="dg-box" x="620" y="40" width="150" height="56"/><text class="dg-t" x="695" y="64" text-anchor="middle">3a. Survey 2</text><text class="dg-s" x="695" y="82" text-anchor="middle">what is measured</text>
+<rect class="dg-box" x="620" y="110" width="150" height="56"/><text class="dg-t" x="695" y="134" text-anchor="middle">3b. Survey 3</text><text class="dg-s" x="695" y="152" text-anchor="middle">what is output</text>
+<rect class="dg-box" x="820" y="62" width="140" height="80"/><text class="dg-t" x="890" y="92" text-anchor="middle">4. Papers</text><text class="dg-s" x="890" y="110" text-anchor="middle">pick by entry</text><text class="dg-s" x="890" y="124" text-anchor="middle">point ①–⑥</text>
+<path class="dg-a" d="M190 102 H240"/><path class="dg-a" d="M370 102 H420"/><path class="dg-a" d="M570 90 H595 V68 H620"/><path class="dg-a" d="M570 114 H595 V138 H620"/><path class="dg-a" d="M770 68 H795 V92 H820"/><path class="dg-a" d="M770 138 H795 V112 H820"/>
+<text class="dg-h" x="20" y="196">THREE ROUTES</text>
+<rect class="dg-grp" x="20" y="208" width="300" height="136"/><text class="dg-t" x="36" y="232">5 minutes</text>
+<text class="dg-s" x="36" y="256">Read the TL;DR of Survey 1,</text><text class="dg-s" x="36" y="272">look at the matrix figure,</text><text class="dg-s" x="36" y="288">find your entry point.</text><text class="dg-s dg-mute" x="36" y="324">Goal: know the landscape.</text>
+<rect class="dg-grp" x="340" y="208" width="300" height="136"/><text class="dg-t" x="356" y="232">30 minutes</text>
+<text class="dg-s" x="356" y="256">Survey 1, then 2 and 3.</text><text class="dg-s" x="356" y="272">Do the three calculation cards</text><text class="dg-s" x="356" y="288">with a pen.</text><text class="dg-s dg-mute" x="356" y="324">Goal: choose a design.</text>
+<rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Deep</text>
+<text class="dg-s" x="676" y="256">Basics, π0, Survey 1,</text><text class="dg-s" x="676" y="272">then the paper notes of the</text><text class="dg-s" x="676" y="288">entry point you chose.</text><text class="dg-s dg-mute" x="676" y="324">Goal: reproduce or extend.</text>
+</svg><figcaption>Đọc phần cơ bản một lần, rồi đến π0, rồi đến bản đồ này. Survey 2 và 3 phóng to vào hai câu hỏi mà bản đồ gợi ra. Các bài về từng paper để cuối, chọn theo chỗ lực đi vào mà bạn quan tâm.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Lộ trình</th>
+<th>Thời gian</th>
+<th>Đọc gì</th>
+<th>Bạn sẽ biết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Xem nhanh</td>
+<td>5 phút</td>
+<td>khung tóm tắt phía trên, ma trận ở mục 3</td>
+<td>có những họ thiết kế nào</td>
+</tr>
+<tr>
+<td>Nắm được việc</td>
+<td>30 phút</td>
+<td>survey này, rồi <a href="survey-force-sensing.html">Survey 2</a> và <a href="survey-force-output.html">Survey 3</a>; tự tính ba thẻ tính tay</td>
+<td>chọn thiết kế cho robot của mình</td>
+</tr>
+<tr>
+<td>Đi sâu</td>
+<td>vài buổi tối</td>
+<td>phần cơ bản, <a href="pi0.html">π0</a>, ba survey, rồi các bài paper theo điểm đi vào bạn chọn</td>
+<td>đủ để tái hiện hoặc mở rộng một phương pháp</td>
+</tr>
+</tbody>
+</table>
+<h2>1. Vì sao một con số lực bị bỏ qua</h2>
+<p>Hình dung một cuộc họp 789 người, trong đó một người có điều rất quan trọng cần nói nhưng chỉ nói to bằng mọi người khác. Chẳng ai để ý. Attention của transformer cũng vậy: mọi token tranh nhau sự chú ý, và một token lực phải tranh với hàng trăm token ảnh.</p>
+<figure class="diagram flow"><svg role="img" aria-label="Đây là khuôn mẫu đứng sau gần như mọi thiết kế trong survey này." class="dg-natural" width="780" height="192" viewBox="0 0 780 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Cách ngây thơ</text><text class="dg-lab dg-red" x="14" y="46">lực lẫn trong đám đông</text><rect class="dg-box" x="179" y="15" width="239" height="38"/><text class="dg-t" x="298" y="38" text-anchor="middle">768 token ảnh + 20 token chữ</text><path class="dg-a" d="M418 34 H450"/><rect class="dg-badbox" x="452" y="15" width="125" height="38"/><text class="dg-t" x="514" y="38" text-anchor="middle">+ 1 token lực</text><path class="dg-a" d="M576 34 H608"/><rect class="dg-box" x="610" y="15" width="155" height="38"/><text class="dg-t" x="688" y="38" text-anchor="middle">Attention của VLM</text><text class="dg-note dg-red" x="178.8" y="72">✗ chỉ nhận khoảng 0,1% attention</text><text class="dg-lab dg-green" x="14" y="129">Đa số phương pháp</text><rect class="dg-box" x="179" y="106" width="96" height="38"/><text class="dg-t" x="227" y="129" text-anchor="middle">lực</text><path class="dg-a" d="M275 125 H307"/><rect class="dg-key" x="309" y="98" width="250" height="54"/><text class="dg-t" x="434" y="121" text-anchor="middle">Đường đi riêng</text><text class="dg-s" x="434" y="137" text-anchor="middle">MoE, adapter, bypass, bộ điều khiển</text><path class="dg-a" d="M559 125 H591"/><rect class="dg-box" x="593" y="106" width="96" height="38"/><text class="dg-t" x="641" y="129" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="178.8" y="170">✓ lực không bị nhấn chìm</text></svg><figcaption>Đây là khuôn mẫu đứng sau gần như mọi thiết kế trong survey này.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
-<p><strong>Tính gì và vì sao.</strong> Ước lượng một token lực nhận bao nhiêu attention giữa các token của một VLM kiểu π0, và nó cần lợi thế lớn cỡ nào. Điều này giải thích vì sao các phương pháp dựng đường riêng cho lực.</p>
+<p><strong>Tính gì và vì sao.</strong> Một token lực nhận được bao nhiêu attention, và nó phải "to tiếng" hơn bao nhiêu mới có trọng lượng? Câu trả lời giải thích vì sao nhiều phương pháp dựng riêng một đường cho lực.</p>
 <table>
 <thead>
 <tr>
@@ -590,37 +1016,55 @@
 <tbody>
 <tr>
 <td>$N$</td>
-<td>tổng số token: 3 góc × 256 + chữ + 1 lực</td>
+<td>tổng số token: 3 góc nhìn × 256 token ảnh + chữ + 1 token lực</td>
 <td>input</td>
 <td>$768 + 20 + 1 = 789$</td>
 </tr>
 <tr>
 <td>$\Delta$</td>
-<td>logit của token lực lớn hơn logit mỗi token khác bao nhiêu</td>
+<td>điểm của token lực cao hơn điểm của mỗi token khác bao nhiêu</td>
 <td>ẩn số</td>
 <td>–</td>
 </tr>
 <tr>
 <td>$p_F$</td>
-<td>phần attention dành cho token lực</td>
+<td>phần attention rơi vào token lực</td>
 <td>output</td>
 <td>–</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Công thức</strong> (softmax, mọi logit khác bằng nhau)</p>
+<p><strong>Công thức</strong> (softmax, mọi điểm khác bằng nhau)</p>
 <p>$$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$</p>
 <p><strong>Từng bước</strong></p>
 <ol>
-<li>Attention đều ($\Delta = 0$): $p_F = 1/789 \approx 0.0013$.</li>
-<li>Muốn $p_F = 0.5$: $e^{\Delta} = N - 1 = 788$.</li>
-<li>$\Delta = \ln 788 \approx 6.7$.</li>
+<li>Điểm bằng nhau ($\Delta = 0$): $p_F = 1/789 \approx 0{,}0013$.</li>
+<li>Muốn $p_F = 0{,}5$ thì cần $e^{\Delta} = N - 1 = 788$.</li>
+<li>Suy ra $\Delta = \ln 788 \approx 6{,}7$.</li>
 </ol>
-<p><strong>Kết quả.</strong> Token lực phải hơn mỗi token khác khoảng 6,7 logit mới giành được một nửa attention.</p>
-<p><strong>Ý nghĩa.</strong> Khoảng cách đó phải học từ vài trăm demo và chỉ ở các bước có tiếp xúc. Một đường riêng tránh hẳn cuộc tranh giành này.</p>
+<p><strong>Kết quả.</strong> Token lực phải vượt điểm của mọi token khác khoảng 6,7 mới giành được một nửa attention.</p>
+<p><strong>Ý nghĩa.</strong> Mô hình phải học ra khoảng cách đó từ vài trăm bản demo, mà chỉ ở vài bước có tiếp xúc. Cho lực một đường riêng thì khỏi phải tranh giành.</p>
 </div>
-<h2>2. Bản đồ: sáu điểm vào</h2>
-<figure class="diagram"><svg role="img" aria-label="Sáu điểm vào cho lực, mô men hoặc xúc giác trong pipeline VLA, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một modality tần số cao không nêu tên." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<h2>2. Bản đồ: sáu chỗ để lực đi vào</h2>
+<figure class="diagram"><svg role="img" aria-label="Hình động: tín hiệu lực chạy lần lượt qua bốn đường nối vào pipeline đang chạy (điểm ① đến ④). Điểm ⑤ và ⑥ liên quan đến huấn luyện và dự đoán nên không nằm trên hình này." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
+<rect class="dg-ext" x="15" y="150" width="140" height="52"/><text class="dg-t" x="85" y="172" text-anchor="middle">Force / touch</text><text class="dg-s" x="85" y="190" text-anchor="middle">signal</text>
+<rect class="dg-box" x="230" y="20" width="150" height="70"/><text class="dg-t" x="305" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="305" y="68" text-anchor="middle">vision + language</text>
+<rect class="dg-box" x="460" y="20" width="150" height="70"/><text class="dg-t" x="535" y="52" text-anchor="middle">Action expert</text><text class="dg-s" x="535" y="68" text-anchor="middle">decoder / flow head</text>
+<rect class="dg-box" x="690" y="20" width="130" height="70"/><text class="dg-t" x="755" y="52" text-anchor="middle">Controller</text><text class="dg-s" x="755" y="68" text-anchor="middle">fast loop</text>
+<rect class="dg-ext" x="870" y="20" width="95" height="70"/><text class="dg-t" x="917" y="60" text-anchor="middle">Robot</text>
+<path class="dg-a" d="M155 40 H230"/><path class="dg-a" d="M380 55 H460"/><path class="dg-a" d="M610 55 H690"/><path class="dg-a" d="M820 55 H870"/>
+<path id="p1" class="dg-ad" d="M155 165 H190 V70 H230"/>
+<path id="p2" class="dg-ad" d="M155 170 H420 V90"/>
+<path id="p3" class="dg-ad" d="M155 175 H535 V90"/>
+<path id="p4" class="dg-ad" d="M155 180 H755 V90"/>
+<text class="dg-l" x="330" y="215">① VLM input</text><text class="dg-l" x="330" y="235">② after the VLM</text><text class="dg-l" x="330" y="255">③ action expert</text><text class="dg-l" x="330" y="275">④ outside the VLA</text>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0;.2;1"><mpath href="#p1"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.01;.19;.2;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.25;.45;1"><mpath href="#p2"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.25;.26;.44;.45;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.5;.7;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.5;.51;.69;.7;1"/></circle>
+<circle r="7" class="dg-m" opacity="0"><animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.75;.95;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="12s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.75;.76;.94;.95;1"/></circle>
+</svg><figcaption>Hình động: tín hiệu lực chạy lần lượt qua bốn đường nối vào pipeline đang chạy (điểm ① đến ④). Điểm ⑤ và ⑥ liên quan đến huấn luyện và dự đoán nên không nằm trên hình này.</figcaption></figure>
+<figure class="diagram"><svg role="img" aria-label="Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một loại tín hiệu tốc độ cao mà paper không gọi tên." viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="15" y="20" width="140" height="40"/><text class="dg-t" x="85" y="44" text-anchor="middle">Images + language</text>
 <rect class="dg-ext" x="15" y="72" width="140" height="52"/><text class="dg-t" x="85" y="94" text-anchor="middle">Force / torque</text><text class="dg-t" x="85" y="110" text-anchor="middle">/ touch</text>
 <rect class="dg-box" x="200" y="20" width="150" height="70"/><text class="dg-t" x="275" y="52" text-anchor="middle">VLM</text><text class="dg-s" x="275" y="68" text-anchor="middle">vision + language</text>
@@ -644,13 +1088,13 @@
 <text class="dg-s" x="665" y="208">FD-VLA</text><text class="dg-s" x="665" y="223">HapticVLA</text><text class="dg-s" x="665" y="238">CRAFT (curriculum)</text><text class="dg-s" x="665" y="253">TaF-VLA (alignment)</text><text class="dg-s" x="665" y="268">H-Tac (pretraining)</text>
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
-</svg><figcaption>Sáu điểm vào cho lực, mô men hoặc xúc giác trong pipeline VLA, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một modality tần số cao không nêu tên.</figcaption></figure>
+</svg><figcaption>Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) xử lý một loại tín hiệu tốc độ cao mà paper không gọi tên.</figcaption></figure>
 <table>
 <thead>
 <tr>
 <th>#</th>
-<th>Điểm vào</th>
-<th>Nghĩa là</th>
+<th>Điểm đi vào</th>
+<th>Nói đơn giản</th>
 <th>Dạng thường gặp</th>
 </tr>
 </thead>
@@ -658,194 +1102,326 @@
 <tr>
 <td>①</td>
 <td>Đầu vào VLM</td>
-<td>lực thành token hoặc chữ cạnh ảnh</td>
+<td>lực vào cùng chỗ với ảnh, dưới dạng token hoặc lời nói</td>
 <td>token, văn bản, prompt</td>
 </tr>
 <tr>
 <td>②</td>
 <td>Sau VLM</td>
-<td>module gộp trên đặc trưng thị giác-ngôn ngữ đã xong</td>
+<td>VLM xử lý xong rồi mới có một khối riêng trộn lực vào</td>
 <td>MoE, cross-attention</td>
 </tr>
 <tr>
 <td>③</td>
 <td>Trong action expert</td>
-<td>điều kiện trực tiếp bộ giải mã hành động</td>
+<td>lực đi thẳng vào bộ phận sinh hành động</td>
 <td>token thêm, adapter, expert ghép</td>
 </tr>
 <tr>
 <td>④</td>
 <td>Ngoài VLA</td>
-<td>bộ điều khiển, bộ tinh chỉnh hoặc residual đổi hành động được thực thi</td>
-<td>vòng nhanh cạnh VLA</td>
+<td>một bộ điều khiển nhanh hoặc bộ chỉnh nhỏ sửa hành động VLA đã chọn</td>
+<td>vòng nhanh đặt cạnh VLA</td>
 </tr>
 <tr>
 <td>⑤</td>
-<td>Chỉ khi huấn luyện</td>
-<td>lực định hình trọng số, vắng mặt lúc chạy</td>
-<td>teacher, phần thưởng, giáo trình</td>
+<td>Chỉ lúc huấn luyện</td>
+<td>lực dạy mô hình nhưng khi chạy thì không còn</td>
+<td>thầy, phần thưởng, giáo trình</td>
 </tr>
 <tr>
 <td>⑥</td>
-<td>Dự đoán</td>
-<td>mô hình dự báo lực/xúc giác tương lai</td>
+<td>Được dự đoán</td>
+<td>mô hình đoán trước lực hoặc xúc giác tương lai</td>
 <td>mục tiêu phụ, world model</td>
 </tr>
 </tbody>
 </table>
-<figure class="diagram compact"><svg role="img" aria-label="Số phương pháp (trên 33) dùng mỗi điểm vào (nhiều phương pháp dùng hai)." class="dg-natural" width="578" height="192" viewBox="0 0 578 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">① Đầu vào VLM</text><rect class="dg-bar" x="128" y="10" width="169" height="18"/><text class="dg-barval" x="305" y="23">7</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">② Sau VLM</text><rect class="dg-bar" x="128" y="40" width="169" height="18"/><text class="dg-barval" x="305" y="53">7</text><text class="dg-barlabel" x="118" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="128" y="70" width="169" height="18"/><text class="dg-barval" x="305" y="83">7</text><text class="dg-barlabel" x="118" y="113" text-anchor="end">④ Ngoài VLA</text><rect class="dg-key" x="128" y="100" width="313" height="18"/><text class="dg-barval" x="449" y="113">13</text><text class="dg-barlabel" x="118" y="143" text-anchor="end">⑤ Chỉ huấn luyện</text><rect class="dg-bar" x="128" y="130" width="120" height="18"/><text class="dg-barval" x="257" y="143">5</text><text class="dg-barlabel" x="118" y="173" text-anchor="end">⑥ Dự đoán</text><rect class="dg-bar" x="128" y="160" width="193" height="18"/><text class="dg-barval" x="329" y="173">8</text></svg><figcaption>Số phương pháp (trên 33) dùng mỗi điểm vào (nhiều phương pháp dùng hai).</figcaption></figure>
-<h2>3. Năm khuôn mẫu</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Số phương pháp (trong 33) dùng mỗi điểm đi vào. Nhiều phương pháp dùng hai điểm nên tổng lớn hơn 33." class="dg-natural" width="606" height="192" viewBox="0 0 606 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="146" y="23" text-anchor="end">① Đầu vào VLM</text><rect class="dg-bar" x="156" y="10" width="169" height="18"/><text class="dg-barval" x="333" y="23">7</text><text class="dg-barlabel" x="146" y="53" text-anchor="end">② Sau VLM</text><rect class="dg-bar" x="156" y="40" width="169" height="18"/><text class="dg-barval" x="333" y="53">7</text><text class="dg-barlabel" x="146" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="156" y="70" width="169" height="18"/><text class="dg-barval" x="333" y="83">7</text><text class="dg-barlabel" x="146" y="113" text-anchor="end">④ Ngoài VLA</text><rect class="dg-key" x="156" y="100" width="313" height="18"/><text class="dg-barval" x="477" y="113">13</text><text class="dg-barlabel" x="146" y="143" text-anchor="end">⑤ Chỉ khi huấn luyện</text><rect class="dg-bar" x="156" y="130" width="120" height="18"/><text class="dg-barval" x="284" y="143">5</text><text class="dg-barlabel" x="146" y="173" text-anchor="end">⑥ Được dự đoán</text><rect class="dg-bar" x="156" y="160" width="193" height="18"/><text class="dg-barval" x="357" y="173">8</text></svg><figcaption>Số phương pháp (trong 33) dùng mỗi điểm đi vào. Nhiều phương pháp dùng hai điểm nên tổng lớn hơn 33.</figcaption></figure>
+<h2>3. Cả 33 phương pháp trên một trang</h2>
+<figure class="diagram"><svg role="img" aria-label="Mỗi hàng là một phương pháp, xếp theo ngày đăng arXiv; chấm tròn nghĩa là phương pháp dùng điểm đi vào đó. Chấm vàng đặc là những phương pháp đã có bài riêng trên site này. Nhìn dọc một cột để thấy một họ thiết kế trông ra sao; nhìn ngang một hàng để thấy phương pháp đó kết hợp các lựa chọn thế nào." viewBox="0 0 980 846" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-t" x="330" y="40" text-anchor="middle">①</text>
+<text class="dg-s" x="330" y="58" text-anchor="middle">VLM input</text>
+<path class="dg-grp" d="M330 76 V810"/>
+<text class="dg-t" x="430" y="40" text-anchor="middle">②</text>
+<text class="dg-s" x="430" y="58" text-anchor="middle">After VLM</text>
+<path class="dg-grp" d="M430 76 V810"/>
+<text class="dg-t" x="530" y="40" text-anchor="middle">③</text>
+<text class="dg-s" x="530" y="58" text-anchor="middle">Action expert</text>
+<path class="dg-grp" d="M530 76 V810"/>
+<text class="dg-t" x="630" y="40" text-anchor="middle">④</text>
+<text class="dg-s" x="630" y="58" text-anchor="middle">Outside VLA</text>
+<path class="dg-grp" d="M630 76 V810"/>
+<text class="dg-t" x="730" y="40" text-anchor="middle">⑤</text>
+<text class="dg-s" x="730" y="58" text-anchor="middle">Training only</text>
+<path class="dg-grp" d="M730 76 V810"/>
+<text class="dg-t" x="830" y="40" text-anchor="middle">⑥</text>
+<text class="dg-s" x="830" y="58" text-anchor="middle">Predicted</text>
+<path class="dg-grp" d="M830 76 V810"/>
+<rect x="10" y="80" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="95"> 1</text>
+<text class="dg-s" x="54" y="95">VTLA</text>
+<text class="dg-mute dg-s" x="250" y="95">2025-05</text>
+<circle cx="330" cy="91" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="117"> 2</text>
+<text class="dg-t" x="54" y="117">ForceVLA</text>
+<text class="dg-mute dg-s" x="250" y="117">2025-05</text>
+<circle cx="430" cy="113" r="6.5" class="dg-key"/>
+<rect x="10" y="124" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="139"> 3</text>
+<text class="dg-s" x="54" y="139">Tactile-VLA</text>
+<text class="dg-mute dg-s" x="250" y="139">2025-07</text>
+<circle cx="330" cy="135" r="6.5" class="dg-box"/>
+<circle cx="630" cy="135" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="161"> 4</text>
+<text class="dg-t" x="54" y="161">VLA-Touch</text>
+<text class="dg-mute dg-s" x="250" y="161">2025-07</text>
+<circle cx="330" cy="157" r="6.5" class="dg-key"/>
+<circle cx="630" cy="157" r="6.5" class="dg-key"/>
+<rect x="10" y="168" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="183"> 5</text>
+<text class="dg-s" x="54" y="183">VLH</text>
+<text class="dg-mute dg-s" x="250" y="183">2025-08</text>
+<text class="dg-s dg-mute" x="330" y="183">no sensor input: haptics is an output</text>
+<text class="dg-s" x="24" y="205"> 6</text>
+<text class="dg-s" x="54" y="205">OmniVTLA</text>
+<text class="dg-mute dg-s" x="250" y="205">2025-08</text>
+<circle cx="330" cy="201" r="6.5" class="dg-box"/>
+<rect x="10" y="212" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="227"> 7</text>
+<text class="dg-s" x="54" y="227">TA-VLA</text>
+<text class="dg-mute dg-s" x="250" y="227">2025-09</text>
+<circle cx="530" cy="223" r="6.5" class="dg-box"/>
+<circle cx="830" cy="223" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="249"> 8</text>
+<text class="dg-s" x="54" y="249">CompliantVLA-adaptor</text>
+<text class="dg-mute dg-s" x="250" y="249">2026-01</text>
+<circle cx="630" cy="245" r="6.5" class="dg-box"/>
+<rect x="10" y="256" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="271"> 9</text>
+<text class="dg-t" x="54" y="271">TaF-VLA</text>
+<text class="dg-mute dg-s" x="250" y="271">2026-01</text>
+<circle cx="530" cy="267" r="6.5" class="dg-key"/>
+<circle cx="730" cy="267" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="293">10</text>
+<text class="dg-t" x="54" y="293">FD-VLA</text>
+<text class="dg-mute dg-s" x="250" y="293">2026-02</text>
+<circle cx="330" cy="289" r="6.5" class="dg-key"/>
+<circle cx="730" cy="289" r="6.5" class="dg-key"/>
+<rect x="10" y="300" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="315">11</text>
+<text class="dg-s" x="54" y="315">CRAFT</text>
+<text class="dg-mute dg-s" x="250" y="315">2026-02</text>
+<circle cx="730" cy="311" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="337">12</text>
+<text class="dg-s" x="54" y="337">FAVLA</text>
+<text class="dg-mute dg-s" x="250" y="337">2026-02</text>
+<circle cx="530" cy="333" r="6.5" class="dg-box"/>
+<rect x="10" y="344" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="359">13</text>
+<text class="dg-t" x="54" y="359">TER-DAgger</text>
+<text class="dg-mute dg-s" x="250" y="359">2026-03</text>
+<circle cx="630" cy="355" r="6.5" class="dg-key"/>
+<circle cx="830" cy="355" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="381">14</text>
+<text class="dg-t" x="54" y="381">MoDE-VLA</text>
+<text class="dg-mute dg-s" x="250" y="381">2026-03</text>
+<circle cx="430" cy="377" r="6.5" class="dg-key"/>
+<rect x="10" y="388" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="403">15</text>
+<text class="dg-t" x="54" y="403">ForceVLA2</text>
+<text class="dg-mute dg-s" x="250" y="403">2026-03</text>
+<circle cx="330" cy="399" r="6.5" class="dg-key"/>
+<circle cx="430" cy="399" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="425">16</text>
+<text class="dg-t" x="54" y="425">HapticVLA</text>
+<text class="dg-mute dg-s" x="250" y="425">2026-03</text>
+<circle cx="730" cy="421" r="6.5" class="dg-key"/>
+<rect x="10" y="432" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="447">17</text>
+<text class="dg-t" x="54" y="447">Tabero</text>
+<text class="dg-mute dg-s" x="250" y="447">2026-05</text>
+<circle cx="330" cy="443" r="6.5" class="dg-key"/>
+<circle cx="630" cy="443" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="469">18</text>
+<text class="dg-t" x="54" y="469">TORL-VLA</text>
+<text class="dg-mute dg-s" x="250" y="469">2026-06</text>
+<circle cx="430" cy="465" r="6.5" class="dg-key"/>
+<circle cx="830" cy="465" r="6.5" class="dg-key"/>
+<rect x="10" y="476" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="491">19</text>
+<text class="dg-s" x="54" y="491">DAM-VLA</text>
+<text class="dg-mute dg-s" x="250" y="491">2026-06</text>
+<circle cx="530" cy="487" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="513">20</text>
+<text class="dg-s" x="54" y="513">UniTacVLA</text>
+<text class="dg-mute dg-s" x="250" y="513">2026-06</text>
+<circle cx="630" cy="509" r="6.5" class="dg-box"/>
+<circle cx="830" cy="509" r="6.5" class="dg-box"/>
+<rect x="10" y="520" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="535">21</text>
+<text class="dg-s" x="54" y="535">H-Tac</text>
+<text class="dg-mute dg-s" x="250" y="535">2026-07</text>
+<circle cx="730" cy="531" r="6.5" class="dg-box"/>
+<circle cx="830" cy="531" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="557">22</text>
+<text class="dg-s" x="54" y="557">LIFT</text>
+<text class="dg-mute dg-s" x="250" y="557">2026-07</text>
+<circle cx="530" cy="553" r="6.5" class="dg-box"/>
+<rect x="10" y="564" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="579">23</text>
+<text class="dg-s" x="54" y="579">FM-VLA</text>
+<text class="dg-mute dg-s" x="250" y="579">2026-07</text>
+<circle cx="530" cy="575" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="601">24</text>
+<text class="dg-s" x="54" y="601">ForceU-VLA</text>
+<text class="dg-mute dg-s" x="250" y="601">2026-08</text>
+<circle cx="430" cy="597" r="6.5" class="dg-box"/>
+<rect x="10" y="608" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="623">25</text>
+<text class="dg-t" x="54" y="623">FWBC-VLA</text>
+<text class="dg-mute dg-s" x="250" y="623">2026-09</text>
+<circle cx="530" cy="619" r="6.5" class="dg-key"/>
+<circle cx="630" cy="619" r="6.5" class="dg-key"/>
+<text class="dg-s" x="24" y="645">26</text>
+<text class="dg-s" x="54" y="645">TacPAC</text>
+<text class="dg-mute dg-s" x="250" y="645">2026-09</text>
+<circle cx="630" cy="641" r="6.5" class="dg-box"/>
+<circle cx="830" cy="641" r="6.5" class="dg-box"/>
+<rect x="10" y="652" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="667">27</text>
+<text class="dg-s" x="54" y="667">CR-VLA-Force</text>
+<text class="dg-mute dg-s" x="250" y="667">2026-09</text>
+<circle cx="430" cy="663" r="6.5" class="dg-box"/>
+<circle cx="630" cy="663" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="689">28</text>
+<text class="dg-s" x="54" y="689">DeCAL</text>
+<text class="dg-mute dg-s" x="250" y="689">2026-09</text>
+<circle cx="430" cy="685" r="6.5" class="dg-box"/>
+<circle cx="830" cy="685" r="6.5" class="dg-box"/>
+<rect x="10" y="696" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="711">29</text>
+<text class="dg-s" x="54" y="711">ForceDelta-VLA</text>
+<text class="dg-mute dg-s" x="250" y="711">2026-09</text>
+<circle cx="630" cy="707" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="733">30</text>
+<text class="dg-s" x="54" y="733">ForceRFT</text>
+<text class="dg-mute dg-s" x="250" y="733">2026-09</text>
+<circle cx="630" cy="729" r="6.5" class="dg-box"/>
+<rect x="10" y="740" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="755">31</text>
+<text class="dg-s" x="54" y="755">CompVLA</text>
+<text class="dg-mute dg-s" x="250" y="755">2026-09</text>
+<circle cx="630" cy="751" r="6.5" class="dg-box"/>
+<text class="dg-s" x="24" y="777">32</text>
+<text class="dg-s" x="54" y="777">Opt2VLA</text>
+<text class="dg-mute dg-s" x="250" y="777">2026-09</text>
+<circle cx="630" cy="773" r="6.5" class="dg-box"/>
+<rect x="10" y="784" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-s" x="24" y="799">33</text>
+<text class="dg-s" x="54" y="799">DexTacWAM</text>
+<text class="dg-mute dg-s" x="250" y="799">2026-09</text>
+<circle cx="830" cy="795" r="6.5" class="dg-box"/>
+<circle cx="30" cy="832" r="6.5" class="dg-key"/><text class="dg-s" x="44" y="836">bold name: full note on this site</text>
+<circle cx="320" cy="832" r="6.5" class="dg-box"/><text class="dg-s" x="334" y="836">plain name: classified from the abstract</text>
+</svg><figcaption>Mỗi hàng là một phương pháp, xếp theo ngày đăng arXiv; chấm tròn nghĩa là phương pháp dùng điểm đi vào đó. Chấm vàng đặc là những phương pháp đã có bài riêng trên site này. Nhìn dọc một cột để thấy một họ thiết kế trông ra sao; nhìn ngang một hàng để thấy phương pháp đó kết hợp các lựa chọn thế nào.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Số phương pháp mới theo quý (lần đăng arXiv đầu tiên, tính trên 33 phương pháp bên dưới). Lần tìm của mình không thấy phương pháp nào ở Q4/2025; đợt tăng ở Q3/2026 có thể một phần do lần tìm này còn mới." class="dg-natural" width="516" height="192" viewBox="0 0 516 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Q2/2025</text><rect class="dg-bar" x="66" y="10" width="48" height="18"/><text class="dg-barval" x="122" y="23">2</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">Q3/2025</text><rect class="dg-bar" x="66" y="40" width="120" height="18"/><text class="dg-barval" x="195" y="53">5</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Q4/2025</text><rect class="dg-bar" x="66" y="70" width="2" height="18"/><text class="dg-barval" x="76" y="83">0</text><text class="dg-barlabel" x="56" y="113" text-anchor="end">Q1/2026</text><rect class="dg-bar" x="66" y="100" width="217" height="18"/><text class="dg-barval" x="291" y="113">9</text><text class="dg-barlabel" x="56" y="143" text-anchor="end">Q2/2026</text><rect class="dg-bar" x="66" y="130" width="96" height="18"/><text class="dg-barval" x="171" y="143">4</text><text class="dg-barlabel" x="56" y="173" text-anchor="end">Q3/2026</text><rect class="dg-key" x="66" y="160" width="313" height="18"/><text class="dg-barval" x="387" y="173">13</text></svg><figcaption>Số phương pháp mới theo quý (lần đăng arXiv đầu tiên, tính trên 33 phương pháp bên dưới). Lần tìm của mình không thấy phương pháp nào ở Q4/2025; đợt tăng ở Q3/2026 có thể một phần do lần tìm này còn mới.</figcaption></figure>
+<h2>4. Năm khuôn mẫu lặp đi lặp lại</h2>
 <table>
 <thead>
 <tr>
 <th>Khuôn mẫu</th>
+<th>Nghĩa là gì</th>
 <th>Bằng chứng</th>
 <th>Phương pháp</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Sau VLM thắng trước VLM</td>
-<td>MoE trước VLM 0%, sau VLM 80% (ForceVLA); adapter trong decoder thắng encoder (TA-VLA)</td>
-<td>ForceVLA, TA-VLA</td>
+<td>Trộn lực sau VLM, đừng trước</td>
+<td>để VLM hiểu cảnh xong rồi mới cho lực một khối riêng</td>
+<td>MoE đặt trước VLM đạt 0%, đặt sau đạt 80% (ForceVLA); adapter ở decoder tốt hơn ở encoder (TA-VLA)</td>
+<td>ForceVLA [2], TA-VLA [7]</td>
 </tr>
 <tr>
-<td>Bảo vệ mô hình đã pretrain</td>
-<td>residual, đường khởi tạo 0, cross-attention có gate đều bắt đầu từ "không cộng gì"</td>
-<td>MoDE-VLA, TORL-VLA, LIFT, DAM-VLA</td>
+<td>Đừng làm xáo trộn mô hình đã huấn luyện</td>
+<td>đường mới khởi đầu ở mức "không thêm gì" rồi lớn dần</td>
+<td>residual, đường khởi tạo bằng không, cross-attention có cổng</td>
+<td>MoDE-VLA [14], TORL-VLA [18], LIFT [22], DAM-VLA [19]</td>
 </tr>
 <tr>
-<td>Nhanh cạnh chậm</td>
-<td>lực đổi trong vài ms, VLA chỉ lập kế hoạch vài lần mỗi giây</td>
-<td>FAVLA, LIFT, ForceDelta-VLA, DAM-VLA, TacPAC, TER-DAgger</td>
+<td>Nhanh đặt cạnh chậm</td>
+<td>lực đổi trong vài mili giây, còn VLA chỉ lập lại kế hoạch vài lần mỗi giây</td>
+<td>có một phần nhanh chạy cạnh VLA</td>
+<td>FAVLA [12], LIFT [22], ForceDelta-VLA [29], DAM-VLA [19], TacPAC [26], TER-DAgger [13]</td>
 </tr>
 <tr>
 <td>Bỏ cảm biến</td>
-<td>cảm biến chỉ khi huấn luyện, hoặc ước lượng từ mô men khớp</td>
-<td>FD-VLA, HapticVLA, FWBC-VLA</td>
+<td>chỉ dùng lực để huấn luyện, hoặc suy ra từ mô-men khớp</td>
+<td>không có cảm biến để hỏng hay phải mua</td>
+<td>FD-VLA [10], HapticVLA [16], FWBC-VLA [25]</td>
 </tr>
 <tr>
-<td>Xuất nhiều hơn pose</td>
-<td>lực mục tiêu hoặc độ cứng (<a href="survey-force-output.html">Survey 3</a>)</td>
-<td>ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CompVLA</td>
+<td>Xuất ra nhiều hơn một pose</td>
+<td>chính sách yêu cầu một lực hoặc một độ cứng (<a href="survey-force-output.html">Survey 3</a>)</td>
+<td>mục tiêu lực hoặc độ cứng nằm trong hành động</td>
+<td>ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31]</td>
 </tr>
 </tbody>
 </table>
-<h2>4. Bảng đầy đủ</h2>
-<p>"Đọc": <strong>full</strong> = có ghi chú chi tiết trên trang này; <strong>abstract</strong> = phân loại chỉ từ abstract trên arXiv. n/s = không nêu trong phần tôi đọc.</p>
+<h2>5. Mình nên đọc bài nào?</h2>
 <table>
 <thead>
 <tr>
-<th>Phương pháp</th>
-<th>Ngày</th>
-<th>Tín hiệu</th>
-<th>Vào ở</th>
-<th>Đầu ra</th>
-<th>Cách học</th>
+<th>Nếu tình huống của bạn là...</th>
 <th>Đọc</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="forcevla.html">ForceVLA</a></td>
-<td>05/2025</td>
-<td>F/T cổ tay</td>
-<td>②</td>
-<td>pose</td>
-<td>bắt chước, π0</td>
-<td>full</td>
+<td>có cảm biến lực/mô-men ở cổ tay và muốn cải thiện nhanh</td>
+<td><a href="forcevla.html">ForceVLA</a>, <a href="torl-vla.html">TORL-VLA</a></td>
 </tr>
 <tr>
-<td><a href="vla-touch.html">VLA-Touch</a></td>
-<td>07/2025</td>
-<td>GelSight</td>
-<td>① chữ cho planner, ④ bộ tinh chỉnh</td>
-<td>chunk đã tinh chỉnh</td>
-<td>chỉ bộ tinh chỉnh, RDT</td>
-<td>full</td>
+<td>tác vụ xoay quanh việc <em>ấn mạnh đến đâu</em></td>
+<td><a href="forcevla2.html">ForceVLA2</a>, <a href="tabero.html">Tabero</a></td>
 </tr>
 <tr>
-<td><a href="forcevla2.html">ForceVLA2</a></td>
-<td>03/2026</td>
-<td>F/T cổ tay, force prompt</td>
-<td>① ②</td>
-<td>pose + lực</td>
-<td>bắt chước, π0</td>
-<td>full</td>
+<td>chỉ có cảm biến chạm kiểu gel</td>
+<td><a href="taf-vla.html">TaF-VLA</a>, <a href="vla-touch.html">VLA-Touch</a></td>
 </tr>
 <tr>
-<td><a href="mode-vla.html">MoDE-VLA</a></td>
-<td>03/2026</td>
-<td>mô men khớp, xúc giác đầu ngón</td>
-<td>②</td>
-<td>residual tay</td>
-<td>bắt chước + kỹ năng RL, π0</td>
-<td>full</td>
+<td>robot triển khai không có cảm biến</td>
+<td><a href="fd-vla.html">FD-VLA</a>, <a href="hapticvla.html">HapticVLA</a>, <a href="fwbc-vla.html">FWBC-VLA</a></td>
 </tr>
 <tr>
-<td><a href="taf-vla.html">TaF-VLA</a></td>
-<td>01/2026</td>
-<td>xúc giác thị giác căn với F/T</td>
-<td>③ ⑤</td>
-<td>hành động</td>
-<td>pretrain tương phản, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="tabero.html">Tabero</a></td>
-<td>05/2026</td>
-<td>xúc giác mô phỏng + lực đầu ngón</td>
-<td>① ④</td>
-<td>pose + lực kẹp/tác dụng</td>
-<td>LoRA bắt chước, π0</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="fd-vla.html">FD-VLA</a></td>
-<td>02/2026</td>
-<td>F/T (chỉ khi huấn luyện)</td>
-<td>① ⑤</td>
-<td>hành động</td>
-<td>chưng cất, SmolVLA</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="hapticvla.html">HapticVLA</a></td>
-<td>03/2026</td>
-<td>mảng taxel (chỉ khi huấn luyện)</td>
-<td>⑤</td>
-<td>hành động</td>
-<td>trọng số phần thưởng + chưng cất, SmolVLA</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
-<td>09/2026</td>
-<td>không cảm biến, từ mô men khớp</td>
-<td>③ ④</td>
-<td>hành động + residual thân</td>
-<td>bắt chước, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
-<td><a href="torl-vla.html">TORL-VLA</a></td>
-<td>06/2026</td>
-<td>miếng áp điện → wrench</td>
-<td>② ⑥</td>
-<td>hành động + wrench tương lai</td>
-<td>bắt chước + RL online, π0.5</td>
-<td>full</td>
-</tr>
-<tr>
+<td>tiếp xúc đổi nhanh, như khi lắp ghép</td>
 <td><a href="ter-dagger.html">TER-DAgger</a></td>
-<td>03/2026</td>
-<td>wrench từ mô men khớp</td>
-<td>④ ⑥</td>
-<td>nền + residual</td>
-<td>DAgger, ACT (không phải VLA)</td>
-<td>full</td>
 </tr>
 <tr>
+<td>bàn tay khéo léo nhiều ngón</td>
+<td><a href="mode-vla.html">MoDE-VLA</a>, <a href="hapticvla.html">HapticVLA</a></td>
+</tr>
+</tbody>
+</table>
+<h2>6. Bảng đầy đủ</h2>
+<p>"Đã đọc": <strong>full</strong> = có bài ghi chú chi tiết trên site; <strong>abstract</strong> = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Phương pháp</th>
+<th>Ngày</th>
+<th>Tín hiệu</th>
+<th>Đi vào ở</th>
+<th>Đầu ra</th>
+<th>Cách học</th>
+<th>Đã đọc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
 <td><a href="https://arxiv.org/abs/2505.09577">VTLA</a></td>
 <td>05/2025</td>
 <td>xúc giác</td>
@@ -855,105 +1431,217 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>2</td>
+<td><a href="forcevla.html">ForceVLA</a></td>
+<td>05/2025</td>
+<td>F/T cổ tay</td>
+<td>②</td>
+<td>pose</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>3</td>
 <td><a href="https://arxiv.org/abs/2507.09160">Tactile-VLA</a></td>
 <td>07/2025</td>
 <td>xúc giác</td>
 <td>① ④</td>
 <td>sang điều khiển lai vị trí-lực</td>
-<td>ít demo</td>
+<td>vài bản demo</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>4</td>
+<td><a href="vla-touch.html">VLA-Touch</a></td>
+<td>07/2025</td>
+<td>GelSight</td>
+<td>① văn bản cho planner, ④ bộ tinh chỉnh</td>
+<td>đoạn hành động đã tinh chỉnh</td>
+<td>chỉ huấn luyện bộ tinh chỉnh, RDT</td>
+<td>full</td>
+</tr>
+<tr>
+<td>5</td>
 <td><a href="https://arxiv.org/abs/2508.01361">VLH</a></td>
 <td>08/2025</td>
-<td>không (haptic là đầu ra cho người)</td>
+<td>không có (haptics là đầu ra cho người)</td>
 <td>–</td>
 <td>chuyển động + lệnh haptic</td>
 <td>LoRA, OpenVLA</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>6</td>
 <td><a href="https://arxiv.org/abs/2508.08706">OmniVTLA</a></td>
 <td>08/2025</td>
-<td>xúc giác thị giác và lực</td>
+<td>xúc giác dựa ảnh và dựa lực</td>
 <td>①</td>
 <td>hành động</td>
-<td>encoder căn ngữ nghĩa</td>
+<td>encoder căn theo ngữ nghĩa</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>7</td>
 <td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
 <td>09/2025</td>
-<td>mô men</td>
+<td>mô-men</td>
 <td>③ ⑥</td>
-<td>hành động + mô men</td>
+<td>hành động + mô-men</td>
 <td>n/s</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>8</td>
 <td><a href="https://arxiv.org/abs/2601.15541">CompliantVLA-adaptor</a></td>
 <td>01/2026</td>
-<td>F/T ở bộ điều khiển</td>
+<td>F/T tại bộ điều khiển</td>
 <td>④</td>
 <td>độ cứng + giảm chấn</td>
-<td>VLM dẫn hướng</td>
+<td>VLM dẫn đường</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>9</td>
+<td><a href="taf-vla.html">TaF-VLA</a></td>
+<td>01/2026</td>
+<td>xúc giác ảnh căn với F/T</td>
+<td>③ ⑤</td>
+<td>hành động</td>
+<td>tiền huấn luyện contrastive, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="fd-vla.html">FD-VLA</a></td>
+<td>02/2026</td>
+<td>F/T (chỉ khi huấn luyện)</td>
+<td>① ⑤</td>
+<td>hành động</td>
+<td>chưng cất, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td>11</td>
 <td><a href="https://arxiv.org/abs/2602.12532">CRAFT</a></td>
 <td>02/2026</td>
 <td>lực</td>
 <td>⑤</td>
 <td>hành động</td>
-<td>fine-tune theo giáo trình</td>
+<td>tinh chỉnh theo giáo trình</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>12</td>
 <td><a href="https://arxiv.org/abs/2602.23648">FAVLA</a></td>
 <td>02/2026</td>
 <td>F/T</td>
 <td>③</td>
 <td>hành động nhanh</td>
-<td>nhanh–chậm</td>
+<td>nhanh-chậm</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>13</td>
+<td><a href="ter-dagger.html">TER-DAgger</a></td>
+<td>03/2026</td>
+<td>wrench suy từ mô-men khớp</td>
+<td>④ ⑥</td>
+<td>cơ sở + residual</td>
+<td>DAgger, ACT (không phải VLA)</td>
+<td>full</td>
+</tr>
+<tr>
+<td>14</td>
+<td><a href="mode-vla.html">MoDE-VLA</a></td>
+<td>03/2026</td>
+<td>mô-men khớp, xúc giác đầu ngón</td>
+<td>②</td>
+<td>residual cho tay máy/bàn tay</td>
+<td>imitation + RL cho kỹ năng bàn tay, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>15</td>
+<td><a href="forcevla2.html">ForceVLA2</a></td>
+<td>03/2026</td>
+<td>F/T cổ tay, prompt lực</td>
+<td>① ②</td>
+<td>pose + lực</td>
+<td>imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>16</td>
+<td><a href="hapticvla.html">HapticVLA</a></td>
+<td>03/2026</td>
+<td>lưới taxel (chỉ khi huấn luyện)</td>
+<td>⑤</td>
+<td>hành động</td>
+<td>trọng số theo thưởng + chưng cất, SmolVLA</td>
+<td>full</td>
+</tr>
+<tr>
+<td>17</td>
+<td><a href="tabero.html">Tabero</a></td>
+<td>05/2026</td>
+<td>xúc giác mô phỏng + lực đầu ngón</td>
+<td>① ④</td>
+<td>pose + lực kẹp/lực tác dụng</td>
+<td>LoRA imitation, π0</td>
+<td>full</td>
+</tr>
+<tr>
+<td>18</td>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+<td>06/2026</td>
+<td>đệm piezo → wrench</td>
+<td>② ⑥</td>
+<td>hành động + wrench tương lai</td>
+<td>imitation + RL online, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>19</td>
 <td><a href="https://arxiv.org/abs/2606.12105">DAM-VLA</a></td>
 <td>06/2026</td>
-<td>modality tần số cao không nêu tên</td>
+<td>tín hiệu tốc độ cao không nêu tên</td>
 <td>③</td>
 <td>hành động 100 Hz</td>
 <td>n/s</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>20</td>
 <td><a href="https://arxiv.org/abs/2606.31723">UniTacVLA</a></td>
 <td>06/2026</td>
 <td>xúc giác</td>
 <td>④ ⑥</td>
-<td>chunk + hiệu chỉnh nhanh</td>
+<td>đoạn hành động + chỉnh nhanh</td>
 <td>n/s</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>21</td>
 <td><a href="https://arxiv.org/abs/2607.01067">H-Tac / TTP</a></td>
 <td>07/2026</td>
 <td>xúc giác, video người</td>
 <td>⑤ ⑥</td>
 <td>hành động + xúc giác tương lai</td>
-<td>pretrain từ người</td>
+<td>tiền huấn luyện từ người</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>22</td>
 <td><a href="https://arxiv.org/abs/2607.14236">LIFT</a></td>
 <td>07/2026</td>
-<td>lực end-effector 6D</td>
+<td>lực 6D tại đầu công cụ</td>
 <td>③</td>
 <td>hành động</td>
-<td>post-training + DAgger</td>
+<td>hậu huấn luyện + DAgger</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>23</td>
 <td><a href="https://arxiv.org/abs/2607.18231">FM-VLA</a></td>
 <td>07/2026</td>
 <td>lịch sử lực</td>
@@ -963,6 +1651,7 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>24</td>
 <td><a href="https://arxiv.org/abs/2608.15009">ForceU-VLA</a></td>
 <td>08/2026</td>
 <td>lực, đầu dò siêu âm</td>
@@ -972,24 +1661,37 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>25</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td>09/2026</td>
+<td>không cảm biến, suy từ mô-men khớp</td>
+<td>③ ④</td>
+<td>hành động + residual cho thân</td>
+<td>imitation, π0.5</td>
+<td>full</td>
+</tr>
+<tr>
+<td>26</td>
 <td><a href="https://arxiv.org/abs/2609.05266">TacPAC</a></td>
 <td>09/2026</td>
 <td>ảnh xúc giác</td>
 <td>④ ⑥</td>
-<td>chunk đã hiệu chỉnh</td>
+<td>đoạn hành động đã chỉnh</td>
 <td>n/s</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>27</td>
 <td><a href="https://arxiv.org/abs/2609.05832">CR-VLA-Force</a></td>
 <td>09/2026</td>
 <td>chuỗi F/T</td>
 <td>② ④</td>
-<td>qua bộ điều khiển compliance</td>
-<td>bắt chước nhiều giai đoạn</td>
+<td>qua bộ điều khiển mềm dẻo</td>
+<td>imitation nhiều giai đoạn</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>28</td>
 <td><a href="https://arxiv.org/abs/2609.09119">DeCAL</a></td>
 <td>09/2026</td>
 <td>xúc giác</td>
@@ -999,63 +1701,113 @@
 <td>abstract</td>
 </tr>
 <tr>
+<td>29</td>
 <td><a href="https://arxiv.org/abs/2609.18242">ForceDelta-VLA</a></td>
 <td>09/2026</td>
 <td>lịch sử lực</td>
 <td>④</td>
-<td>hành động đã hiệu chỉnh</td>
+<td>hành động đã chỉnh</td>
 <td>chưng cất</td>
 <td>abstract</td>
 </tr>
 <tr>
-<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
-<td>09/2026</td>
-<td>không nêu (RGB + ngôn ngữ)</td>
-<td>④</td>
-<td>độ cứng + dịch chuyển ảo</td>
-<td>n/s</td>
-<td>abstract</td>
-</tr>
-<tr>
+<td>30</td>
 <td><a href="https://arxiv.org/abs/2609.22840">ForceRFT</a></td>
 <td>09/2026</td>
 <td>wrench cổ tay</td>
 <td>④</td>
-<td>residual pose</td>
-<td>RL residual, nền SmolVLA</td>
+<td>residual cho pose</td>
+<td>RL residual, tiên nghiệm SmolVLA</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>31</td>
+<td><a href="https://arxiv.org/abs/2609.23614">CompVLA</a></td>
+<td>09/2026</td>
+<td>không nêu (RGB + ngôn ngữ)</td>
+<td>④</td>
+<td>độ cứng + độ dời ảo</td>
+<td>n/s</td>
+<td>abstract</td>
+</tr>
+<tr>
+<td>32</td>
 <td><a href="https://arxiv.org/abs/2609.23968">Opt2VLA</a></td>
 <td>09/2026</td>
 <td>n/s</td>
 <td>④</td>
-<td>chuyển động + lực tham chiếu</td>
+<td>chuyển động + tham chiếu lực</td>
 <td>dữ liệu tối ưu quỹ đạo</td>
 <td>abstract</td>
 </tr>
 <tr>
+<td>33</td>
 <td><a href="https://arxiv.org/abs/2609.24976">DexTacWAM</a></td>
 <td>09/2026</td>
 <td>xúc giác đầu ngón</td>
 <td>⑥</td>
 <td>hành động + xúc giác dự đoán</td>
-<td>video world model</td>
+<td>world model video</td>
 <td>abstract</td>
 </tr>
 </tbody>
 </table>
-<h2>5. Đọc thêm và lưu ý</h2>
+<h2>7. Lưu ý</h2>
 <ul>
-<li>Survey rộng hơn: <em>Learning Physical Interaction</em> (<a href="https://arxiv.org/abs/2608.07558">arXiv 2608.07558</a>, phân loại TF-ART) và <em>Tactile-based Multimodal Fusion in Embodied Intelligence</em> (<a href="https://arxiv.org/abs/2605.17336">arXiv 2605.17336</a>).</li>
-<li>22 dòng chỉ dựa trên abstract; "n/s" nghĩa là tôi không xác định được, không phải là không có. Danh sách phản ánh lần tìm kiếm tháng 10/2026.</li>
+<li>22 trên 33 hàng chỉ dựa vào abstract; "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>
+<li>Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.</li>
+<li>Ngày là ngày đăng arXiv lần đầu (v1).</li>
+<li>Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.</li>
 </ul>
-<p><strong>Mang sang bài sau:</strong> bản đồ cho biết lực vào <em>ở đâu</em>. Trước đó: đo <em>cái gì</em>, và nó tới mạng dưới dạng nào. Xem <a href="survey-force-sensing.html">Survey 2</a>.</p>
-<p><strong>Câu kiểm tra:</strong> 3 × 256 token ảnh, 30 token chữ, 1 token lực. $p_F$ khi attention đều là bao nhiêu, và $\Delta$ bao nhiêu thì $p_F = 0.5$?</p>
+<p><strong>Mang theo:</strong> bản đồ cho biết lực đi vào <em>ở đâu</em>. Trước đó còn câu hỏi <em>đo cái gì</em> và tín hiệu đến mạng dưới dạng nào: <a href="survey-force-sensing.html">Survey 2</a>.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> 3 × 256 token ảnh, 30 token chữ, 1 token lực. $p_F$ khi điểm bằng nhau là bao nhiêu, và $\Delta$ bằng bao nhiêu thì $p_F = 0{,}5$?</p>
 <details>
 <summary>Đáp án</summary>
-<p>$N = 799$: $p_F = 1/799 \approx 0.00125$. $e^{\Delta} = 798$, nên $\Delta = \ln 798 \approx 6.7$.</p>
+<p>$N = 799$: $p_F = 1/799 \approx 0{,}00125$. $e^{\Delta} = 798$ nên $\Delta = \ln 798 \approx 6{,}7$.</p>
 </details>
+<h2>Tài liệu tham khảo</h2>
+<p>Số thứ tự khớp với cột đầu của bảng. Tiêu đề giữ nguyên như trên arXiv.</p>
+<ol>
+<li>VTLA: Vision-Tactile-Language-Action Model with Preference Learning for Insertion Manipulation. <a href="https://arxiv.org/abs/2505.09577">arXiv:2505.09577</a>, 2025-05-14.</li>
+<li>ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2505.22159">arXiv:2505.22159</a>, 2025-05-28.</li>
+<li>Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization. <a href="https://arxiv.org/abs/2507.09160">arXiv:2507.09160</a>, 2025-07-12.</li>
+<li>VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback. <a href="https://arxiv.org/abs/2507.17294">arXiv:2507.17294</a>, 2025-07-23.</li>
+<li>VLH: Vision-Language-Haptics Foundation Model. <a href="https://arxiv.org/abs/2508.01361">arXiv:2508.01361</a>, 2025-08-02.</li>
+<li>OmniVTLA: Vision-Tactile-Language-Action Models with Semantic-Aligned Tactile Sensing. <a href="https://arxiv.org/abs/2508.08706">arXiv:2508.08706</a>, 2025-08-12.</li>
+<li>TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models. <a href="https://arxiv.org/abs/2509.07962">arXiv:2509.07962</a>, 2025-09-09.</li>
+<li>CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2601.15541">arXiv:2601.15541</a>, 2026-01-21.</li>
+<li>TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation. <a href="https://arxiv.org/abs/2601.20321">arXiv:2601.20321</a>, 2026-01-28.</li>
+<li>FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2602.02142">arXiv:2602.02142</a>, 2026-02-02.</li>
+<li>CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning. <a href="https://arxiv.org/abs/2602.12532">arXiv:2602.12532</a>, 2026-02-13.</li>
+<li>FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation. <a href="https://arxiv.org/abs/2602.23648">arXiv:2602.23648</a>, 2026-02-27.</li>
+<li>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control. <a href="https://arxiv.org/abs/2603.04038">arXiv:2603.04038</a>, 2026-03-04.</li>
+<li>Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA. <a href="https://arxiv.org/abs/2603.08122">arXiv:2603.08122</a>, 2026-03-09.</li>
+<li>ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2603.15169">arXiv:2603.15169</a>, 2026-03-16.</li>
+<li>HapticVLA: Contact-Rich Manipulation via Vision-Language-Action Model without Inference-Time Tactile Sensing. <a href="https://arxiv.org/abs/2603.15257">arXiv:2603.15257</a>, 2026-03-16.</li>
+<li>Tabero: Learning Gentle Manipulation with Closed-Loop Force Feedback from Vision, Touch, and Language. <a href="https://arxiv.org/abs/2605.27886">arXiv:2605.27886</a>, 2026-05-27.</li>
+<li>TORL-VLA: Tactile Guided Online Reinforcement Learning for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2606.09337">arXiv:2606.09337</a>, 2026-06-08.</li>
+<li>DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model. <a href="https://arxiv.org/abs/2606.12105">arXiv:2606.12105</a>, 2026-06-10.</li>
+<li>UniTacVLA: Unified Tactile Understanding and Prediction in Vision Language Action Models. <a href="https://arxiv.org/abs/2606.31723">arXiv:2606.31723</a>, 2026-06-30.</li>
+<li>Human-Centric Transferable Tactile Pre-Training for Dexterous Robotic Manipulation. <a href="https://arxiv.org/abs/2607.01067">arXiv:2607.01067</a>, 2026-07-01.</li>
+<li>Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection. <a href="https://arxiv.org/abs/2607.14236">arXiv:2607.14236</a>, 2026-07-15.</li>
+<li>FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2607.18231">arXiv:2607.18231</a>, 2026-07-20.</li>
+<li>ForceU-VLA: A Force-Aware Vision-Language-Action Model for Embodied Ultrasound Scanning. <a href="https://arxiv.org/abs/2608.15009">arXiv:2608.15009</a>, 2026-08-15.</li>
+<li>FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation. <a href="https://arxiv.org/abs/2609.03889">arXiv:2609.03889</a>, 2026-09-03.</li>
+<li>TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.05266">arXiv:2609.05266</a>, 2026-09-04.</li>
+<li>CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation. <a href="https://arxiv.org/abs/2609.05832">arXiv:2609.05832</a>, 2026-09-05.</li>
+<li>DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination. <a href="https://arxiv.org/abs/2609.09119">arXiv:2609.09119</a>, 2026-09-08.</li>
+<li>ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation. <a href="https://arxiv.org/abs/2609.18242">arXiv:2609.18242</a>, 2026-09-16.</li>
+<li>ForceRFT: Refining VLA Actions through Force-Guided Residual Reinforcement Learning. <a href="https://arxiv.org/abs/2609.22840">arXiv:2609.22840</a>, 2026-09-19.</li>
+<li>CompVLA: A Variable Compliance Vision-Language-Action Model for Contact-rich Manipulation. <a href="https://arxiv.org/abs/2609.23614">arXiv:2609.23614</a>, 2026-09-20.</li>
+<li>Opt2VLA: Force-Aware Vision-Language-Action for Contact-Rich Humanoid Whole-Body Manipulation. <a href="https://arxiv.org/abs/2609.23968">arXiv:2609.23968</a>, 2026-09-21.</li>
+<li>DexTacWAM: A Visuo-Tactile World-Action Model for Dexterous Manipulation. <a href="https://arxiv.org/abs/2609.24976">arXiv:2609.24976</a>, 2026-09-21.</li>
+</ol>
+<p>Broader surveys:</p>
+<ul>
+<li>Learning Physical Interaction: A Survey of Tactile- and Force-aware Robot Learning. <a href="https://arxiv.org/abs/2608.07558">arXiv:2608.07558</a>, 2026-08-02.</li>
+<li>Tactile-based Multimodal Fusion in Embodied Intelligence: A Survey of Vision, Language, and Contact-Driven Paradigms. <a href="https://arxiv.org/abs/2605.17336">arXiv:2605.17336</a>, 2026-05-17.</li>
+</ul>
+<p>Mô hình nền được nhắc tới: π0 (<a href="https://arxiv.org/abs/2410.24164">arXiv:2410.24164</a>), xem thêm <a href="pi0.html">bài về π0</a>.</p>
     </div>
   </article>
 
