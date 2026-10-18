@@ -3,116 +3,185 @@ slug: tabero
 date: 2026-10-18
 title_en: "Tabero: Gentle Manipulation with Closed-Loop Force Feedback"
 title_vi: "Tabero: Thao tác nhẹ tay với phản hồi lực vòng kín"
-excerpt_en: "Tabero replays LIBERO in a tactile simulator to get vision, touch and force data, and Tabero-VTLA predicts pose plus force setpoints that a fixed hybrid controller tracks, so 'gently' actually means less force."
-excerpt_vi: "Tabero phát lại LIBERO trong mô phỏng xúc giác để có dữ liệu thị giác, xúc giác, lực; Tabero-VTLA dự đoán pose và lực mục tiêu cho bộ điều khiển lai cố định bám theo, nhờ đó 'nhẹ tay' thực sự là lực nhỏ hơn."
+excerpt_en: "Told 'gently', a position-only VLA cannot squeeze less. Tabero replays LIBERO in a tactile simulator to get force data, and its VTLA outputs pose plus force targets for a fixed hybrid controller: 89% less grip force when asked."
+excerpt_vi: "Được bảo 'nhẹ tay', VLA chỉ điều khiển vị trí không biết siết nhẹ hơn. Tabero phát lại LIBERO trong mô phỏng xúc giác để có dữ liệu lực, và VTLA của nó xuất pose cùng lực mục tiêu cho bộ điều khiển lai cố định: lực kẹp giảm 89% khi được yêu cầu."
 tags: [VLA, Force, Tactile, Benchmark, Paper Notes, π0]
 ---
 
 :::en
-Paper: [arXiv 2605.27886](https://arxiv.org/abs/2605.27886) (ICML 2026), code at [NathanWu7/Tabero](https://github.com/NathanWu7/Tabero). It is both a **benchmark/data pipeline** and a **model**.
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2605.27886](https://arxiv.org/abs/2605.27886) · 05/2026 · ICML 2026 · built on π0 · [code](https://github.com/NathanWu7/Tabero)
 
-## The pain it cures
+**PROBLEM** "Pick up the egg *gently*" should change the force. Benchmarks such as LIBERO have no touch or force data, and policies trained on them "frequently damage objects" (Fig. 1).
 
-A VLA told to "pick up the egg gently" has no way to make the gripper squeeze less: it never saw force, and an open-loop position command cannot hold a target force. Tabero attacks both ends: it creates force-aware data cheaply, and it gives the policy a force-position command interface that a low-level loop can actually track.
+**WHAT FAILED BEFORE** A position-only VLA closes the gripper to a width, so the squeeze depends on the object, not the word: 0% success. With tactile tokens but no force supervision, gentle runs collapse to 1%.
 
-## Try the naive way first
+**IDEA** (1) Replay LIBERO trajectories in Isaac Lab with a simulated GelSight to get vision + touch + force data cheaply. (2) Tabero-VTLA predicts pose **plus** grip and applied force targets; (3) a fixed hybrid controller tracks them.
 
-Add "gently" to the instruction of a position-only policy. The gripper still closes to the commanded width, so the squeeze depends on the object, not on the word. Table 3 of the paper shows the result on Dataset B: a model with no tactile or force input scores 0.00 success on both firm and gentle runs, and models that get tactile tokens but no force supervision reach 0.37–0.40 when told to be firm and only 0.01 when told to be gentle.
+**RESULT** On Dataset B the best model keeps 52% success when told "gently" while cutting average grip force from 32.4 to 3.7 (−89%).
+</div>
 
-## Work it by hand: two forces from two fingertips
+## 1. The problem: "gently" has no handle
 
-Use one common gripper frame where $z$ is the closing axis and $y$ points up. The left fingertip measures $F_L = (0,\ 1.5,\ 5)$ N, the right $F_R = (0,\ 1.5,\ -5)$ N.
+[[flow]]
+- Before~position-only VLA | RGB + "gently" > VLA > !Gripper width only! | squeeze set by the object: 0% success
+- Before~touch, no force label | RGB + tactile tokens > VLA > !Pose only! | gentle runs collapse: 1% success
++ Tabero-VTLA | RGB + marker field + force > π0 + force supervision > *Pose + grip~+ applied force* > *Hybrid controller* | gentle grip, 52% success, −89% force
+[[/flow]] Two missing pieces: force in the data, and force in the output.
 
-$$F_{grip} = 2\min(|5|,\ |{-5}|) = 10\ \text{N}$$
+[[bars:%]] No touch, no force=0; Touch tokens only=1; Force supervision only=45; *Marker field + force supervision=52* || Success under the gentle instruction, Dataset B (10% force level).
 
-$$F_{applied} = -(F_L + F_R) = -(0,\ 3,\ 0) = (0,\ -3,\ 0)\ \text{N}$$
+## 2. Architecture
 
-The two squeezing components cancel in $F_{applied}$, leaving a net 3 N downward push on the object; the squeeze appears only in $F_{grip}$. That is what "decoupled" means: the policy can ask for a gentle squeeze and a firm press at the same time. Taking the **minimum** finger makes $F_{grip}$ follow the weaker contact: if one finger read 5 N and the other 3 N, $F_{grip} = 6$ N.
+[[fig:tabero]] Vision, language, marker-field and force tokens enter a LoRA-tuned π0; it predicts pose and force targets; a fixed hybrid controller tracks them.
 
-The grip loop then boosts the policy's request by a feedforward gain. With the paper's $k_{ff} = 0.6$, a predicted grip of 5 N becomes a target of $(1 + 0.6) \times 5 = 8$ N.
+| Block | Input | Output | Role |
+|---|---|---|---|
+| Force-Field tokenizer (TCN) | marker displacement, 8 past frames + rest frame | tactile tokens | touch → tokens |
+| Force tokenizer (MLP) | fingertip forces $F_L, F_R$ | force latent | force → tokens |
+| π0 + LoRA | images, language, the tokens above | $P^{pred}$, $F^{target}_{applied}$, $F^{pred}_{grip}$, width | pose and force targets |
+| Applied-force loop | target vs measured applied force | corrected pose → IK | admittance control |
+| Grip loop | predicted grip force | gripper width | feedforward + deadzone |
 
-## The benchmark pipeline
+## 3. Work it by hand: two forces from two fingertips
 
-Take open-source trajectories made for another simulator (LIBERO tasks, originally MuJoCo) and **replay** them in Isaac Lab with a simulated GelSight gripper (320×240 image, 11×9 marker grid; Taxim for tactile images, FOTS for the marker field, physics-engine ground-truth contact force), sampled at 20 Hz. Force diversity comes from impedance gains for 100%, 25% and 10% force levels, and the paired instruction uses adverbs ("firmly", "gently"). Evaluation scores physical interaction quality as well as success: SR, mean grip force AG, peak grip force MG, and the matching applied-force metrics.
+<div class="calc" markdown="1">
+Calculation card
 
-## Architecture (Tabero-VTLA)
+**What and why.** The controller needs two separate numbers: how hard the gripper *squeezes* and how hard it *pushes* the object. Tabero derives both from the two fingertip force vectors. This split is what lets a policy ask for a gentle squeeze and a firm press at once.
 
-[[fig:tabero]] Vision, language, marker-field and force tokens enter a LoRA-tuned π0; it predicts pose and force setpoints; a fixed hybrid controller tracks them and feeds measured force back.
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $F_L, F_R$ | fingertip forces in one gripper frame ($z$ = closing axis, $y$ = up) | input | $(0, 1.5, 5)$, $(0, 1.5, -5)$ N |
+| $F_{grip}$ | squeeze force | output | – |
+| $F_{applied}$ | net force the gripper puts on the object | output | – |
+| $k_{ff}$ | feedforward gain of the grip loop | constant | 0.6 (paper) |
 
-- **Touch tokens.** The marker displacement field (a history of 8 frames plus the undeformed layout) goes through a small causal TCN, the Force-Field Tokenizer. Alternatively, left/right tactile frames are arranged into one image and sent through the vision encoder (the "Img" variant).
-- **Force token.** The 6D force from both fingers goes through an MLP.
-- **Backbone.** π0 (JAX) with LoRA, flow matching. Tactile tokens go to the prefix (or the suffix in one variant). An optional force-supervision loss (weight 0.1) predicts force.
-- **Decoupled command interface.** The policy outputs a pose $P^{pred} \in SE(3)$, an applied-force target and a grip-force prediction with gripper width. The two forces are defined from fingertip forces: $F_{grip} = 2\min(|F_{L,z}|, |F_{R,z}|)$ and $F_{applied} = -(F_L + F_R)$.
-- **Fixed hybrid controller.** Applied-force loop (admittance): $p_{cmd} = p_{pred} + K\,(F^{target} - F^{meas})$, followed by differential IK. Grip loop: a feedforward $F^{target}_{grip} = (1+k_{ff})F^{pred}_{grip}$, exponential smoothing, a deadzone and clipping on the gripper width.
+**Formula**
 
-## Results
+$$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L + F_R), \qquad F^{target}_{grip} = (1 + k_{ff})\,F^{pred}_{grip}$$
 
-- Training: 50,000 steps, batch 32, peak learning rate $2.5\times10^{-5}$ with cosine decay.
-- On Dataset B (10% gentle force) the best model, Field+FS, keeps 0.86 success when told to be firm and 0.52 when told to be gentle, while the average grip force falls from 32.4 to 3.7 (an 88.6% cut). On Dataset A (25%) the cut is 72.8%.
-- Models without force supervision collapse under the gentle instruction (success about 0.01).
-- Both the feedforward term and the admittance loop are needed for accurate force tracking (ablation).
+**Steps**
 
-## Caveats
+1. $F_{grip} = 2 \times \min(5, 5) = 10$ N.
+2. $F_L + F_R = (0,\ 3,\ 0)$, so $F_{applied} = (0,\ -3,\ 0)$ N: a 3 N push downward.
+3. If the policy predicts a grip of 5 N, the loop targets $(1 + 0.6) \times 5 = 8$ N.
 
-The visual encoder, the language encoder, the policy and controller rates and the action-chunk length are not stated. The text says the force input is 6D while Table 7 lists an MLP input of $8\times 6 = 48$. The authors note the framework does not jointly optimise task success and minimal force.
-**Carry forward:** every method so far needs a tactile or force sensor at run time. [FD-VLA](fd-vla.html) asks whether the force can be inferred from vision and arm state instead.
+**Result.** Squeeze 10 N, push 3 N down; the squeeze components cancel in $F_{applied}$.
 
-**Check question:** in the same frame, $F_L = (0,\ 1,\ 4)$ N and $F_R = (0,\ 2,\ -6)$ N. Compute $F_{grip}$ and $F_{applied}$. What target does the grip loop use if the policy predicts 10 N?
+**Why it matters.** Taking the **smaller** finger makes $F_{grip}$ follow the weaker contact (5 N and 3 N give 6 N), which is the one that slips first.
+</div>
 
-*Answer:* $F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0,\ 3,\ -2) = (0,\ -3,\ 2)$ N: 3 N down, plus 2 N along the closing axis because the fingers do not squeeze evenly. Target $= 1.6 \times 10 = 16$ N.
+## 4. The benchmark pipeline
+
+| Step | What |
+|---|---|
+| Replay | LIBERO trajectories (MuJoCo) re-run in Isaac Lab with matched assets and poses |
+| Sensors | simulated GelSight (Taxim images, FOTS marker field), physics ground-truth force, 20 Hz |
+| Force levels | impedance gains for 100%, 25%, 10% force, paired with "firmly" / "gently" |
+| Metrics | success, average and peak grip force, average and peak applied force |
+
+## 5. Caveats
+
+- Policy and controller rates and the chunk length are not stated.
+- The text says the force input is 6D; Table 7 lists an MLP input of 48.
+
+**Carry forward:** every method so far needs a tactile or force sensor at run time. [FD-VLA](fd-vla.html) asks whether force can be inferred from vision and arm state instead.
+
+**Check question:** $F_L = (0,\ 1,\ 4)$ N, $F_R = (0,\ 2,\ -6)$ N. Compute $F_{grip}$ and $F_{applied}$.
+
+<details markdown="1">
+<summary>Answer</summary>
+
+$F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0, 3, -2) = (0, -3, 2)$ N: 3 N down, plus 2 N along the closing axis because the squeeze is uneven.
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2605.27886](https://arxiv.org/abs/2605.27886) (ICML 2026), code tại [NathanWu7/Tabero](https://github.com/NathanWu7/Tabero). Đây vừa là **benchmark/pipeline dữ liệu** vừa là **mô hình**.
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2605.27886](https://arxiv.org/abs/2605.27886) · 05/2026 · ICML 2026 · nền π0 · [code](https://github.com/NathanWu7/Tabero)
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** "Nhặt quả trứng *nhẹ tay*" phải làm thay đổi lực. Các benchmark như LIBERO không có dữ liệu xúc giác hay lực, và chính sách học từ đó "thường làm hỏng vật" (Fig. 1).
 
-Một VLA được bảo "nhặt quả trứng nhẹ tay" không có cách nào làm kẹp siết nhẹ hơn: nó chưa từng thấy lực, và lệnh vị trí vòng hở không giữ được lực mục tiêu. Tabero xử lý cả hai đầu: tạo dữ liệu có lực với chi phí thấp, và cho chính sách một giao diện lệnh lực-vị trí mà vòng điều khiển thấp có thể bám theo thật.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** VLA chỉ điều khiển vị trí đóng kẹp tới một độ mở, nên lực siết do vật quyết định chứ không do chữ: thành công 0%. Có token xúc giác nhưng không giám sát lực thì lượt "nhẹ tay" sụp còn 1%.
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** (1) Phát lại quỹ đạo LIBERO trong Isaac Lab với GelSight mô phỏng để có dữ liệu thị giác + xúc giác + lực với chi phí thấp. (2) Tabero-VTLA dự đoán pose **cộng** lực kẹp và lực tác dụng mục tiêu; (3) một bộ điều khiển lai cố định bám theo.
 
-Thêm chữ "gently" vào câu lệnh của một chính sách chỉ điều khiển vị trí. Kẹp vẫn đóng tới độ mở được ra lệnh, nên lực siết phụ thuộc vào vật chứ không phụ thuộc vào chữ. Bảng 3 của bài cho thấy kết quả trên Dataset B: mô hình không có đầu vào xúc giác hay lực đạt 0,00 cả khi bảo "firm" lẫn "gentle", và các mô hình có token xúc giác nhưng không có giám sát lực đạt 0,37–0,40 khi bảo "firm" và chỉ 0,01 khi bảo "gentle".
+**KẾT QUẢ** Trên Dataset B, mô hình tốt nhất giữ 52% thành công khi được bảo "nhẹ tay", đồng thời lực kẹp trung bình giảm từ 32,4 xuống 3,7 (−89%).
+</div>
 
-## Tính tay: hai lực từ hai đầu ngón
+## 1. Vấn đề: "nhẹ tay" không có chỗ bám
 
-Dùng một khung chung của kẹp, trong đó $z$ là trục đóng kẹp và $y$ hướng lên. Đầu ngón trái đo $F_L = (0,\ 1.5,\ 5)$ N, đầu ngón phải $F_R = (0,\ 1.5,\ -5)$ N.
+[[flow]]
+- Trước~VLA chỉ vị trí | RGB + "gently" > VLA > !Chỉ độ mở kẹp! | lực siết do vật quyết định: 0% thành công
+- Trước~xúc giác, không nhãn lực | RGB + token xúc giác > VLA > !Chỉ pose! | lượt nhẹ tay sụp: 1% thành công
++ Tabero-VTLA | RGB + trường marker + lực > π0 + giám sát lực > *Pose + lực kẹp~+ lực tác dụng* > *Bộ điều khiển lai* | siết nhẹ, 52% thành công, lực −89%
+[[/flow]] Hai mảnh còn thiếu: lực trong dữ liệu, và lực trong đầu ra.
 
-$$F_{grip} = 2\min(|5|,\ |{-5}|) = 10\ \text{N}$$
+[[bars:%]] Không xúc giác, không lực=0; Chỉ token xúc giác=1; Chỉ giám sát lực=45; *Trường marker + giám sát lực=52* || Thành công khi bảo "nhẹ tay", Dataset B (mức lực 10%).
 
-$$F_{applied} = -(F_L + F_R) = -(0,\ 3,\ 0) = (0,\ -3,\ 0)\ \text{N}$$
+## 2. Kiến trúc
 
-Hai thành phần siết triệt tiêu nhau trong $F_{applied}$, còn lại một lực đẩy xuống 3 N lên vật; lực siết chỉ xuất hiện trong $F_{grip}$. Đó là nghĩa của "tách rời": chính sách có thể đòi siết nhẹ và ấn mạnh cùng lúc. Lấy ngón **nhỏ hơn** khiến $F_{grip}$ bám theo tiếp xúc yếu hơn: nếu một ngón đọc 5 N và ngón kia 3 N thì $F_{grip} = 6$ N.
+[[fig:tabero]] Token thị giác, ngôn ngữ, trường marker và lực vào π0 tinh chỉnh LoRA; mô hình dự đoán pose và lực mục tiêu; bộ điều khiển lai cố định bám theo.
 
-Vòng kẹp sau đó tăng yêu cầu của chính sách bằng một hệ số feedforward. Với $k_{ff} = 0.6$ của bài, lực kẹp dự đoán 5 N thành mục tiêu $(1 + 0.6) \times 5 = 8$ N.
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| Force-Field tokenizer (TCN) | dịch chuyển marker, 8 khung trước + khung nghỉ | token xúc giác | xúc giác → token |
+| Force tokenizer (MLP) | lực đầu ngón $F_L, F_R$ | latent lực | lực → token |
+| π0 + LoRA | ảnh, ngôn ngữ, các token trên | $P^{pred}$, $F^{target}_{applied}$, $F^{pred}_{grip}$, độ mở | pose và lực mục tiêu |
+| Vòng lực tác dụng | lực tác dụng mục tiêu và đo được | pose đã chỉnh → IK | điều khiển admittance |
+| Vòng kẹp | lực kẹp dự đoán | độ mở kẹp | feedforward + vùng chết |
 
-## Pipeline benchmark
+## 3. Tính tay: hai lực từ hai đầu ngón
 
-Lấy các quỹ đạo mã nguồn mở làm cho mô phỏng khác (task LIBERO, gốc là MuJoCo) rồi **phát lại** chúng trong Isaac Lab với kẹp GelSight mô phỏng (ảnh 320×240, lưới marker 11×9; Taxim cho ảnh xúc giác, FOTS cho trường marker, lực tiếp xúc chuẩn từ engine vật lý), lấy mẫu 20 Hz. Độ đa dạng lực đến từ hệ số impedance cho mức lực 100%, 25% và 10%, và câu lệnh đi kèm dùng trạng từ ("firmly", "gently"). Đánh giá chấm cả chất lượng tương tác vật lý chứ không chỉ thành công: SR, lực kẹp trung bình AG, lực kẹp đỉnh MG, và các chỉ số lực tác dụng tương ứng.
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-## Kiến trúc (Tabero-VTLA)
+**Tính gì và vì sao.** Bộ điều khiển cần hai con số riêng: kẹp đang *siết* mạnh đến đâu và đang *đẩy* vật mạnh đến đâu. Tabero suy ra cả hai từ hai vector lực đầu ngón. Việc tách này cho phép chính sách đòi siết nhẹ và ấn mạnh cùng lúc.
 
-[[fig:tabero]] Token thị giác, ngôn ngữ, trường marker và lực vào π0 tinh chỉnh LoRA; mô hình dự đoán pose và lực mục tiêu; bộ điều khiển lai cố định bám theo và đưa lực đo được ngược lại.
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $F_L, F_R$ | lực đầu ngón trong một khung chung của kẹp ($z$ = trục đóng kẹp, $y$ = hướng lên) | input | $(0, 1.5, 5)$, $(0, 1.5, -5)$ N |
+| $F_{grip}$ | lực siết | output | – |
+| $F_{applied}$ | lực tổng kẹp tác dụng lên vật | output | – |
+| $k_{ff}$ | hệ số feedforward của vòng kẹp | hằng số | 0.6 (của bài) |
 
-- **Token xúc giác.** Trường dịch chuyển marker (lịch sử 8 khung cộng khung chưa biến dạng) qua một TCN nhân quả nhỏ, gọi là Force-Field Tokenizer. Cách khác: ghép khung xúc giác trái/phải thành một ảnh rồi cho qua encoder thị giác (biến thể "Img").
-- **Token lực.** Lực 6D từ hai ngón qua một MLP.
-- **Backbone.** π0 (JAX) với LoRA, flow matching. Token xúc giác vào prefix (hoặc suffix ở một biến thể). Một loss giám sát lực tùy chọn (trọng số 0,1) dự đoán lực.
-- **Giao diện lệnh tách rời.** Chính sách xuất pose $P^{pred} \in SE(3)$, lực tác dụng mục tiêu, và lực kẹp dự đoán cùng độ mở kẹp. Hai lực được định nghĩa từ lực đầu ngón: $F_{grip} = 2\min(|F_{L,z}|, |F_{R,z}|)$ và $F_{applied} = -(F_L + F_R)$.
-- **Bộ điều khiển lai cố định.** Vòng lực tác dụng (admittance): $p_{cmd} = p_{pred} + K\,(F^{target} - F^{meas})$, sau đó IK vi phân. Vòng kẹp: feedforward $F^{target}_{grip} = (1+k_{ff})F^{pred}_{grip}$, làm mượt mũ, vùng chết và cắt biên độ mở kẹp.
+**Công thức**
 
-## Kết quả
+$$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L + F_R), \qquad F^{target}_{grip} = (1 + k_{ff})\,F^{pred}_{grip}$$
 
-- Huấn luyện: 50.000 bước, batch 32, learning rate đỉnh $2.5\times10^{-5}$ giảm kiểu cosine.
-- Ở Dataset B (lực nhẹ 10%), mô hình tốt nhất Field+FS giữ 0,86 thành công khi bảo "firm" và 0,52 khi bảo "gentle", trong khi lực kẹp trung bình giảm từ 32,4 xuống 3,7 (giảm 88,6%). Ở Dataset A (25%) mức giảm là 72,8%.
-- Mô hình không có giám sát lực sụp khi nhận lệnh "gentle" (thành công khoảng 0,01).
-- Cả thành phần feedforward lẫn vòng admittance đều cần cho việc bám lực chính xác (ablation).
+**Từng bước**
 
-## Lưu ý
+1. $F_{grip} = 2 \times \min(5, 5) = 10$ N.
+2. $F_L + F_R = (0,\ 3,\ 0)$, nên $F_{applied} = (0,\ -3,\ 0)$ N: đẩy xuống 3 N.
+3. Nếu chính sách dự đoán lực kẹp 5 N, vòng kẹp nhắm tới $(1 + 0.6) \times 5 = 8$ N.
 
-Encoder thị giác, encoder ngôn ngữ, tần số chính sách và bộ điều khiển, và độ dài action chunk không được nêu. Văn bản nói lực đầu vào là 6D trong khi Bảng 7 ghi đầu vào MLP là $8\times 6 = 48$. Các tác giả thừa nhận khung chưa tối ưu đồng thời thành công nhiệm vụ và lực tối thiểu.
+**Kết quả.** Siết 10 N, đẩy xuống 3 N; hai thành phần siết triệt tiêu nhau trong $F_{applied}$.
 
-**Mang theo sang bài sau:** mọi phương pháp tới đây đều cần cảm biến xúc giác hoặc lực lúc chạy. [FD-VLA](fd-vla.html) hỏi: có suy ra được lực từ thị giác và state của cánh tay không?
+**Ý nghĩa.** Lấy ngón **nhỏ hơn** khiến $F_{grip}$ bám theo tiếp xúc yếu hơn (5 N và 3 N cho 6 N), tức ngón sẽ trượt trước.
+</div>
 
-**Câu kiểm tra:** cùng khung đó, $F_L = (0,\ 1,\ 4)$ N và $F_R = (0,\ 2,\ -6)$ N. Tính $F_{grip}$ và $F_{applied}$. Vòng kẹp dùng mục tiêu bao nhiêu nếu chính sách dự đoán 10 N?
+## 4. Pipeline benchmark
 
-*Đáp án:* $F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0,\ 3,\ -2) = (0,\ -3,\ 2)$ N: 3 N đẩy xuống, cộng 2 N dọc trục đóng kẹp vì hai ngón siết không đều. Mục tiêu $= 1.6 \times 10 = 16$ N.
+| Bước | Nội dung |
+|---|---|
+| Phát lại | quỹ đạo LIBERO (MuJoCo) chạy lại trong Isaac Lab với asset và tư thế khớp |
+| Cảm biến | GelSight mô phỏng (ảnh Taxim, trường marker FOTS), lực chuẩn từ vật lý, 20 Hz |
+| Mức lực | hệ số impedance cho lực 100%, 25%, 10%, đi kèm "firmly" / "gently" |
+| Chỉ số | thành công, lực kẹp trung bình và đỉnh, lực tác dụng trung bình và đỉnh |
+
+## 5. Lưu ý
+
+- Tần số chính sách, tần số bộ điều khiển và độ dài chunk không được nêu.
+- Văn bản nói lực đầu vào là 6D; Bảng 7 ghi đầu vào MLP là 48.
+
+**Mang sang bài sau:** mọi phương pháp tới đây đều cần cảm biến xúc giác hoặc lực lúc chạy. [FD-VLA](fd-vla.html) hỏi: có suy ra được lực từ thị giác và state của cánh tay không?
+
+**Câu kiểm tra:** $F_L = (0,\ 1,\ 4)$ N, $F_R = (0,\ 2,\ -6)$ N. Tính $F_{grip}$ và $F_{applied}$.
+
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0, 3, -2) = (0, -3, 2)$ N: đẩy xuống 3 N, cộng 2 N dọc trục đóng kẹp vì siết không đều.
+</details>
 :::

@@ -40,7 +40,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?\n)---\s*\n(.*)$", re.DOTALL)
 LANG_BLOCK_RE = re.compile(r":::(en|vi)\s*\n(.*?)\n:::", re.DOTALL)
 
-MD_EXTENSIONS = ["fenced_code", "tables", "sane_lists"]
+# md_in_html: cho phép viết markdown bên trong <div class="tldr" markdown="1"> ... </div>
+MD_EXTENSIONS = ["fenced_code", "tables", "sane_lists", "md_in_html"]
 
 
 MATH_BLOCK_RE = re.compile(r"\$\$.+?\$\$", re.DOTALL)
@@ -61,8 +62,141 @@ def render_figure(name: str, caption: str, diagram_dir: Path) -> str:
     return f'<figure class="diagram">{svg}<figcaption>{caption}</figcaption></figure>'
 
 
-def render_markdown(text: str, diagram_dir: Path = None) -> str:
-    """Markdown -> HTML, giữ nguyên công thức $...$ / $$...$$ (KaTeX) và nhúng sơ đồ [[fig:name]] caption."""
+# ---------------------------------------------------------------------------
+# Hình tự sinh khi build (không cần vẽ tay):
+#
+#   [[flow]]
+#   - Before · ForceVLA | Wrist F/T > VLM + MoE > !Pose only! | cannot ask for 10 N
+#   + ForceVLA2 | F/T + prompt > VLM + MoE > *Pose + force* | controller holds the force
+#   [[/flow]] Caption
+#     "-" = hàng "trước" (ghi chú đỏ ✗), "+" = hàng "paper này" (ghi chú xanh ✓), "=" = trung tính.
+#     Các ô ngăn bởi " > ". *ô* = tô vàng (điểm mới), !ô! = tô đỏ (điểm hỏng), "~" = xuống dòng.
+#
+#   [[bars:%]] π0-base=37.3; *ForceVLA=60.5* || Caption
+#     Đơn vị "%" (thang 100), "/30" (thang 30), hoặc "N:20" (đơn vị N, thang 20). *nhãn=giá trị* = cột nổi bật.
+# ---------------------------------------------------------------------------
+FLOW_RE = re.compile(r"^\[\[flow\]\][ \t]*\n(.*?)\n\[\[/flow\]\][ \t]*([^\n]*)$", re.MULTILINE | re.DOTALL)
+BARS_RE = re.compile(r"^\[\[bars:([^\]]*)\]\][ \t]*(.*?)(?:[ \t]*\|\|[ \t]*(.*))?$", re.MULTILINE)
+
+CH_T, CH_S, CH_N = 7.6, 6.4, 6.9  # bề rộng ước lượng một ký tự (px) của dg-t, dg-s, ghi chú
+
+
+def _esc(s: str) -> str:
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _figure(svg: str, caption: str, extra_class: str = "") -> str:
+    label = caption.replace("&", "&amp;").replace('"', "&quot;")
+    svg = svg.replace("<svg ", f'<svg role="img" aria-label="{label}" ', 1)
+    cls = f"diagram {extra_class}".strip()
+    return f'<figure class="{cls}">{svg}<figcaption>{caption}</figcaption></figure>'
+
+
+def render_flow(body: str, caption: str) -> str:
+    rows = []
+    for raw in body.strip().splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        kind = line[0] if line[0] in "-+=" else "="
+        if line[0] in "-+=":
+            line = line[1:].strip()
+        parts = [p.strip() for p in line.split("|")]
+        boxes = []
+        for b in re.split(r"\s+>\s+", parts[1]) if len(parts) > 1 else []:
+            style = "box"
+            if len(b) > 1 and b[0] == b[-1] == "*":
+                style, b = "key", b[1:-1]
+            elif len(b) > 1 and b[0] == b[-1] == "!":
+                style, b = "bad", b[1:-1]
+            lines = [t.strip() for t in b.split("~")]
+            w = max(96, max([len(lines[0]) * CH_T] + [len(t) * CH_S for t in lines[1:]]) + 26)
+            h = 22 + 16 * len(lines)
+            boxes.append((style, lines, w, h))
+        rows.append((kind, [t.strip() for t in parts[0].split("~")], boxes, parts[2] if len(parts) > 2 else ""))
+
+    label_w = max(110, max(len(t) * CH_S for r in rows for t in r[1]) + 24)
+    gap, pad, out, y, width = 34, 14, [], 14, 0
+    for kind, label, boxes, note in rows:
+        color = {"-": "dg-red", "+": "dg-green", "=": "dg-mute"}[kind]
+        row_h = max([b[3] for b in boxes] + [40])
+        for i, t in enumerate(label):
+            out.append(f'<text class="dg-lab {color}" x="{pad}" y="{y + row_h / 2 - 6 * (len(label) - 1) + 14 * i + 4:.0f}">{_esc(t)}</text>')
+        x = pad + label_w
+        for j, (style, lines, w, h) in enumerate(boxes):
+            by = y + (row_h - h) / 2
+            cls = {"box": "dg-box", "key": "dg-key", "bad": "dg-badbox"}[style]
+            out.append(f'<rect class="{cls}" x="{x:.0f}" y="{by:.0f}" width="{w:.0f}" height="{h:.0f}"/>')
+            for i, t in enumerate(lines):
+                tcls = "dg-t" if i == 0 else "dg-s"
+                ty = by + h / 2 - 8 * (len(lines) - 1) + 16 * i + 4
+                out.append(f'<text class="{tcls}" x="{x + w / 2:.0f}" y="{ty:.0f}" text-anchor="middle">{_esc(t)}</text>')
+            if j < len(boxes) - 1:
+                ay = y + row_h / 2
+                out.append(f'<path class="dg-a" d="M{x + w:.0f} {ay:.0f} H{x + w + gap - 2:.0f}"/>')
+            x += w + (gap if j < len(boxes) - 1 else 0)
+        width = max(width, x + pad)
+        y += row_h
+        if note:
+            mark = {"-": "✗ ", "+": "✓ ", "=": ""}[kind]
+            out.append(f'<text class="dg-note {color}" x="{pad + label_w}" y="{y + 18}">{_esc(mark + note)}</text>')
+            width = max(width, pad + label_w + len(mark + note) * CH_N + pad)
+            y += 26
+        y += 18
+    height = y - 4
+    svg = (f'<svg class="dg-natural" width="{width:.0f}" height="{height:.0f}" '
+           f'viewBox="0 0 {width:.0f} {height:.0f}" xmlns="http://www.w3.org/2000/svg">' + "".join(out) + "</svg>")
+    return _figure(svg, caption, "flow")
+
+
+def render_bars(spec: str, data: str, caption: str, lang: str) -> str:
+    unit, _, mx = spec.partition(":")
+    items = []
+    for chunk in data.split(";"):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        key = len(chunk) > 1 and chunk[0] == chunk[-1] == "*"
+        label, _, val = chunk.strip("*").rpartition("=")
+        items.append((label.strip(), float(val), key))
+    if mx:
+        top = float(mx)
+    elif unit == "%":
+        top = 100.0
+    elif unit.startswith("/"):
+        top = float(unit[1:])
+    else:
+        top = max(v for _, v, _ in items) * 1.15
+
+    def fmt(v):
+        s = f"{v:g}"
+        if lang == "vi":
+            s = s.replace(".", ",")
+        if unit == "%":
+            return s + "%"
+        if unit.startswith("/"):
+            return s + unit
+        return f"{s} {unit}".strip()
+
+    label_w = max(len(l) for l, _, _ in items) * CH_N + 18
+    bar_w, row_h = 360, 30
+    width = label_w + bar_w + 90
+    out = []
+    for i, (label, v, key) in enumerate(items):
+        y = 8 + i * row_h
+        bw = max(2, v / top * bar_w)
+        out.append(f'<text class="dg-barlabel" x="{label_w - 10:.0f}" y="{y + 15}" text-anchor="end">{_esc(label)}</text>')
+        out.append(f'<rect class="{"dg-key" if key else "dg-bar"}" x="{label_w:.0f}" y="{y + 2}" width="{bw:.0f}" height="18"/>')
+        out.append(f'<text class="dg-barval" x="{label_w + bw + 8:.0f}" y="{y + 15}">{_esc(fmt(v))}</text>')
+    height = 8 + len(items) * row_h + 4
+    svg = (f'<svg class="dg-natural" width="{width:.0f}" height="{height}" '
+           f'viewBox="0 0 {width:.0f} {height}" xmlns="http://www.w3.org/2000/svg">' + "".join(out) + "</svg>")
+    return _figure(svg, caption or "", "compact")
+
+
+def render_markdown(text: str, diagram_dir: Path = None, lang: str = "en") -> str:
+    """Markdown -> HTML, giữ nguyên công thức $...$ / $$...$$ (KaTeX), nhúng sơ đồ [[fig:name]]
+    và các hình tự sinh [[flow]] ... [[/flow]], [[bars:...]]."""
     store = []
 
     def stash(m):
@@ -75,6 +209,16 @@ def render_markdown(text: str, diagram_dir: Path = None) -> str:
         figs.append(render_figure(m.group(1), m.group(2).strip(), diagram_dir))
         return f"@@FIG{len(figs) - 1}@@"
 
+    def stash_flow(m):
+        figs.append(render_flow(m.group(1), m.group(2).strip()))
+        return f"@@FIG{len(figs) - 1}@@"
+
+    def stash_bars(m):
+        figs.append(render_bars(m.group(1), m.group(2), (m.group(3) or "").strip(), lang))
+        return f"@@FIG{len(figs) - 1}@@"
+
+    text = FLOW_RE.sub(stash_flow, text)
+    text = BARS_RE.sub(stash_bars, text)
     text = FIG_RE.sub(stash_fig, text)
     text = MATH_BLOCK_RE.sub(stash, text)
     text = MATH_INLINE_RE.sub(stash, text)
@@ -109,8 +253,8 @@ def parse_post(path: Path) -> dict:
         raise ValueError(f"{path.name}: cần có cả khối :::en::: và :::vi:::")
 
     diagram_dir = path.parent.parent / "diagrams"
-    html_en = render_markdown(blocks["en"].strip(), diagram_dir)
-    html_vi = render_markdown(blocks["vi"].strip(), diagram_dir)
+    html_en = render_markdown(blocks["en"].strip(), diagram_dir, "en")
+    html_vi = render_markdown(blocks["vi"].strip(), diagram_dir, "vi")
 
     tags = meta.get("tags") or []
     if isinstance(tags, str):
@@ -144,6 +288,7 @@ def render_post_html(post: dict, section: str) -> str:
     tags_html = "".join(f'<span class="pill">{t}</span>' for t in post["tags"])
     section_title = "Learn VLA" if section == "learnvla" else "Blog"
     section_styles = "../../blog/styles/blog.css" if section == "learnvla" else "../styles/blog.css"
+    extras_styles = "../../blog/styles/article-extras.css?v=2" if section == "learnvla" else "../styles/article-extras.css?v=2"
     section_i18n = "../../blog/js/i18n.js" if section == "learnvla" else "../js/i18n.js"
     blog_url = "../../blog/" if section == "learnvla" else "../"
     learnvla_url = "../" if section == "learnvla" else "../../learnvla/"
@@ -158,34 +303,16 @@ def render_post_html(post: dict, section: str) -> str:
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="{post['title_en']}">
 <meta property="og:description" content="{post['excerpt_en']}">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="{section_styles}">
+<link rel="stylesheet" href="{extras_styles}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display {{ overflow-x: auto; overflow-y: hidden; padding: 4px 0; }}
-.post-body figure.diagram {{ box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }}
-.post-body figure.diagram svg {{ display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }}
-.post-body table {{ border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }}
-.post-body th, .post-body td {{ padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }}
-.post-body figure.diagram figcaption {{ margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }}
-.dg-box {{ fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }}
-.dg-key {{ fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }}
-.dg-ext {{ fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }}
-.dg-grp {{ fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }}
-.dg-t {{ fill: var(--ink); font: 600 12.5px var(--font-mono); }}
-.dg-s {{ fill: var(--ink-3); font: 500 10.5px var(--font-mono); }}
-.dg-h {{ fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }}
-.dg-a {{ fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }}
-.dg-ad {{ fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }}
-.dg-l {{ fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }}
-.dg-m {{ fill: var(--ink); }}
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}], throwOnError: false}});"></script>

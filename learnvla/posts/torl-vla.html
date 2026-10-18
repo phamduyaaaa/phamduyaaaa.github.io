@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.">
+<meta name="description" content="ForceVLA and TA-VLA are fixed after offline training, and standard online refinement credits human rescues to the policy. TORL-VLA adds a small online actor-critic with an intervention-censored critic: 28/30 full tasks vs 15/30.">
 <title>TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA">
-<meta property="og:description" content="A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.">
+<meta property="og:description" content="ForceVLA and TA-VLA are fixed after offline training, and standard online refinement credits human rescues to the policy. TORL-VLA adds a small online actor-critic with an intervention-censored critic: 28/30 full tasks vs 15/30.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -78,40 +60,32 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA</h1>
     <h1 data-vi>TORL-VLA: RL online dẫn hướng bằng xúc giác trên nền VLA nhận biết wrench</h1>
 
-    <p class="post-excerpt-lead" data-en>A frozen wrench-aware π0.5 predicts actions and future wrench; a light actor-critic with an intervention-censored critic then refines the chunk online from human corrections.</p>
-    <p class="post-excerpt-lead" data-vi>π0.5 nhận biết wrench (đóng băng) dự đoán hành động và wrench tương lai; một actor-critic nhẹ với critic bị kiểm duyệt theo can thiệp rồi tinh chỉnh chunk online từ chỉnh sửa của con người.</p>
+    <p class="post-excerpt-lead" data-en>ForceVLA and TA-VLA are fixed after offline training, and standard online refinement credits human rescues to the policy. TORL-VLA adds a small online actor-critic with an intervention-censored critic: 28/30 full tasks vs 15/30.</p>
+    <p class="post-excerpt-lead" data-vi>ForceVLA và TA-VLA đứng yên sau khi huấn luyện offline, còn tinh chỉnh online thông thường ghi công cho chính sách cả những lần con người cứu. TORL-VLA thêm một actor-critic online nhỏ với critic bị kiểm duyệt theo can thiệp: 28/30 cả chuỗi so với 15/30.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">RL</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> (June 2026), project page <a href="https://torl-vla.github.io/">torl-vla.github.io</a>. The title says "tactile", not "torque": the tactile pads are converted to a 6D wrench.</p>
-<h2>The pain it cures</h2>
-<p>A tactile VLA trained offline cannot adapt when contact conditions shift (a slightly different latch, a harder egg). It retries inefficiently or presses too hard. TORL-VLA keeps the offline policy as a <strong>reference</strong> and learns a <strong>small online correction</strong> on top, using human interventions near failure.</p>
-<h2>Try the naive way first</h2>
-<p>Two obvious options, both measured in the paper (full-task successes out of 30):</p>
-<ol>
-<li><strong>Stay offline.</strong> The wrench-aware reference model alone reaches 21/30. Better than π0.5 (12/30), but it cannot fix the failures it keeps making.</li>
-<li><strong>Standard online refinement</strong> (RLT), treating human-corrected chunks like any other experience: 23/30.</li>
-</ol>
-<p>TORL-VLA reaches 28/30. The difference is mostly <strong>how human takeovers are credited</strong>.</p>
-<h2>Work it by hand: who gets the credit?</h2>
-<p>A policy chunk earns no reward ($R^K_t = 0$). The robot is drifting towards an unsafe contact, so a human takes over, and the next state, now under human control, is worth $Q = 1.0$. Take $\gamma^K = 0.9$.</p>
-<p>Ordinary target:</p>
-<p>$$y_{task} = R^K_t + \gamma^K Q_{next} = 0 + 0.9 \times 1.0 = 0.9$$</p>
-<p>The policy's chunk looks good, but it was the human who saved the episode. The intervention-censored target sets the mask $m^{int} = 1$ for this handover, cuts the bootstrap and subtracts a penalty $c_{int}$ (take $c_{int} = 1$ for illustration):</p>
-<p>$$y_{ic} = R^K_t - c_{int}\,m^{int} + (1 - d_t)(1 - m^{int})\,\gamma^K Q_{next} = 0 - 1 + 0 = -1$$</p>
-<p>Now the chunk that led to the takeover is scored as bad, which is what the actor should learn.</p>
-<p><strong>The zero-initialised bypass.</strong> At the start of training $\alpha = 0$, so $G_t = \Pi(F_t) + 0 \cdot P(z^{tac})$: the bypass adds nothing and cannot disturb the pretrained action expert. Training grows $\alpha$ only as far as the wrench actually helps.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online from policy and human data." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> · 06/2026 · built on π0.5 · <a href="https://torl-vla.github.io/">project</a></p>
+<p><strong>PROBLEM</strong> A long contact task (cup into a tight holder, lock a latch, place an egg) where contact conditions keep shifting from what was in the data.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Tactile/force VLAs such as <a href="forcevla.html">ForceVLA</a> and TA-VLA are "deployed as offline policies" and cannot adapt, so the same failure repeats. Standard reference-guided online refinement (RLT) lets the critic credit the policy for chunks a human actually rescued.</p>
+<p><strong>IDEA</strong> Stage I: a wrench-aware π0.5 that also predicts the future wrench. Stage II: freeze it, and train small stage-specific actor heads online with two critics, one of which stops bootstrapping across human takeovers.</p>
+<p><strong>RESULT</strong> 28/30 full-task successes (π0.5: 12, ForceVLA: 15, RLT: 23), and 17% faster.</p>
+</div>
+<h2>1. The problem: offline policies cannot fix their own mistakes</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Keep the strong offline model as a reference; learn only a small correction online, and be careful about who earned the reward." class="dg-natural" width="842" height="290" viewBox="0 0 842 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Before</text><text class="dg-lab dg-red" x="14" y="46">ForceVLA, TA-VLA</text><rect class="dg-box" x="140" y="15" width="117" height="38"/><text class="dg-t" x="199" y="38" text-anchor="middle">wrench + RGB</text><path class="dg-a" d="M258 34 H290"/><rect class="dg-box" x="292" y="15" width="140" height="38"/><text class="dg-t" x="362" y="38" text-anchor="middle">Force-aware VLA</text><path class="dg-a" d="M432 34 H464"/><rect class="dg-badbox" x="466" y="15" width="178" height="38"/><text class="dg-t" x="555" y="38" text-anchor="middle">Fixed after training</text><text class="dg-note dg-red" x="140.4" y="72">✗ the same failure repeats: 15/30 full tasks</text><text class="dg-lab dg-red" x="14" y="123">Before</text><text class="dg-lab dg-red" x="14" y="137">RLT</text><rect class="dg-box" x="140" y="106" width="125" height="38"/><text class="dg-t" x="203" y="129" text-anchor="middle">VLA reference</text><path class="dg-a" d="M265 125 H297"/><rect class="dg-box" x="299" y="106" width="96" height="38"/><text class="dg-t" x="347" y="129" text-anchor="middle">Online RL</text><path class="dg-a" d="M395 125 H427"/><rect class="dg-badbox" x="429" y="98" width="160" height="54"/><text class="dg-t" x="509" y="121" text-anchor="middle">Critic</text><text class="dg-s" x="509" y="137" text-anchor="middle">credits human rescues</text><text class="dg-note dg-red" x="140.4" y="170">✗ 23/30</text><text class="dg-lab dg-green" x="14" y="227">TORL-VLA</text><rect class="dg-box" x="140" y="204" width="96" height="38"/><text class="dg-t" x="188" y="227" text-anchor="middle">wrench</text><path class="dg-a" d="M236 223 H268"/><rect class="dg-key" x="270" y="196" width="148" height="54"/><text class="dg-t" x="344" y="219" text-anchor="middle">Wrench-aware VLA</text><text class="dg-s" x="344" y="235" text-anchor="middle">frozen reference</text><path class="dg-a" d="M418 223 H450"/><rect class="dg-key" x="452" y="204" width="246" height="38"/><text class="dg-t" x="575" y="227" text-anchor="middle">Stage actor + censored critic</text><path class="dg-a" d="M698 223 H730"/><rect class="dg-box" x="732" y="204" width="96" height="38"/><text class="dg-t" x="780" y="227" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="140.4" y="268">✓ 28/30, 17% faster</text></svg><figcaption>Keep the strong offline model as a reference; learn only a small correction online, and be careful about who earned the reward.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Full latch-box task, successes out of 30 autonomous trials." class="dg-natural" width="599" height="192" viewBox="0 0 599 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">π0.5</text><rect class="dg-bar" x="149" y="10" width="144" height="18"/><text class="dg-barval" x="301" y="23">12/30</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="149" y="40" width="144" height="18"/><text class="dg-barval" x="301" y="53">12/30</text><text class="dg-barlabel" x="139" y="83" text-anchor="end">ForceVLA</text><rect class="dg-bar" x="149" y="70" width="180" height="18"/><text class="dg-barval" x="337" y="83">15/30</text><text class="dg-barlabel" x="139" y="113" text-anchor="end">TORL-VLA without RL</text><rect class="dg-bar" x="149" y="100" width="252" height="18"/><text class="dg-barval" x="409" y="113">21/30</text><text class="dg-barlabel" x="139" y="143" text-anchor="end">RLT</text><rect class="dg-bar" x="149" y="130" width="276" height="18"/><text class="dg-barval" x="433" y="143">23/30</text><text class="dg-barlabel" x="139" y="173" text-anchor="end">TORL-VLA</text><rect class="dg-key" x="149" y="160" width="336" height="18"/><text class="dg-barval" x="493" y="173">28/30</text></svg><figcaption>Full latch-box task, successes out of 30 autonomous trials.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">STAGE I · WRENCH-AWARE REFERENCE VLA (π0.5)</text>
 <rect class="dg-ext" x="20" y="42" width="150" height="44"/><text class="dg-t" x="95" y="60" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="75" text-anchor="middle">+ robot state</text>
 <rect class="dg-box" x="210" y="42" width="140" height="44"/><text class="dg-t" x="280" y="60" text-anchor="middle">VLM</text><text class="dg-s" x="280" y="75" text-anchor="middle">prefix P_t</text>
@@ -142,106 +116,176 @@
 <path class="dg-a" d="M715 308 V356"/>
 <rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: intervention-censored bootstrap</text>
 <path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">actor loss L_π</text>
-</svg><figcaption>Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online from policy and human data.</figcaption></figure>
-<p><strong>Stage I: reference model (flow matching on π0.5).</strong></p>
-<ul>
-<li>Each fingertip pad (6×8 piezoelectric array) is mapped to a 6D wrench; both give $w_t \in \mathbb{R}^{12}$. A window of past wrenches goes through a light MLP into <strong>one</strong> token $z^{tac}$.</li>
-<li><strong>Late fusion:</strong> the wrench token is not given to the VLM. After the VLM encodes images, language and state into prefix $P_t$, $[P_t; z^{tac}]$ passes self-attention, then a <strong>soft-routed MoE</strong> $F_t = \sum_m \rho_{t,m} E_m(H_t)$.</li>
-<li>A <strong>zero-initialised bypass</strong> $\alpha\,P(z^{tac})$ (learnable scalar $\alpha$ starting at 0) is added so contact information reaches the action expert directly.</li>
-<li>The expert predicts the action chunk <strong>and the future wrench sequence</strong>, with loss $L = \lVert u^a - \hat u^a\rVert^2 + \lambda_w\lVert u^w - \hat u^w\rVert^2$.</li>
-</ul>
-<p><strong>Stage II: online refinement (reference frozen).</strong></p>
-<ul>
-<li>Context $c_t = [z^{vla}, q_t, w_t, W_{hist}, \hat W^{ref}, A^{ref}]$: visual tokens from the frozen VLA, proprioception, measured wrench and history, plus the VLA's predicted wrench and reference actions.</li>
-<li>A <strong>stage estimator</strong> picks one of several <strong>stage-specific actor heads</strong>, which output the refined chunk directly.</li>
-<li>Two critics: $Q_{task}$ (task return) and $Q_{ic}$, an <strong>intervention-censored</strong> critic. When a mostly policy-generated chunk is followed by an intervention-dominated one, the mask $m^{int}$ cuts the bootstrap, so human takeover is not credited to the policy. Intervention actions stay in the replay buffer for behaviour regularisation.</li>
-<li>Actor loss: $L_\pi = \lambda_{bc}L_{bc} - \lambda_{task}\,\mathbb{E}[\min_i Q^{(i)}_{task}] + \lambda_{ic}\,\mathbb{E}[\Delta Q_{ic}]$, anchoring to the VLA reference while following the critics.</li>
-<li>Reward: a human-judged binary success signal per subtask.</li>
-</ul>
-<h2>Results</h2>
-<p>A latch-box long-horizon task (place a coffee cup in a tight holder, lock a latch, grasp and place an egg), 30 autonomous trials per row:</p>
+</svg><figcaption>Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Cup</th>
-<th>Latch</th>
-<th>Egg</th>
-<th>Full task</th>
-<th>Full-task time</th>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>π0.5</td>
-<td>18</td>
-<td>15</td>
-<td>20</td>
-<td>12</td>
-<td>199.7 s</td>
+<td>Tactile pads → wrench</td>
+<td>two 6×8 piezo arrays</td>
+<td>$w_t \in \mathbb{R}^{12}$</td>
+<td>touch as force/torque</td>
 </tr>
 <tr>
-<td>ForceVLA</td>
-<td>21</td>
-<td>20</td>
-<td>22</td>
-<td>15</td>
-<td>195.3 s</td>
+<td>MLP encoder</td>
+<td>wrench window</td>
+<td>one token $z^{tac}$</td>
+<td>contact summary</td>
 </tr>
 <tr>
-<td>TORL-VLA w/o RL</td>
-<td>25</td>
-<td>23</td>
-<td>25</td>
-<td>21</td>
-<td>191.9 s</td>
+<td>Late fusion + MoE</td>
+<td>VLM prefix $P_t$, $z^{tac}$</td>
+<td>routed feature</td>
+<td>fuse after the VLM</td>
 </tr>
 <tr>
-<td>RLT</td>
-<td>26</td>
-<td>25</td>
-<td>25</td>
-<td>23</td>
-<td>175.2 s</td>
+<td>Zero-init bypass</td>
+<td>$z^{tac}$</td>
+<td>$\alpha P(z^{tac})$, $\alpha$ starts at 0</td>
+<td>add contact without disturbing π0.5</td>
 </tr>
 <tr>
-<td><strong>TORL-VLA</strong></td>
-<td><strong>30</strong></td>
-<td><strong>29</strong></td>
-<td><strong>30</strong></td>
-<td><strong>28</strong></td>
-<td><strong>165.5 s</strong></td>
+<td>Flow-matching expert</td>
+<td>conditioning</td>
+<td>$A^{ref}$, future wrench $\hat W^{ref}$</td>
+<td>reference actions</td>
+</tr>
+<tr>
+<td>Stage estimator + actors</td>
+<td>VLA tokens, wrench, $A^{ref}$, $\hat W^{ref}$</td>
+<td>refined chunk</td>
+<td>online correction</td>
+</tr>
+<tr>
+<td>Critics $Q_{task}$, $Q_{ic}$</td>
+<td>context, action</td>
+<td>values</td>
+<td>train the actor</td>
 </tr>
 </tbody>
 </table>
-<p>Ablations on the reference model: removing the MoE drops to 18/17/19, the bypass to 23/20/21. Online ablations: no wrench context 27/27/26, no IC critic 27/26/28.</p>
-<h2>Caveats</h2>
-<p>I read the HTML verbatim only up to the middle of the experiments; details such as H, K, control rate, update ratios and latencies come from a summary and are not quoted here. The number of experts, the sample rate of the tactile pads and the VLM size are not stated in the part I read.
-<strong>Carry forward:</strong> TORL-VLA needs a human ready to intervene, and learns from whatever that human did. <a href="ter-dagger.html">TER-DAgger</a> asks when exactly to call the human, and how to turn a messy correction into clean training data.</p>
-<p><strong>Check question:</strong> $R^K_t = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, not terminal, $c_{int} = 1$. Compute $y_{task}$, and $y_{ic}$ when the next chunk is a human takeover.</p>
-<p><em>Answer:</em> $y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. With $m^{int} = 1$: $y_{ic} = 0.5 - 1 + 0 = -0.5$.</p>
+<h2>3. Work it by hand: who gets the credit?</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> After a human takes over and succeeds, an ordinary critic gives the <em>preceding policy chunk</em> a high value. The intervention-censored critic cuts that link. Computing both targets shows the difference.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$R$</td>
+<td>reward earned during the policy chunk</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$\gamma^K$</td>
+<td>discount over one chunk of $K$ steps</td>
+<td>constant</td>
+<td>0.9 (illustrative)</td>
+</tr>
+<tr>
+<td>$Q_{next}$</td>
+<td>value of the next state (human in control)</td>
+<td>input</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>$m^{int}$</td>
+<td>1 if the next chunk is a human takeover</td>
+<td>input</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$c_{int}$</td>
+<td>penalty for causing a takeover</td>
+<td>constant</td>
+<td>1 (illustrative)</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>1 if the episode ended</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$y_{task}$, $y_{ic}$</td>
+<td>training targets of the two critics</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} + (1-d)(1-m^{int})\,\gamma^K Q_{next}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$y_{task} = 0 + 1 \times 0.9 \times 1.0 = 0.9$.</li>
+<li>$y_{ic} = 0 - 1 \times 1 + 1 \times 0 \times 0.9 \times 1.0 = -1$.</li>
+</ol>
+<p><strong>Result.</strong> The ordinary critic scores the chunk $+0.9$; the censored critic scores it $-1$.</p>
+<p><strong>Why it matters.</strong> The chunk that drove the robot towards unsafe contact <em>caused</em> the takeover. Only the censored target teaches the actor to avoid it. Human actions still stay in the replay buffer for imitation.</p>
+</div>
+<h2>4. Training</h2>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What is trained</th>
+<th>Data / signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I</td>
+<td>wrench-aware reference VLA (π0.5)</td>
+<td>demonstrations; loss on actions + future wrench</td>
+</tr>
+<tr>
+<td>II</td>
+<td>stage actors, $Q_{task}$, $Q_{ic}$ (VLA frozen)</td>
+<td>online rollouts, human interventions, binary success per subtask</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Caveats</h2>
+<ul>
+<li>I read the paper verbatim only up to the middle of the experiments; chunk length, control rate and update ratios are not quoted here.</li>
+<li>The number of MoE experts and the tactile sample rate are not stated in the part I read.</li>
+</ul>
+<p><strong>Carry forward:</strong> TORL-VLA needs a human ready to intervene. <a href="ter-dagger.html">TER-DAgger</a> asks when exactly to call the human and how to turn a messy correction into clean data.</p>
+<p><strong>Check question:</strong> $R = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, $d = 0$, $c_{int} = 1$, takeover next ($m^{int} = 1$). Compute $y_{task}$ and $y_{ic}$.</p>
+<details>
+<summary>Answer</summary>
+<p>$y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. $y_{ic} = 0.5 - 1 + 0 = -0.5$.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> (tháng 6/2026), trang dự án <a href="https://torl-vla.github.io/">torl-vla.github.io</a>. Tiêu đề nói "tactile" (xúc giác), không phải "torque": các miếng xúc giác được đổi thành wrench 6D.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>VLA xúc giác huấn luyện offline không thích nghi được khi điều kiện tiếp xúc đổi (chốt hơi khác, quả trứng cứng hơn). Nó thử lại kém hiệu quả hoặc ấn quá mạnh. TORL-VLA giữ chính sách offline làm <strong>tham chiếu</strong> và học thêm một <strong>hiệu chỉnh online nhỏ</strong>, dùng can thiệp của con người khi sắp thất bại.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Hai lựa chọn hiển nhiên, cả hai đều được đo trong bài (số lần thành công cả chuỗi trên 30):</p>
-<ol>
-<li><strong>Ở yên offline.</strong> Riêng mô hình tham chiếu nhận biết wrench đạt 21/30. Hơn π0.5 (12/30), nhưng không sửa được những lỗi nó cứ lặp lại.</li>
-<li><strong>Tinh chỉnh online tiêu chuẩn</strong> (RLT), coi các chunk do con người sửa như mọi kinh nghiệm khác: 23/30.</li>
-</ol>
-<p>TORL-VLA đạt 28/30. Khác biệt chủ yếu nằm ở <strong>cách ghi công khi con người tiếp quản</strong>.</p>
-<h2>Tính tay: ai được ghi công?</h2>
-<p>Một chunk của chính sách không nhận phần thưởng ($R^K_t = 0$). Robot đang trôi về phía tiếp xúc không an toàn, nên con người tiếp quản, và trạng thái kế tiếp, giờ do con người điều khiển, có giá trị $Q = 1.0$. Lấy $\gamma^K = 0.9$.</p>
-<p>Mục tiêu thông thường:</p>
-<p>$$y_{task} = R^K_t + \gamma^K Q_{next} = 0 + 0.9 \times 1.0 = 0.9$$</p>
-<p>Chunk của chính sách trông có vẻ tốt, nhưng thực ra con người đã cứu episode. Mục tiêu bị kiểm duyệt theo can thiệp đặt mask $m^{int} = 1$ cho lần chuyển giao này, cắt bootstrap và trừ một mức phạt $c_{int}$ (lấy $c_{int} = 1$ để minh họa):</p>
-<p>$$y_{ic} = R^K_t - c_{int}\,m^{int} + (1 - d_t)(1 - m^{int})\,\gamma^K Q_{next} = 0 - 1 + 0 = -1$$</p>
-<p>Giờ chunk dẫn tới việc tiếp quản bị chấm là tệ, đúng điều actor cần học.</p>
-<p><strong>Bypass khởi tạo bằng 0.</strong> Lúc bắt đầu huấn luyện $\alpha = 0$, nên $G_t = \Pi(F_t) + 0 \cdot P(z^{tac})$: bypass chưa cộng gì và không thể làm xáo trộn action expert đã pretrain. Huấn luyện chỉ tăng $\alpha$ tới mức wrench thực sự có ích.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện các đầu actor theo từng pha cùng hai critic online từ dữ liệu của chính sách và con người." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2606.09337">arXiv 2606.09337</a> · 06/2026 · nền π0.5 · <a href="https://torl-vla.github.io/">trang dự án</a></p>
+<p><strong>VẤN ĐỀ</strong> Một task tiếp xúc chuỗi dài (đặt cốc vào khay chặt, khóa chốt, đặt trứng) mà điều kiện tiếp xúc cứ lệch khỏi dữ liệu.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> VLA xúc giác/lực như <a href="forcevla.html">ForceVLA</a> và TA-VLA "được triển khai như chính sách offline" nên không thích nghi được, cùng một lỗi cứ lặp lại. Tinh chỉnh online tiêu chuẩn (RLT) để critic ghi công cho chính sách cả những chunk thực ra do con người cứu.</p>
+<p><strong>Ý TƯỞNG</strong> Giai đoạn I: π0.5 nhận biết wrench, dự đoán cả wrench tương lai. Giai đoạn II: đóng băng nó, huấn luyện online các đầu actor nhỏ theo pha với hai critic, trong đó một critic ngừng bootstrap qua các lần con người tiếp quản.</p>
+<p><strong>KẾT QUẢ</strong> 28/30 lần thành công cả chuỗi (π0.5: 12, ForceVLA: 15, RLT: 23), và nhanh hơn 17%.</p>
+</div>
+<h2>1. Vấn đề: chính sách offline không tự sửa được lỗi</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Giữ mô hình offline mạnh làm tham chiếu; chỉ học online một phần hiệu chỉnh nhỏ, và cẩn thận xem ai thực sự kiếm được phần thưởng." class="dg-natural" width="911" height="290" viewBox="0 0 911 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Trước</text><text class="dg-lab dg-red" x="14" y="46">ForceVLA, TA-VLA</text><rect class="dg-box" x="140" y="15" width="117" height="38"/><text class="dg-t" x="199" y="38" text-anchor="middle">wrench + RGB</text><path class="dg-a" d="M258 34 H290"/><rect class="dg-box" x="292" y="15" width="155" height="38"/><text class="dg-t" x="369" y="38" text-anchor="middle">VLA nhận biết lực</text><path class="dg-a" d="M447 34 H479"/><rect class="dg-badbox" x="481" y="15" width="201" height="38"/><text class="dg-t" x="581" y="38" text-anchor="middle">Đứng yên sau huấn luyện</text><text class="dg-note dg-red" x="140.4" y="72">✗ cùng lỗi lặp lại: 15/30 cả chuỗi</text><text class="dg-lab dg-red" x="14" y="123">Trước</text><text class="dg-lab dg-red" x="14" y="137">RLT</text><rect class="dg-box" x="140" y="106" width="132" height="38"/><text class="dg-t" x="207" y="129" text-anchor="middle">VLA tham chiếu</text><path class="dg-a" d="M273 125 H305"/><rect class="dg-box" x="307" y="106" width="96" height="38"/><text class="dg-t" x="355" y="129" text-anchor="middle">RL online</text><path class="dg-a" d="M403 125 H435"/><rect class="dg-badbox" x="437" y="98" width="186" height="54"/><text class="dg-t" x="530" y="121" text-anchor="middle">Critic</text><text class="dg-s" x="530" y="137" text-anchor="middle">ghi công cả lần người cứu</text><text class="dg-note dg-red" x="140.4" y="170">✗ 23/30</text><text class="dg-lab dg-green" x="14" y="227">TORL-VLA</text><rect class="dg-box" x="140" y="204" width="96" height="38"/><text class="dg-t" x="188" y="227" text-anchor="middle">wrench</text><path class="dg-a" d="M236 223 H268"/><rect class="dg-key" x="270" y="196" width="178" height="54"/><text class="dg-t" x="359" y="219" text-anchor="middle">VLA nhận biết wrench</text><text class="dg-s" x="359" y="235" text-anchor="middle">tham chiếu đóng băng</text><path class="dg-a" d="M448 223 H480"/><rect class="dg-key" x="482" y="204" width="284" height="38"/><text class="dg-t" x="625" y="227" text-anchor="middle">Actor theo pha + critic kiểm duyệt</text><path class="dg-a" d="M767 223 H799"/><rect class="dg-box" x="801" y="204" width="96" height="38"/><text class="dg-t" x="849" y="227" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="140.4" y="268">✓ 28/30, nhanh hơn 17%</text></svg><figcaption>Giữ mô hình offline mạnh làm tham chiếu; chỉ học online một phần hiệu chỉnh nhỏ, và cẩn thận xem ai thực sự kiếm được phần thưởng.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Cả chuỗi hộp chốt, số lần thành công trên 30 lượt tự động." class="dg-natural" width="585" height="192" viewBox="0 0 585 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">π0.5</text><rect class="dg-bar" x="135" y="10" width="144" height="18"/><text class="dg-barval" x="287" y="23">12/30</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="135" y="40" width="144" height="18"/><text class="dg-barval" x="287" y="53">12/30</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">ForceVLA</text><rect class="dg-bar" x="135" y="70" width="180" height="18"/><text class="dg-barval" x="323" y="83">15/30</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">TORL-VLA không RL</text><rect class="dg-bar" x="135" y="100" width="252" height="18"/><text class="dg-barval" x="395" y="113">21/30</text><text class="dg-barlabel" x="125" y="143" text-anchor="end">RLT</text><rect class="dg-bar" x="135" y="130" width="276" height="18"/><text class="dg-barval" x="419" y="143">23/30</text><text class="dg-barlabel" x="125" y="173" text-anchor="end">TORL-VLA</text><rect class="dg-key" x="135" y="160" width="336" height="18"/><text class="dg-barval" x="479" y="173">28/30</text></svg><figcaption>Cả chuỗi hộp chốt, số lần thành công trên 30 lượt tự động.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện online các đầu actor theo pha cùng hai critic." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">STAGE I · WRENCH-AWARE REFERENCE VLA (π0.5)</text>
 <rect class="dg-ext" x="20" y="42" width="150" height="44"/><text class="dg-t" x="95" y="60" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="75" text-anchor="middle">+ robot state</text>
 <rect class="dg-box" x="210" y="42" width="140" height="44"/><text class="dg-t" x="280" y="60" text-anchor="middle">VLM</text><text class="dg-s" x="280" y="75" text-anchor="middle">prefix P_t</text>
@@ -272,84 +316,162 @@
 <path class="dg-a" d="M715 308 V356"/>
 <rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: intervention-censored bootstrap</text>
 <path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">actor loss L_π</text>
-</svg><figcaption>Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện các đầu actor theo từng pha cùng hai critic online từ dữ liệu của chính sách và con người.</figcaption></figure>
-<p><strong>Giai đoạn I: mô hình tham chiếu (flow matching trên π0.5).</strong></p>
-<ul>
-<li>Mỗi miếng xúc giác ở đầu ngón (mảng áp điện 6×8) được ánh xạ thành wrench 6D; hai miếng cho $w_t \in \mathbb{R}^{12}$. Một cửa sổ wrench quá khứ qua MLP nhẹ thành <strong>một</strong> token $z^{tac}$.</li>
-<li><strong>Gộp muộn:</strong> token wrench không được đưa vào VLM. Sau khi VLM mã hóa ảnh, ngôn ngữ và state thành prefix $P_t$, $[P_t; z^{tac}]$ qua self-attention rồi <strong>MoE định tuyến mềm</strong> $F_t = \sum_m \rho_{t,m} E_m(H_t)$.</li>
-<li>Một <strong>bypass khởi tạo bằng 0</strong> $\alpha\,P(z^{tac})$ (vô hướng học được $\alpha$ bắt đầu từ 0) được cộng vào để thông tin tiếp xúc đến thẳng action expert.</li>
-<li>Expert dự đoán chunk hành động <strong>và chuỗi wrench tương lai</strong>, với loss $L = \lVert u^a - \hat u^a\rVert^2 + \lambda_w\lVert u^w - \hat u^w\rVert^2$.</li>
-</ul>
-<p><strong>Giai đoạn II: tinh chỉnh online (tham chiếu bị đóng băng).</strong></p>
-<ul>
-<li>Ngữ cảnh $c_t = [z^{vla}, q_t, w_t, W_{hist}, \hat W^{ref}, A^{ref}]$: token thị giác từ VLA đóng băng, proprioception, wrench đo được và lịch sử, cùng wrench dự đoán và hành động tham chiếu của VLA.</li>
-<li>Một <strong>bộ ước lượng pha</strong> chọn một trong nhiều <strong>đầu actor theo pha</strong>, xuất trực tiếp chunk đã tinh chỉnh.</li>
-<li>Hai critic: $Q_{task}$ (lợi ích nhiệm vụ) và $Q_{ic}$, critic <strong>bị kiểm duyệt theo can thiệp</strong>. Khi một chunk phần lớn do chính sách sinh ra được theo sau bởi chunk chủ yếu do con người, mask $m^{int}$ cắt bootstrap, nên việc con người tiếp quản không được ghi công cho chính sách. Hành động can thiệp vẫn nằm trong replay buffer để điều hòa hành vi.</li>
-<li>Loss actor: $L_\pi = \lambda_{bc}L_{bc} - \lambda_{task}\,\mathbb{E}[\min_i Q^{(i)}_{task}] + \lambda_{ic}\,\mathbb{E}[\Delta Q_{ic}]$, neo vào tham chiếu của VLA trong khi bám theo critic.</li>
-<li>Phần thưởng: tín hiệu thành công nhị phân do con người chấm cho từng subtask.</li>
-</ul>
-<h2>Kết quả</h2>
-<p>Task chuỗi dài hộp chốt (đặt cốc cà phê vào khay chặt, khóa chốt, nắm và đặt quả trứng), 30 lượt tự động mỗi dòng:</p>
+</svg><figcaption>Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện online các đầu actor theo pha cùng hai critic.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Phương pháp</th>
-<th>Cốc</th>
-<th>Chốt</th>
-<th>Trứng</th>
-<th>Cả chuỗi</th>
-<th>Thời gian cả chuỗi</th>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>π0.5</td>
-<td>18</td>
-<td>15</td>
-<td>20</td>
-<td>12</td>
-<td>199,7 s</td>
+<td>Miếng xúc giác → wrench</td>
+<td>hai mảng áp điện 6×8</td>
+<td>$w_t \in \mathbb{R}^{12}$</td>
+<td>xúc giác thành lực/mô men</td>
 </tr>
 <tr>
-<td>ForceVLA</td>
-<td>21</td>
-<td>20</td>
-<td>22</td>
-<td>15</td>
-<td>195,3 s</td>
+<td>Bộ mã hóa MLP</td>
+<td>cửa sổ wrench</td>
+<td>một token $z^{tac}$</td>
+<td>tóm tắt tiếp xúc</td>
 </tr>
 <tr>
-<td>TORL-VLA không RL</td>
-<td>25</td>
-<td>23</td>
-<td>25</td>
-<td>21</td>
-<td>191,9 s</td>
+<td>Gộp muộn + MoE</td>
+<td>prefix VLM $P_t$, $z^{tac}$</td>
+<td>đặc trưng đã định tuyến</td>
+<td>gộp sau VLM</td>
 </tr>
 <tr>
-<td>RLT</td>
-<td>26</td>
-<td>25</td>
-<td>25</td>
-<td>23</td>
-<td>175,2 s</td>
+<td>Bypass khởi tạo 0</td>
+<td>$z^{tac}$</td>
+<td>$\alpha P(z^{tac})$, $\alpha$ bắt đầu từ 0</td>
+<td>thêm tiếp xúc mà không xáo trộn π0.5</td>
 </tr>
 <tr>
-<td><strong>TORL-VLA</strong></td>
-<td><strong>30</strong></td>
-<td><strong>29</strong></td>
-<td><strong>30</strong></td>
-<td><strong>28</strong></td>
-<td><strong>165,5 s</strong></td>
+<td>Expert flow-matching</td>
+<td>điều kiện</td>
+<td>$A^{ref}$, wrench tương lai $\hat W^{ref}$</td>
+<td>hành động tham chiếu</td>
+</tr>
+<tr>
+<td>Ước lượng pha + actor</td>
+<td>token VLA, wrench, $A^{ref}$, $\hat W^{ref}$</td>
+<td>chunk đã tinh chỉnh</td>
+<td>hiệu chỉnh online</td>
+</tr>
+<tr>
+<td>Critic $Q_{task}$, $Q_{ic}$</td>
+<td>ngữ cảnh, hành động</td>
+<td>giá trị</td>
+<td>huấn luyện actor</td>
 </tr>
 </tbody>
 </table>
-<p>Ablation mô hình tham chiếu: bỏ MoE tụt xuống 18/17/19, bỏ bypass 23/20/21. Ablation online: không có wrench context 27/27/26, không có IC critic 27/26/28.</p>
-<h2>Lưu ý</h2>
-<p>Tôi chỉ đọc HTML nguyên văn đến khoảng giữa phần thực nghiệm; các chi tiết như H, K, tần số điều khiển, tỉ lệ cập nhật và độ trễ lấy từ bản tóm tắt nên không trích ở đây. Số expert, tần số lấy mẫu của miếng xúc giác và kích thước VLM không được nêu trong phần tôi đọc.</p>
-<p><strong>Mang theo sang bài sau:</strong> TORL-VLA cần một người sẵn sàng can thiệp, và học từ bất cứ điều gì người đó làm. <a href="ter-dagger.html">TER-DAgger</a> hỏi chính xác khi nào nên gọi con người, và làm sao biến một bản sửa lộn xộn thành dữ liệu huấn luyện sạch.</p>
-<p><strong>Câu kiểm tra:</strong> $R^K_t = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, chưa kết thúc, $c_{int} = 1$. Tính $y_{task}$, và $y_{ic}$ khi chunk kế tiếp là con người tiếp quản.</p>
-<p><em>Đáp án:</em> $y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. Với $m^{int} = 1$: $y_{ic} = 0.5 - 1 + 0 = -0.5$.</p>
+<h2>3. Tính tay: ai được ghi công?</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Sau khi con người tiếp quản và thành công, một critic thông thường cho <em>chunk của chính sách ngay trước đó</em> giá trị cao. Critic kiểm duyệt theo can thiệp cắt mối liên hệ đó. Tính cả hai mục tiêu để thấy khác biệt.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$R$</td>
+<td>phần thưởng trong chunk của chính sách</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$\gamma^K$</td>
+<td>hệ số chiết khấu qua một chunk $K$ bước</td>
+<td>hằng số</td>
+<td>0.9 (minh họa)</td>
+</tr>
+<tr>
+<td>$Q_{next}$</td>
+<td>giá trị trạng thái kế (con người điều khiển)</td>
+<td>input</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>$m^{int}$</td>
+<td>bằng 1 nếu chunk kế là con người tiếp quản</td>
+<td>input</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$c_{int}$</td>
+<td>mức phạt vì gây ra tiếp quản</td>
+<td>hằng số</td>
+<td>1 (minh họa)</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>bằng 1 nếu episode kết thúc</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$y_{task}$, $y_{ic}$</td>
+<td>mục tiêu huấn luyện của hai critic</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} + (1-d)(1-m^{int})\,\gamma^K Q_{next}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$y_{task} = 0 + 1 \times 0.9 \times 1.0 = 0.9$.</li>
+<li>$y_{ic} = 0 - 1 \times 1 + 1 \times 0 \times 0.9 \times 1.0 = -1$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Critic thông thường chấm chunk $+0{,}9$; critic kiểm duyệt chấm $-1$.</p>
+<p><strong>Ý nghĩa.</strong> Chunk đẩy robot về phía tiếp xúc không an toàn chính là thứ <em>gây ra</em> việc tiếp quản. Chỉ mục tiêu kiểm duyệt mới dạy actor tránh nó. Hành động của con người vẫn nằm trong replay buffer để bắt chước.</p>
+</div>
+<h2>4. Huấn luyện</h2>
+<table>
+<thead>
+<tr>
+<th>Giai đoạn</th>
+<th>Thứ được huấn luyện</th>
+<th>Dữ liệu / tín hiệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I</td>
+<td>VLA tham chiếu nhận biết wrench (π0.5)</td>
+<td>demo; loss trên hành động + wrench tương lai</td>
+</tr>
+<tr>
+<td>II</td>
+<td>actor theo pha, $Q_{task}$, $Q_{ic}$ (VLA đóng băng)</td>
+<td>lượt chạy online, can thiệp của người, thành công nhị phân mỗi subtask</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Tôi chỉ đọc nguyên văn tới khoảng giữa phần thực nghiệm; độ dài chunk, tần số điều khiển và tỉ lệ cập nhật không được trích ở đây.</li>
+<li>Số expert của MoE và tần số lấy mẫu xúc giác không được nêu trong phần tôi đọc.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> TORL-VLA cần một người sẵn sàng can thiệp. <a href="ter-dagger.html">TER-DAgger</a> hỏi chính xác khi nào nên gọi con người và làm sao biến bản sửa lộn xộn thành dữ liệu sạch.</p>
+<p><strong>Câu kiểm tra:</strong> $R = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, $d = 0$, $c_{int} = 1$, chunk kế là tiếp quản ($m^{int} = 1$). Tính $y_{task}$ và $y_{ic}$.</p>
+<details>
+<summary>Đáp án</summary>
+<p>$y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. $y_{ic} = 0.5 - 1 + 0 = -0.5$.</p>
+</details>
     </div>
   </article>
 

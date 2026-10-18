@@ -4,26 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Notes on the gap between Nav2 in simulation and Nav2 on a robot that has to work every single time, on a real floor.">
-<title>Getting Started with Nav2 on a Real Robot · Phạm Đức Duy</title>
+<title>Getting Started with Nav2 on a Real Robot · Blog · Phạm Đức Duy</title>
 
-<link rel="icon" type="image/svg+xml" href="../../favicon.svg?v=cubism-2">
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Getting Started with Nav2 on a Real Robot">
 <meta property="og:description" content="Notes on the gap between Nav2 in simulation and Nav2 on a robot that has to work every single time, on a real floor.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../styles/blog.css">
-<link rel="stylesheet" href="../styles/cubism.css?v=cubism-2">
+<link rel="stylesheet" href="../styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
 <div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
 <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
   <a href="../" onclick="toggleMenu(false)">Blog</a>
+  <a href="../../learnvla/" onclick="toggleMenu(false)">Learn VLA</a>
   <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
   <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
 </div>
@@ -33,6 +39,7 @@
     <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
     <ul class="nav-links" role="navigation" aria-label="Main navigation">
       <li><a href="../">Blog</a></li>
+      <li><a href="../../learnvla/">Learn VLA</a></li>
       <li><a href="../../#projects">Projects</a></li>
       <li><a href="../../#contact">Contact</a></li>
     </ul>
@@ -157,7 +164,7 @@ tòa nhà có Wi-Fi kém".</p>
   <footer style="margin-top: var(--sp-16);">
     <div class="footer-inner">
       <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
-      <div class="footer-built">Built with HTML + Vanilla JS · GSAP + ScrollTrigger · No framework · Cubism-inspired.</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
     </div>
   </footer>
 </div>

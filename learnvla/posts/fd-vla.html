@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.">
+<meta name="description" content="ForceVLA and Tactile-VLA need a force sensor on the deployed robot. FD-VLA learns to predict a force token from images and arm state, using the sensor only during training: 61.1% vs 23.3% for SmolVLA.">
 <title>FD-VLA: Force Distilled from Vision and State · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="FD-VLA: Force Distilled from Vision and State">
-<meta property="og:description" content="FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.">
+<meta property="og:description" content="ForceVLA and Tactile-VLA need a force sensor on the deployed robot. FD-VLA learns to predict a force token from images and arm state, using the sensor only during training: 61.1% vs 23.3% for SmolVLA.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -84,34 +66,26 @@
     <h1 data-en>FD-VLA: Force Distilled from Vision and State</h1>
     <h1 data-vi>FD-VLA: Chưng cất lực từ thị giác và state</h1>
 
-    <p class="post-excerpt-lead" data-en>FD-VLA learns a force token from images and robot state, supervised by a real force encoder only at training time, so a force-aware VLA runs without any force sensor.</p>
-    <p class="post-excerpt-lead" data-vi>FD-VLA học một token lực từ ảnh và state của robot, chỉ được giám sát bởi bộ mã hóa lực thật lúc huấn luyện, nhờ đó VLA nhận biết lực chạy được mà không cần cảm biến lực.</p>
+    <p class="post-excerpt-lead" data-en>ForceVLA and Tactile-VLA need a force sensor on the deployed robot. FD-VLA learns to predict a force token from images and arm state, using the sensor only during training: 61.1% vs 23.3% for SmolVLA.</p>
+    <p class="post-excerpt-lead" data-vi>ForceVLA và Tactile-VLA cần cảm biến lực trên robot triển khai. FD-VLA học dự đoán token lực từ ảnh và state cánh tay, chỉ dùng cảm biến lúc huấn luyện: 61,1% so với 23,3% của SmolVLA.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Distillation</span><span class="pill">Paper Notes</span><span class="pill">SmolVLA</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (February 2026), built on SmolVLA.</p>
-<h2>The pain it cures</h2>
-<p>Force sensors are costly, fragile and often absent on deployed robots. Yet the earlier force VLAs in this series (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) need them at run time. FD-VLA's idea: the force during contact is largely <strong>predictable from what the robot sees and how its arm is posed</strong>, so train a small module to predict a latent force token and throw the sensor away at inference.</p>
-<h2>Try the naive way first</h2>
-<p>There are three obvious options, and the paper measures two of them on its three tasks:</p>
-<ol>
-<li>Feed the raw sensor force in. It helps, but needs the sensor at run time, the very thing to remove.</li>
-<li>Encode force with a plain MLP and no distillation module: <strong>38.9%</strong>.</li>
-<li>Use the encoded ground-truth force itself as the attention query: <strong>51.1%</strong>.</li>
-</ol>
-<p>A learnable query that has to <em>predict</em> the force latent does best, <strong>61.1%</strong>. Forcing the model to rebuild force from what it sees seems to teach it which visual cues matter.</p>
-<h2>Work it by hand: one single-query attention step</h2>
-<p>The FDM's only query is $p$. Take three context tokens $[p,\ f^V,\ f^S]$ with values $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, and let the scaled scores $q \cdot k / \sqrt{d_k}$ be $(0,\ 2,\ 1)$.</p>
-<p>$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$</p>
-<p>$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$</p>
-<p>Ignoring $W_O$, LayerNorm, the FFN and the $+p$ residual, $Z$ is the predicted force token. If the teacher's encoded force is $f^{aF} = (1.5,\ 1.0)$:</p>
-<p>$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$</p>
-<p>The gradient asks for more of the first coordinate and less of the second, so the scores shift weight from the vision token towards the state token. Over many samples, the module learns which mix of visual and arm cues predicts the force.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> · 02/2026 · built on SmolVLA</p>
+<p><strong>PROBLEM</strong> Force sensors are costly, fragile and often missing on deployed robots.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The force VLAs the paper compares against in its Fig. 1, Tactile-VLA and <a href="forcevla.html">ForceVLA</a>, need the sensor at run time.</p>
+<p><strong>IDEA</strong> A Force Distillation Module: a learnable query looks at image and state tokens and predicts a force token. During training it is pulled towards the encoding of the real sensor force; at run time the sensor is gone.</p>
+<p><strong>RESULT</strong> 61.1% mean success vs 23.3% (SmolVLA) and 46.7% (π0), both without force.</p>
+</div>
+<h2>1. The problem: force-aware, but only with a sensor</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The question becomes: can the force be read off what the robot sees and how its arm is posed?" class="dg-natural" width="868" height="206" viewBox="0 0 868 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">ForceVLA, Tactile-VLA</text><rect class="dg-box" x="172" y="22" width="193" height="38"/><text class="dg-t" x="269" y="45" text-anchor="middle">F/T sensor at run time</text><path class="dg-a" d="M366 41 H398"/><rect class="dg-badbox" x="400" y="14" width="140" height="54"/><text class="dg-t" x="470" y="37" text-anchor="middle">Force-aware VLA</text><text class="dg-s" x="470" y="53" text-anchor="middle">needs the sensor</text><path class="dg-a" d="M540 41 H572"/><rect class="dg-box" x="574" y="22" width="96" height="38"/><text class="dg-t" x="622" y="45" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="172.4" y="86">✗ no sensor on the robot, no force</text><text class="dg-lab dg-green" x="14" y="143">FD-VLA</text><rect class="dg-box" x="172" y="120" width="140" height="38"/><text class="dg-t" x="242" y="143" text-anchor="middle">RGB + arm state</text><path class="dg-a" d="M312 139 H344"/><rect class="dg-key" x="346" y="112" width="167" height="54"/><text class="dg-t" x="430" y="135" text-anchor="middle">Force Distillation</text><text class="dg-s" x="430" y="151" text-anchor="middle">predicts a force token</text><path class="dg-a" d="M513 139 H545"/><rect class="dg-box" x="547" y="120" width="148" height="38"/><text class="dg-t" x="621" y="143" text-anchor="middle">SmolVLM (frozen)</text><path class="dg-a" d="M695 139 H727"/><rect class="dg-box" x="729" y="120" width="125" height="38"/><text class="dg-t" x="791" y="143" text-anchor="middle">Action expert</text><text class="dg-note dg-green" x="172.4" y="184">✓ sensor used only during training</text></svg><figcaption>The question becomes: can the force be read off what the robot sees and how its arm is posed?</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Ablation, mean of three tasks: a query that has to *predict* force works best." class="dg-natural" width="710" height="102" viewBox="0 0 710 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="250" y="23" text-anchor="end">No FDM, MLP force encoding</text><rect class="dg-bar" x="260" y="10" width="140" height="18"/><text class="dg-barval" x="408" y="23">38.9%</text><text class="dg-barlabel" x="250" y="53" text-anchor="end">FDM with real-force latent as query</text><rect class="dg-bar" x="260" y="40" width="184" height="18"/><text class="dg-barval" x="451" y="53">51.1%</text><text class="dg-barlabel" x="250" y="83" text-anchor="end">FDM with learnable query</text><rect class="dg-key" x="260" y="70" width="220" height="18"/><text class="dg-barval" x="487" y="83">61.1%</text></svg><figcaption>Ablation, mean of three tasks: a query that has to *predict* force works best.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The Force Distillation Module predicts a force token from vision and state; in training it is pulled towards the encoding of real force; at inference only the prediction branch runs." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
 <rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Language L</text>
 <rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">State S_t</text>
@@ -135,66 +109,166 @@
 <rect class="dg-key" x="640" y="252" width="110" height="52"/><text class="dg-t" x="695" y="274" text-anchor="middle">L_dist</text><text class="dg-s" x="695" y="290" text-anchor="middle">‖f^pF−f^aF‖²</text>
 <path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
 <text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
-</svg><figcaption>The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs.</figcaption></figure>
-<ol>
-<li><strong>Backbone and projection.</strong> Following SmolVLA, the perception backbone is SmolVLM-2 with a SigLIP vision encoder. A single-layer MLP projects vision $f^V$, language $f^L$ and state $f^S$ to the VLM width $D$.</li>
-<li><strong>Force Distillation Module (FDM).</strong> A learnable query token $p \in \mathbb{R}^{1\times D}$ attends over the context $C = [p, f^V, f^S]$ with single-query multi-head attention; the output is $f^{pF} = \text{FFN}(\text{LN}([Z_1..Z_H] W_O + p))$, a single force token. Because $p$ is in the keys and values, the residual path gives self-conditioning.</li>
-<li><strong>Teacher branch (training only).</strong> The raw force from the F/T sensor goes through a light MLP to $f^{aF}$. The distillation loss is $L_{dist} = \lVert f^{pF} - f^{aF}\rVert_2^2$.</li>
-<li><strong>Injection.</strong> The VLM input is $[f^V, f^L, f^S, f^{pF}]$. The VLM is <strong>frozen</strong>. A directional attention mask (adapted from SmolVLA) makes information flow one way: percept tokens (vision, language) only see each other; control tokens (state, force) see percept tokens and earlier control tokens.</li>
-<li><strong>Action expert.</strong> A transformer head with a conditional flow-matching decoder produces the chunk $A_t$. Total loss $L = L^\tau(\theta) + \lambda L_{dist}$.</li>
-</ol>
-<h2>Results</h2>
-<p>Hardware: UR5e with a wrist and a main camera; force from the arm's internal sensor during data collection. Tasks: Clean Whiteboard, Press Emergency Button, Insert Plug; 50 teleoperated demos per task, 30 evaluation trials each.</p>
-<p>FD-VLA reaches a <strong>61.1%</strong> mean success, against 23.3% for SmolVLA without force, 46.7% for π0 without force and 11.1% for DP3. Ablation on the same three tasks:</p>
+</svg><figcaption>The Force Distillation Module predicts a force token from vision and state; in training it is pulled towards the encoding of real force; at inference only the prediction branch runs.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Variant</th>
-<th>Mean success</th>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>No FDM (MLP force encoding)</td>
-<td>38.9%</td>
+<td>Projection (1-layer MLP)</td>
+<td>image $V_t$, language $L$, state $S_t$</td>
+<td>$f^V, f^L, f^S$</td>
+<td>tokens in the VLM width $D$</td>
 </tr>
 <tr>
-<td>FDM with the ground-truth force latent as the query</td>
-<td>51.1%</td>
+<td>FDM</td>
+<td>query $p$, $f^V$, $f^S$</td>
+<td>force token $f^{pF}$</td>
+<td>predicted force</td>
 </tr>
 <tr>
-<td>FDM with a learnable query (proposed)</td>
-<td>61.1%</td>
+<td>Teacher MLP (training only)</td>
+<td>sensor force $F_t$</td>
+<td>$f^{aF}$</td>
+<td>target for $f^{pF}$</td>
+</tr>
+<tr>
+<td>SmolVLM-2 (frozen) + mask</td>
+<td>$[f^V, f^L, f^S, f^{pF}]$</td>
+<td>features</td>
+<td>control tokens see percept tokens, not the reverse</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>features</td>
+<td>action chunk $A_t$</td>
+<td>flow-matching decoder</td>
 </tr>
 </tbody>
 </table>
-<h2>Caveats</h2>
-<p>The text's gains for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative), and the π0 numbers do not obviously add up against FD-VLA's 61.1%. Hidden sizes, $\lambda$, the chunk length, control rate and training schedule are not stated. The paper says the model has about one tenth of π0's parameters.
-<strong>Carry forward:</strong> FD-VLA learns force by regressing onto a sensor latent, so it learns what the force <em>is</em>, not what force is <em>safe</em>. <a href="hapticvla.html">HapticVLA</a> turns tactile data into a safety reward, then also removes the sensor by distillation.</p>
-<p><strong>Check question:</strong> same values, but the scores are $(0,\ 0,\ 2)$. What is $Z$, and what is $L_{dist}$ against $f^{aF} = (1.5,\ 1.0)$?</p>
-<p><em>Answer:</em> softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, much worse than before: too much weight on the state token now.</p>
+<h2>3. Work it by hand: one single-query attention step</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The FDM is one attention step with a single query. Computing it shows how the predicted force token is a weighted mix of what the image and the arm state say, and how the distillation loss corrects that mix.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$s_p, s_V, s_S$</td>
+<td>scaled scores of query $p$ against $p$, $f^V$, $f^S$</td>
+<td>input</td>
+<td>$(0,\ 2,\ 1)$</td>
+</tr>
+<tr>
+<td>$v_p, v_V, v_S$</td>
+<td>values of the three tokens</td>
+<td>input</td>
+<td>$(0,0)$, $(1,2)$, $(3,0)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>attention weights</td>
+<td>intermediate</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$Z$</td>
+<td>predicted force token (before $W_O$, LayerNorm, FFN)</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$f^{aF}$</td>
+<td>encoded real force (teacher)</td>
+<td>input</td>
+<td>$(1.5,\ 1.0)$</td>
+</tr>
+<tr>
+<td>$L_{dist}$</td>
+<td>distillation loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = \lVert Z - f^{aF} \rVert_2^2$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$e^0 = 1$, $e^2 = 7.389$, $e^1 = 2.718$; sum $11.107$; $\alpha = (0.090,\ 0.665,\ 0.245)$.</li>
+<li>$Z = 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$.</li>
+<li>$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$.</li>
+</ol>
+<p><strong>Result.</strong> Predicted $(1.40, 1.33)$ against the real $(1.5, 1.0)$; loss 0.119.</p>
+<p><strong>Why it matters.</strong> To lower the loss, the first coordinate must rise and the second fall, so the scores move weight from the image token to the state token. Over many samples the module learns which visual and arm cues predict force.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Mean success: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 trials each, UR5e." class="dg-natural" width="592" height="132" viewBox="0 0 592 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="132" y="23" text-anchor="end">DP3</text><rect class="dg-bar" x="142" y="10" width="40" height="18"/><text class="dg-barval" x="190" y="23">11.1%</text><text class="dg-barlabel" x="132" y="53" text-anchor="end">SmolVLA (no force)</text><rect class="dg-bar" x="142" y="40" width="84" height="18"/><text class="dg-barval" x="234" y="53">23.3%</text><text class="dg-barlabel" x="132" y="83" text-anchor="end">π0 (no force)</text><rect class="dg-bar" x="142" y="70" width="168" height="18"/><text class="dg-barval" x="318" y="83">46.7%</text><text class="dg-barlabel" x="132" y="113" text-anchor="end">FD-VLA</text><rect class="dg-key" x="142" y="100" width="220" height="18"/><text class="dg-barval" x="370" y="113">61.1%</text></svg><figcaption>Mean success: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 trials each, UR5e.</figcaption></figure>
+<h2>5. Training</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss</td>
+<td>$L = L_{flow} + \lambda L_{dist}$</td>
+</tr>
+<tr>
+<td>Frozen</td>
+<td>the VLM (SmolVLM-2)</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>50 SpaceMouse demos per task</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>about one tenth of π0's parameters</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
+<ul>
+<li>Gains reported for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative).</li>
+<li>$\lambda$, hidden sizes, chunk length and control rate are not stated.</li>
+</ul>
+<p><strong>Carry forward:</strong> FD-VLA learns what the force <em>is</em>, not what force is <em>safe</em>. <a href="hapticvla.html">HapticVLA</a> turns tactile data into a safety reward, then also removes the sensor.</p>
+<p><strong>Check question:</strong> same values, scores $(0,\ 0,\ 2)$. What are $Z$ and $L_{dist}$?</p>
+<details>
+<summary>Answer</summary>
+<p>$\alpha = (1, 1, 7.389)/9.389 = (0.107, 0.107, 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468, 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 1.556$: now too much weight on the state token.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (tháng 2/2026), xây trên SmolVLA.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Cảm biến lực đắt, dễ hỏng và thường không có trên robot triển khai. Vậy mà các VLA lực trước trong series này (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) cần chúng lúc chạy. Ý tưởng FD-VLA: lực khi tiếp xúc phần lớn <strong>đoán được từ những gì robot thấy và tư thế cánh tay</strong>, nên huấn luyện một module nhỏ dự đoán token lực ẩn rồi bỏ cảm biến lúc suy luận.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Có ba lựa chọn hiển nhiên, và bài báo đo hai trong số đó trên ba task của mình:</p>
-<ol>
-<li>Đưa thẳng lực từ cảm biến vào. Có giúp, nhưng cần cảm biến lúc chạy, đúng thứ ta muốn bỏ.</li>
-<li>Mã hóa lực bằng một MLP thường, không có module chưng cất: <strong>38,9%</strong>.</li>
-<li>Dùng chính lực thật đã mã hóa làm query cho attention: <strong>51,1%</strong>.</li>
-</ol>
-<p>Một query học được, buộc phải <em>dự đoán</em> latent lực, cho kết quả tốt nhất, <strong>61,1%</strong>. Bắt mô hình dựng lại lực từ những gì nó thấy dường như dạy nó tín hiệu thị giác nào mới quan trọng.</p>
-<h2>Tính tay: một bước attention một query</h2>
-<p>Query duy nhất của FDM là $p$. Lấy ba token ngữ cảnh $[p,\ f^V,\ f^S]$ với value $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, và cho điểm đã chia tỉ lệ $q \cdot k / \sqrt{d_k}$ là $(0,\ 2,\ 1)$.</p>
-<p>$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$</p>
-<p>$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$</p>
-<p>Bỏ qua $W_O$, LayerNorm, FFN và residual $+p$, $Z$ chính là token lực dự đoán. Nếu lực thật đã mã hóa của teacher là $f^{aF} = (1.5,\ 1.0)$:</p>
-<p>$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$</p>
-<p>Gradient đòi tăng tọa độ thứ nhất và giảm tọa độ thứ hai, nên điểm số dịch trọng số từ token thị giác sang token state. Qua nhiều mẫu, module học được cách pha trộn tín hiệu thị giác và cánh tay để đoán lực.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó được kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> · 02/2026 · nền SmolVLA</p>
+<p><strong>VẤN ĐỀ</strong> Cảm biến lực đắt, dễ hỏng và thường không có trên robot triển khai.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các VLA lực mà bài so sánh trong Fig. 1, Tactile-VLA và <a href="forcevla.html">ForceVLA</a>, cần cảm biến lúc chạy.</p>
+<p><strong>Ý TƯỞNG</strong> Một Force Distillation Module: một query học được nhìn token ảnh và state rồi dự đoán một token lực. Lúc huấn luyện nó bị kéo về phía mã hóa của lực thật từ cảm biến; lúc chạy thì không còn cảm biến.</p>
+<p><strong>KẾT QUẢ</strong> Thành công trung bình 61,1%, so với 23,3% (SmolVLA) và 46,7% (π0), cả hai không dùng lực.</p>
+</div>
+<h2>1. Vấn đề: nhận biết lực, nhưng chỉ khi có cảm biến</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Câu hỏi trở thành: có đọc được lực từ những gì robot thấy và tư thế cánh tay không?" class="dg-natural" width="924" height="206" viewBox="0 0 924 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">ForceVLA, Tactile-VLA</text><rect class="dg-box" x="172" y="22" width="186" height="38"/><text class="dg-t" x="265" y="45" text-anchor="middle">Cảm biến F/T lúc chạy</text><path class="dg-a" d="M358 41 H390"/><rect class="dg-badbox" x="392" y="14" width="155" height="54"/><text class="dg-t" x="470" y="37" text-anchor="middle">VLA nhận biết lực</text><text class="dg-s" x="470" y="53" text-anchor="middle">cần cảm biến</text><path class="dg-a" d="M547 41 H579"/><rect class="dg-box" x="581" y="22" width="96" height="38"/><text class="dg-t" x="629" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="172.4" y="86">✗ robot không có cảm biến thì không có lực</text><text class="dg-lab dg-green" x="14" y="143">FD-VLA</text><rect class="dg-box" x="172" y="120" width="178" height="38"/><text class="dg-t" x="261" y="143" text-anchor="middle">RGB + state cánh tay</text><path class="dg-a" d="M350 139 H382"/><rect class="dg-key" x="384" y="112" width="163" height="54"/><text class="dg-t" x="466" y="135" text-anchor="middle">Force Distillation</text><text class="dg-s" x="466" y="151" text-anchor="middle">dự đoán token lực</text><path class="dg-a" d="M547 139 H579"/><rect class="dg-box" x="581" y="120" width="170" height="38"/><text class="dg-t" x="666" y="143" text-anchor="middle">SmolVLM (đóng băng)</text><path class="dg-a" d="M752 139 H784"/><rect class="dg-box" x="786" y="120" width="125" height="38"/><text class="dg-t" x="848" y="143" text-anchor="middle">Action expert</text><text class="dg-note dg-green" x="172.4" y="184">✓ cảm biến chỉ dùng lúc huấn luyện</text></svg><figcaption>Câu hỏi trở thành: có đọc được lực từ những gì robot thấy và tư thế cánh tay không?</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Ablation, trung bình ba task: query phải *dự đoán* lực cho kết quả tốt nhất." class="dg-natural" width="703" height="102" viewBox="0 0 703 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="243" y="23" text-anchor="end">Không FDM, mã hóa lực bằng MLP</text><rect class="dg-bar" x="253" y="10" width="140" height="18"/><text class="dg-barval" x="401" y="23">38,9%</text><text class="dg-barlabel" x="243" y="53" text-anchor="end">FDM dùng latent lực thật làm query</text><rect class="dg-bar" x="253" y="40" width="184" height="18"/><text class="dg-barval" x="445" y="53">51,1%</text><text class="dg-barlabel" x="243" y="83" text-anchor="end">FDM với query học được</text><rect class="dg-key" x="253" y="70" width="220" height="18"/><text class="dg-barval" x="481" y="83">61,1%</text></svg><figcaption>Ablation, trung bình ba task: query phải *dự đoán* lực cho kết quả tốt nhất.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó bị kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
 <rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Language L</text>
 <rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">State S_t</text>
@@ -218,44 +292,152 @@
 <rect class="dg-key" x="640" y="252" width="110" height="52"/><text class="dg-t" x="695" y="274" text-anchor="middle">L_dist</text><text class="dg-s" x="695" y="290" text-anchor="middle">‖f^pF−f^aF‖²</text>
 <path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
 <text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
-</svg><figcaption>Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó được kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán.</figcaption></figure>
-<ol>
-<li><strong>Backbone và phép chiếu.</strong> Theo SmolVLA, backbone cảm nhận là SmolVLM-2 với encoder ảnh SigLIP. Một MLP một lớp chiếu thị giác $f^V$, ngôn ngữ $f^L$ và state $f^S$ về chiều $D$ của VLM.</li>
-<li><strong>Force Distillation Module (FDM).</strong> Một token truy vấn học được $p \in \mathbb{R}^{1\times D}$ chú ý trên ngữ cảnh $C = [p, f^V, f^S]$ bằng multi-head attention một query; đầu ra $f^{pF} = \text{FFN}(\text{LN}([Z_1..Z_H] W_O + p))$, một token lực duy nhất. Vì $p$ nằm trong cả key và value, đường residual cho phép tự điều kiện hóa.</li>
-<li><strong>Nhánh teacher (chỉ lúc huấn luyện).</strong> Lực thô từ cảm biến F/T qua một MLP nhẹ thành $f^{aF}$. Loss chưng cất là $L_{dist} = \lVert f^{pF} - f^{aF}\rVert_2^2$.</li>
-<li><strong>Tiêm vào VLM.</strong> Đầu vào VLM là $[f^V, f^L, f^S, f^{pF}]$. VLM bị <strong>đóng băng</strong>. Một mask attention có hướng (lấy từ SmolVLA) làm thông tin chảy một chiều: token cảm nhận (thị giác, ngôn ngữ) chỉ nhìn nhau; token điều khiển (state, lực) nhìn được token cảm nhận và token điều khiển trước đó.</li>
-<li><strong>Action expert.</strong> Đầu transformer với bộ giải mã conditional flow-matching tạo chunk $A_t$. Loss tổng $L = L^\tau(\theta) + \lambda L_{dist}$.</li>
-</ol>
-<h2>Kết quả</h2>
-<p>Phần cứng: UR5e có camera cổ tay và camera chính; lực lấy từ cảm biến trong của cánh tay khi thu dữ liệu. Task: Clean Whiteboard, Press Emergency Button, Insert Plug; 50 demo teleoperation mỗi task, 30 lượt đánh giá mỗi task.</p>
-<p>FD-VLA đạt <strong>61,1%</strong> thành công trung bình, so với 23,3% của SmolVLA không lực, 46,7% của π0 không lực và 11,1% của DP3. Ablation trên cùng ba task:</p>
+</svg><figcaption>Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó bị kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Biến thể</th>
-<th>Thành công TB</th>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Không FDM (mã hóa lực bằng MLP)</td>
-<td>38,9%</td>
+<td>Phép chiếu (MLP 1 lớp)</td>
+<td>ảnh $V_t$, ngôn ngữ $L$, state $S_t$</td>
+<td>$f^V, f^L, f^S$</td>
+<td>token theo chiều $D$ của VLM</td>
 </tr>
 <tr>
-<td>FDM dùng latent lực thật làm query</td>
-<td>51,1%</td>
+<td>FDM</td>
+<td>query $p$, $f^V$, $f^S$</td>
+<td>token lực $f^{pF}$</td>
+<td>lực dự đoán</td>
 </tr>
 <tr>
-<td>FDM với query học được (đề xuất)</td>
-<td>61,1%</td>
+<td>MLP teacher (chỉ khi huấn luyện)</td>
+<td>lực cảm biến $F_t$</td>
+<td>$f^{aF}$</td>
+<td>mục tiêu cho $f^{pF}$</td>
+</tr>
+<tr>
+<td>SmolVLM-2 (đóng băng) + mask</td>
+<td>$[f^V, f^L, f^S, f^{pF}]$</td>
+<td>đặc trưng</td>
+<td>token điều khiển nhìn token cảm nhận, không ngược lại</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>đặc trưng</td>
+<td>chunk hành động $A_t$</td>
+<td>bộ giải mã flow-matching</td>
 </tr>
 </tbody>
 </table>
-<h2>Lưu ý</h2>
-<p>Mức cải thiện bài nêu cho baseline có dùng lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối, và số của π0 không khớp rõ ràng với 61,1% của FD-VLA. Kích thước ẩn, $\lambda$, độ dài chunk, tần số điều khiển và lịch huấn luyện không được nêu. Bài cho biết mô hình có khoảng một phần mười số tham số của π0.</p>
-<p><strong>Mang theo sang bài sau:</strong> FD-VLA học lực bằng cách hồi quy về latent của cảm biến, nên nó học lực <em>là bao nhiêu</em>, không học lực nào là <em>an toàn</em>. <a href="hapticvla.html">HapticVLA</a> biến dữ liệu xúc giác thành phần thưởng an toàn, rồi cũng bỏ cảm biến bằng chưng cất.</p>
-<p><strong>Câu kiểm tra:</strong> cùng value, nhưng điểm số là $(0,\ 0,\ 2)$. $Z$ bằng bao nhiêu, và $L_{dist}$ so với $f^{aF} = (1.5,\ 1.0)$ là bao nhiêu?</p>
-<p><em>Đáp án:</em> softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, tệ hơn nhiều so với trước: giờ dồn quá nhiều trọng số vào token state.</p>
+<h2>3. Tính tay: một bước attention một query</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> FDM là một bước attention với một query duy nhất. Tính nó để thấy token lực dự đoán là một hỗn hợp có trọng số giữa thông tin ảnh và state cánh tay, và loss chưng cất sửa hỗn hợp đó ra sao.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$s_p, s_V, s_S$</td>
+<td>điểm (đã chia tỉ lệ) của query $p$ với $p$, $f^V$, $f^S$</td>
+<td>input</td>
+<td>$(0,\ 2,\ 1)$</td>
+</tr>
+<tr>
+<td>$v_p, v_V, v_S$</td>
+<td>value của ba token</td>
+<td>input</td>
+<td>$(0,0)$, $(1,2)$, $(3,0)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>trọng số attention</td>
+<td>trung gian</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$Z$</td>
+<td>token lực dự đoán (trước $W_O$, LayerNorm, FFN)</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$f^{aF}$</td>
+<td>lực thật đã mã hóa (teacher)</td>
+<td>input</td>
+<td>$(1.5,\ 1.0)$</td>
+</tr>
+<tr>
+<td>$L_{dist}$</td>
+<td>loss chưng cất</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = \lVert Z - f^{aF} \rVert_2^2$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$e^0 = 1$, $e^2 = 7.389$, $e^1 = 2.718$; tổng $11.107$; $\alpha = (0.090,\ 0.665,\ 0.245)$.</li>
+<li>$Z = 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$.</li>
+<li>$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Dự đoán $(1.40, 1.33)$ so với lực thật $(1.5, 1.0)$; loss 0,119.</p>
+<p><strong>Ý nghĩa.</strong> Để giảm loss, tọa độ thứ nhất phải tăng và tọa độ thứ hai phải giảm, nên điểm số dịch trọng số từ token ảnh sang token state. Qua nhiều mẫu, module học được tín hiệu thị giác và cánh tay nào đoán được lực.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 lượt mỗi task, UR5e." class="dg-natural" width="599" height="132" viewBox="0 0 599 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">DP3</text><rect class="dg-bar" x="149" y="10" width="40" height="18"/><text class="dg-barval" x="197" y="23">11,1%</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">SmolVLA (không lực)</text><rect class="dg-bar" x="149" y="40" width="84" height="18"/><text class="dg-barval" x="241" y="53">23,3%</text><text class="dg-barlabel" x="139" y="83" text-anchor="end">π0 (không lực)</text><rect class="dg-bar" x="149" y="70" width="168" height="18"/><text class="dg-barval" x="325" y="83">46,7%</text><text class="dg-barlabel" x="139" y="113" text-anchor="end">FD-VLA</text><rect class="dg-key" x="149" y="100" width="220" height="18"/><text class="dg-barval" x="377" y="113">61,1%</text></svg><figcaption>Thành công trung bình: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 lượt mỗi task, UR5e.</figcaption></figure>
+<h2>5. Huấn luyện</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss</td>
+<td>$L = L_{flow} + \lambda L_{dist}$</td>
+</tr>
+<tr>
+<td>Đóng băng</td>
+<td>VLM (SmolVLM-2)</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>50 demo SpaceMouse mỗi task</td>
+</tr>
+<tr>
+<td>Kích thước</td>
+<td>khoảng một phần mười số tham số của π0</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Mức tăng bài nêu cho baseline có lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối.</li>
+<li>$\lambda$, kích thước ẩn, độ dài chunk và tần số điều khiển không được nêu.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> FD-VLA học lực <em>là bao nhiêu</em>, không học lực nào là <em>an toàn</em>. <a href="hapticvla.html">HapticVLA</a> biến dữ liệu xúc giác thành phần thưởng an toàn, rồi cũng bỏ cảm biến.</p>
+<p><strong>Câu kiểm tra:</strong> cùng value, điểm số $(0,\ 0,\ 2)$. $Z$ và $L_{dist}$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\alpha = (1, 1, 7.389)/9.389 = (0.107, 0.107, 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468, 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 1.556$: giờ dồn quá nhiều trọng số vào token state.</p>
+</details>
     </div>
   </article>
 

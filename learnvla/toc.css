@@ -78,6 +78,13 @@ a.toc-item:focus-visible {
   color: var(--amber-a11y);
 }
 .toc-label { min-width: 0; overflow-wrap: anywhere; }
+.toc-date {
+  display: block;
+  margin-top: 3px;
+  font: 500 10.5px/1.3 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--ink-4);
+}
 .toc-status {
   flex: none;
   margin-left: auto;

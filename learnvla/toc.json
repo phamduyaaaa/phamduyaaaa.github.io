@@ -9,17 +9,17 @@
       { "title": "Tokenizer & Action Tokenization", "slug": "action-tokenization" },
       { "title": "Attention / Self-attention", "slug": "attention" },
       { "title": "Cross-attention", "slug": "cross-attention" },
-      { "title": "Transformer", "slug": "transformer" },
-      { "title": "ViT", "slug": "vit" },
+      { "title": "Transformer", "slug": "transformer", "date": "06/2017" },
+      { "title": "ViT", "slug": "vit", "date": "10/2020" },
       { "title": "VLM", "slug": "vlm" },
       { "title": "Backbone", "slug": "backbone" },
       { "title": "Mixture of Experts (MoE)", "slug": "moe" },
-      { "title": "Diffusion Policy", "slug": "diffusion-policy" },
-      { "title": "Flowmatching", "slug": "flowmatching" },
+      { "title": "Diffusion Policy", "slug": "diffusion-policy", "date": "03/2023" },
+      { "title": "Flowmatching", "slug": "flowmatching", "date": "10/2022" },
       { "title": "Action Chunking", "slug": "action-chunking" },
       { "title": "Cross-embodiment & Dữ liệu", "slug": "cross-embodiment-data" },
-      { "title": "Contrastive Learning / InfoNCE", "slug": "contrastive-learning" },
-      { "title": "VQ-VAE", "slug": "vq-vae" },
+      { "title": "Contrastive Learning / InfoNCE", "slug": "contrastive-learning", "date": "07/2018" },
+      { "title": "VQ-VAE", "slug": "vq-vae", "date": "11/2017" },
       { "title": "Distillation", "slug": "distillation" },
       { "title": "Residual Policy", "slug": "residual-policy" },
       { "title": "Actor-Critic RL", "slug": "actor-critic" }
@@ -30,24 +30,24 @@
     "title_en": "Benchmarks",
     "items": [
       { "title": "Cách đánh giá VLA", "slug": "danh-gia-vla" },
-      { "title": "LIBERO", "slug": "libero" },
+      { "title": "LIBERO", "slug": "libero", "date": "06/2023" },
       { "title": "GM-100", "slug": "gm-100" },
-      { "title": "SimplerEnv", "slug": "simplerenv" },
-      { "title": "CALVIN", "slug": "calvin" },
-      { "title": "RoboTwin", "slug": "robotwin" }
+      { "title": "SimplerEnv", "slug": "simplerenv", "date": "05/2024" },
+      { "title": "CALVIN", "slug": "calvin", "date": "12/2021" },
+      { "title": "RoboTwin", "slug": "robotwin", "date": "09/2024" }
     ]
   },
   {
     "title_vi": "VLA-Paper",
     "title_en": "VLA Papers",
     "items": [
-      { "title": "RT-1 / RT-2", "slug": "rt-1-rt-2" },
-      { "title": "Octo", "slug": "octo" },
-      { "title": "OpenVLA", "slug": "openvla" },
-      { "title": "Pi0", "slug": "pi0" },
-      { "title": "Pi0.5", "slug": "pi0-5" },
-      { "title": "GR00T N1", "slug": "gr00t-n1" },
-      { "title": "SmolVLA", "slug": "smolvla" },
+      { "title": "RT-1 / RT-2", "slug": "rt-1-rt-2", "date": "12/2022 · 07/2023" },
+      { "title": "Octo", "slug": "octo", "date": "05/2024" },
+      { "title": "OpenVLA", "slug": "openvla", "date": "06/2024" },
+      { "title": "Pi0", "slug": "pi0", "date": "10/2024" },
+      { "title": "Pi0.5", "slug": "pi0-5", "date": "04/2025" },
+      { "title": "GR00T N1", "slug": "gr00t-n1", "date": "03/2025" },
+      { "title": "SmolVLA", "slug": "smolvla", "date": "06/2025" },
       { "title": "Lingbotv2", "slug": "lingbotv2" }
     ]
   },
@@ -66,16 +66,17 @@
     "items": [
       { "title": "Cảm biến lực & xúc giác (F/T, GelSight)", "slug": "force-tactile-sensing" },
       { "title": "Contact-rich Manipulation & Impedance/Admittance Control", "slug": "contact-rich-control" },
-      { "title": "ForceVLA", "slug": "forcevla" },
-      { "title": "ForceVLA2", "slug": "forcevla2" },
-      { "title": "MoDE-VLA", "slug": "mode-vla" },
-      { "title": "VLA-Touch", "slug": "vla-touch" },
-      { "title": "TaF-VLA", "slug": "taf-vla" },
-      { "title": "Tabero", "slug": "tabero" },
-      { "title": "FD-VLA", "slug": "fd-vla" },
-      { "title": "HapticVLA", "slug": "hapticvla" },
-      { "title": "FWBC-VLA", "slug": "fwbc-vla" },
-      { "title": "TORL-VLA", "slug": "torl-vla" },
-      { "title": "TER-Dagger", "slug": "ter-dagger" }    ]
+      { "title": "ForceVLA", "slug": "forcevla", "date": "05/2025" },
+      { "title": "ForceVLA2", "slug": "forcevla2", "date": "03/2026" },
+      { "title": "MoDE-VLA", "slug": "mode-vla", "date": "03/2026" },
+      { "title": "VLA-Touch", "slug": "vla-touch", "date": "07/2025" },
+      { "title": "TaF-VLA", "slug": "taf-vla", "date": "01/2026" },
+      { "title": "Tabero", "slug": "tabero", "date": "05/2026" },
+      { "title": "FD-VLA", "slug": "fd-vla", "date": "02/2026" },
+      { "title": "HapticVLA", "slug": "hapticvla", "date": "03/2026" },
+      { "title": "FWBC-VLA", "slug": "fwbc-vla", "date": "09/2026" },
+      { "title": "TORL-VLA", "slug": "torl-vla", "date": "06/2026" },
+      { "title": "TER-Dagger", "slug": "ter-dagger", "date": "03/2026" }
+    ]
   }
 ]

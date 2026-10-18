@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.">
+<meta name="description" content="In HG-DAgger a human decides when to step in, and the raw takeover is used as data. TER-DAgger lets a force-error detector call the human, edits the correction into a clean trajectory, and trains a 50 Hz residual on it.">
 <title>TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion">
-<meta property="og:description" content="When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.">
+<meta property="og:description" content="In HG-DAgger a human decides when to step in, and the raw takeover is used as data. TER-DAgger lets a force-error detector call the human, edits the correction into a clean trajectory, and trains a 50 Hz residual on it.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -78,43 +60,31 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>TER-DAgger: Trajectory-Editing Residual DAgger for Precision Insertion</h1>
     <h1 data-vi>TER-DAgger: Residual DAgger với chỉnh sửa quỹ đạo cho lắp ghép chính xác</h1>
 
-    <p class="post-excerpt-lead" data-en>When force prediction disagrees with measurement, the robot pauses and a human corrects it. TER-DAgger edits the failed trajectory into a clean correction and trains a 50 Hz residual policy on it.</p>
-    <p class="post-excerpt-lead" data-vi>Khi lực dự đoán lệch lực đo, robot dừng và con người chỉnh. TER-DAgger chỉnh sửa quỹ đạo thất bại thành một bản hiệu chỉnh sạch rồi huấn luyện chính sách residual 50 Hz trên đó.</p>
+    <p class="post-excerpt-lead" data-en>In HG-DAgger a human decides when to step in, and the raw takeover is used as data. TER-DAgger lets a force-error detector call the human, edits the correction into a clean trajectory, and trains a 50 Hz residual on it.</p>
+    <p class="post-excerpt-lead" data-vi>Trong HG-DAgger, con người tự quyết khi nào can thiệp, và lần tiếp quản thô được dùng làm dữ liệu. TER-DAgger để bộ phát hiện sai số lực gọi con người, chỉnh bản sửa thành quỹ đạo sạch, rồi huấn luyện residual 50 Hz trên đó.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">DAgger</span><span class="pill">Imitation Learning</span><span class="pill">Paper Notes</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a>, <em>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control</em>; the abstract names the method <strong>Trajectory Editing Residual Dataset Aggregation (TER-DAgger)</strong>. It is not a VLA itself: the base policy is an ACT-style transformer. It belongs in this series because it shows how <strong>force prediction error</strong> can trigger and shape human corrections.</p>
-<h2>The pain it cures</h2>
-<p>A USB plug has about 0.1 mm of tolerance. A slow base policy (1 Hz) will often land a few millimetres off. Ordinary DAgger asks a human for corrections, but a correction recorded during a failure contains the hesitation and drift of the failing rollout, and it is hard to tell the learner where the failure begins. TER-DAgger fixes three things: <strong>when</strong> to ask (a force-error detector), <strong>what</strong> to record (an edited, clean trajectory) and <strong>how</strong> to apply it (a fast residual policy under impedance control).</p>
-<h2>Try the naive way first</h2>
-<p>Classic human-in-the-loop DAgger (HG-DAgger): a person watches and takes over whenever things look wrong, and the corrections are added to the data. Two weak points:</p>
-<ol>
-<li><strong>When to intervene</strong> is left to human attention, which is late and inconsistent for sub-millimetre insertion.</li>
-<li><strong>What gets recorded</strong> is a raw takeover, including the hesitation and drift of the failing rollout, and nothing says where the base policy actually went wrong.</li>
-</ol>
-<p>The paper compares against HG-DAgger, retraining on a combined dataset, and fine-tuning; the abstract reports an average improvement of over 37% over these baselines.</p>
-<h2>Work it by hand</h2>
-<p><strong>The error detector.</strong> The base policy predicted $\hat F = (0,\ 0,\ -5,\ 0,\ 0,\ 0)$ and the sensor reads $F = (0.5,\ 0,\ -9,\ 0,\ 0,\ 0.1)$:</p>
-<p>$$e_t = \lVert \hat F - F \rVert_1 = 0.5 + 0 + 4 + 0 + 0 + 0.1 = 4.6$$</p>
-<p>With an illustrative threshold $c = 3$, $e_t &gt; c$: pause and call the human. The plug is hitting the socket 4 N harder than the policy expected, a contact the camera may not show.</p>
-<p><strong>Where to splice the correction.</strong> Two candidate points on the base trajectory, $D = \omega_p d_p + \omega_q d_q$ with $\omega_p = 1.0$, $\omega_q = 0.5$:</p>
-<ul>
-<li>$k_1$: $d_p = 0.010$ m, $d_q = 0.02$ rad, so $D = 0.010 + 0.010 = 0.020$</li>
-<li>$k_2$: $d_p = 0.004$ m, $d_q = 0.05$ rad, so $D = 0.004 + 0.025 = 0.029$</li>
-</ul>
-<p>$k^* = k_1$, although $k_2$ is closer in position: its orientation is too far off. The weights decide how metres trade against radians.</p>
-<p><strong>A residual label.</strong> During the human segment the base policy wanted $x = 0.300$ m and the human went to $0.296$ m, so $\Delta A = 0.296 - 0.300 = -0.004$ m. Before the edit the label is $0$: the residual learns to stay silent where the base was fine.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="A 1 Hz base policy proposes actions, a 50 Hz residual policy adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction, and trajectory editing turns it into residual training data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a> · 03/2026 · base policy ACT-style (not a VLA)</p>
+<p><strong>PROBLEM</strong> Plug insertion with about 0.1 mm tolerance; a slow base policy often lands a few millimetres off.</p>
+<p><strong>WHAT FAILED BEFORE</strong> In HG-DAgger a person decides <em>when</em> to intervene (late, inconsistent), and the raw takeover, drift included, becomes training data. Retraining or fine-tuning on such data are the baselines.</p>
+<p><strong>IDEA</strong> (1) Call the human when predicted and measured force disagree. (2) Edit the base trajectory so it joins the human's correction smoothly. (3) Train a fast residual policy on the edited data, executed under impedance control.</p>
+<p><strong>RESULT</strong> The abstract reports an average improvement of over 37% across tasks.</p>
+</div>
+<h2>1. The problem: when to ask, and what to record</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The force the base policy predicts is used as an alarm: when reality disagrees, something has gone wrong." class="dg-natural" width="997" height="192" viewBox="0 0 997 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">HG-DAgger</text><rect class="dg-box" x="124" y="22" width="110" height="38"/><text class="dg-t" x="179" y="45" text-anchor="middle">Base policy</text><path class="dg-a" d="M234 41 H266"/><rect class="dg-badbox" x="268" y="14" width="125" height="54"/><text class="dg-t" x="330" y="37" text-anchor="middle">Human watches</text><text class="dg-s" x="330" y="53" text-anchor="middle">decides when</text><path class="dg-a" d="M392 41 H424"/><rect class="dg-badbox" x="426" y="22" width="155" height="38"/><text class="dg-t" x="504" y="45" text-anchor="middle">Raw takeover data</text><path class="dg-a" d="M582 41 H614"/><rect class="dg-box" x="616" y="22" width="96" height="38"/><text class="dg-t" x="664" y="45" text-anchor="middle">Retrain</text><text class="dg-note dg-red" x="124" y="86">✗ late, inconsistent; data contain the failing drift</text><text class="dg-lab dg-green" x="14" y="136">TER-DAgger</text><rect class="dg-box" x="124" y="113" width="148" height="38"/><text class="dg-t" x="198" y="136" text-anchor="middle">Base policy 1 Hz</text><path class="dg-a" d="M272 132 H304"/><rect class="dg-key" x="306" y="113" width="178" height="38"/><text class="dg-t" x="395" y="136" text-anchor="middle">Force-error detector</text><path class="dg-a" d="M484 132 H516"/><rect class="dg-box" x="518" y="113" width="102" height="38"/><text class="dg-t" x="569" y="136" text-anchor="middle">Human demo</text><path class="dg-a" d="M620 132 H652"/><rect class="dg-key" x="654" y="113" width="163" height="38"/><text class="dg-t" x="735" y="136" text-anchor="middle">Trajectory editing</text><path class="dg-a" d="M816 132 H848"/><rect class="dg-key" x="850" y="113" width="132" height="38"/><text class="dg-t" x="917" y="136" text-anchor="middle">Residual 50 Hz</text><text class="dg-note dg-green" x="124" y="170">✓ the robot asks; corrections become clean residual labels</text></svg><figcaption>The force the base policy predicts is used as an alarm: when reality disagrees, something has gone wrong.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="A 1 Hz base policy proposes actions, a 50 Hz residual adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction; trajectory editing turns it into residual data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="40" width="150" height="48"/><text class="dg-t" x="95" y="58" text-anchor="middle">Pose x_t + force F_t</text><text class="dg-s" x="95" y="73" text-anchor="middle">+ front/wrist RGB</text>
 <rect class="dg-box" x="210" y="30" width="160" height="64"/><text class="dg-t" x="290" y="54" text-anchor="middle">Base policy</text><text class="dg-s" x="290" y="70" text-anchor="middle">ACT-style CVAE, 1 Hz</text><text class="dg-s" x="290" y="84" text-anchor="middle">n=100, run 50</text>
 <path class="dg-a" d="M170 62 H210"/>
@@ -139,58 +109,155 @@
 <path class="dg-a" d="M830 182 H890 V354 H830"/>
 <path class="dg-ad" d="M640 354 H610 V84 H590"/><text class="dg-l" x="600" y="230" text-anchor="end" transform="rotate(0)">trains residual</text>
 <text class="dg-h" x="20" y="396">LOOP: run base → detect force error → human fixes → edit trajectory → new residual data → retrain residual</text>
-</svg><figcaption>A 1 Hz base policy proposes actions, a 50 Hz residual policy adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction, and trajectory editing turns it into residual training data.</figcaption></figure>
+</svg><figcaption>A 1 Hz base policy proposes actions, a 50 Hz residual adds a correction, a 1 kHz impedance controller executes. A force-error detector triggers human correction; trajectory editing turns it into residual data.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Rate</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base policy (ACT-style CVAE)</td>
+<td>1 Hz</td>
+<td>pose, force, two RGB images</td>
+<td>100 future actions <strong>and forces</strong>; runs 50</td>
+</tr>
+<tr>
+<td>Error detector</td>
+<td>50 Hz</td>
+<td>predicted vs measured force</td>
+<td>pause + call the human</td>
+</tr>
+<tr>
+<td>Trajectory editing</td>
+<td>offline</td>
+<td>failed base path, human demo</td>
+<td>smooth corrected path</td>
+</tr>
+<tr>
+<td>Residual policy (2-layer Transformer)</td>
+<td>50 Hz</td>
+<td>pose, base action, two images</td>
+<td>correction $\Delta A$</td>
+</tr>
+<tr>
+<td>Impedance controller</td>
+<td>1 kHz</td>
+<td>$\hat A + \Delta A$</td>
+<td>joint torques</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Work it by hand: the force-error alarm</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The base policy predicts the force it expects to feel. If the measured force differs too much, the plug is probably hitting the rim. Computing $e_t$ shows how a 4 N surprise triggers the pause.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\hat F_t$</td>
+<td>predicted wrench $(f_x, f_y, f_z, \tau_x, \tau_y, \tau_z)$</td>
+<td>input</td>
+<td>$(0, 0, -5, 0, 0, 0)$</td>
+</tr>
+<tr>
+<td>$F_t$</td>
+<td>measured wrench</td>
+<td>input</td>
+<td>$(0.5, 0, -9, 0, 0, 0.1)$</td>
+</tr>
+<tr>
+<td>$c$</td>
+<td>threshold</td>
+<td>constant</td>
+<td>3 (illustrative)</td>
+</tr>
+<tr>
+<td>$e_t$</td>
+<td>force error</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (L1 norm: sum of absolute differences)</p>
+<p>$$e_t = \lVert \hat F_t - F_t \rVert_1 = \sum_{j=1}^{6} \left| \hat F_{t,j} - F_{t,j} \right|, \qquad \text{pause if } e_t &gt; c$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Differences: $(-0.5,\ 0,\ 4,\ 0,\ 0,\ -0.1)$.</li>
+<li>Absolute values summed: $0.5 + 0 + 4 + 0 + 0 + 0.1 = 4.6$.</li>
+<li>Compare: $4.6 &gt; 3$.</li>
+</ol>
+<p><strong>Result.</strong> The detector fires: pause and ask the human.</p>
+<p><strong>Why it matters.</strong> The camera may not show a plug pressing 4 N too hard into the rim; force does. The robot asks for help at the moment it starts failing, not when a person happens to notice.</p>
+</div>
+<h2>4. Training and setup</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base policy</td>
+<td>100 demonstrations, 2,000 epochs</td>
+</tr>
+<tr>
+<td>Residual</td>
+<td>50 corrective demonstrations, 200 epochs</td>
+</tr>
+<tr>
+<td>Editing weights</td>
+<td>$\omega_p = 1.0$ (position), $\omega_q = 0.5$ (orientation), $\lambda_s = 1$, $\lambda_e = 1000$</td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>USB, two-pin, three-pin plugs; MuJoCo + real Franka; 50 trials each</td>
+</tr>
+<tr>
+<td>Baselines</td>
+<td>ACT, FILIC, HG-DAgger, Retrain, Finetune</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Caveats</h2>
 <ul>
-<li><strong>Base policy (1 Hz).</strong> ACT-style CVAE transformer. Inputs: pose $x_t = [p_t, q_t]$, force $F_t = [f_x,f_y,f_z,\tau_x,\tau_y,\tau_z]$ (estimated from joint torques) and two 480×640 RGB images through ResNet-18. It predicts <strong>future actions and future forces</strong> jointly, with horizon $n=100$ steps (2 s), executing the first 50 before replanning.</li>
-<li><strong>Error detector (50 Hz).</strong> $e_t = \lVert\hat F_t - F_t\rVert_1$, comparing the base policy's predicted force with the measured force. If $e_t &gt; c$ (a threshold), execution pauses.</li>
-<li><strong>Human correction.</strong> The Cartesian impedance stiffness is set to zero and a short corrective insertion demonstration is recorded (in real experiments the end-effector starts about 8 cm above the target).</li>
-<li><strong>Trajectory editing.</strong> Find the base-trajectory point nearest to the start of the human demonstration, $k^* = \arg\min_k D(k)$ with $D = \omega_p d_p + \omega_q d_q$ ($\omega_p=1.0$, $\omega_q=0.5$). Replace a local segment by an optimised one that minimises fidelity + smoothness + endpoint cost ($\lambda_s = 1$, $\lambda_e = 1000$) while being pinned to the human start pose. The output $X_{correct}$ is a smooth path joining the base trajectory to the human insertion.</li>
-<li><strong>Residual labels in four regions.</strong> Before the edit the residual is 0; in the transition it is the edited pose minus the base action; in the human demo it is the human pose minus the base action; after the edit it is the nearest human pose minus the base action.</li>
-<li><strong>Residual policy (50 Hz).</strong> A two-layer transformer encoder (hidden size 256, 8 heads); inputs: current pose, the base action $\hat A_{t+1}$ and two images through a shared ResNet-18; output $\Delta A_{t+1}$. Executed action: $A^{exec} = \hat A + \Delta A$.</li>
-<li><strong>Impedance controller (1 kHz).</strong> $F_{imp} = K(x_d - x) + D(\dot x_d - \dot x)$ with gravity compensation.</li>
+<li>Table values (≈ 77% average, detector precision ≈ 98.8%) come from a summary of the paper; only the "over 37%" headline is verbatim.</li>
+<li>The physical interface the human uses and the stiffness values are not stated.</li>
 </ul>
-<h2>Training and setup</h2>
-<p>Base: 100 demonstrations, 2000 epochs. Residual: 50 corrective demonstrations, 200 epochs. Simulation: MuJoCo, Franka Research 3, USB and two-pin plugs, socket offset in $[-5, 5]$ cm. Real: Franka with a wrist RealSense D415 and a fixed front camera; USB, two-pin and three-pin plugs. Baselines: ACT, FILIC, HG-DAgger, Retrain (one combined dataset) and Finetune. 50 trials per task.</p>
-<h2>Results</h2>
-<p>The abstract reports an average improvement of <strong>over 37%</strong> over the baselines. The paper's tables (which I read only through a summary, so verify them) report TER-DAgger around 77% average, a force-error detector with about 98.8% precision and 100% recall, and an optimisation window of 20 points working best.</p>
-<h2>Caveats</h2>
-<p>The aggregation loop itself (when the dataset is merged and models retrained) is not described step by step, and the physical interface used by the human is not stated. The figure caption says the edited segment has $N-1$ preceding points while the equation uses $N+1$ indices. Stiffness values $K$, $D$ and the optimiser used for editing are not given.
-<strong>Carry forward:</strong> this closes the force series. Across the eleven papers, force enters at five places:</p>
-<ul>
-<li><strong>into the VLM input:</strong> ForceVLA2 (force prompt), FD-VLA (predicted force token)</li>
-<li><strong>between the VLM and the action expert:</strong> ForceVLA, MoDE-VLA, TORL-VLA</li>
-<li><strong>inside the action expert:</strong> TaF-VLA, FWBC-VLA</li>
-<li><strong>outside the VLA, in a refiner or a controller:</strong> VLA-Touch, Tabero, TER-DAgger, FWBC-VLA's body compensation</li>
-<li><strong>only at training time:</strong> FD-VLA, HapticVLA</li>
-</ul>
-<p><a href="survey-force-map.html">Survey 1</a> puts them side by side with 22 more methods.</p>
-<p><strong>Check question:</strong> $\hat F = (0,\ 0,\ -4,\ 0,\ 0,\ 0)$, $F = (0.2,\ -0.3,\ -5,\ 0.1,\ 0,\ 0)$, $c = 3$. Does the detector fire? And what is $D$ for $d_p = 0.006$ m, $d_q = 0.01$ rad?</p>
-<p><em>Answer:</em> $e_t = 0.2 + 0.3 + 1 + 0.1 = 1.6 &lt; 3$: no pause. $D = 0.006 + 0.5 \times 0.01 = 0.011$.</p>
+<p><strong>Carry forward:</strong> this closes the force-paper series. <a href="survey-force-map.html">Survey 1</a> puts all eleven side by side with 22 more methods.</p>
+<p><strong>Check question:</strong> $\hat F = (0, 0, -4, 0, 0, 0)$, $F = (0.2, -0.3, -5, 0.1, 0, 0)$, $c = 3$. Does the detector fire?</p>
+<details>
+<summary>Answer</summary>
+<p>$e_t = 0.2 + 0.3 + 1 + 0.1 = 1.6 &lt; 3$: no pause.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a>, <em>Force-Aware Residual DAgger via Trajectory Editing for Precision Insertion with Impedance Control</em>; abstract đặt tên phương pháp là <strong>Trajectory Editing Residual Dataset Aggregation (TER-DAgger)</strong>. Bản thân nó không phải VLA: chính sách nền là transformer kiểu ACT. Nó nằm trong series này vì cho thấy <strong>sai số dự đoán lực</strong> có thể kích hoạt và định hình các chỉnh sửa của con người ra sao.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Phích USB có dung sai khoảng 0,1 mm. Chính sách nền chậm (1 Hz) thường rơi lệch vài milimét. DAgger thông thường nhờ con người chỉnh, nhưng bản chỉnh ghi lúc đang thất bại chứa cả sự do dự và trôi của lượt chạy lỗi, và khó chỉ cho học viên chỗ thất bại bắt đầu. TER-DAgger sửa ba thứ: <strong>khi nào</strong> hỏi (bộ phát hiện sai số lực), <strong>ghi gì</strong> (quỹ đạo đã chỉnh sửa, sạch) và <strong>áp dụng thế nào</strong> (chính sách residual nhanh dưới điều khiển impedance).</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>DAgger cổ điển có người trong vòng lặp (HG-DAgger): một người quan sát và tiếp quản bất cứ khi nào thấy không ổn, rồi các bản sửa được thêm vào dữ liệu. Hai điểm yếu:</p>
-<ol>
-<li><strong>Khi nào can thiệp</strong> phụ thuộc vào sự chú ý của con người, vốn chậm và không đều với thao tác lắp dưới một milimét.</li>
-<li><strong>Thứ được ghi lại</strong> là một lần tiếp quản thô, gồm cả sự do dự và trôi của lượt chạy lỗi, và không có gì chỉ ra chính sách nền thực sự sai ở đâu.</li>
-</ol>
-<p>Bài so sánh với HG-DAgger, huấn luyện lại trên bộ dữ liệu gộp, và fine-tune; abstract nêu mức cải thiện trung bình hơn 37% so với các baseline này.</p>
-<h2>Tính tay</h2>
-<p><strong>Bộ phát hiện lỗi.</strong> Chính sách nền dự đoán $\hat F = (0,\ 0,\ -5,\ 0,\ 0,\ 0)$ còn cảm biến đọc $F = (0.5,\ 0,\ -9,\ 0,\ 0,\ 0.1)$:</p>
-<p>$$e_t = \lVert \hat F - F \rVert_1 = 0.5 + 0 + 4 + 0 + 0 + 0.1 = 4.6$$</p>
-<p>Với ngưỡng minh họa $c = 3$, $e_t &gt; c$: tạm dừng và gọi con người. Phích đang tì vào ổ mạnh hơn 4 N so với chính sách dự kiến, một tiếp xúc mà camera có thể không thấy.</p>
-<p><strong>Nối bản sửa vào đâu.</strong> Hai điểm ứng viên trên quỹ đạo nền, $D = \omega_p d_p + \omega_q d_q$ với $\omega_p = 1.0$, $\omega_q = 0.5$:</p>
-<ul>
-<li>$k_1$: $d_p = 0.010$ m, $d_q = 0.02$ rad, nên $D = 0.010 + 0.010 = 0.020$</li>
-<li>$k_2$: $d_p = 0.004$ m, $d_q = 0.05$ rad, nên $D = 0.004 + 0.025 = 0.029$</li>
-</ul>
-<p>$k^* = k_1$, dù $k_2$ gần hơn về vị trí: hướng của nó lệch quá nhiều. Các trọng số quyết định mét được đổi lấy radian theo tỉ lệ nào.</p>
-<p><strong>Một nhãn residual.</strong> Trong đoạn con người điều khiển, chính sách nền muốn $x = 0.300$ m còn con người đi tới $0.296$ m, nên $\Delta A = 0.296 - 0.300 = -0.004$ m. Trước chỗ chỉnh, nhãn là $0$: residual học cách im lặng ở nơi chính sách nền đã ổn.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="Chính sách nền 1 Hz đề xuất hành động, chính sách residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt chỉnh sửa của con người, và chỉnh sửa quỹ đạo biến nó thành dữ liệu huấn luyện residual." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2603.04038">arXiv 2603.04038</a> · 03/2026 · chính sách nền kiểu ACT (không phải VLA)</p>
+<p><strong>VẤN ĐỀ</strong> Cắm phích với dung sai khoảng 0,1 mm; chính sách nền chậm thường rơi lệch vài milimét.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Trong HG-DAgger, một người tự quyết <em>khi nào</em> can thiệp (muộn, không đều), và lần tiếp quản thô, kể cả phần trôi, thành dữ liệu huấn luyện. Huấn luyện lại hoặc fine-tune trên dữ liệu đó là các baseline.</p>
+<p><strong>Ý TƯỞNG</strong> (1) Gọi con người khi lực dự đoán và lực đo lệch nhau. (2) Chỉnh quỹ đạo nền để nó nối mượt vào bản sửa của con người. (3) Huấn luyện một chính sách residual nhanh trên dữ liệu đã chỉnh, thực thi dưới điều khiển impedance.</p>
+<p><strong>KẾT QUẢ</strong> Abstract nêu mức cải thiện trung bình hơn 37% trên các task.</p>
+</div>
+<h2>1. Vấn đề: khi nào hỏi, và ghi lại cái gì</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Lực mà chính sách nền dự đoán được dùng như một chuông báo: khi thực tế không khớp, có gì đó đã sai." class="dg-natural" width="1065" height="192" viewBox="0 0 1065 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">HG-DAgger</text><rect class="dg-box" x="124" y="22" width="132" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Chính sách nền</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="132" height="54"/><text class="dg-t" x="357" y="37" text-anchor="middle">Người quan sát</text><text class="dg-s" x="357" y="53" text-anchor="middle">tự quyết khi nào</text><path class="dg-a" d="M423 41 H455"/><rect class="dg-badbox" x="457" y="22" width="186" height="38"/><text class="dg-t" x="550" y="45" text-anchor="middle">Dữ liệu tiếp quản thô</text><path class="dg-a" d="M642 41 H674"/><rect class="dg-box" x="676" y="22" width="132" height="38"/><text class="dg-t" x="743" y="45" text-anchor="middle">Huấn luyện lại</text><text class="dg-note dg-red" x="124" y="86">✗ muộn, không đều; dữ liệu chứa cả phần trôi lỗi</text><text class="dg-lab dg-green" x="14" y="136">TER-DAgger</text><rect class="dg-box" x="124" y="113" width="170" height="38"/><text class="dg-t" x="209" y="136" text-anchor="middle">Chính sách nền 1 Hz</text><path class="dg-a" d="M294 132 H326"/><rect class="dg-key" x="328" y="113" width="201" height="38"/><text class="dg-t" x="429" y="136" text-anchor="middle">Bộ phát hiện sai số lực</text><path class="dg-a" d="M529 132 H561"/><rect class="dg-box" x="563" y="113" width="132" height="38"/><text class="dg-t" x="629" y="136" text-anchor="middle">Demo của người</text><path class="dg-a" d="M696 132 H728"/><rect class="dg-key" x="730" y="113" width="155" height="38"/><text class="dg-t" x="807" y="136" text-anchor="middle">Chỉnh sửa quỹ đạo</text><path class="dg-a" d="M885 132 H917"/><rect class="dg-key" x="919" y="113" width="132" height="38"/><text class="dg-t" x="985" y="136" text-anchor="middle">Residual 50 Hz</text><text class="dg-note dg-green" x="124" y="170">✓ robot tự hỏi; bản sửa thành nhãn residual sạch</text></svg><figcaption>Lực mà chính sách nền dự đoán được dùng như một chuông báo: khi thực tế không khớp, có gì đó đã sai.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Chính sách nền 1 Hz đề xuất hành động, residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt con người sửa; chỉnh sửa quỹ đạo biến bản sửa thành dữ liệu residual." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="40" width="150" height="48"/><text class="dg-t" x="95" y="58" text-anchor="middle">Pose x_t + force F_t</text><text class="dg-s" x="95" y="73" text-anchor="middle">+ front/wrist RGB</text>
 <rect class="dg-box" x="210" y="30" width="160" height="64"/><text class="dg-t" x="290" y="54" text-anchor="middle">Base policy</text><text class="dg-s" x="290" y="70" text-anchor="middle">ACT-style CVAE, 1 Hz</text><text class="dg-s" x="290" y="84" text-anchor="middle">n=100, run 50</text>
 <path class="dg-a" d="M170 62 H210"/>
@@ -215,33 +282,142 @@
 <path class="dg-a" d="M830 182 H890 V354 H830"/>
 <path class="dg-ad" d="M640 354 H610 V84 H590"/><text class="dg-l" x="600" y="230" text-anchor="end" transform="rotate(0)">trains residual</text>
 <text class="dg-h" x="20" y="396">LOOP: run base → detect force error → human fixes → edit trajectory → new residual data → retrain residual</text>
-</svg><figcaption>Chính sách nền 1 Hz đề xuất hành động, chính sách residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt chỉnh sửa của con người, và chỉnh sửa quỹ đạo biến nó thành dữ liệu huấn luyện residual.</figcaption></figure>
+</svg><figcaption>Chính sách nền 1 Hz đề xuất hành động, residual 50 Hz cộng hiệu chỉnh, bộ điều khiển impedance 1 kHz thực thi. Bộ phát hiện sai số lực kích hoạt con người sửa; chỉnh sửa quỹ đạo biến bản sửa thành dữ liệu residual.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Tần số</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chính sách nền (CVAE kiểu ACT)</td>
+<td>1 Hz</td>
+<td>pose, lực, hai ảnh RGB</td>
+<td>100 hành động <strong>và lực</strong> tương lai; chạy 50</td>
+</tr>
+<tr>
+<td>Bộ phát hiện lỗi</td>
+<td>50 Hz</td>
+<td>lực dự đoán và lực đo</td>
+<td>tạm dừng + gọi người</td>
+</tr>
+<tr>
+<td>Chỉnh sửa quỹ đạo</td>
+<td>offline</td>
+<td>đường nền bị lỗi, demo của người</td>
+<td>đường đã sửa, mượt</td>
+</tr>
+<tr>
+<td>Chính sách residual (Transformer 2 lớp)</td>
+<td>50 Hz</td>
+<td>pose, hành động nền, hai ảnh</td>
+<td>hiệu chỉnh $\Delta A$</td>
+</tr>
+<tr>
+<td>Bộ điều khiển impedance</td>
+<td>1 kHz</td>
+<td>$\hat A + \Delta A$</td>
+<td>mô men khớp</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Tính tay: chuông báo sai số lực</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Chính sách nền dự đoán lực nó sẽ cảm thấy. Nếu lực đo được khác quá nhiều, nhiều khả năng phích đang tì vào mép ổ. Tính $e_t$ để thấy một bất ngờ 4 N kích hoạt việc tạm dừng ra sao.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\hat F_t$</td>
+<td>wrench dự đoán $(f_x, f_y, f_z, \tau_x, \tau_y, \tau_z)$</td>
+<td>input</td>
+<td>$(0, 0, -5, 0, 0, 0)$</td>
+</tr>
+<tr>
+<td>$F_t$</td>
+<td>wrench đo được</td>
+<td>input</td>
+<td>$(0.5, 0, -9, 0, 0, 0.1)$</td>
+</tr>
+<tr>
+<td>$c$</td>
+<td>ngưỡng</td>
+<td>hằng số</td>
+<td>3 (minh họa)</td>
+</tr>
+<tr>
+<td>$e_t$</td>
+<td>sai số lực</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (chuẩn L1: tổng trị tuyệt đối của hiệu)</p>
+<p>$$e_t = \lVert \hat F_t - F_t \rVert_1 = \sum_{j=1}^{6} \left| \hat F_{t,j} - F_{t,j} \right|, \qquad \text{dừng nếu } e_t &gt; c$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Hiệu: $(-0.5,\ 0,\ 4,\ 0,\ 0,\ -0.1)$.</li>
+<li>Cộng trị tuyệt đối: $0.5 + 0 + 4 + 0 + 0 + 0.1 = 4.6$.</li>
+<li>So sánh: $4.6 &gt; 3$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Bộ phát hiện kích hoạt: tạm dừng và gọi người.</p>
+<p><strong>Ý nghĩa.</strong> Camera có thể không thấy phích đang ấn mạnh hơn dự kiến 4 N vào mép ổ; lực thì thấy. Robot xin giúp đỡ đúng lúc nó bắt đầu hỏng, không phải lúc một người tình cờ để ý.</p>
+</div>
+<h2>4. Huấn luyện và thiết lập</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chính sách nền</td>
+<td>100 demo, 2.000 epoch</td>
+</tr>
+<tr>
+<td>Residual</td>
+<td>50 demo hiệu chỉnh, 200 epoch</td>
+</tr>
+<tr>
+<td>Trọng số chỉnh sửa</td>
+<td>$\omega_p = 1.0$ (vị trí), $\omega_q = 0.5$ (hướng), $\lambda_s = 1$, $\lambda_e = 1000$</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>phích USB, hai chấu, ba chấu; MuJoCo + Franka thật; 50 lượt mỗi task</td>
+</tr>
+<tr>
+<td>Baseline</td>
+<td>ACT, FILIC, HG-DAgger, Retrain, Finetune</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Lưu ý</h2>
 <ul>
-<li><strong>Chính sách nền (1 Hz).</strong> Transformer CVAE kiểu ACT. Đầu vào: pose $x_t = [p_t, q_t]$, lực $F_t = [f_x,f_y,f_z,\tau_x,\tau_y,\tau_z]$ (ước lượng từ mô men khớp) và hai ảnh RGB 480×640 qua ResNet-18. Nó dự đoán đồng thời <strong>hành động và lực tương lai</strong>, horizon $n=100$ bước (2 s), chạy 50 bước đầu rồi lập kế hoạch lại.</li>
-<li><strong>Bộ phát hiện lỗi (50 Hz).</strong> $e_t = \lVert\hat F_t - F_t\rVert_1$, so lực dự đoán của chính sách nền với lực đo. Nếu $e_t &gt; c$ (ngưỡng), việc thực thi tạm dừng.</li>
-<li><strong>Con người chỉnh sửa.</strong> Độ cứng impedance Descartes đặt về 0 và ghi một demo chèn hiệu chỉnh ngắn (thí nghiệm thật bắt đầu với end-effector cách mục tiêu khoảng 8 cm).</li>
-<li><strong>Chỉnh sửa quỹ đạo.</strong> Tìm điểm trên quỹ đạo nền gần nhất với điểm bắt đầu demo của con người, $k^* = \arg\min_k D(k)$ với $D = \omega_p d_p + \omega_q d_q$ ($\omega_p=1{,}0$, $\omega_q=0{,}5$). Thay một đoạn cục bộ bằng đoạn được tối ưu giảm thiểu chi phí trung thực + mượt + điểm cuối ($\lambda_s = 1$, $\lambda_e = 1000$) trong khi bị ghim vào pose bắt đầu của con người. Đầu ra $X_{correct}$ là đường mượt nối quỹ đạo nền với đoạn chèn của con người.</li>
-<li><strong>Nhãn residual ở bốn vùng.</strong> Trước chỗ chỉnh, residual bằng 0; ở đoạn chuyển tiếp là pose đã chỉnh trừ hành động nền; ở demo con người là pose con người trừ hành động nền; sau chỗ chỉnh là pose con người gần nhất trừ hành động nền.</li>
-<li><strong>Chính sách residual (50 Hz).</strong> Transformer encoder hai lớp (ẩn 256, 8 head); đầu vào: pose hiện tại, hành động nền $\hat A_{t+1}$ và hai ảnh qua ResNet-18 dùng chung; đầu ra $\Delta A_{t+1}$. Hành động thực thi: $A^{exec} = \hat A + \Delta A$.</li>
-<li><strong>Bộ điều khiển impedance (1 kHz).</strong> $F_{imp} = K(x_d - x) + D(\dot x_d - \dot x)$ có bù trọng lực.</li>
+<li>Số liệu trong bảng (≈ 77% trung bình, độ chính xác bộ phát hiện ≈ 98,8%) lấy từ bản tóm tắt của bài; chỉ con số "hơn 37%" là nguyên văn.</li>
+<li>Giao diện vật lý con người dùng và giá trị độ cứng không được nêu.</li>
 </ul>
-<h2>Huấn luyện và thiết lập</h2>
-<p>Nền: 100 demo, 2000 epoch. Residual: 50 demo hiệu chỉnh, 200 epoch. Mô phỏng: MuJoCo, Franka Research 3, phích USB và phích hai chấu, độ lệch ổ cắm trong $[-5, 5]$ cm. Thật: Franka với RealSense D415 cổ tay và camera cố định phía trước; phích USB, hai chấu và ba chấu. Baseline: ACT, FILIC, HG-DAgger, Retrain (một bộ dữ liệu gộp) và Finetune. 50 lượt mỗi task.</p>
-<h2>Kết quả</h2>
-<p>Abstract nêu mức cải thiện trung bình <strong>hơn 37%</strong> so với các baseline. Các bảng trong bài (tôi chỉ đọc qua bản tóm tắt nên cần kiểm tra lại) cho TER-DAgger khoảng 77% trung bình, bộ phát hiện sai số lực có độ chính xác khoảng 98,8% và recall 100%, và cửa sổ tối ưu 20 điểm là tốt nhất.</p>
-<h2>Lưu ý</h2>
-<p>Bản thân vòng tổng hợp dữ liệu (khi nào gộp dataset và huấn luyện lại) không được mô tả từng bước, và giao diện vật lý con người dùng để chỉnh không được nêu. Chú thích hình nói đoạn được chỉnh có $N-1$ điểm đứng trước còn công thức dùng $N+1$ chỉ số. Giá trị độ cứng $K$, $D$ và bộ tối ưu dùng khi chỉnh sửa không được nêu.</p>
-<p><strong>Mang theo sang bài sau:</strong> bài này khép lại series lực. Qua mười một bài, lực được đưa vào ở năm chỗ:</p>
-<ul>
-<li><strong>vào đầu vào VLM:</strong> ForceVLA2 (force prompt), FD-VLA (token lực dự đoán)</li>
-<li><strong>giữa VLM và action expert:</strong> ForceVLA, MoDE-VLA, TORL-VLA</li>
-<li><strong>bên trong action expert:</strong> TaF-VLA, FWBC-VLA</li>
-<li><strong>bên ngoài VLA, trong bộ tinh chỉnh hoặc bộ điều khiển:</strong> VLA-Touch, Tabero, TER-DAgger, phần bù thân của FWBC-VLA</li>
-<li><strong>chỉ lúc huấn luyện:</strong> FD-VLA, HapticVLA</li>
-</ul>
-<p><a href="survey-force-map.html">Survey 1</a> đặt chúng cạnh nhau cùng 22 phương pháp khác.</p>
-<p><strong>Câu kiểm tra:</strong> $\hat F = (0,\ 0,\ -4,\ 0,\ 0,\ 0)$, $F = (0.2,\ -0.3,\ -5,\ 0.1,\ 0,\ 0)$, $c = 3$. Bộ phát hiện có kích hoạt không? Và $D$ bằng bao nhiêu với $d_p = 0.006$ m, $d_q = 0.01$ rad?</p>
-<p><em>Đáp án:</em> $e_t = 0.2 + 0.3 + 1 + 0.1 = 1.6 &lt; 3$: không dừng. $D = 0.006 + 0.5 \times 0.01 = 0.011$.</p>
+<p><strong>Mang sang bài sau:</strong> bài này khép lại series paper lực. <a href="survey-force-map.html">Survey 1</a> đặt cả mười một bài cạnh nhau cùng 22 phương pháp khác.</p>
+<p><strong>Câu kiểm tra:</strong> $\hat F = (0, 0, -4, 0, 0, 0)$, $F = (0.2, -0.3, -5, 0.1, 0, 0)$, $c = 3$. Bộ phát hiện có kích hoạt không?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$e_t = 0.2 + 0.3 + 1 + 0.1 = 1.6 &lt; 3$: không dừng.</p>
+</details>
     </div>
   </article>
 

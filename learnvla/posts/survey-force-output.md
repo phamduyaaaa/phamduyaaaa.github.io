@@ -3,165 +3,229 @@ slug: survey-force-output
 date: 2026-10-18
 title_en: "Survey 3: What the Policy Outputs, and How It Learns"
 title_vi: "Survey 3: Chính sách xuất ra gì, và học bằng cách nào"
-excerpt_en: "Four output interfaces (pose only, pose plus force, pose plus stiffness, base plus residual), seven ways of learning from force, the speed gap between a VLA and a contact, and what is still missing: benchmarks and comparable numbers."
-excerpt_vi: "Bốn giao diện đầu ra (chỉ pose, pose cộng lực, pose cộng độ cứng, nền cộng residual), bảy cách học từ lực, khoảng cách tốc độ giữa VLA và tiếp xúc, và những gì còn thiếu: benchmark và số liệu so sánh được."
+excerpt_en: "A VLA that reads force perfectly can still fail if it can only answer with a pose. Four output interfaces, seven ways of learning from force, the speed gap, and why results across papers cannot be compared yet."
+excerpt_vi: "Một VLA đọc lực hoàn hảo vẫn có thể thất bại nếu chỉ trả lời được bằng pose. Bốn giao diện đầu ra, bảy cách học từ lực, khoảng cách tốc độ, và vì sao kết quả giữa các bài chưa so sánh được."
 tags: [VLA, Force, Survey, Control]
 ---
 
 :::en
-Last of three survey notes. [Survey 1](survey-force-map.html) maps where force enters; [Survey 2](survey-force-sensing.html) covers what is measured.
+<div class="tldr" markdown="1">
+**SERIES** Survey 3 of 3 · [Survey 1: where force enters](survey-force-map.html) · [Survey 2: sensing](survey-force-sensing.html)
 
-## The pain
+**PROBLEM** If the policy outputs only a pose, the force it applies is set by the controller's stiffness and the true surface position, not by the policy.
 
-A VLA that *reads* force perfectly can still fail if it can only *answer* with a pose. The force it applies is then decided by the low-level controller and by where the surface really is, not by the policy. So the output interface matters as much as the input.
+**FOUR OUTPUTS** pose only · pose + force target · pose + stiffness · base action + residual.
 
-## Four output interfaces
+**SEVEN WAYS TO LEARN** imitation · post-training/curriculum · distillation · reward/RL · human-in-the-loop · preference · world-model pretraining.
 
-[[fig:survey-force-output]] Four ways a force-aware policy can talk to the robot: a pose with fixed stiffness, a pose plus a force target, a pose plus a stiffness, or a base action plus a force-driven residual.
+**OPEN GAP** No shared benchmark: the same baseline (ForceVLA) scores 12% to 60.5% depending on the paper.
+</div>
 
-- **(a) Pose only.** Most methods. Force improves *which* pose is chosen, but the applied force is only implied through the controller's stiffness.
-- **(b) Pose + force target.** A hybrid force-position or admittance controller tracks the requested force using the measured one: ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force.
-- **(c) Pose + stiffness.** The policy decides how soft to be, per axis and over time: CompVLA, CompliantVLA-adaptor.
-- **(d) Base + residual.** A slow base policy proposes; a small, fast, force-aware model corrects: ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC.
+## 1. Four output interfaces
 
-## Work it by hand: one spring, three interfaces
+[[fig:survey-force-output]] Four ways a force-aware policy can talk to the robot.
 
-Model contact as a spring: an impedance controller with stiffness $K$ commanded $\Delta x$ into a surface applies $F = K\,\Delta x$. The task needs 10 N, and the policy's estimate of the surface is off by $\delta = 5$ mm.
+| Interface | Policy outputs | Who sets the force | Examples |
+|---|---|---|---|
+| (a) Pose only | target pose | controller stiffness × geometry error | ForceVLA, FD-VLA, TaF-VLA, LIFT, FM-VLA, HapticVLA |
+| (b) Pose + force target | pose and $F^*$ | hybrid / admittance controller using measured force | ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force |
+| (c) Pose + stiffness | pose and $K(t)$ | policy chooses how soft to be | CompVLA, CompliantVLA-adaptor |
+| (d) Base + residual | base action, small fast correction | the residual, between base updates | ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC |
 
-**(a) Pose only, stiff controller,** $K = 1000$ N/m. Command $10/1000 = 10$ mm. The force error is $K\delta = 1000 \times 0.005 = 5$ N, or 50%.
+## 2. Work it by hand: one spring, three interfaces
 
-**(c) Pose + low stiffness,** $K = 200$ N/m. Command $10/200 = 50$ mm. The force error drops to $200 \times 0.005 = 1$ N. The price: a 2 N disturbance in free space now moves the arm $2/200 = 10$ mm instead of $2/1000 = 2$ mm. That is why the stiffness should **change over time**: stiff while moving, soft at contact. Hence time-varying $K(t)$.
+<div class="calc" markdown="1">
+Calculation card
 
-**(b) Pose + force target.** The controller measures $F$ and adjusts until it reads 10 N, so the 5 mm error no longer becomes a force error (up to sensor noise and controller tracking). The price: the robot needs a force measurement at run time, and the policy must predict a sensible $F^*$.
+**What and why.** Model contact as a spring and compare the force error of interfaces (a), (c) and (b) for the same mistake about where the surface is. This is the trade-off each interface makes.
 
-**(d) Residual.** The base still commands 10 mm at $K = 1000$; a residual that sees the measured 15 N (surface 5 mm closer) can back off by 5 mm between two base updates. It fixes the error only as fast as it runs, which is why these residuals run at tens of hertz.
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $F^*$ | force the task needs | input | 10 N |
+| $\delta$ | error in the surface estimate | input | 5 mm |
+| $K$ | controller stiffness | input | 1000 or 200 N/m |
+| $\Delta x$ | commanded depth into the surface | intermediate | – |
+| $e_F$ | force error | output | – |
+| $d$ | free-space drift under a 2 N disturbance | output | – |
 
-## The speed gap
+**Formula**
+
+$$\Delta x = \frac{F^*}{K}, \qquad e_F = K\,\delta, \qquad d = \frac{2\ \text{N}}{K}$$
+
+**Steps**
+
+1. (a) Stiff, $K = 1000$: $\Delta x = 10$ mm, $e_F = 1000 \times 0.005 = 5$ N (50%), $d = 2$ mm.
+2. (c) Soft, $K = 200$: $\Delta x = 50$ mm, $e_F = 200 \times 0.005 = 1$ N (10%), $d = 10$ mm.
+3. (b) Force target: the controller measures $F$ and adjusts until it reads 10 N, so $e_F \approx 0$ up to sensor noise; the price is needing a force measurement at run time.
+
+**Result.** Stiff: precise motion, bad force. Soft: good force, sloppy motion. Force target: good force, needs a sensor.
+
+**Why it matters.** This is why stiffness should vary over time (stiff while moving, soft at contact), and why outputting a force target is attractive when a sensor exists.
+</div>
+
+## 3. The speed gap
 
 | System | Slow part | Fast part |
 |---|---|---|
-| [TER-DAgger](ter-dagger.html) | base policy 1 Hz | residual and error detector 50 Hz, impedance 1 kHz |
+| [TER-DAgger](ter-dagger.html) | base policy 1 Hz | residual + detector 50 Hz, impedance 1 kHz |
 | [FWBC-VLA](fwbc-vla.html) | VLA 15 Hz | force estimator 200 Hz |
-| [VLA-Touch](vla-touch.html) | VLA chunk of 64 steps | refined actions executed at up to 8 Hz |
-| [DAM-VLA](https://arxiv.org/abs/2606.12105) | pretrained backbone | latent buffers read by a 100 Hz action head |
+| [VLA-Touch](vla-touch.html) | VLA chunk of 64 steps | refined actions at ≤ 8 Hz |
+| [DAM-VLA](https://arxiv.org/abs/2606.12105) | pretrained backbone | 100 Hz action head reading latent buffers |
 
-Sensors report forces at 30–300 Hz in these papers, while VLAs replan a few times per second. Every design in the "outside the VLA" column of [Survey 1](survey-force-map.html) is, at heart, a way to close this gap.
+Sensors in these papers report at 30–300 Hz; VLAs replan a few times per second. Every "outside the VLA" design in [Survey 1](survey-force-map.html) is a way to close this gap.
 
-## Seven ways to learn from force
+## 4. Seven ways to learn from force
 
 | Regime | Idea | Examples |
 |---|---|---|
-| Imitation fine-tuning | add force inputs, fine-tune on demonstrations | ForceVLA, ForceVLA2, MoDE-VLA, TaF-VLA, Tabero, FWBC-VLA |
-| Post-training, curriculum | adapt a pretrained VLA in stages | LIFT (reactive expert + DAgger), CRAFT (force first, then full input) |
-| Distillation | a teacher with force trains a student | FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA (alignment) |
-| Reward weighting, RL | force defines what is good | HapticVLA (tactile reward), TORL-VLA (online RL), ForceRFT (residual RL), MoDE-VLA (PPO hand skill) |
+| Imitation fine-tuning | add force input, fine-tune on demos | ForceVLA, ForceVLA2, MoDE-VLA, TaF-VLA, Tabero, FWBC-VLA |
+| Post-training, curriculum | adapt a pretrained VLA in stages | LIFT, CRAFT |
+| Distillation | a teacher with force trains a student | FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA |
+| Reward weighting, RL | force defines what is good | HapticVLA, TORL-VLA, ForceRFT, MoDE-VLA (hand skill) |
 | Human in the loop | humans correct contact failures | TER-DAgger, LIFT, TORL-VLA, ForceRFT |
-| Preference learning | rank better and worse actions | VTLA (DPO) |
+| Preference learning | rank better vs worse actions | VTLA (DPO) |
 | World-model pretraining | learn to predict touch first | DexTacWAM, H-Tac / TTP |
 
-Two trends stand out: **human corrections** are becoming the main source of contact data, because contact failures are hard to script; and **credit assignment** around those corrections needs care. TORL-VLA and ForceRFT both stop value bootstrapping across human takeovers.
+## 5. What is still missing
 
-## What is still missing
+[[bars:%]] Reported by ForceVLA itself=60.5; In ForceDelta-VLA=54.4; In TORL-VLA (15/30 full task)=50; In FWBC-VLA (whiteboard)=24; In FWBC-VLA (door)=12 || The same baseline, ForceVLA, measured by five papers on different tasks and robots. These numbers cannot be compared with each other.
 
-- **Shared benchmarks.** Almost every paper builds its own tasks. Tabero is the only simulated force benchmark in this survey.
-- **Comparable numbers.** ForceVLA is the most common baseline, yet it scores 54.4% in ForceDelta-VLA, 15/30 full tasks in TORL-VLA and 24% / 12% final-stage in FWBC-VLA, on different tasks and robots. These numbers cannot be compared across papers.
-- **Metrics beyond success.** A task can succeed while crushing the object. Only some papers report force quality: Tabero's average and peak grip force, ForceDelta-VLA's 26% lower peak contact force.
-- **Sensor diversity.** A method tuned to one wrist sensor or one gel may not transfer; TaF-VLA's cross-sensor test is a start.
+| Gap | Why it matters |
+|---|---|
+| Shared benchmarks | almost every paper builds its own tasks; Tabero is the only simulated force benchmark here |
+| Metrics beyond success | a task can succeed while crushing the object; only some report force (Tabero grip force, ForceDelta-VLA −26% peak force) |
+| Sensor diversity | a method tuned to one sensor may not transfer; TaF-VLA's cross-sensor test is a start |
 
-## How to choose (a rough guide)
+## 6. How to choose
 
-- You have a wrist F/T sensor and want a quick gain: fuse **after the VLM** with a protected path (ForceVLA-style MoE, zero-initialised bypass).
-- The task is about *how hard* (press, polish, gentle grasp): output a **force target** or a **stiffness**, not only a pose.
-- Contacts change fast: add a **fast residual or controller** next to the VLA.
-- No sensor on the deployed robot: **distil** from a sensorised teacher, or estimate from joint torques.
-- The robot keeps failing the same contact: collect **human corrections** and refine online.
+| Situation | Choice | Examples |
+|---|---|---|
+| Wrist F/T available, want a quick gain | fuse **after the VLM** with a protected path | ForceVLA, TORL-VLA |
+| Task is about *how hard* | output a **force target** or **stiffness** | ForceVLA2, Tabero, CompVLA |
+| Contact changes fast | add a **fast residual or controller** | ForceDelta-VLA, TER-DAgger, LIFT |
+| No sensor on the deployed robot | **distil** from a sensorised teacher, or estimate from torques | FD-VLA, HapticVLA, FWBC-VLA |
+| Same contact keeps failing | collect **human corrections**, refine online | TORL-VLA, ForceRFT, TER-DAgger |
 
-## Caveats
+This guide follows from the papers surveyed, not from a controlled comparison.
 
-The guide follows from the papers surveyed, not from a controlled comparison. The spring model ignores damping, friction and sensor noise; it shows the direction of each trade-off, not exact values.
+**Carry forward:** the series closes here. Next to write are the foundations these surveys lean on: Mixture of Experts, Cross-attention, Distillation, Impedance control.
 
-**Carry forward:** the series closes here. The next notes to write are the foundations these surveys lean on: Mixture of Experts, Cross-attention, Distillation and Impedance control.
+**Check question:** $K = 300$ N/m, surface error 4 mm. What is the force error of a pose-only command, and how deep must the policy command to get 6 N?
 
-**Check question:** with a stiffness of $K = 300$ N/m, the surface estimate is off by 4 mm. What is the force error for a pose-only command, and how far into the surface must the policy command to get 6 N?
+<details markdown="1">
+<summary>Answer</summary>
 
-*Answer:* error $= 300 \times 0.004 = 1.2$ N. Command $= 6 / 300 = 0.02$ m = 20 mm.
+$e_F = 300 \times 0.004 = 1.2$ N. $\Delta x = 6/300 = 0.02$ m = 20 mm.
+</details>
 :::
 
 :::vi
-Bài cuối trong ba ghi chú survey. [Survey 1](survey-force-map.html) vẽ bản đồ lực vào ở đâu; [Survey 2](survey-force-sensing.html) nói về đo cái gì.
+<div class="tldr" markdown="1">
+**SERIES** Survey 3 / 3 · [Survey 1: lực vào ở đâu](survey-force-map.html) · [Survey 2: cảm biến](survey-force-sensing.html)
 
-## Vấn đề
+**VẤN ĐỀ** Nếu chính sách chỉ xuất pose, lực nó tác dụng do độ cứng bộ điều khiển và vị trí thật của bề mặt quyết định, không do chính sách.
 
-Một VLA *đọc* lực hoàn hảo vẫn có thể thất bại nếu nó chỉ *trả lời* được bằng một pose. Khi đó lực thực sự tác dụng do bộ điều khiển mức thấp và vị trí thật của bề mặt quyết định, không phải do chính sách. Vì vậy giao diện đầu ra quan trọng ngang đầu vào.
+**BỐN ĐẦU RA** chỉ pose · pose + lực mục tiêu · pose + độ cứng · hành động nền + residual.
 
-## Bốn giao diện đầu ra
+**BẢY CÁCH HỌC** bắt chước · post-training/giáo trình · chưng cất · phần thưởng/RL · có người trong vòng lặp · theo sở thích · pretrain world model.
 
-[[fig:survey-force-output]] Bốn cách một chính sách nhận biết lực nói chuyện với robot: một pose với độ cứng cố định, pose cộng lực mục tiêu, pose cộng độ cứng, hoặc hành động nền cộng một residual do lực điều khiển.
+**KHOẢNG TRỐNG** Chưa có benchmark chung: cùng một baseline (ForceVLA) đạt từ 12% đến 60,5% tùy bài.
+</div>
 
-- **(a) Chỉ pose.** Đa số phương pháp. Lực giúp chọn *pose nào*, nhưng lực tác dụng chỉ được ngầm định qua độ cứng của bộ điều khiển.
-- **(b) Pose + lực mục tiêu.** Bộ điều khiển lai lực-vị trí hoặc admittance bám theo lực được yêu cầu bằng lực đo được: ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force.
-- **(c) Pose + độ cứng.** Chính sách quyết định mềm đến đâu, theo từng trục và theo thời gian: CompVLA, CompliantVLA-adaptor.
-- **(d) Nền + residual.** Một chính sách nền chậm đề xuất; một mô hình nhỏ, nhanh, nhận biết lực hiệu chỉnh: ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC.
+## 1. Bốn giao diện đầu ra
 
-## Tính tay: một lò xo, ba giao diện
+[[fig:survey-force-output]] Bốn cách một chính sách nhận biết lực nói chuyện với robot.
 
-Mô hình tiếp xúc như một lò xo: bộ điều khiển impedance độ cứng $K$ được ra lệnh ấn $\Delta x$ vào bề mặt sẽ tác dụng $F = K\,\Delta x$. Task cần 10 N, và ước lượng bề mặt của chính sách lệch $\delta = 5$ mm.
+| Giao diện | Chính sách xuất | Ai quyết định lực | Ví dụ |
+|---|---|---|---|
+| (a) Chỉ pose | pose mục tiêu | độ cứng bộ điều khiển × sai số hình học | ForceVLA, FD-VLA, TaF-VLA, LIFT, FM-VLA, HapticVLA |
+| (b) Pose + lực mục tiêu | pose và $F^*$ | bộ điều khiển lai / admittance dùng lực đo | ForceVLA2, Tabero, Tactile-VLA, Opt2VLA, CR-VLA-Force |
+| (c) Pose + độ cứng | pose và $K(t)$ | chính sách chọn mềm đến đâu | CompVLA, CompliantVLA-adaptor |
+| (d) Nền + residual | hành động nền, hiệu chỉnh nhỏ nhanh | residual, giữa hai lần cập nhật của nền | ForceDelta-VLA, ForceRFT, TER-DAgger, VLA-Touch, MoDE-VLA, TacPAC |
 
-**(a) Chỉ pose, bộ điều khiển cứng,** $K = 1000$ N/m. Ra lệnh $10/1000 = 10$ mm. Sai số lực là $K\delta = 1000 \times 0.005 = 5$ N, tức 50%.
+## 2. Tính tay: một lò xo, ba giao diện
 
-**(c) Pose + độ cứng thấp,** $K = 200$ N/m. Ra lệnh $10/200 = 50$ mm. Sai số lực giảm còn $200 \times 0.005 = 1$ N. Cái giá: một nhiễu 2 N khi di chuyển tự do giờ làm cánh tay lệch $2/200 = 10$ mm thay vì $2/1000 = 2$ mm. Vì vậy độ cứng nên **thay đổi theo thời gian**: cứng khi di chuyển, mềm khi tiếp xúc. Đó là lý do có $K(t)$.
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-**(b) Pose + lực mục tiêu.** Bộ điều khiển đo $F$ và chỉnh tới khi đọc được 10 N, nên sai số 5 mm không còn thành sai số lực (trong giới hạn nhiễu cảm biến và độ bám của bộ điều khiển). Cái giá: robot cần đo lực lúc chạy, và chính sách phải dự đoán được một $F^*$ hợp lý.
+**Tính gì và vì sao.** Coi tiếp xúc như lò xo và so sai số lực của giao diện (a), (c) và (b) với cùng một sai lầm về vị trí bề mặt. Đây là đánh đổi mà mỗi giao diện chấp nhận.
 
-**(d) Residual.** Nền vẫn ra lệnh 10 mm ở $K = 1000$; một residual thấy lực đo được 15 N (bề mặt gần hơn 5 mm) có thể lùi lại 5 mm giữa hai lần cập nhật của nền. Nó chỉ sửa lỗi nhanh bằng tốc độ nó chạy, nên các residual này chạy ở vài chục hertz.
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $F^*$ | lực task cần | input | 10 N |
+| $\delta$ | sai số ước lượng bề mặt | input | 5 mm |
+| $K$ | độ cứng bộ điều khiển | input | 1000 hoặc 200 N/m |
+| $\Delta x$ | độ sâu được ra lệnh vào bề mặt | trung gian | – |
+| $e_F$ | sai số lực | output | – |
+| $d$ | độ lệch khi di chuyển tự do dưới nhiễu 2 N | output | – |
 
-## Khoảng cách tốc độ
+**Công thức**
+
+$$\Delta x = \frac{F^*}{K}, \qquad e_F = K\,\delta, \qquad d = \frac{2\ \text{N}}{K}$$
+
+**Từng bước**
+
+1. (a) Cứng, $K = 1000$: $\Delta x = 10$ mm, $e_F = 1000 \times 0.005 = 5$ N (50%), $d = 2$ mm.
+2. (c) Mềm, $K = 200$: $\Delta x = 50$ mm, $e_F = 200 \times 0.005 = 1$ N (10%), $d = 10$ mm.
+3. (b) Lực mục tiêu: bộ điều khiển đo $F$ và chỉnh tới khi đọc được 10 N, nên $e_F \approx 0$ trong giới hạn nhiễu cảm biến; cái giá là cần đo lực lúc chạy.
+
+**Kết quả.** Cứng: chuyển động chính xác, lực tệ. Mềm: lực tốt, chuyển động lỏng. Lực mục tiêu: lực tốt, cần cảm biến.
+
+**Ý nghĩa.** Đây là lý do độ cứng nên thay đổi theo thời gian (cứng khi di chuyển, mềm khi tiếp xúc), và vì sao xuất lực mục tiêu hấp dẫn khi có cảm biến.
+</div>
+
+## 3. Khoảng cách tốc độ
 
 | Hệ thống | Phần chậm | Phần nhanh |
 |---|---|---|
-| [TER-DAgger](ter-dagger.html) | chính sách nền 1 Hz | residual và bộ phát hiện lỗi 50 Hz, impedance 1 kHz |
+| [TER-DAgger](ter-dagger.html) | chính sách nền 1 Hz | residual + bộ phát hiện 50 Hz, impedance 1 kHz |
 | [FWBC-VLA](fwbc-vla.html) | VLA 15 Hz | bộ ước lượng lực 200 Hz |
-| [VLA-Touch](vla-touch.html) | chunk VLA 64 bước | hành động tinh chỉnh thực thi tối đa 8 Hz |
-| [DAM-VLA](https://arxiv.org/abs/2606.12105) | backbone đã pretrain | bộ đệm latent được đầu hành động 100 Hz đọc |
+| [VLA-Touch](vla-touch.html) | chunk VLA 64 bước | hành động tinh chỉnh ≤ 8 Hz |
+| [DAM-VLA](https://arxiv.org/abs/2606.12105) | backbone đã pretrain | đầu hành động 100 Hz đọc bộ đệm latent |
 
-Trong các bài này cảm biến báo lực ở 30–300 Hz, còn VLA chỉ lập kế hoạch lại vài lần mỗi giây. Mọi thiết kế ở cột "bên ngoài VLA" trong [Survey 1](survey-force-map.html), về bản chất, là một cách lấp khoảng cách này.
+Cảm biến trong các bài này báo ở 30–300 Hz; VLA chỉ lập kế hoạch lại vài lần mỗi giây. Mọi thiết kế "ngoài VLA" ở [Survey 1](survey-force-map.html) là một cách lấp khoảng cách này.
 
-## Bảy cách học từ lực
+## 4. Bảy cách học từ lực
 
 | Cách học | Ý tưởng | Ví dụ |
 |---|---|---|
 | Fine-tune bắt chước | thêm đầu vào lực, fine-tune trên demo | ForceVLA, ForceVLA2, MoDE-VLA, TaF-VLA, Tabero, FWBC-VLA |
-| Post-training, giáo trình | thích nghi VLA đã pretrain theo từng giai đoạn | LIFT (expert phản xạ + DAgger), CRAFT (lực trước, rồi đủ đầu vào) |
-| Chưng cất | teacher có lực dạy student | FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA (căn chỉnh) |
-| Trọng số phần thưởng, RL | lực định nghĩa thế nào là tốt | HapticVLA (phần thưởng xúc giác), TORL-VLA (RL online), ForceRFT (RL residual), MoDE-VLA (kỹ năng tay PPO) |
+| Post-training, giáo trình | thích nghi VLA đã pretrain theo giai đoạn | LIFT, CRAFT |
+| Chưng cất | teacher có lực dạy student | FD-VLA, HapticVLA, ForceDelta-VLA, TaF-VLA |
+| Trọng số phần thưởng, RL | lực định nghĩa thế nào là tốt | HapticVLA, TORL-VLA, ForceRFT, MoDE-VLA (kỹ năng tay) |
 | Có người trong vòng lặp | con người sửa lỗi tiếp xúc | TER-DAgger, LIFT, TORL-VLA, ForceRFT |
 | Học theo sở thích | xếp hạng hành động tốt và kém | VTLA (DPO) |
 | Pretrain world model | học dự đoán xúc giác trước | DexTacWAM, H-Tac / TTP |
 
-Hai xu hướng nổi bật: **chỉnh sửa của con người** đang thành nguồn dữ liệu tiếp xúc chính, vì lỗi tiếp xúc khó viết kịch bản trước; và việc **ghi công** quanh những chỉnh sửa đó cần cẩn thận. TORL-VLA và ForceRFT đều ngừng bootstrap giá trị qua các lần con người tiếp quản.
+## 5. Những gì còn thiếu
 
-## Những gì còn thiếu
+[[bars:%]] Do chính ForceVLA báo=60.5; Trong ForceDelta-VLA=54.4; Trong TORL-VLA (15/30 cả chuỗi)=50; Trong FWBC-VLA (lau bảng)=24; Trong FWBC-VLA (mở cửa)=12 || Cùng một baseline, ForceVLA, được năm bài đo trên task và robot khác nhau. Các con số này không so sánh được với nhau.
 
-- **Benchmark chung.** Gần như bài nào cũng tự dựng task. Tabero là benchmark lực mô phỏng duy nhất trong survey này.
-- **Số liệu so sánh được.** ForceVLA là baseline phổ biến nhất, nhưng đạt 54,4% trong ForceDelta-VLA, 15/30 cả chuỗi trong TORL-VLA và 24% / 12% ở bước cuối trong FWBC-VLA, trên task và robot khác nhau. Các con số này không so sánh được giữa các bài.
-- **Chỉ số ngoài thành công.** Một task có thể thành công trong khi làm bẹp vật. Chỉ một số bài báo cáo chất lượng lực: lực kẹp trung bình và đỉnh của Tabero, lực tiếp xúc đỉnh thấp hơn 26% của ForceDelta-VLA.
-- **Đa dạng cảm biến.** Phương pháp chỉnh cho một cảm biến cổ tay hay một loại gel có thể không chuyển được sang cảm biến khác; thử nghiệm chéo cảm biến của TaF-VLA mới là bước đầu.
+| Khoảng trống | Vì sao quan trọng |
+|---|---|
+| Benchmark chung | gần như bài nào cũng tự dựng task; Tabero là benchmark lực mô phỏng duy nhất ở đây |
+| Chỉ số ngoài thành công | task có thể thành công mà vẫn bóp bẹp vật; chỉ vài bài báo cáo lực (lực kẹp của Tabero, ForceDelta-VLA giảm 26% lực đỉnh) |
+| Đa dạng cảm biến | phương pháp chỉnh cho một cảm biến có thể không chuyển được; thử nghiệm chéo cảm biến của TaF-VLA mới là bước đầu |
 
-## Chọn thế nào (hướng dẫn sơ bộ)
+## 6. Chọn thế nào
 
-- Có cảm biến F/T cổ tay và muốn cải thiện nhanh: gộp **sau VLM** với một đường được bảo vệ (MoE kiểu ForceVLA, bypass khởi tạo bằng 0).
-- Task xoay quanh *mạnh hay nhẹ* (ấn, đánh bóng, nắm nhẹ): xuất **lực mục tiêu** hoặc **độ cứng**, không chỉ pose.
-- Tiếp xúc thay đổi nhanh: thêm một **residual hoặc bộ điều khiển nhanh** cạnh VLA.
-- Robot triển khai không có cảm biến: **chưng cất** từ teacher có cảm biến, hoặc ước lượng từ mô men khớp.
-- Robot cứ hỏng ở cùng một tiếp xúc: thu **chỉnh sửa của con người** và tinh chỉnh online.
+| Tình huống | Lựa chọn | Ví dụ |
+|---|---|---|
+| Có F/T cổ tay, muốn cải thiện nhanh | gộp **sau VLM** với đường được bảo vệ | ForceVLA, TORL-VLA |
+| Task xoay quanh *mạnh hay nhẹ* | xuất **lực mục tiêu** hoặc **độ cứng** | ForceVLA2, Tabero, CompVLA |
+| Tiếp xúc thay đổi nhanh | thêm **residual hoặc bộ điều khiển nhanh** | ForceDelta-VLA, TER-DAgger, LIFT |
+| Robot triển khai không có cảm biến | **chưng cất** từ teacher có cảm biến, hoặc ước lượng từ mô men | FD-VLA, HapticVLA, FWBC-VLA |
+| Cứ hỏng ở cùng một tiếp xúc | thu **chỉnh sửa của người**, tinh chỉnh online | TORL-VLA, ForceRFT, TER-DAgger |
 
-## Lưu ý
+Hướng dẫn rút ra từ các bài trong survey, không phải từ một so sánh có kiểm soát.
 
-Hướng dẫn rút ra từ các bài trong survey, không phải từ một so sánh có kiểm soát. Mô hình lò xo bỏ qua giảm chấn, ma sát và nhiễu cảm biến; nó cho thấy hướng của từng đánh đổi, không cho giá trị chính xác.
+**Mang sang bài sau:** series khép lại ở đây. Các nền tảng nên viết tiếp: Mixture of Experts, Cross-attention, Distillation, điều khiển Impedance.
 
-**Mang theo sang bài sau:** series khép lại ở đây. Các ghi chú nên viết tiếp là những nền tảng mà các survey này dựa vào: Mixture of Experts, Cross-attention, Distillation và điều khiển Impedance.
+**Câu kiểm tra:** $K = 300$ N/m, sai số bề mặt 4 mm. Sai số lực của lệnh chỉ-pose là bao nhiêu, và phải ra lệnh ấn sâu bao nhiêu để được 6 N?
 
-**Câu kiểm tra:** với độ cứng $K = 300$ N/m, ước lượng bề mặt lệch 4 mm. Sai số lực của lệnh chỉ-pose là bao nhiêu, và chính sách phải ra lệnh ấn sâu bao nhiêu để được 6 N?
+<details markdown="1">
+<summary>Đáp án</summary>
 
-*Đáp án:* sai số $= 300 \times 0.004 = 1.2$ N. Lệnh $= 6 / 300 = 0.02$ m = 20 mm.
+$e_F = 300 \times 0.004 = 1.2$ N. $\Delta x = 6/300 = 0.02$ m = 20 mm.
+</details>
 :::

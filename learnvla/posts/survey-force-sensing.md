@@ -3,129 +3,187 @@ slug: survey-force-sensing
 date: 2026-10-18
 title_en: "Survey 2: What Is Measured, and How It Becomes a Token"
 title_vi: "Survey 2: Đo cái gì, và nó thành token ra sao"
-excerpt_en: "'Force' in force-aware VLAs means five different measurements: a wrist wrench, joint torques, a gel image, a pressure grid, or nothing at all. And each reaches the network in one of six forms, from a raw number to a sentence."
-excerpt_vi: "'Lực' trong các VLA nhận biết lực là năm phép đo khác nhau: wrench ở cổ tay, mô men khớp, ảnh gel, lưới áp suất, hoặc không đo gì. Mỗi loại tới mạng dưới một trong sáu dạng, từ con số thô đến một câu văn."
+excerpt_en: "'Force' in force-aware VLAs means five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. A cheatsheet of both, with the joint-torque-to-force calculation worked out."
+excerpt_vi: "'Lực' trong các VLA nhận biết lực là năm phép đo khác nhau, và mỗi loại tới mạng dưới một trong sáu dạng, từ con số thô đến một câu văn. Cheatsheet cho cả hai, kèm phép tính từ mô men khớp ra lực."
 tags: [VLA, Force, Tactile, Survey]
 ---
 
 :::en
-Second of three survey notes. [Survey 1](survey-force-map.html) maps where force enters; [Survey 3](survey-force-output.html) covers outputs and learning.
+<div class="tldr" markdown="1">
+**SERIES** Survey 2 of 3 · [Survey 1: where force enters](survey-force-map.html) · [Survey 3: outputs and learning](survey-force-output.html)
 
-## The pain
+**PROBLEM** Two papers that both say "force-aware" may share no input at all: one reads a wrist sensor, one reads a gel image, one reads nothing and infers force from vision.
 
-Two papers that both say "force-aware" may not share a single input. One reads six numbers from a sensor behind the wrist. Another reads a camera image of a gel pad. A third reads nothing at run time and infers force from vision. Before comparing their architectures, it helps to know what each one actually measures.
+**FIVE MEASUREMENTS** wrist F/T · joint torque · vision-based tactile · taxel arrays · none at run time.
 
-## Five kinds of measurement
+**SIX FORMS** raw token · history encoder · physically structured · aligned latent · language · predicted.
 
-| Measurement | What it gives | Examples in the survey | Rates reported |
+**TAKEAWAY** The higher the form, the more meaning and robustness, and the less detail and speed.
+</div>
+
+## 1. Five kinds of measurement
+
+| Measurement | What it gives | Good at | Weak at | Examples |
+|---|---|---|---|---|
+| **Wrist F/T** | one 6D wrench for the whole tool | net push, insertion | which finger slips | ForceVLA, ForceVLA2, ForceRFT, CompliantVLA-adaptor |
+| **Joint torque** (measured or estimated) | one number per joint | no extra hardware | must subtract own motion | MoDE-VLA, FWBC-VLA, TER-DAgger, TA-VLA |
+| **Vision tactile** (GelSight-type) | image of gel deformation | shape, shear, slip | force needs calibration | VLA-Touch, TaF-VLA, Tabero, OmniVTLA |
+| **Taxel / piezo arrays** | coarse pressure grid | pressure spread | low resolution | HapticVLA (10×10), TORL-VLA (6×8) |
+| **None at run time** | force learned or inferred | no sensor to break | only as good as training | FD-VLA, HapticVLA, CompVLA |
+
+Rates reported in the papers read in full: F/T 300 Hz (ForceVLA2), torque estimator 200 Hz (FWBC-VLA), taxels 120 Hz (HapticVLA), gel images 30 Hz (TaF-VLA).
+
+## 2. Getting force without a force sensor
+
+[[flow]]
+= Sensorless chain | Measured joint torque > *Minus free-motion model* > Contact torque > *Jacobian inverse* > Fingertip force | used by FWBC-VLA and TER-DAgger
+[[/flow]] Joint torques mix contact with gravity, friction and motion. Remove the part the robot's own motion explains, then map what remains to a force at the fingertip.
+
+<div class="calc" markdown="1">
+Calculation card
+
+**What and why.** Recover the fingertip force from joint torques on a planar two-link arm. This is the core step of every sensorless method, and it shows why the free-motion model matters.
+
+| Symbol | Meaning | Type | Example |
 |---|---|---|---|
-| **Wrist F/T sensor** | one 6D wrench (3 forces, 3 torques) for everything the tool touches | ForceVLA, ForceVLA2, FD-VLA (training), ForceRFT, CompliantVLA-adaptor, CR-VLA-Force, FAVLA, LIFT | 300 Hz (ForceVLA2) |
-| **Joint torque**, measured or estimated | one number per joint; contact must be separated from gravity, friction and motion | MoDE-VLA (14 torques), FWBC-VLA, TER-DAgger, TA-VLA | 200 Hz estimator (FWBC-VLA) |
-| **Vision-based tactile** (GelSight-type) | an image of gel deformation at a fingertip: shape, shear, slip | VLA-Touch, TaF-VLA, Tabero (simulated), MoDE-VLA fingertips, OmniVTLA | 30 Hz (TaF-VLA) |
-| **Taxel or piezo arrays** | a coarse grid of pressures | HapticVLA (10×10), TORL-VLA (6×8 → wrench), TaF-VLA (12×12 as teacher) | 120 Hz (HapticVLA) |
-| **None at run time** | force is learned or inferred | FD-VLA, HapticVLA (sensor only in training), CompVLA (RGB + language inputs) | – |
+| $q_1, q_2$ | joint angles (links 1 m each) | input | $0$, $90°$ |
+| $J$ | Jacobian: joint speeds → fingertip speed | from $q$ | $\begin{pmatrix} -1 & -1 \\ 1 & 0 \end{pmatrix}$ |
+| $\tau_{meas}$ | measured joint torques | input | $(-12,\ -1.5)$ N·m |
+| $\tau_{free}$ | torques the robot's own motion explains (model) | input | $(-2,\ -1.5)$ N·m |
+| $\tau_{ext}$ | contact torques | intermediate | – |
+| $F$ | force at the fingertip | output | – |
 
-The trade-off is roughly locality versus cost. A wrist sensor sums every contact into one wrench; it cannot tell which finger is slipping. Fingertip tactile can, but needs a sensor per finger and gives a high-dimensional signal. Joint torques need no extra hardware, but only make sense after a model of the arm's own motion is subtracted.
+**Formula** (statics: $\tau = J^\top F$)
 
-## Work it by hand: from joint torques to a fingertip force
+$$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, \qquad (J^\top)^{-1} = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}$$
 
-Take a planar two-link arm with link lengths 1 m, joint angles $q_1 = 0$ and $q_2 = 90°$. The fingertip is at $(1, 1)$ and the Jacobian is
+**Steps**
 
-$$J = \begin{pmatrix} -1 & -1 \\ 1 & 0 \end{pmatrix}$$
+1. Fingertip position: $(\cos 0 + \cos 90°,\ \sin 0 + \sin 90°) = (1, 1)$.
+2. $\tau_{ext} = (-12, -1.5) - (-2, -1.5) = (-10,\ 0)$ N·m.
+3. $F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$ N.
+4. Sanity check: joint 2 sits at $(1, 0)$; a vertical force at $x = 1$ passes through it, so its contact torque is 0. ✓
 
-With the convention $\tau = J^\top F$, a downward contact force $F = (0, -10)$ N gives
+**Result.** A 10 N downward force at the fingertip.
 
-$$\tau = \begin{pmatrix} -1 & 1 \\ -1 & 0 \end{pmatrix}\begin{pmatrix} 0 \\ -10 \end{pmatrix} = \begin{pmatrix} -10 \\ 0 \end{pmatrix}\ \text{N·m}$$
+**Why it matters.** Without step 2, gravity and friction would be read as contact. The free-motion model is what FWBC-VLA's HSR-Force learns.
+</div>
 
-Joint 2 feels nothing: it sits at $(1, 0)$, and a vertical force at $x = 1$ passes straight through it. Going backwards is what a sensorless method has to do:
+**Why history matters.** Two contacts both read 5 N now: one came from $2, 3, 5$ (pressing harder), the other from $8, 6, 5$ (releasing). The last change ($+2$ vs $-1$) tells them apart; a single sample cannot. Hence windows and memories in rung 2 below.
 
-$$F = (J^\top)^{-1}\tau = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$$
+## 3. Six forms a signal can take
 
-In practice the joints measure, say, $\tau_{meas} = (-12,\ -1.5)$, because gravity and friction also load them. A model predicts the contact-free torque, $(-2,\ -1.5)$. Only the difference, $(-10,\ 0)$, is contact. That subtraction is exactly what FWBC-VLA's HSR-Force estimator learns, and why its quality decides everything downstream.
+| # | Form | Keeps | Loses | Examples |
+|---|---|---|---|---|
+| 1 | **Raw token** (one linear layer) | every number | context, trend | ForceVLA, ForceVLA2 |
+| 2 | **History encoder** | trend over time | some detail | TORL-VLA (MLP window), FWBC-VLA (GRU, 13 steps), FM-VLA (VAE memory), LIFT, ForceDelta-VLA |
+| 3 | **Physically structured** | meaning (wrench, grip vs push) | needs a model | TER-DAgger (wrench), Tabero (grip/applied), VLA-Touch (summed shear) |
+| 4 | **Aligned latent** | agreement with another modality | interpretability | TaF-VLA (tactile ↔ force), OmniVTLA (tactile ↔ language) |
+| 5 | **Language** | easy for a VLM to use | speed, precision | VLA-Touch (Octopi), ForceVLA2 (prompt), VTLA, Tactile-VLA |
+| 6 | **Predicted** | works without a sensor | depends on training | FD-VLA, HapticVLA, TORL-VLA, TA-VLA, DexTacWAM |
 
-**Why history matters.** Two contacts both read 5 N now. One came from $2, 3, 5$ (pressing harder), the other from $8, 6, 5$ (releasing). A single reading cannot tell them apart; the last differences ($+2$ versus $-1$) can. This is why most recent methods feed a short window rather than one sample.
+## 4. Caveats
 
-## Six forms a signal can take
+- FAVLA, LIFT, CompliantVLA-adaptor and CR-VLA-Force say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.
+- Rates are what the papers report, not properties of the sensor type.
 
-Ordered from least to most processed:
+**Carry forward:** once force is measured and encoded, the policy must do something with it: still output a pose, or a force, a stiffness, a correction? See [Survey 3](survey-force-output.html).
 
-1. **Raw token.** One linear layer maps the 6 numbers to one token: ForceVLA, ForceVLA2.
-2. **History encoder.** A window becomes a token or a memory: an MLP over a window (TORL-VLA), a GRU over 13 steps (FWBC-VLA), a pretrained VAE memory (FM-VLA), causal force memory (LIFT), force history (ForceDelta-VLA).
-3. **Physically structured.** The signal is turned into quantities with meaning: a wrench from joint torques (TER-DAgger), grip force versus applied force (Tabero), summed shear $(X, Y, M)$ from markers (VLA-Touch).
-4. **Aligned latent.** An encoder is trained so that its output agrees with another modality: tactile images aligned to real force by contrastive learning (TaF-VLA), tactile aligned to language semantics (OmniVTLA).
-5. **Language.** Touch becomes words for the VLM: Octopi's "soft, rough" (VLA-Touch), subtask force prompts (ForceVLA2), tactile grounding in language (VTLA), tactile reasoning (Tactile-VLA).
-6. **Predicted.** The network produces the signal itself: a distilled force token (FD-VLA), a teacher's tactile-aware actions (HapticVLA), future wrench or torque (TORL-VLA, TA-VLA), future touch in a world model (DexTacWAM, TacPAC, UniTacVLA).
+**Check question:** same arm and pose, $\tau_{ext} = (-5,\ -5)$ N·m. What force acts at the fingertip?
 
-Higher rungs add meaning and robustness but lose detail and speed. Language is easy for a VLM to use and almost useless at 200 Hz; a raw token keeps every millinewton but has to win attention against hundreds of image tokens ([Survey 1](survey-force-map.html)).
+<details markdown="1">
+<summary>Answer</summary>
 
-## Caveats
-
-Sensor types for the abstract-only papers are often unstated, so the table lists only what the papers say. FAVLA, LIFT, CompliantVLA-adaptor and CR-VLA-Force say "force/torque" or "6D end-effector force" without saying where it is measured; I placed them in the F/T row, but some may estimate it from joint torques. Rates are the ones reported in the papers I read in full; they are not a property of the sensor type.
-
-**Carry forward:** once force is measured and encoded, the policy must do something with it: still output a pose, or output a force, a stiffness, or a correction? See [Survey 3](survey-force-output.html).
-
-**Check question:** same arm and pose. The contact-only joint torques are $\tau_{ext} = (-5,\ -5)$ N·m. What force acts at the fingertip?
-
-*Answer:* $F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N, a 5 N push along $+x$. Check: $J^\top F = (-5,\ -5)$.
+$F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N: a 5 N push along $+x$. Check: $J^\top F = (-5, -5)$.
+</details>
 :::
 
 :::vi
-Bài thứ hai trong ba ghi chú survey. [Survey 1](survey-force-map.html) vẽ bản đồ lực đi vào ở đâu; [Survey 3](survey-force-output.html) nói về đầu ra và cách học.
+<div class="tldr" markdown="1">
+**SERIES** Survey 2 / 3 · [Survey 1: lực vào ở đâu](survey-force-map.html) · [Survey 3: đầu ra và cách học](survey-force-output.html)
 
-## Vấn đề
+**VẤN ĐỀ** Hai bài cùng gọi mình là "nhận biết lực" có thể không chung đầu vào nào: bài này đọc cảm biến cổ tay, bài kia đọc ảnh gel, bài thứ ba không đọc gì và suy ra lực từ thị giác.
 
-Hai bài cùng gọi mình là "nhận biết lực" có thể không chung một đầu vào nào. Bài này đọc sáu con số từ cảm biến sau cổ tay. Bài kia đọc ảnh camera chụp một miếng gel. Bài thứ ba không đọc gì lúc chạy và suy ra lực từ thị giác. Trước khi so kiến trúc, cần biết mỗi bài thực sự đo cái gì.
+**NĂM PHÉP ĐO** F/T cổ tay · mô men khớp · xúc giác thị giác · mảng taxel · không đo lúc chạy.
 
-## Năm loại phép đo
+**SÁU DẠNG** token thô · bộ mã hóa lịch sử · có cấu trúc vật lý · latent đã căn · ngôn ngữ · dự đoán.
 
-| Phép đo | Cho ra gì | Ví dụ trong survey | Tần số đã báo cáo |
+**RÚT RA** Dạng càng cao càng thêm ý nghĩa và độ bền, nhưng càng mất chi tiết và tốc độ.
+</div>
+
+## 1. Năm loại phép đo
+
+| Phép đo | Cho ra gì | Mạnh ở | Yếu ở | Ví dụ |
+|---|---|---|---|---|
+| **F/T cổ tay** | một wrench 6D cho cả dụng cụ | lực đẩy tổng, lắp ghép | ngón nào đang trượt | ForceVLA, ForceVLA2, ForceRFT, CompliantVLA-adaptor |
+| **Mô men khớp** (đo hoặc ước lượng) | mỗi khớp một số | không cần phần cứng thêm | phải trừ chuyển động của chính robot | MoDE-VLA, FWBC-VLA, TER-DAgger, TA-VLA |
+| **Xúc giác thị giác** (kiểu GelSight) | ảnh biến dạng gel | hình dạng, trượt | ra lực cần hiệu chuẩn | VLA-Touch, TaF-VLA, Tabero, OmniVTLA |
+| **Mảng taxel / áp điện** | lưới áp suất thô | phân bố áp suất | độ phân giải thấp | HapticVLA (10×10), TORL-VLA (6×8) |
+| **Không đo lúc chạy** | lực được học hoặc suy ra | không có cảm biến để hỏng | chỉ tốt bằng dữ liệu huấn luyện | FD-VLA, HapticVLA, CompVLA |
+
+Tần số báo cáo trong các bài đọc đầy đủ: F/T 300 Hz (ForceVLA2), bộ ước lượng mô men 200 Hz (FWBC-VLA), taxel 120 Hz (HapticVLA), ảnh gel 30 Hz (TaF-VLA).
+
+## 2. Có lực mà không cần cảm biến lực
+
+[[flow]]
+= Chuỗi không cảm biến | Mô men khớp đo được > *Trừ mô hình chuyển động tự do* > Mô men tiếp xúc > *Nghịch đảo Jacobian* > Lực ở đầu ngón | FWBC-VLA và TER-DAgger dùng chuỗi này
+[[/flow]] Mô men khớp lẫn cả tiếp xúc với trọng lực, ma sát và chuyển động. Bỏ phần do chuyển động của chính robot gây ra, rồi đổi phần còn lại thành lực ở đầu ngón.
+
+<div class="calc" markdown="1">
+Thẻ tính tay
+
+**Tính gì và vì sao.** Tìm lại lực ở đầu ngón từ mô men khớp trên một cánh tay phẳng hai khâu. Đây là bước lõi của mọi phương pháp không cảm biến, và nó cho thấy vì sao mô hình chuyển động tự do quan trọng.
+
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
 |---|---|---|---|
-| **Cảm biến F/T cổ tay** | một wrench 6D (3 lực, 3 mô men) cho mọi thứ dụng cụ chạm vào | ForceVLA, ForceVLA2, FD-VLA (huấn luyện), ForceRFT, CompliantVLA-adaptor, CR-VLA-Force, FAVLA, LIFT | 300 Hz (ForceVLA2) |
-| **Mô men khớp**, đo hoặc ước lượng | mỗi khớp một số; phải tách tiếp xúc khỏi trọng lực, ma sát và chuyển động | MoDE-VLA (14 mô men), FWBC-VLA, TER-DAgger, TA-VLA | bộ ước lượng 200 Hz (FWBC-VLA) |
-| **Xúc giác thị giác** (kiểu GelSight) | ảnh biến dạng gel ở đầu ngón: hình dạng, lực trượt, trượt | VLA-Touch, TaF-VLA, Tabero (mô phỏng), đầu ngón MoDE-VLA, OmniVTLA | 30 Hz (TaF-VLA) |
-| **Mảng taxel hoặc áp điện** | một lưới áp suất thô | HapticVLA (10×10), TORL-VLA (6×8 → wrench), TaF-VLA (12×12 làm teacher) | 120 Hz (HapticVLA) |
-| **Không đo lúc chạy** | lực được học hoặc suy ra | FD-VLA, HapticVLA (cảm biến chỉ khi huấn luyện), CompVLA (đầu vào RGB + ngôn ngữ) | – |
+| $q_1, q_2$ | góc khớp (mỗi khâu dài 1 m) | input | $0$, $90°$ |
+| $J$ | Jacobian: tốc độ khớp → tốc độ đầu ngón | tính từ $q$ | $\begin{pmatrix} -1 & -1 \\ 1 & 0 \end{pmatrix}$ |
+| $\tau_{meas}$ | mô men khớp đo được | input | $(-12,\ -1.5)$ N·m |
+| $\tau_{free}$ | mô men do chuyển động của chính robot (mô hình) | input | $(-2,\ -1.5)$ N·m |
+| $\tau_{ext}$ | mô men do tiếp xúc | trung gian | – |
+| $F$ | lực ở đầu ngón | output | – |
 
-Đánh đổi đại khái là giữa tính cục bộ và chi phí. Cảm biến cổ tay cộng mọi tiếp xúc thành một wrench; nó không biết ngón nào đang trượt. Xúc giác đầu ngón biết được, nhưng cần mỗi ngón một cảm biến và tín hiệu nhiều chiều. Mô men khớp không cần phần cứng thêm, nhưng chỉ có nghĩa sau khi trừ đi mô hình chuyển động của chính cánh tay.
+**Công thức** (tĩnh học: $\tau = J^\top F$)
 
-## Tính tay: từ mô men khớp ra lực ở đầu ngón
+$$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, \qquad (J^\top)^{-1} = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}$$
 
-Lấy một cánh tay phẳng hai khâu dài 1 m, góc khớp $q_1 = 0$ và $q_2 = 90°$. Đầu ngón ở $(1, 1)$ và Jacobian là
+**Từng bước**
 
-$$J = \begin{pmatrix} -1 & -1 \\ 1 & 0 \end{pmatrix}$$
+1. Vị trí đầu ngón: $(\cos 0 + \cos 90°,\ \sin 0 + \sin 90°) = (1, 1)$.
+2. $\tau_{ext} = (-12, -1.5) - (-2, -1.5) = (-10,\ 0)$ N·m.
+3. $F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$ N.
+4. Kiểm tra: khớp 2 nằm ở $(1, 0)$; một lực thẳng đứng tại $x = 1$ đi xuyên qua nó, nên mô men tiếp xúc ở khớp 2 bằng 0. ✓
 
-Với quy ước $\tau = J^\top F$, một lực tiếp xúc hướng xuống $F = (0, -10)$ N cho
+**Kết quả.** Một lực 10 N hướng xuống tại đầu ngón.
 
-$$\tau = \begin{pmatrix} -1 & 1 \\ -1 & 0 \end{pmatrix}\begin{pmatrix} 0 \\ -10 \end{pmatrix} = \begin{pmatrix} -10 \\ 0 \end{pmatrix}\ \text{N·m}$$
+**Ý nghĩa.** Bỏ bước 2 thì trọng lực và ma sát sẽ bị đọc thành tiếp xúc. Mô hình chuyển động tự do chính là thứ HSR-Force của FWBC-VLA học.
+</div>
 
-Khớp 2 không cảm thấy gì: nó nằm ở $(1, 0)$, và một lực thẳng đứng tại $x = 1$ đi xuyên qua nó. Đi ngược lại là việc một phương pháp không cảm biến phải làm:
+**Vì sao cần lịch sử.** Hai tiếp xúc cùng đọc 5 N lúc này: một cái đến từ $2, 3, 5$ (đang ấn thêm), cái kia từ $8, 6, 5$ (đang nhả). Thay đổi cuối ($+2$ so với $-1$) phân biệt được chúng; một mẫu đơn lẻ thì không. Vì thế có cửa sổ và bộ nhớ ở bậc 2 bên dưới.
 
-$$F = (J^\top)^{-1}\tau = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -10 \\ 0 \end{pmatrix} = \begin{pmatrix} 0 \\ -10 \end{pmatrix}$$
+## 3. Sáu dạng tín hiệu có thể mang
 
-Thực tế các khớp đo được, chẳng hạn, $\tau_{meas} = (-12,\ -1.5)$, vì trọng lực và ma sát cũng tác dụng lên chúng. Một mô hình dự đoán mô men khi không tiếp xúc là $(-2,\ -1.5)$. Chỉ phần chênh, $(-10,\ 0)$, mới là tiếp xúc. Phép trừ đó chính là thứ bộ ước lượng HSR-Force của FWBC-VLA học, và vì sao chất lượng của nó quyết định mọi thứ phía sau.
+| # | Dạng | Giữ được | Mất | Ví dụ |
+|---|---|---|---|---|
+| 1 | **Token thô** (một lớp linear) | mọi con số | ngữ cảnh, xu hướng | ForceVLA, ForceVLA2 |
+| 2 | **Bộ mã hóa lịch sử** | xu hướng theo thời gian | một phần chi tiết | TORL-VLA (MLP cửa sổ), FWBC-VLA (GRU, 13 bước), FM-VLA (bộ nhớ VAE), LIFT, ForceDelta-VLA |
+| 3 | **Có cấu trúc vật lý** | ý nghĩa (wrench, siết và đẩy) | cần mô hình | TER-DAgger (wrench), Tabero (kẹp/tác dụng), VLA-Touch (trượt tổng) |
+| 4 | **Latent đã căn** | khớp với modality khác | khả năng diễn giải | TaF-VLA (xúc giác ↔ lực), OmniVTLA (xúc giác ↔ ngôn ngữ) |
+| 5 | **Ngôn ngữ** | VLM dùng dễ | tốc độ, độ chính xác | VLA-Touch (Octopi), ForceVLA2 (prompt), VTLA, Tactile-VLA |
+| 6 | **Dự đoán** | chạy không cần cảm biến | phụ thuộc huấn luyện | FD-VLA, HapticVLA, TORL-VLA, TA-VLA, DexTacWAM |
 
-**Vì sao cần lịch sử.** Hai tiếp xúc cùng đọc 5 N lúc này. Một cái đến từ chuỗi $2, 3, 5$ (đang ấn mạnh thêm), cái kia từ $8, 6, 5$ (đang nhả ra). Một lần đọc không phân biệt được; hiệu số cuối ($+2$ so với $-1$) thì được. Đó là lý do hầu hết phương pháp gần đây đưa vào một cửa sổ ngắn thay vì một mẫu.
+## 4. Lưu ý
 
-## Sáu dạng tín hiệu có thể mang
+- FAVLA, LIFT, CompliantVLA-adaptor và CR-VLA-Force ghi "force/torque" hoặc "lực 6D" mà không nói đo ở đâu; có bài có thể ước lượng từ mô men khớp.
+- Tần số là con số các bài báo cáo, không phải thuộc tính của loại cảm biến.
 
-Xếp từ ít xử lý đến nhiều xử lý nhất:
+**Mang sang bài sau:** khi lực đã được đo và mã hóa, chính sách phải làm gì đó với nó: vẫn xuất pose, hay xuất lực, độ cứng, phần hiệu chỉnh? Xem [Survey 3](survey-force-output.html).
 
-1. **Token thô.** Một lớp linear ánh xạ 6 con số thành một token: ForceVLA, ForceVLA2.
-2. **Bộ mã hóa lịch sử.** Một cửa sổ thành token hoặc bộ nhớ: MLP trên cửa sổ (TORL-VLA), GRU trên 13 bước (FWBC-VLA), bộ nhớ VAE đã pretrain (FM-VLA), bộ nhớ lực nhân quả (LIFT), lịch sử lực (ForceDelta-VLA).
-3. **Có cấu trúc vật lý.** Tín hiệu được đổi thành các đại lượng có nghĩa: wrench từ mô men khớp (TER-DAgger), lực kẹp tách khỏi lực tác dụng (Tabero), lực trượt tổng $(X, Y, M)$ từ marker (VLA-Touch).
-4. **Latent đã căn chỉnh.** Một encoder được huấn luyện để đầu ra khớp với modality khác: ảnh xúc giác căn với lực thật bằng học tương phản (TaF-VLA), xúc giác căn với ngữ nghĩa ngôn ngữ (OmniVTLA).
-5. **Ngôn ngữ.** Xúc giác thành chữ cho VLM: "mềm, nhám" của Octopi (VLA-Touch), force prompt theo subtask (ForceVLA2), neo xúc giác vào ngôn ngữ (VTLA), suy luận xúc giác (Tactile-VLA).
-6. **Dự đoán.** Mạng tự sinh ra tín hiệu: token lực chưng cất (FD-VLA), hành động có nhận biết xúc giác của teacher (HapticVLA), wrench hoặc mô men tương lai (TORL-VLA, TA-VLA), xúc giác tương lai trong world model (DexTacWAM, TacPAC, UniTacVLA).
+**Câu kiểm tra:** cùng cánh tay và tư thế, $\tau_{ext} = (-5,\ -5)$ N·m. Lực nào tác dụng ở đầu ngón?
 
-Bậc càng cao càng thêm ý nghĩa và độ bền, nhưng mất chi tiết và tốc độ. Ngôn ngữ thì VLM dùng dễ nhưng gần như vô dụng ở 200 Hz; token thô giữ từng milinewton nhưng phải tranh attention với hàng trăm token ảnh ([Survey 1](survey-force-map.html)).
+<details markdown="1">
+<summary>Đáp án</summary>
 
-## Lưu ý
-
-Loại cảm biến của các bài chỉ đọc abstract thường không được nêu, nên bảng chỉ ghi những gì bài viết nói. FAVLA, LIFT, CompliantVLA-adaptor và CR-VLA-Force ghi "force/torque" hoặc "lực end-effector 6D" mà không nói đo ở đâu; tôi xếp chúng vào dòng F/T, nhưng có bài có thể ước lượng từ mô men khớp. Tần số là con số báo cáo trong các bài tôi đọc đầy đủ; chúng không phải thuộc tính của loại cảm biến.
-
-**Mang theo sang bài sau:** khi lực đã được đo và mã hóa, chính sách phải làm gì đó với nó: vẫn xuất pose, hay xuất lực, độ cứng, hoặc một phần hiệu chỉnh? Xem [Survey 3](survey-force-output.html).
-
-**Câu kiểm tra:** cùng cánh tay và tư thế đó. Mô men khớp chỉ do tiếp xúc là $\tau_{ext} = (-5,\ -5)$ N·m. Lực nào tác dụng ở đầu ngón?
-
-*Đáp án:* $F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N, một lực đẩy 5 N theo $+x$. Kiểm tra: $J^\top F = (-5,\ -5)$.
+$F = \begin{pmatrix} 0 & -1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} -5 \\ -5 \end{pmatrix} = \begin{pmatrix} 5 \\ 0 \end{pmatrix}$ N: đẩy 5 N theo $+x$. Kiểm tra: $J^\top F = (-5, -5)$.
+</details>
 :::

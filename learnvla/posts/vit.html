@@ -9,34 +9,16 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ViT: When an Image Becomes Tokens">
 <meta property="og:description" content="How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -78,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>ViT: When an Image Becomes Tokens</h1>
@@ -92,6 +74,13 @@
 
   <article class="post-body">
     <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> ViT, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
+<p><strong>PROBLEM</strong> A Transformer reads a sequence of vectors; an image is a grid. One token per pixel gives 50,176 tokens and about 2.5 billion attention pairs for a 224×224 image.</p>
+<p><strong>IDEA</strong> Cut the image into patches, flatten each, project it linearly to a vector, and add a position vector.</p>
+<p><strong>RESULT</strong> A 224×224 image becomes 256 tokens (14×14 patches) that a Transformer, and later a VLA, can attend over.</p>
+<p><strong>KEY POINT</strong> Without position embeddings the model cannot tell left from right.</p>
+</div>
 <h2>The pain to cure</h2>
 <p>A Transformer eats a sequence of vectors. An image is a grid of numbers. How do we turn the grid into a sequence without losing anything important?</p>
 <h2>Step 1: The naive try, one token per pixel</h2>
@@ -168,9 +157,19 @@ $$</p>
 $$</p>
 <p>Carry forward: the image is now continuous tokens used only as <strong>input</strong>, and nothing has to be generated. Actions are different: the robot must produce them. That tension is what the next stage resolves (see <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
 <p><strong>Check question:</strong> if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?</p>
-<p><em>Answer:</em> the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.</p>
+<details>
+<summary>Answer</summary>
+<p>the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.</p>
+</details>
     </div>
     <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> ViT, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
+<p><strong>VẤN ĐỀ</strong> Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention.</p>
+<p><strong>Ý TƯỞNG</strong> Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector, rồi cộng một vector vị trí.</p>
+<p><strong>KẾT QUẢ</strong> Ảnh 224×224 thành 256 token (patch 14×14) để Transformer, và sau này là VLA, chú ý qua lại.</p>
+<p><strong>ĐIỂM CỐT LÕI</strong> Không có mã vị trí, mô hình không phân biệt được trái với phải.</p>
+</div>
 <h2>Cái đau cần chữa</h2>
 <p>Transformer ăn một dãy vector. Ảnh lại là một lưới số. Làm sao biến lưới thành dãy mà không mất thứ gì quan trọng?</p>
 <h2>Bước 1: Thử cách ngây thơ nhất, mỗi pixel một token</h2>
@@ -247,7 +246,10 @@ $$</p>
 $$</p>
 <p>Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm <strong>đầu vào</strong>, không cần sinh ra. Còn hành động thì khác: robot phải sinh chúng. Đó là mâu thuẫn mà bài tiếp theo giải quyết (xem <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
 <p><strong>Câu kiểm tra:</strong> nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?</p>
-<p><em>Đáp án:</em> ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.</p>
+<details>
+<summary>Đáp án</summary>
+<p>ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.</p>
+</details>
     </div>
   </article>
 

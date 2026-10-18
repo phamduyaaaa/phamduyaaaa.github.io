@@ -3,140 +3,191 @@ slug: vla-touch
 date: 2026-10-18
 title_en: "VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA"
 title_vi: "VLA-Touch: Phản hồi xúc giác hai tầng mà không train lại VLA"
-excerpt_en: "VLA-Touch leaves the base VLA (RDT) frozen and adds touch twice: as language for a GPT-4o planner, and as force for a small diffusion refiner on the action chunk."
-excerpt_vi: "VLA-Touch giữ nguyên VLA nền (RDT) và thêm xúc giác ở hai tầng: dưới dạng ngôn ngữ cho planner GPT-4o, và dưới dạng lực cho một bộ tinh chỉnh diffusion nhỏ trên action chunk."
+excerpt_en: "Adding touch usually means fine-tuning the VLA on paired tactile data. VLA-Touch leaves RDT unchanged and adds touch twice: as words for a GPT-4o planner, and as force for a small refiner of the action chunk."
+excerpt_vi: "Thêm xúc giác thường nghĩa là fine-tune VLA trên dữ liệu xúc giác ghép đôi. VLA-Touch giữ nguyên RDT và thêm xúc giác hai lần: thành chữ cho planner GPT-4o, và thành lực cho một bộ tinh chỉnh action chunk."
 tags: [VLA, Tactile, Paper Notes, RDT]
 ---
 
 :::en
-Paper: [arXiv 2507.17294](https://arxiv.org/abs/2507.17294) (accepted to RA-L 2026), code at [jxbi1010/VLA-Touch](https://github.com/jxbi1010/VLA-Touch).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2507.17294](https://arxiv.org/abs/2507.17294) · 07/2025 · RA-L 2026 · base VLA RDT-1B · [code](https://github.com/jxbi1010/VLA-Touch)
 
-## The pain it cures
+**PROBLEM** Some decisions need touch: is the cup full, which mango is softer, is the sponge pressing hard enough.
 
-Fine-tuning a large VLA to read a new sensor needs a lot of paired data. VLA-Touch asks: can touch be added **without fine-tuning the base VLA**? It splits touch into two roles. Some tactile information is semantic ("this mango is soft") and helps **planning**. Some is continuous ("shear force is rising") and helps **control**.
+**WHAT FAILED BEFORE** Giving a VLM planner raw tactile images: 50% correct on force, 60% on hardness. Fine-tuning the VLA on tactile input needs paired data and puts the pretrained VLA at risk.
 
-## Try the naive way first
+**IDEA** Keep the VLA unchanged. Touch enters twice: tactile → language (Octopi) for a GPT-4o planner, and tactile force → an interpolant controller that refines the VLA's action chunk.
 
-Give GPT-4o the raw GelSight images and let it judge. The paper measured this for the planner. Raw tactile images were enough for roughness (100%) but reached only 50% on force and 60% on hardness, while tactile language (Octopi descriptions, plus marker-tracked force written as text) reached 90% and 75%. A large VLM has seen few gel images; it reads words better than deformation patterns. The other naive move, fine-tuning RDT with tactile input, needs paired data the authors chose not to collect.
+**RESULT** Up to 35% higher manipulation success than the vision-only VLA; wiping 5 → 12 successes out of 20.
+</div>
 
-## Work it by hand
+## 1. The problem: two ways that did not work
 
-**Markers to $m_t$.** Marker tracking gives a small shear vector for each marker. VLA-Touch sums them and keeps the magnitude. Three markers, in arbitrary units: $(0.1,\ 0)$, $(0.2,\ 0.1)$, $(0.1,\ -0.05)$.
+[[flow]]
+- Before~raw touch to planner | GelSight image > !GPT-4o planner~reads pixels! | 50% correct on force, 60% on hardness
+- Before~fine-tune on touch | tactile + RGB > !Fine-tune RDT~needs paired data! > Actions | costly, risks the pretrained VLA
++ VLA-Touch | GelSight > *Octopi → text* > GPT-4o planner > RDT unchanged > *Refiner~+ marker force* | touch used twice, VLA untouched
+[[/flow]] The planner gets touch as words; the controller gets touch as force. The VLA in between is not retrained.
 
-$$X = 0.1 + 0.2 + 0.1 = 0.4,\quad Y = 0 + 0.1 - 0.05 = 0.05,\quad M = \sqrt{0.4^2 + 0.05^2} \approx 0.403$$
+## 2. Architecture
 
-So $m_t = (0.4,\ 0.05,\ 0.403)$: three numbers per step instead of a tactile image. This is what the refiner receives.
+[[fig:vla-touch]] Outer loop: tactile text updates the GPT-4o instruction. Inner loop: tactile force refines the chunk from RDT.
 
-**Why start from the VLA chunk, not from noise?** In one dimension: RDT proposes $a = 0.030$ m and the expert did $0.022$ m. A diffusion policy starting from Gaussian noise must carry a random sample (unit scale after normalisation) all the way to $0.022$. The interpolant starts at $0.030$ and only has to learn the $-0.008$ m correction, which the tactile force can explain.
+| Block | Input | Output | Role |
+|---|---|---|---|
+| Octopi | 6 GelSight frames | words: hardness, roughness | touch → language |
+| GPT-4o planner | goal, scene image, tactile text, last instruction | next instruction $I_{k+1}$ | re-plan with touch |
+| RDT-1B (base VLA) | instruction, RGB, proprioception | chunk of $T_a = 64$ steps | motion proposal |
+| Marker tracking | GelSight image | $m_t = (X, Y, M)$ | touch → 3 numbers |
+| Interpolant controller | chunk, DINOv2 features, $m_t$ history | refined first 48 steps | correct contact, ≤ 8 Hz |
 
-## Architecture
+## 3. Work it by hand: turning markers into $m_t$
 
-[[fig:vla-touch]] Two loops: an outer planning loop where tactile text updates the GPT-4o instruction, and an inner control loop where tactile force refines the chunk produced by the frozen RDT.
+<div class="calc" markdown="1">
+Calculation card
 
-**Planning level (outer loop).**
+**What and why.** The refiner runs at up to 8 Hz and cannot digest a tactile image each step. VLA-Touch compresses the gel's marker motion into three numbers: total shear in $x$, in $y$, and its size.
 
-- **Task planner:** GPT-4o receives the goal, a scene image, the tactile description $L^m_t$ and the previous instruction $I_k$, and returns the next one-sentence instruction $I_{k+1}$.
-- **Tactile to text:** Octopi, a tactile-language model, reads 6 frames from a GelSight Mini and describes properties such as hardness and roughness. Force is handled separately: marker-tracked shear force vectors are given to GPT-4o directly.
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $v_i = (x_i, y_i)$ | shear vector of marker $i$ | input | $(0.1, 0)$, $(0.2, 0.1)$, $(0.1, -0.05)$ (arbitrary units) |
+| $X, Y$ | summed shear | output | – |
+| $M$ | magnitude of the sum | output | – |
 
-**Control level (inner loop).**
+**Formula**
 
-- **Base VLA:** RDT-1B maps the instruction and visual state to an action chunk with horizon $T_a = 64$.
-- **Tactile state:** OpenCV marker tracking on the GelSight image gives per-marker forces, summed into $m_t = (X, Y, M)$.
-- **Interpolant controller** ($\pi_I$, BRIDGeR-style): its input is $[z^r, z^o, m]$ (proprioception embedding, DINOv2 embedding, tactile force history). Instead of denoising from Gaussian noise it starts from the VLA's action chunk and refines it with a stochastic interpolant. It refines the first 48 of the 64 steps in sliding windows, executed at up to 8 Hz.
+$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$
 
-## Training
+**Steps**
 
-1. RDT first fine-tuned on unrelated Franka data (100k steps) to align action spaces.
-2. Fine-tuned on the task data **without** tactile input (20k steps per task).
-3. The VLA is then run on task observations to collect chunks; the interpolant controller is trained by supervised MSE against expert actions.
+1. $X = 0.1 + 0.2 + 0.1 = 0.4$
+2. $Y = 0 + 0.1 - 0.05 = 0.05$
+3. $M = \sqrt{0.4^2 + 0.05^2} = \sqrt{0.1625} \approx 0.403$
 
-The paper states the method works "without fine-tuning the base VLA"; whether Octopi and DINOv2 are frozen is not stated.
+**Result.** $m_t = (0.4,\ 0.05,\ 0.403)$.
 
-## Results
+**Why it matters.** Three numbers per step are cheap enough for a fast refiner, and they keep what matters for wiping and peeling: which way and how hard the gel is being dragged.
+</div>
 
-Tasks: Cup (does it hold water?), Wipe (pick the smoother sponge, then wipe), Peel (pick the softer mango, then peel). Successes out of 20:
+## 4. Results
 
-| Task (complete) | RDT | RDT + Interpolant |
-|---|---|---|
-| Cup place | 7 | 10 |
-| Wipe | 5 | 12 |
-| Peel | 6 | 10 |
+[[bars:/20]] Cup place · RDT=7; *Cup place · + touch refiner=10*; Wipe · RDT=5; *Wipe · + touch refiner=12*; Peel · RDT=6; *Peel · + touch refiner=10* || Full-task successes out of 20.
 
-The abstract reports planning efficiency up to 40% higher and manipulation success up to 35% higher than vision-only VLAs. Removing touch from the controller cut cup placement by 50%.
+- Planner with tactile language: force judged right 90%, hardness 75% (vs 50% and 60% from raw images).
+- Removing touch from the controller cut cup placement by 50%.
 
-## Caveats
+## 5. Training
 
-The controller does not yet use high-frequency tactile signals (25 Hz and above); data are logged at 10 Hz. Discretised Octopi categories failed to separate objects with subtle differences.
-**Carry forward:** VLA-Touch passes touch on as text or as a summed shear vector, but a gel image shows deformation, not force. [TaF-VLA](taf-vla.html) first trains the tactile encoder to produce force-like features.
+| Step | What |
+|---|---|
+| 1 | RDT fine-tuned on unrelated Franka data (100k steps) to align action spaces |
+| 2 | Fine-tuned on task data **without** touch (20k steps per task) |
+| 3 | Run RDT on task data to collect chunks; train the refiner with MSE against expert actions |
+
+## 6. Caveats
+
+- High-frequency touch (25 Hz and up) is not used yet; data were logged at 10 Hz.
+- Whether Octopi and DINOv2 are frozen is not stated.
+
+**Carry forward:** VLA-Touch passes touch on as words or as a summed shear, but a gel image shows deformation, not force. [TaF-VLA](taf-vla.html) trains the tactile encoder to produce force-like features first.
 
 **Check question:** two markers read $(0.3,\ 0.1)$ and $(-0.1,\ 0.2)$. What is $m_t$?
 
-*Answer:* $X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$, so $m_t = (0.2,\ 0.3,\ 0.361)$.
+<details markdown="1">
+<summary>Answer</summary>
+
+$X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$.
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2507.17294](https://arxiv.org/abs/2507.17294) (được nhận ở RA-L 2026), code tại [jxbi1010/VLA-Touch](https://github.com/jxbi1010/VLA-Touch).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2507.17294](https://arxiv.org/abs/2507.17294) · 07/2025 · RA-L 2026 · VLA nền RDT-1B · [code](https://github.com/jxbi1010/VLA-Touch)
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** Có những quyết định cần xúc giác: cốc có đầy không, quả xoài nào mềm hơn, bọt biển đã ấn đủ mạnh chưa.
 
-Fine-tune một VLA lớn để đọc cảm biến mới cần rất nhiều dữ liệu ghép đôi. VLA-Touch hỏi: có thêm được xúc giác mà **không fine-tune VLA nền** không? Bài tách xúc giác thành hai vai trò. Một phần là ngữ nghĩa ("quả xoài này mềm") giúp **lập kế hoạch**. Một phần là liên tục ("lực trượt đang tăng") giúp **điều khiển**.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Đưa ảnh xúc giác thô cho planner VLM: đúng 50% về lực, 60% về độ cứng. Fine-tune VLA với xúc giác cần dữ liệu ghép đôi và đặt VLA đã pretrain vào rủi ro.
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** Giữ nguyên VLA. Xúc giác vào hai lần: xúc giác → ngôn ngữ (Octopi) cho planner GPT-4o, và lực xúc giác → một interpolant controller tinh chỉnh action chunk của VLA.
 
-Đưa thẳng ảnh GelSight cho GPT-4o tự đánh giá. Bài báo đã đo điều này cho planner. Ảnh xúc giác thô đủ để nhận độ nhám (100%) nhưng chỉ đạt 50% với lực và 60% với độ cứng, trong khi ngôn ngữ xúc giác (mô tả của Octopi, cộng lực từ marker tracking viết thành văn bản) đạt 90% và 75%. VLM lớn ít khi thấy ảnh gel; nó đọc chữ tốt hơn đọc kiểu biến dạng. Cách ngây thơ còn lại, fine-tune RDT với đầu vào xúc giác, cần dữ liệu ghép đôi mà tác giả chọn không thu.
+**KẾT QUẢ** Thao tác thành công cao hơn tới 35% so với VLA chỉ dùng thị giác; lau bảng 5 → 12 lần thành công trên 20.
+</div>
 
-## Tính tay
+## 1. Vấn đề: hai cách đã không ổn
 
-**Từ marker ra $m_t$.** Marker tracking cho một vector trượt nhỏ ở mỗi marker. VLA-Touch cộng chúng lại và giữ độ lớn. Ba marker, đơn vị tùy ý: $(0.1,\ 0)$, $(0.2,\ 0.1)$, $(0.1,\ -0.05)$.
+[[flow]]
+- Trước~xúc giác thô cho planner | Ảnh GelSight > !Planner GPT-4o~đọc pixel! | đúng 50% về lực, 60% về độ cứng
+- Trước~fine-tune với xúc giác | xúc giác + RGB > !Fine-tune RDT~cần dữ liệu ghép đôi! > Hành động | tốn kém, rủi ro cho VLA đã pretrain
++ VLA-Touch | GelSight > *Octopi → chữ* > Planner GPT-4o > RDT giữ nguyên > *Bộ tinh chỉnh~+ lực từ marker* | dùng xúc giác hai lần, không động VLA
+[[/flow]] Planner nhận xúc giác dưới dạng chữ; bộ điều khiển nhận xúc giác dưới dạng lực. VLA ở giữa không bị huấn luyện lại.
 
-$$X = 0.1 + 0.2 + 0.1 = 0.4,\quad Y = 0 + 0.1 - 0.05 = 0.05,\quad M = \sqrt{0.4^2 + 0.05^2} \approx 0.403$$
+## 2. Kiến trúc
 
-Vậy $m_t = (0.4,\ 0.05,\ 0.403)$: ba con số mỗi bước thay vì một ảnh xúc giác. Đây là thứ bộ tinh chỉnh nhận được.
+[[fig:vla-touch]] Vòng ngoài: văn bản xúc giác cập nhật chỉ dẫn của GPT-4o. Vòng trong: lực xúc giác tinh chỉnh chunk từ RDT.
 
-**Vì sao bắt đầu từ chunk của VLA mà không từ nhiễu?** Xét một chiều: RDT đề xuất $a = 0.030$ m còn chuyên gia làm $0.022$ m. Diffusion policy bắt đầu từ nhiễu Gaussian phải đưa một mẫu ngẫu nhiên (cỡ đơn vị sau chuẩn hóa) đi suốt tới $0.022$. Interpolant bắt đầu ở $0.030$ và chỉ cần học phần hiệu chỉnh $-0.008$ m, thứ mà lực xúc giác giải thích được.
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| Octopi | 6 khung GelSight | chữ: độ cứng, độ nhám | xúc giác → ngôn ngữ |
+| Planner GPT-4o | mục tiêu, ảnh cảnh, chữ xúc giác, chỉ dẫn trước | chỉ dẫn kế $I_{k+1}$ | lập kế hoạch lại theo xúc giác |
+| RDT-1B (VLA nền) | chỉ dẫn, RGB, proprioception | chunk $T_a = 64$ bước | đề xuất chuyển động |
+| Marker tracking | ảnh GelSight | $m_t = (X, Y, M)$ | xúc giác → 3 con số |
+| Interpolant controller | chunk, đặc trưng DINOv2, lịch sử $m_t$ | 48 bước đầu đã tinh chỉnh | sửa tiếp xúc, ≤ 8 Hz |
 
-## Kiến trúc
+## 3. Tính tay: từ marker ra $m_t$
 
-[[fig:vla-touch]] Hai vòng lặp: vòng ngoài lập kế hoạch, nơi văn bản xúc giác cập nhật chỉ dẫn của GPT-4o; vòng trong điều khiển, nơi lực xúc giác tinh chỉnh action chunk do RDT đóng băng tạo ra.
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-**Tầng lập kế hoạch (vòng ngoài).**
+**Tính gì và vì sao.** Bộ tinh chỉnh chạy tới 8 Hz và không thể nuốt một ảnh xúc giác mỗi bước. VLA-Touch nén chuyển động của marker trên gel thành ba con số: tổng lực trượt theo $x$, theo $y$, và độ lớn.
 
-- **Task planner:** GPT-4o nhận mục tiêu, ảnh cảnh, mô tả xúc giác $L^m_t$ và chỉ dẫn trước $I_k$, rồi trả về chỉ dẫn một câu kế tiếp $I_{k+1}$.
-- **Xúc giác thành văn bản:** Octopi, một mô hình tactile-language, đọc 6 khung hình từ GelSight Mini và mô tả các thuộc tính như độ cứng, độ nhám. Lực được xử lý riêng: vector lực trượt từ marker tracking đưa thẳng cho GPT-4o.
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $v_i = (x_i, y_i)$ | vector trượt của marker $i$ | input | $(0.1, 0)$, $(0.2, 0.1)$, $(0.1, -0.05)$ (đơn vị tùy ý) |
+| $X, Y$ | tổng lực trượt | output | – |
+| $M$ | độ lớn của tổng | output | – |
 
-**Tầng điều khiển (vòng trong).**
+**Công thức**
 
-- **VLA nền:** RDT-1B ánh xạ chỉ dẫn và trạng thái thị giác thành action chunk với horizon $T_a = 64$.
-- **Trạng thái xúc giác:** marker tracking bằng OpenCV trên ảnh GelSight cho lực từng marker, cộng lại thành $m_t = (X, Y, M)$.
-- **Interpolant controller** ($\pi_I$, kiểu BRIDGeR): đầu vào là $[z^r, z^o, m]$ (embedding proprioception, embedding DINOv2, lịch sử lực xúc giác). Thay vì khử nhiễu từ Gaussian, nó bắt đầu từ action chunk của VLA và tinh chỉnh bằng stochastic interpolant. Nó tinh chỉnh 48 trong 64 bước đầu theo cửa sổ trượt, thực thi tối đa 8 Hz.
+$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$
 
-## Huấn luyện
+**Từng bước**
 
-1. RDT được fine-tune trước trên dữ liệu Franka không liên quan (100k bước) để căn chỉnh không gian hành động.
-2. Fine-tune trên dữ liệu task **không** có xúc giác (20k bước mỗi task).
-3. Sau đó chạy VLA trên quan sát của task để thu các chunk; interpolant controller được huấn luyện có giám sát bằng MSE so với hành động chuyên gia.
+1. $X = 0.1 + 0.2 + 0.1 = 0.4$
+2. $Y = 0 + 0.1 - 0.05 = 0.05$
+3. $M = \sqrt{0.4^2 + 0.05^2} = \sqrt{0.1625} \approx 0.403$
 
-Bài khẳng định phương pháp chạy "không fine-tune VLA nền"; việc Octopi và DINOv2 có bị đóng băng hay không không được nêu.
+**Kết quả.** $m_t = (0.4,\ 0.05,\ 0.403)$.
 
-## Kết quả
+**Ý nghĩa.** Ba con số mỗi bước đủ rẻ cho một bộ tinh chỉnh nhanh, và vẫn giữ điều quan trọng khi lau và gọt: gel đang bị kéo theo hướng nào và mạnh đến đâu.
+</div>
 
-Các task: Cup (cốc có nước không?), Wipe (chọn miếng bọt biển mịn hơn rồi lau), Peel (chọn quả xoài mềm hơn rồi gọt). Số lần thành công trên 20:
+## 4. Kết quả
 
-| Task (hoàn chỉnh) | RDT | RDT + Interpolant |
-|---|---|---|
-| Đặt cốc | 7 | 10 |
-| Lau | 5 | 12 |
-| Gọt | 6 | 10 |
+[[bars:/20]] Đặt cốc · RDT=7; *Đặt cốc · + tinh chỉnh xúc giác=10*; Lau · RDT=5; *Lau · + tinh chỉnh xúc giác=12*; Gọt · RDT=6; *Gọt · + tinh chỉnh xúc giác=10* || Số lần thành công cả task trên 20.
 
-Abstract nêu hiệu quả lập kế hoạch tăng tới 40% và tỉ lệ thao tác thành công tăng tới 35% so với VLA chỉ dùng thị giác. Bỏ xúc giác khỏi bộ điều khiển làm giảm 50% ở bước đặt cốc.
+- Planner dùng ngôn ngữ xúc giác: đoán đúng lực 90%, độ cứng 75% (so với 50% và 60% từ ảnh thô).
+- Bỏ xúc giác khỏi bộ điều khiển làm giảm 50% ở bước đặt cốc.
 
-## Lưu ý
+## 5. Huấn luyện
 
-Bộ điều khiển chưa tận dụng tín hiệu xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu được ghi ở 10 Hz. Các nhóm Octopi rời rạc hóa không phân biệt được những vật khác biệt tinh tế.
+| Bước | Nội dung |
+|---|---|
+| 1 | Fine-tune RDT trên dữ liệu Franka không liên quan (100k bước) để căn không gian hành động |
+| 2 | Fine-tune trên dữ liệu task **không** có xúc giác (20k bước mỗi task) |
+| 3 | Chạy RDT trên dữ liệu task để thu chunk; huấn luyện bộ tinh chỉnh bằng MSE so với hành động chuyên gia |
 
-**Mang theo sang bài sau:** VLA-Touch truyền xúc giác dưới dạng văn bản hoặc một vector trượt tổng, nhưng ảnh gel cho thấy biến dạng chứ không phải lực. [TaF-VLA](taf-vla.html) huấn luyện bộ mã hóa xúc giác cho ra đặc trưng giống lực trước.
+## 6. Lưu ý
+
+- Chưa dùng xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu ghi ở 10 Hz.
+- Không nêu Octopi và DINOv2 có bị đóng băng không.
+
+**Mang sang bài sau:** VLA-Touch truyền xúc giác dưới dạng chữ hoặc một lực trượt tổng, nhưng ảnh gel cho thấy biến dạng chứ không phải lực. [TaF-VLA](taf-vla.html) huấn luyện bộ mã hóa xúc giác cho ra đặc trưng giống lực trước.
 
 **Câu kiểm tra:** hai marker đọc $(0.3,\ 0.1)$ và $(-0.1,\ 0.2)$. $m_t$ bằng bao nhiêu?
 
-*Đáp án:* $X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$, nên $m_t = (0.2,\ 0.3,\ 0.361)$.
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$.
+</details>
 :::

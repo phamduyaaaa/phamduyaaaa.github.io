@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.">
+<meta name="description" content="Appending force to π0's state barely helps. ForceVLA gives force its own token and fuses it after the VLM with a 4-expert MoE: 60.5% vs 37.3% on five contact tasks.">
 <title>ForceVLA: Force-aware MoE for Contact-rich Manipulation · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ForceVLA: Force-aware MoE for Contact-rich Manipulation">
-<meta property="og:description" content="ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.">
+<meta property="og:description" content="Appending force to π0's state barely helps. ForceVLA gives force its own token and fuses it after the VLM with a 4-expert MoE: 60.5% vs 37.3% on five contact tasks.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -84,52 +66,30 @@
     <h1 data-en>ForceVLA: Force-aware MoE for Contact-rich Manipulation</h1>
     <h1 data-vi>ForceVLA: MoE nhận biết lực cho thao tác giàu tiếp xúc</h1>
 
-    <p class="post-excerpt-lead" data-en>ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results.</p>
-    <p class="post-excerpt-lead" data-vi>ForceVLA coi lực 6 trục là một modality riêng và gộp vào π0 sau VLM bằng mixture-of-experts thưa (FVLMoE). Kiến trúc, cách huấn luyện và kết quả.</p>
+    <p class="post-excerpt-lead" data-en>Appending force to π0's state barely helps. ForceVLA gives force its own token and fuses it after the VLM with a 4-expert MoE: 60.5% vs 37.3% on five contact tasks.</p>
+    <p class="post-excerpt-lead" data-vi>Nối lực vào state của π0 gần như vô ích. ForceVLA cho lực một token riêng và gộp sau VLM bằng MoE 4 expert: 60,5% so với 37,3% trên năm task tiếp xúc.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Paper Notes</span><span class="pill">MoE</span><span class="pill">π0</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> (NeurIPS 2025), built on π0.</p>
-<h2>The pain it cures</h2>
-<p>Vision-language-action models are good at coarse motion but fail when the task is decided by contact: inserting a plug, wiping a board, peeling a cucumber. Naively concatenating force to the robot state barely helps. ForceVLA's claim is that force should be a <strong>first-class modality</strong> with its own token, and that it should be fused <strong>after</strong> the VLM has already processed vision and language.</p>
-<h2>Try the naive way first</h2>
-<p>The obvious move is to append the 6 force numbers to the robot-state vector and fine-tune. The paper reports what happens:</p>
-<table>
-<thead>
-<tr>
-<th>Model</th>
-<th>Without force</th>
-<th>Force concatenated to state</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>π0-base</td>
-<td>37.3%</td>
-<td>40.2%</td>
-</tr>
-<tr>
-<td>π0-fast</td>
-<td>31.0%</td>
-<td>14.2%</td>
-</tr>
-</tbody>
-</table>
-<p>Three points gained for one model, seventeen lost for the other. Six numbers inside a long sequence of image and state tokens are easy to ignore, and a signal that only matters during contact is near zero on every free-space step. Putting a MoE <strong>before</strong> the VLM was worse still: 0% in the ablation.</p>
-<h2>Work it by hand: one top-1 routing step</h2>
-<p>FVLMoE sends each token to exactly one of 4 experts. A router maps the token to 4 scores (logits), softmax turns them into probabilities, and the largest wins. Two tokens:</p>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> · 05/2025 · NeurIPS 2025 · built on π0</p>
+<p><strong>PROBLEM</strong> π0 sees only images, so it is blind to force exactly when contact decides the task: inserting a plug, wiping a board, or when the hand hides the object.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The common fix, appending the 6 force numbers to π0's state, adds +2.9 points to π0-base and <em>costs</em> π0-fast 16.8 points.</p>
+<p><strong>IDEA</strong> Treat force as its own modality (one token) and fuse it <strong>after</strong> the VLM with a sparse mixture of experts (FVLMoE).</p>
+<p><strong>RESULT</strong> 60.5% vs 37.3% for π0-base on five contact-rich tasks (+23.2 points).</p>
+</div>
+<h2>1. The problem: what earlier approaches left unsolved</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Three ways to add force to π0. Red marks where earlier attempts break; yellow marks ForceVLA's change." class="dg-natural" width="806" height="304" viewBox="0 0 806 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0 + force in state</text><rect class="dg-box" x="160" y="22" width="155" height="38"/><text class="dg-t" x="237" y="45" text-anchor="middle">RGB + instruction</text><path class="dg-a" d="M315 41 H347"/><rect class="dg-box" x="349" y="22" width="96" height="38"/><text class="dg-t" x="397" y="45" text-anchor="middle">VLM</text><path class="dg-a" d="M445 41 H477"/><rect class="dg-badbox" x="479" y="14" width="173" height="54"/><text class="dg-t" x="565" y="37" text-anchor="middle">Action expert</text><text class="dg-s" x="565" y="53" text-anchor="middle">state + 6 force numbers</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ six numbers drown in the state: π0-fast falls 31.0% → 14.2%</text><text class="dg-lab dg-red" x="14" y="137">Also tried</text><text class="dg-lab dg-red" x="14" y="151">MoE before VLM</text><rect class="dg-box" x="160" y="120" width="96" height="38"/><text class="dg-t" x="208" y="143" text-anchor="middle">F/T + RGB</text><path class="dg-a" d="M256 139 H288"/><rect class="dg-badbox" x="290" y="112" width="116" height="54"/><text class="dg-t" x="347" y="135" text-anchor="middle">MoE</text><text class="dg-s" x="347" y="151" text-anchor="middle">before the VLM</text><path class="dg-a" d="M405 139 H437"/><rect class="dg-box" x="439" y="120" width="96" height="38"/><text class="dg-t" x="487" y="143" text-anchor="middle">VLM</text><path class="dg-a" d="M535 139 H567"/><rect class="dg-box" x="569" y="120" width="125" height="38"/><text class="dg-t" x="632" y="143" text-anchor="middle">Action expert</text><text class="dg-note dg-red" x="159.60000000000002" y="184">✗ a VLM pretrained without force is disrupted: 0% in the ablation</text><text class="dg-lab dg-green" x="14" y="241">ForceVLA</text><rect class="dg-box" x="160" y="218" width="155" height="38"/><text class="dg-t" x="237" y="241" text-anchor="middle">RGB + instruction</text><path class="dg-a" d="M315 237 H347"/><rect class="dg-box" x="349" y="218" width="96" height="38"/><text class="dg-t" x="397" y="241" text-anchor="middle">VLM</text><path class="dg-a" d="M445 237 H477"/><rect class="dg-key" x="479" y="210" width="154" height="54"/><text class="dg-t" x="556" y="233" text-anchor="middle">FVLMoE</text><text class="dg-s" x="556" y="249" text-anchor="middle">fuse force AFTER VLM</text><path class="dg-a" d="M633 237 H665"/><rect class="dg-box" x="667" y="218" width="125" height="38"/><text class="dg-t" x="729" y="241" text-anchor="middle">Action expert</text><text class="dg-note dg-green" x="159.60000000000002" y="282">✓ force gets its own path: 60.5%</text></svg><figcaption>Three ways to add force to π0. Red marks where earlier attempts break; yellow marks ForceVLA's change.</figcaption></figure>
 <ul>
-<li>a token from a free-space step, logits $(2.0,\ 0.5,\ 0.1,\ -1.0)$</li>
-<li>a token from a step where the plug is being pushed in, logits $(0.2,\ 0.1,\ 2.5,\ 0.3)$</li>
+<li>A camera cannot see how hard the plug is pressed, and occlusion makes it worse.</li>
+<li><em>Where</em> force is fused matters more than <em>whether</em> it is fused:</li>
 </ul>
-<p>First token: $e^{2.0}=7.389$, $e^{0.5}=1.649$, $e^{0.1}=1.105$, $e^{-1}=0.368$, sum $10.511$, so $p=(0.703,\ 0.157,\ 0.105,\ 0.035)$: expert 0.</p>
-<p>Second token: $e^{0.2}=1.221$, $e^{0.1}=1.105$, $e^{2.5}=12.182$, $e^{0.3}=1.350$, sum $15.858$, so $p_2 = 0.768$: expert 2.</p>
-<p>The same layer applies different weights to "moving" and "touching" tokens without being told which is which: the force token reaches every token through the encoder's self-attention and shifts the logits. The residual keeps the original token, output $= h + \text{expert}(h)$, so an expert only learns a correction. (Many top-1 MoEs also scale the expert output by its probability; the paper does not say whether FVLMoE does.) In the paper's routing analysis, expert 0 handles nearly half of all tokens.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="ForceVLA: the force token E_F joins the VLM output, passes an encoder and a 4-expert top-1 MoE (FVLMoE), and the result is added to the action expert's suffix before flow-matching decoding." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
+<figure class="diagram compact"><svg role="img" aria-label="Ablation on fusion position (one task, success rate)." class="dg-natural" width="585" height="132" viewBox="0 0 585 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">Linear before VLM</text><rect class="dg-bar" x="135" y="10" width="198" height="18"/><text class="dg-barval" x="341" y="23">55%</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">MoE before VLM</text><rect class="dg-bar" x="135" y="40" width="2" height="18"/><text class="dg-barval" x="145" y="53">0%</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">Concat after VLM</text><rect class="dg-bar" x="135" y="70" width="216" height="18"/><text class="dg-barval" x="359" y="83">60%</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">FVLMoE after VLM</text><rect class="dg-key" x="135" y="100" width="288" height="18"/><text class="dg-barval" x="431" y="113">80%</text></svg><figcaption>Ablation on fusion position (one task, success rate).</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The force token joins the VLM output, passes an encoder and a top-1 MoE, and is added to the action expert's input before flow-matching decoding." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="130" height="40"/><text class="dg-t" x="85" y="48" text-anchor="middle">Base + hand RGB</text>
 <rect class="dg-ext" x="20" y="76" width="130" height="40"/><text class="dg-t" x="85" y="100" text-anchor="middle">Language L</text>
 <rect class="dg-ext" x="20" y="138" width="130" height="40"/><text class="dg-t" x="85" y="156" text-anchor="middle">F/T f</text><text class="dg-s" x="85" y="170" text-anchor="middle">6-axis, R^6</text>
@@ -153,73 +113,176 @@
 <rect class="dg-box" x="130" y="204" width="150" height="44"/><text class="dg-t" x="205" y="224" text-anchor="middle">Action chunk</text><text class="dg-s" x="205" y="239" text-anchor="middle">A_t = a_t … a_t+H-1</text>
 <path class="dg-a" d="M330 226 H280"/>
 <text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
-</svg><figcaption>ForceVLA: the force token E_F joins the VLM output, passes an encoder and a 4-expert top-1 MoE (FVLMoE), and the result is added to the action expert's suffix before flow-matching decoding.</figcaption></figure>
-<p>Read it left to right:</p>
+</svg><figcaption>The force token joins the VLM output, passes an encoder and a top-1 MoE, and is added to the action expert's input before flow-matching decoding.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLM (PaliGemma, SigLIP)</td>
+<td>base + wrist RGB, instruction</td>
+<td>$E_{VL}$, $N \times 2048$</td>
+<td>understand scene and command</td>
+</tr>
+<tr>
+<td>Linear $\phi_F$</td>
+<td>force $f \in \mathbb{R}^6$</td>
+<td>$E_F$, $1 \times 2048$</td>
+<td>turn force into one token</td>
+</tr>
+<tr>
+<td>Encoder (8 heads)</td>
+<td>$[E_{VL}; E_F]$</td>
+<td>$E_{enc}$</td>
+<td>let the force token talk to image tokens</td>
+</tr>
+<tr>
+<td>FVLMoE</td>
+<td>$E_{enc}$</td>
+<td>$E_{fused}$</td>
+<td>4 expert MLPs, top-1 router, + residual</td>
+</tr>
+<tr>
+<td>Linear, add</td>
+<td>$E_{fused}$</td>
+<td>$G$ added to $S_{suffix}$</td>
+<td>inject into the action expert</td>
+</tr>
+<tr>
+<td>Flow-matching head</td>
+<td>$S_{suffix} + G$</td>
+<td>action chunk $A_t$</td>
+<td>generate actions</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Work it by hand: one top-1 routing step</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The FVLMoE router sends each token to one of 4 experts. Computing it shows how a "touching" token and a "moving" token end up in different experts without any label.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$h$</td>
+<td>one token after the encoder</td>
+<td>input</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$r = (r_1, \dots, r_4)$</td>
+<td>router logits, one per expert</td>
+<td>input</td>
+<td>$(2.0,\ 0.5,\ 0.1,\ -1.0)$ (illustrative)</td>
+</tr>
+<tr>
+<td>$p_k$</td>
+<td>probability of expert $k$</td>
+<td>intermediate</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$k^*$</td>
+<td>chosen expert</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$E_k(\cdot)$</td>
+<td>expert $k$, a small MLP</td>
+<td>–</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$</p>
+<p><strong>Steps</strong> for a free-space token, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:</p>
 <ol>
-<li><strong>VLM.</strong> Base and wrist RGB plus the instruction go through a SigLIP-based PaliGemma VLM, giving $E_{VL}$.</li>
-<li><strong>Force token.</strong> The raw 6-axis force-torque reading $f \in \mathbb{R}^6$ goes through one linear layer to $\mathbb{R}^{2048}$, giving a single token $E_F$.</li>
-<li><strong>Concatenate and encode.</strong> $E_{in} = [E_{VL}; E_F]$ passes a Transformer encoder block ($D=2048$, 8 heads) with self-attention and an FFN.</li>
-<li><strong>FVLMoE.</strong> A sparse MoE with 4 expert MLPs and a top-1 router picks one expert per token; a residual connection adds the input back.</li>
-<li><strong>Inject into the action expert.</strong> A linear layer maps $2048 \to 1024$, the last $H_{action}$ tokens become $G$, and $G$ is added element-wise to $S_{suffix}$ (the processed robot state plus noisy action). A flow-matching head decodes the action chunk.</li>
+<li>Exponentiate: $e^{2.0} = 7.389$, $e^{0.5} = 1.649$, $e^{0.1} = 1.105$, $e^{-1.0} = 0.368$.</li>
+<li>Sum: $7.389 + 1.649 + 1.105 + 0.368 = 10.511$.</li>
+<li>Divide: $p = (0.703,\ 0.157,\ 0.105,\ 0.035)$.</li>
+<li>Largest: $k^* = 1$.</li>
 </ol>
-<p>The ablation supports the "after the VLM" choice: fusing with a linear layer before the VLM scored 55%, a MoE before the VLM collapsed to 0%, concatenation after the VLM 60%, and full ForceVLA 80% (on the ablation task).</p>
-<h2>Training and data</h2>
+<p>Same steps for a token while the plug is pushed in, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)$: sum $= 15.858$, $p_3 = 12.182 / 15.858 = 0.768$, so $k^* = 3$.</p>
+<p><strong>Result.</strong> The two tokens go to experts 1 and 3.</p>
+<p><strong>Why it matters.</strong> Nobody labelled "contact"; the force token reaches every token through self-attention and shifts the logits. The residual $h + E_{k^*}(h)$ means an expert only learns a correction. (The paper does not say whether the expert output is also scaled by $p_{k^*}$.)</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Average success over five tasks: bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling." class="dg-natural" width="572" height="162" viewBox="0 0 572 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="112" y="23" text-anchor="end">π0-fast + force</text><rect class="dg-bar" x="122" y="10" width="51" height="18"/><text class="dg-barval" x="181" y="23">14.2%</text><text class="dg-barlabel" x="112" y="53" text-anchor="end">π0-fast</text><rect class="dg-bar" x="122" y="40" width="112" height="18"/><text class="dg-barval" x="241" y="53">31%</text><text class="dg-barlabel" x="112" y="83" text-anchor="end">π0-base</text><rect class="dg-bar" x="122" y="70" width="134" height="18"/><text class="dg-barval" x="264" y="83">37.3%</text><text class="dg-barlabel" x="112" y="113" text-anchor="end">π0-base + force</text><rect class="dg-bar" x="122" y="100" width="145" height="18"/><text class="dg-barval" x="274" y="113">40.2%</text><text class="dg-barlabel" x="112" y="143" text-anchor="end">ForceVLA</text><rect class="dg-key" x="122" y="130" width="218" height="18"/><text class="dg-barval" x="347" y="143">60.5%</text></svg><figcaption>Average success over five tasks: bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling.</figcaption></figure>
 <ul>
-<li>Base: π0 with a conditional flow-matching action generator.</li>
-<li>ForceVLA-Data: 244 trajectories, about 140 thousand synchronized timesteps, five tasks (bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling), collected by VR teleoperation on a Flexiv Rizon arm.</li>
-<li>Optimiser: Adam ($\beta_1=0.9$, $\beta_2=0.95$), peak learning rate $2.5\times10^{-5}$ decaying to $2.5\times10^{-6}$ over 30,000 steps, bfloat16, gradient clipping 1.0.</li>
+<li>Multi-task training: 67.5% average, plug insertion 100%.</li>
+<li>Under visual occlusion ForceVLA keeps 90% success.</li>
 </ul>
-<h2>Results</h2>
-<p>On the five tasks ForceVLA averages <strong>60.5%</strong> success against <strong>37.3%</strong> for a π0-base baseline, a gain of 23.2 points. In the multi-task setting it reaches 67.5% average (plug insertion 100%).</p>
-<h2>Caveats from reading the paper</h2>
+<h2>5. Training and data</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base</td>
+<td>π0, conditional flow matching</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>ForceVLA-Data: 244 trajectories, ~140k timesteps, 5 tasks</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>Flexiv Rizon arm, VR teleoperation</td>
+</tr>
+<tr>
+<td>Optimiser</td>
+<td>Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k steps, bfloat16</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
 <ul>
-<li>Control frequency and the numeric action-chunk length are not stated.</li>
-<li>The paper labels the 37.3% baseline inconsistently ("with force" in one sentence, "without" elsewhere), and the ablation baseline (45%) is on a different footing.</li>
-<li>Which parts are frozen during fine-tuning is not stated.
-<strong>Carry forward:</strong> ForceVLA reads force but still outputs only an end-effector pose, so it cannot say how hard to push. <a href="forcevla2.html">ForceVLA2</a> changes the output itself.</li>
+<li>Control rate, chunk length and frozen modules are not stated.</li>
+<li>The 37.3% baseline is labelled inconsistently in the paper; the ablation baseline (45%) is on a different footing.</li>
 </ul>
-<p><strong>Check question:</strong> a token's router logits are $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Which expert does it go to, and with what probability? And why might a MoE placed before the VLM collapse to 0%?</p>
-<p><em>Answer:</em> $e^{1}=2.718$ twice, $e^{0}=1$, $e^{3}=20.086$, sum $26.522$: expert 3 with $p = 0.757$. Before the VLM, force features enter a model pretrained only on images and text and disturb the vision-language representation it relies on; after the VLM that representation is already formed and force only modulates the action. (The paper reports the 0%; this explanation is my reading of it.)</p>
+<p><strong>Carry forward:</strong> ForceVLA reads force but still outputs only a pose, so it cannot say <em>how hard</em> to push. <a href="forcevla2.html">ForceVLA2</a> changes the output.</p>
+<p><strong>Check question:</strong> router logits $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Which expert, with what probability?</p>
+<details>
+<summary>Answer</summary>
+<p>$e^1 = 2.718$ (twice), $e^0 = 1$, $e^3 = 20.086$; sum $26.522$; $p_4 = 20.086 / 26.522 = 0.757$, so expert 4.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> (NeurIPS 2025), xây trên π0.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Các mô hình VLA làm tốt chuyển động thô nhưng thất bại khi nhiệm vụ do tiếp xúc quyết định: cắm phích, lau bảng, gọt dưa chuột. Chỉ nối lực vào state của robot gần như không giúp được gì. Ý tưởng của ForceVLA: lực phải là một <strong>modality hạng nhất</strong> với token riêng, và phải được gộp <strong>sau</strong> khi VLM đã xử lý xong ảnh và ngôn ngữ.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Cách hiển nhiên nhất là nối 6 con số lực vào vector state của robot rồi fine-tune. Bài báo cho biết kết quả:</p>
-<table>
-<thead>
-<tr>
-<th>Mô hình</th>
-<th>Không lực</th>
-<th>Nối lực vào state</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>π0-base</td>
-<td>37,3%</td>
-<td>40,2%</td>
-</tr>
-<tr>
-<td>π0-fast</td>
-<td>31,0%</td>
-<td>14,2%</td>
-</tr>
-</tbody>
-</table>
-<p>Một mô hình tăng 3 điểm, mô hình kia mất 17 điểm. Sáu con số lẫn trong một dãy dài token ảnh và state rất dễ bị bỏ qua, và một tín hiệu chỉ có ý nghĩa khi tiếp xúc thì gần bằng 0 ở mọi bước di chuyển tự do. Đặt MoE <strong>trước</strong> VLM còn tệ hơn: 0% trong ablation.</p>
-<h2>Tính tay: một bước định tuyến top-1</h2>
-<p>FVLMoE gửi mỗi token tới đúng một trong 4 expert. Router biến token thành 4 điểm số (logit), softmax biến chúng thành xác suất, cái lớn nhất thắng. Hai token:</p>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2505.22159">arXiv 2505.22159</a> · 05/2025 · NeurIPS 2025 · nền π0</p>
+<p><strong>VẤN ĐỀ</strong> π0 chỉ nhìn ảnh nên mù lực đúng lúc tiếp xúc quyết định task: cắm phích, lau bảng, hoặc khi tay che mất vật.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Cách sửa phổ biến, nối 6 số lực vào state của π0, chỉ giúp π0-base +2,9 điểm và còn <em>làm</em> π0-fast mất 16,8 điểm.</p>
+<p><strong>Ý TƯỞNG</strong> Coi lực là một modality riêng (một token) và gộp nó <strong>sau</strong> VLM bằng mixture of experts thưa (FVLMoE).</p>
+<p><strong>KẾT QUẢ</strong> 60,5% so với 37,3% của π0-base trên năm task giàu tiếp xúc (+23,2 điểm).</p>
+</div>
+<h2>1. Vấn đề: các cách trước còn tồn đọng gì</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Ba cách thêm lực vào π0. Ô đỏ là chỗ các cách trước hỏng; ô vàng là thay đổi của ForceVLA." class="dg-natural" width="744" height="304" viewBox="0 0 744 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0 + lực vào state</text><rect class="dg-box" x="153" y="22" width="132" height="38"/><text class="dg-t" x="219" y="45" text-anchor="middle">RGB + câu lệnh</text><path class="dg-a" d="M286 41 H318"/><rect class="dg-box" x="320" y="22" width="96" height="38"/><text class="dg-t" x="368" y="45" text-anchor="middle">VLM</text><path class="dg-a" d="M416 41 H448"/><rect class="dg-badbox" x="450" y="14" width="128" height="54"/><text class="dg-t" x="514" y="37" text-anchor="middle">Action expert</text><text class="dg-s" x="514" y="53" text-anchor="middle">state + 6 số lực</text><text class="dg-note dg-red" x="153.2" y="86">✗ sáu con số chìm trong state: π0-fast tụt 31,0% → 14,2%</text><text class="dg-lab dg-red" x="14" y="137">Cũng đã thử</text><text class="dg-lab dg-red" x="14" y="151">MoE trước VLM</text><rect class="dg-box" x="153" y="120" width="96" height="38"/><text class="dg-t" x="201" y="143" text-anchor="middle">F/T + RGB</text><path class="dg-a" d="M249 139 H281"/><rect class="dg-badbox" x="283" y="112" width="96" height="54"/><text class="dg-t" x="331" y="135" text-anchor="middle">MoE</text><text class="dg-s" x="331" y="151" text-anchor="middle">trước VLM</text><path class="dg-a" d="M379 139 H411"/><rect class="dg-box" x="413" y="120" width="96" height="38"/><text class="dg-t" x="461" y="143" text-anchor="middle">VLM</text><path class="dg-a" d="M509 139 H541"/><rect class="dg-box" x="543" y="120" width="125" height="38"/><text class="dg-t" x="606" y="143" text-anchor="middle">Action expert</text><text class="dg-note dg-red" x="153.2" y="184">✗ VLM pretrain không có lực bị xáo trộn: 0% trong ablation</text><text class="dg-lab dg-green" x="14" y="241">ForceVLA</text><rect class="dg-box" x="153" y="218" width="132" height="38"/><text class="dg-t" x="219" y="241" text-anchor="middle">RGB + câu lệnh</text><path class="dg-a" d="M286 237 H318"/><rect class="dg-box" x="320" y="218" width="96" height="38"/><text class="dg-t" x="368" y="241" text-anchor="middle">VLM</text><path class="dg-a" d="M416 237 H448"/><rect class="dg-key" x="450" y="210" width="122" height="54"/><text class="dg-t" x="511" y="233" text-anchor="middle">FVLMoE</text><text class="dg-s" x="511" y="249" text-anchor="middle">gộp lực SAU VLM</text><path class="dg-a" d="M572 237 H604"/><rect class="dg-box" x="606" y="218" width="125" height="38"/><text class="dg-t" x="668" y="241" text-anchor="middle">Action expert</text><text class="dg-note dg-green" x="153.2" y="282">✓ lực có đường riêng: 60,5%</text></svg><figcaption>Ba cách thêm lực vào π0. Ô đỏ là chỗ các cách trước hỏng; ô vàng là thay đổi của ForceVLA.</figcaption></figure>
 <ul>
-<li>token ở một bước di chuyển tự do, logit $(2.0,\ 0.5,\ 0.1,\ -1.0)$</li>
-<li>token ở bước đang ấn phích vào ổ, logit $(0.2,\ 0.1,\ 2.5,\ 0.3)$</li>
+<li>Camera không thấy phích đang bị ấn mạnh đến đâu, và bị che khuất thì càng tệ.</li>
+<li>Gộp lực <em>ở đâu</em> quan trọng hơn <em>có</em> gộp hay không:</li>
 </ul>
-<p>Token thứ nhất: $e^{2.0}=7.389$, $e^{0.5}=1.649$, $e^{0.1}=1.105$, $e^{-1}=0.368$, tổng $10.511$, nên $p=(0.703,\ 0.157,\ 0.105,\ 0.035)$: expert 0.</p>
-<p>Token thứ hai: $e^{0.2}=1.221$, $e^{0.1}=1.105$, $e^{2.5}=12.182$, $e^{0.3}=1.350$, tổng $15.858$, nên $p_2 = 0.768$: expert 2.</p>
-<p>Cùng một lớp áp dụng trọng số khác nhau cho token "đang di chuyển" và token "đang chạm" mà không ai phải nói cho nó biết: token lực lan tới mọi token qua self-attention của encoder và làm lệch logit. Residual giữ lại token gốc, đầu ra $= h + \text{expert}(h)$, nên expert chỉ cần học phần hiệu chỉnh. (Nhiều MoE top-1 còn nhân đầu ra expert với xác suất của nó; bài không nói FVLMoE có làm vậy không.) Trong phân tích định tuyến của bài, expert 0 xử lý gần một nửa số token.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="ForceVLA: token lực E_F nhập vào đầu ra của VLM, đi qua một encoder và MoE 4 expert top-1 (FVLMoE), kết quả được cộng vào suffix của action expert trước khi giải mã flow-matching." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
+<figure class="diagram compact"><svg role="img" aria-label="Ablation vị trí gộp lực (một task, tỉ lệ thành công)." class="dg-natural" width="578" height="132" viewBox="0 0 578 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">Linear trước VLM</text><rect class="dg-bar" x="128" y="10" width="198" height="18"/><text class="dg-barval" x="334" y="23">55%</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">MoE trước VLM</text><rect class="dg-bar" x="128" y="40" width="2" height="18"/><text class="dg-barval" x="138" y="53">0%</text><text class="dg-barlabel" x="118" y="83" text-anchor="end">Concat sau VLM</text><rect class="dg-bar" x="128" y="70" width="216" height="18"/><text class="dg-barval" x="352" y="83">60%</text><text class="dg-barlabel" x="118" y="113" text-anchor="end">FVLMoE sau VLM</text><rect class="dg-key" x="128" y="100" width="288" height="18"/><text class="dg-barval" x="424" y="113">80%</text></svg><figcaption>Ablation vị trí gộp lực (một task, tỉ lệ thành công).</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Token lực nhập vào đầu ra của VLM, qua một encoder và MoE top-1, rồi được cộng vào đầu vào của action expert trước khi giải mã flow-matching." viewBox="0 0 920 350" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="130" height="40"/><text class="dg-t" x="85" y="48" text-anchor="middle">Base + hand RGB</text>
 <rect class="dg-ext" x="20" y="76" width="130" height="40"/><text class="dg-t" x="85" y="100" text-anchor="middle">Language L</text>
 <rect class="dg-ext" x="20" y="138" width="130" height="40"/><text class="dg-t" x="85" y="156" text-anchor="middle">F/T f</text><text class="dg-s" x="85" y="170" text-anchor="middle">6-axis, R^6</text>
@@ -243,33 +306,158 @@
 <rect class="dg-box" x="130" y="204" width="150" height="44"/><text class="dg-t" x="205" y="224" text-anchor="middle">Action chunk</text><text class="dg-s" x="205" y="239" text-anchor="middle">A_t = a_t … a_t+H-1</text>
 <path class="dg-a" d="M330 226 H280"/>
 <text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
-</svg><figcaption>ForceVLA: token lực E_F nhập vào đầu ra của VLM, đi qua một encoder và MoE 4 expert top-1 (FVLMoE), kết quả được cộng vào suffix của action expert trước khi giải mã flow-matching.</figcaption></figure>
-<p>Đọc từ trái sang phải:</p>
+</svg><figcaption>Token lực nhập vào đầu ra của VLM, qua một encoder và MoE top-1, rồi được cộng vào đầu vào của action expert trước khi giải mã flow-matching.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLM (PaliGemma, SigLIP)</td>
+<td>RGB nền + cổ tay, câu lệnh</td>
+<td>$E_{VL}$, $N \times 2048$</td>
+<td>hiểu cảnh và câu lệnh</td>
+</tr>
+<tr>
+<td>Linear $\phi_F$</td>
+<td>lực $f \in \mathbb{R}^6$</td>
+<td>$E_F$, $1 \times 2048$</td>
+<td>biến lực thành một token</td>
+</tr>
+<tr>
+<td>Encoder (8 head)</td>
+<td>$[E_{VL}; E_F]$</td>
+<td>$E_{enc}$</td>
+<td>cho token lực "nói chuyện" với token ảnh</td>
+</tr>
+<tr>
+<td>FVLMoE</td>
+<td>$E_{enc}$</td>
+<td>$E_{fused}$</td>
+<td>4 expert MLP, router top-1, + residual</td>
+</tr>
+<tr>
+<td>Linear, cộng</td>
+<td>$E_{fused}$</td>
+<td>$G$ cộng vào $S_{suffix}$</td>
+<td>đưa vào action expert</td>
+</tr>
+<tr>
+<td>Đầu flow-matching</td>
+<td>$S_{suffix} + G$</td>
+<td>chunk hành động $A_t$</td>
+<td>sinh hành động</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Tính tay: một bước định tuyến top-1</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Router của FVLMoE gửi mỗi token tới một trong 4 expert. Tính thử để thấy token "đang chạm" và token "đang di chuyển" đi tới hai expert khác nhau mà không cần nhãn nào.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$h$</td>
+<td>một token sau encoder</td>
+<td>input</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$r = (r_1, \dots, r_4)$</td>
+<td>logit của router, mỗi expert một số</td>
+<td>input</td>
+<td>$(2.0,\ 0.5,\ 0.1,\ -1.0)$ (minh họa)</td>
+</tr>
+<tr>
+<td>$p_k$</td>
+<td>xác suất chọn expert $k$</td>
+<td>trung gian</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$k^*$</td>
+<td>expert được chọn</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$E_k(\cdot)$</td>
+<td>expert $k$, một MLP nhỏ</td>
+<td>–</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$</p>
+<p><strong>Từng bước</strong> với token di chuyển tự do, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:</p>
 <ol>
-<li><strong>VLM.</strong> Ảnh RGB từ camera nền và camera cổ tay cùng câu lệnh đi qua VLM PaliGemma (dựa trên SigLIP), cho ra $E_{VL}$.</li>
-<li><strong>Token lực.</strong> Số đo lực-mô men 6 trục $f \in \mathbb{R}^6$ qua một lớp linear lên $\mathbb{R}^{2048}$, thành một token $E_F$.</li>
-<li><strong>Nối và mã hóa.</strong> $E_{in} = [E_{VL}; E_F]$ đi qua một block Transformer encoder ($D=2048$, 8 head) gồm self-attention và FFN.</li>
-<li><strong>FVLMoE.</strong> MoE thưa với 4 expert MLP và router top-1 chọn một expert cho mỗi token; kết nối residual cộng đầu vào trở lại.</li>
-<li><strong>Tiêm vào action expert.</strong> Một lớp linear $2048 \to 1024$, lấy $H_{action}$ token cuối làm $G$, rồi cộng từng phần tử vào $S_{suffix}$ (state đã xử lý cộng với action nhiễu). Đầu flow-matching giải mã ra chuỗi hành động.</li>
+<li>Lũy thừa: $e^{2.0} = 7.389$, $e^{0.5} = 1.649$, $e^{0.1} = 1.105$, $e^{-1.0} = 0.368$.</li>
+<li>Cộng: $7.389 + 1.649 + 1.105 + 0.368 = 10.511$.</li>
+<li>Chia: $p = (0.703,\ 0.157,\ 0.105,\ 0.035)$.</li>
+<li>Lớn nhất: $k^* = 1$.</li>
 </ol>
-<p>Ablation ủng hộ lựa chọn "sau VLM": gộp bằng linear trước VLM đạt 55%, MoE trước VLM sụp xuống 0%, concat sau VLM 60%, ForceVLA đầy đủ 80% (trên task dùng cho ablation).</p>
-<h2>Huấn luyện và dữ liệu</h2>
+<p>Làm lại với token lúc đang ấn phích, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)$: tổng $= 15.858$, $p_3 = 12.182 / 15.858 = 0.768$, nên $k^* = 3$.</p>
+<p><strong>Kết quả.</strong> Hai token đi tới expert 1 và expert 3.</p>
+<p><strong>Ý nghĩa.</strong> Không ai gắn nhãn "đang chạm"; token lực lan tới mọi token qua self-attention và làm lệch logit. Residual $h + E_{k^*}(h)$ nghĩa là expert chỉ cần học phần hiệu chỉnh. (Bài không nói đầu ra expert có được nhân thêm $p_{k^*}$ hay không.)</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên năm task: bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột." class="dg-natural" width="558" height="162" viewBox="0 0 558 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="98" y="23" text-anchor="end">π0-fast + lực</text><rect class="dg-bar" x="108" y="10" width="51" height="18"/><text class="dg-barval" x="167" y="23">14,2%</text><text class="dg-barlabel" x="98" y="53" text-anchor="end">π0-fast</text><rect class="dg-bar" x="108" y="40" width="112" height="18"/><text class="dg-barval" x="227" y="53">31%</text><text class="dg-barlabel" x="98" y="83" text-anchor="end">π0-base</text><rect class="dg-bar" x="108" y="70" width="134" height="18"/><text class="dg-barval" x="250" y="83">37,3%</text><text class="dg-barlabel" x="98" y="113" text-anchor="end">π0-base + lực</text><rect class="dg-bar" x="108" y="100" width="145" height="18"/><text class="dg-barval" x="260" y="113">40,2%</text><text class="dg-barlabel" x="98" y="143" text-anchor="end">ForceVLA</text><rect class="dg-key" x="108" y="130" width="218" height="18"/><text class="dg-barval" x="334" y="143">60,5%</text></svg><figcaption>Thành công trung bình trên năm task: bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột.</figcaption></figure>
 <ul>
-<li>Nền: π0 với bộ sinh hành động conditional flow matching.</li>
-<li>ForceVLA-Data: 244 quỹ đạo, khoảng 140 nghìn timestep đồng bộ, năm task (bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột), thu bằng teleoperation VR trên tay Flexiv Rizon.</li>
-<li>Optimizer: Adam ($\beta_1=0.9$, $\beta_2=0.95$), learning rate đỉnh $2.5\times10^{-5}$ giảm về $2.5\times10^{-6}$ trong 30.000 bước, bfloat16, clip gradient 1.0.</li>
+<li>Huấn luyện đa task: trung bình 67,5%, cắm phích 100%.</li>
+<li>Khi camera bị che, ForceVLA vẫn giữ 90% thành công.</li>
 </ul>
-<h2>Kết quả</h2>
-<p>Trên năm task, ForceVLA trung bình <strong>60,5%</strong> thành công so với <strong>37,3%</strong> của baseline π0-base, hơn 23,2 điểm. Ở cài đặt multi-task đạt trung bình 67,5% (cắm phích 100%).</p>
-<h2>Lưu ý khi đọc bài</h2>
+<h2>5. Huấn luyện và dữ liệu</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nền</td>
+<td>π0, conditional flow matching</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>ForceVLA-Data: 244 quỹ đạo, ~140k timestep, 5 task</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>tay Flexiv Rizon, teleoperation VR</td>
+</tr>
+<tr>
+<td>Optimizer</td>
+<td>Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k bước, bfloat16</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
 <ul>
-<li>Tần số điều khiển và độ dài action chunk (con số cụ thể) không được nêu.</li>
-<li>Bài gắn nhãn baseline 37,3% không nhất quán (chỗ ghi "có lực", chỗ ghi "không lực"), và baseline của ablation (45%) nằm trên một nền khác.</li>
-<li>Không nêu phần nào bị đóng băng khi fine-tune.</li>
+<li>Không nêu tần số điều khiển, độ dài chunk, module nào bị đóng băng.</li>
+<li>Baseline 37,3% được gắn nhãn không nhất quán trong bài; baseline của ablation (45%) nằm trên một nền khác.</li>
 </ul>
-<p><strong>Mang theo sang bài sau:</strong> ForceVLA đọc được lực nhưng đầu ra vẫn chỉ là pose của end-effector, nên không nói được cần ấn mạnh đến đâu. <a href="forcevla2.html">ForceVLA2</a> thay đổi chính đầu ra.</p>
-<p><strong>Câu kiểm tra:</strong> logit router của một token là $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Token đi tới expert nào, với xác suất bao nhiêu? Và vì sao đặt MoE trước VLM có thể sụp xuống 0%?</p>
-<p><em>Đáp án:</em> $e^{1}=2.718$ hai lần, $e^{0}=1$, $e^{3}=20.086$, tổng $26.522$: expert 3 với $p = 0.757$. Đặt trước VLM, đặc trưng lực đi vào một mô hình chỉ được pretrain trên ảnh và văn bản, làm xáo trộn biểu diễn thị giác-ngôn ngữ mà nó dựa vào; đặt sau VLM thì biểu diễn đó đã hình thành và lực chỉ điều chỉnh hành động. (Bài chỉ báo con số 0%; lời giải thích này là cách tôi đọc kết quả.)</p>
+<p><strong>Mang sang bài sau:</strong> ForceVLA đọc được lực nhưng vẫn chỉ xuất pose, nên không nói được <em>ấn mạnh đến đâu</em>. <a href="forcevla2.html">ForceVLA2</a> thay đổi đầu ra.</p>
+<p><strong>Câu kiểm tra:</strong> logit router $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Token đi tới expert nào, với xác suất bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$e^1 = 2.718$ (hai lần), $e^0 = 1$, $e^3 = 20.086$; tổng $26.522$; $p_4 = 20.086 / 26.522 = 0.757$, nên expert 4.</p>
+</details>
     </div>
   </article>
 

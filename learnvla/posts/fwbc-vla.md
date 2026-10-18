@@ -3,108 +3,201 @@ slug: fwbc-vla
 date: 2026-10-18
 title_en: "FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation"
 title_vi: "FWBC-VLA: Bù trừ toàn thân có nhận biết lực cho loco-manipulation"
-excerpt_en: "A wheeled-legged robot that pushes a door feels the reaction in its whole body. FWBC-VLA estimates contact force without a sensor, feeds it to the VLA, and also uses it to correct the base command."
-excerpt_vi: "Robot bánh-chân đẩy cửa sẽ chịu phản lực lên cả thân. FWBC-VLA ước lượng lực tiếp xúc không cần cảm biến, đưa vào VLA, đồng thời dùng nó để hiệu chỉnh lệnh cho phần thân."
+excerpt_en: "Arm-centric force VLAs like ForceVLA correct the arm, but on a legged robot the door also pushes the body. FWBC-VLA estimates contact from joint torques, feeds it to the VLA and corrects the base: door opening 52% vs 12%."
+excerpt_vi: "VLA lực lấy cánh tay làm trung tâm như ForceVLA chỉ sửa cánh tay, nhưng trên robot có chân, cánh cửa đẩy ngược cả thân. FWBC-VLA ước lượng tiếp xúc từ mô men khớp, đưa vào VLA và sửa lệnh thân: mở cửa 52% so với 12%."
 tags: [VLA, Force, Loco-manipulation, Paper Notes, π0.5]
 ---
 
 :::en
-Paper: [arXiv 2609.03889](https://arxiv.org/abs/2609.03889) (September 2026).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2609.03889](https://arxiv.org/abs/2609.03889) · 09/2026 · built on π0.5 · wheeled-legged robot with an arm
 
-## The pain it cures
+**PROBLEM** Wiping a board or pushing a spring-closed door also pushes the robot's body.
 
-Arm-centric force VLAs ([ForceVLA](forcevla.html) and friends) correct the **arm** only. On a wheeled-legged robot with an arm, wiping a whiteboard or opening a spring-closed door also pushes the **base**; a VLA that ignores this loses balance or drifts. FWBC-VLA builds **dual feedback loops** from one sensorless force estimate: one into the VLA's task actions, one into a body-compensation command for the whole-body controller (WBC).
+**WHAT FAILED BEFORE** The paper's Fig. 1 names both: a kinematic whole-body VLA "uses no explicit interaction feedback"; an arm-centric force-aware VLA (such as [ForceVLA](forcevla.html)) "uses force for task adaptation but ignores body-level effects".
 
-## Try the naive way first
+**IDEA** One sensorless contact estimate (HSR-Force, from joint torques, 200 Hz) feeds two loops: force tokens into the VLA's action expert, and a bounded body correction into the whole-body controller.
 
-Put an arm-centric force VLA on the legged robot. ForceVLA plays that role in the paper's comparison, and it collapses at the final stage: 24% on whiteboard wiping and 12% on door opening, against FWBC-VLA's 64% and 52%. It reads the force correctly, but the force also pushes the body, and nothing corrects the base.
+**RESULT** Final-stage success: whiteboard 64% vs 24% (ForceVLA), door 52% vs 12%.
+</div>
 
-## Work it by hand: one joint, 200 Hz
+## 1. The problem: two kinds of earlier VLA, two blind spots
 
-Take a single joint; the real estimator does this for all six arm joints. The measured torque is $\tau_{meas} = 5.0$ N·m. The history expert predicts the free-motion torque as $2.0$, the state expert as $3.0$, and the gate gives $\alpha_t = 0.25$:
+[[flow]]
+- Before~kinematic whole-body VLA | RGB + language > VLA > !WBC~no contact feedback! > Robot | pushes blindly: door 0% at the final stage
+- Before~arm-centric force VLA | force + RGB > Force-aware VLA > !WBC~body not corrected! > Robot | arm adapts, body is pushed away: door 12%
++ FWBC-VLA | joint torque > *HSR-Force~sensorless, 200 Hz* > *VLA force tokens~+ body compensation* > WBC > Robot | door 52%, whiteboard 64%
+[[/flow]] One estimate, two loops: task actions and body balance.
 
-$$\hat\tau_{free} = 0.75 \times 2.0 + 0.25 \times 3.0 = 2.25,\qquad \hat\tau_{ext} = 5.0 - 2.25 = 2.75\ \text{N·m}$$
+## 2. Architecture
 
-Whatever the motion model cannot explain is treated as contact. With one joint, $s_t = |\hat\tau_{ext}| = 2.75$; if the previous step had $s = 2.0$, then $\Delta s_t = 0.75$: contact is building up. Thirteen such pairs go into the GRU.
+[[fig:fwbc-vla]] A 200 Hz sensorless estimator feeds force tokens to the 15 Hz VLA and a body load to a small compensation network; the corrected base command goes to the WBC.
 
-**The bound on the body correction.** With an illustrative $r_{max} = 0.2$ m/s: $\bar r = 1$ gives $r = 0.2\tanh(1) = 0.152$ m/s, and $\bar r = 5$ gives $0.2\tanh(5) = 0.19998$ m/s. However wrong the network's output, the correction never exceeds $r_{max}$.
+| Block | Input | Output | Role |
+|---|---|---|---|
+| HSR-Force (200 Hz) | joint torque, arm/base/leg/IMU state | external torque $\hat\tau_{ext}$ | separate contact from own motion |
+| Descriptor + GRU | last 13 values of $[\lVert\hat\tau\rVert, \Delta]$ | force tokens (width 1024) | contact strength and trend |
+| π0.5 action expert (15 Hz) | VLA features + cross-attention to force tokens | arm, gripper, nominal base actions | task actions |
+| Jacobian | $\hat\tau_{ext}$ | body-frame load $\hat F_{body}$ | force on the chassis |
+| Compensation $C_\psi$ | $\hat F_{body}$, IMU deviation, $u_{nom}$ | bounded residual $r$ | correct the base |
+| WBC | $u_{nom} + r$, arm actions | joint commands | balance and tracking |
 
-## Architecture
+## 3. Work it by hand: separating contact from motion
 
-[[fig:fwbc-vla]] One 200 Hz sensorless estimator feeds two branches: force tokens for the 15 Hz VLA, and a Jacobian-derived body load for a small compensation network; the corrected base command goes to the WBC.
+<div class="calc" markdown="1">
+Calculation card
 
-1. **HSR-Force (200 Hz).** Two compact experts, a *history* expert (causal torque and motion history) and a *state* expert (current arm, base, leg and IMU state), each predict the free-motion torque. A gate $\alpha_t = G(\lVert r_{state}\rVert)$ blends them: $\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}$. The external-torque estimate is $\hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}$.
-2. **Contact descriptor.** $d_t = [s_t, \Delta s_t]$ with $s_t = \lVert\hat\tau_{ext}\rVert_2$. The last $K=13$ descriptors (60 ms) pass a normalisation layer and a **GRU** to produce force tokens $Z^{force}$ (width 1024).
-3. **Force-conditioned VLA (15 Hz).** The backbone is π0.5, fully fine-tuned. Force enters the Gemma action expert by cross-attention on its final hidden states: $\tilde Z^{act} = Z^{act} + \alpha_f\, g_t\, \text{CA}(Z^{act}, Z^{force})$, with a learned force-presence gate $g_t$. It is **not** propagated through the visual backbone.
-4. **Body compensation.** A damped-least-squares Jacobian maps $\hat\tau_{ext}$ to wrenches at the end-effector and body frames. A small MLP $C_\psi$ takes the body-frame load $\hat F_{body}$, IMU orientation deviation and the nominal base command and predicts a residual $\bar r$ (for $\Delta v_x, \Delta v_y, \Delta\omega_z$). It is bounded, $r = r_{max}\tanh(\bar r)$, and added: $u_{base} = u_{nom} + r$, then deadband, low-pass, slew limits and clipping. A stale estimate or invalid IMU sets the residual to zero.
-5. **WBC policy** keeps balance and tracks the combined command.
+**What and why.** Without a force sensor, contact must be inferred: the measured joint torque minus the torque the robot's own motion explains. Two experts guess that free-motion torque and a gate blends them. Then the body correction is squashed so it can never exceed a safe limit.
 
-## Training and data
+| Symbol | Meaning | Type | Example (one joint) |
+|---|---|---|---|
+| $\tau_{meas}$ | measured joint torque | input | 5.0 N·m |
+| $\hat\tau_{hist}$, $\hat\tau_{state}$ | free-motion torque from the history / state expert | input | 2.0, 3.0 N·m |
+| $\alpha_t$ | gate weight | input | 0.25 (illustrative) |
+| $\hat\tau_{ext}$ | contact torque | output | – |
+| $\bar r$, $r_{max}$ | raw correction, limit | input | 1.0; 0.2 m/s (illustrative) |
+| $r$ | bounded body correction | output | – |
 
-- The **WL&Arm dataset**: more than 5,000 teleoperation episodes with a Pico hybrid position-force teleoperation system, 200 Hz joint data and 15 Hz demonstrations (bottle pick-and-place 41%, whiteboard wiping 25%, door opening 21%).
-- Estimator experts are fitted on free-motion windows where $\tau_{ext} \approx 0$. $C_\psi$ is trained with an $\ell_1$ loss on the demonstrated residual. No contact-classification or phase-prediction auxiliary losses.
+**Formula**
 
-## Results
+$$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qquad \hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}, \qquad r = r_{max}\tanh(\bar r)$$
 
-25 trials per task; whiteboard wiping final-stage success: **FWBC-VLA 64%**, ForceVLA 24%, ACP 20%, OpenPI 0.5 12%. Door opening final stage: **52%** against ForceVLA 12% and OpenPI 0.5 0%. In the component ablation, no force gives 12.0% average contact-stage success, force input only 35.0%, the full method 65%. The estimator reaches 0.15 N force MAE with no load.
+**Steps**
 
-## Caveats
+1. $\hat\tau_{free} = 0.75 \times 2.0 + 0.25 \times 3.0 = 2.25$ N·m.
+2. $\hat\tau_{ext} = 5.0 - 2.25 = 2.75$ N·m: this much is contact.
+3. $r = 0.2 \times \tanh(1.0) = 0.2 \times 0.762 = 0.152$ m/s; even $\bar r = 5$ gives only $0.19998$.
 
-The action-chunk length, the WBC internals and rates of the WBC and compensation path are not stated. The paper describes base outputs as velocity and steering angle in one place and as $(\Delta v_x,\Delta v_y,\Delta\omega_z)$ residuals in another. The intro says "dual LSTM" while Sec. 4 only describes two "compact experts".
-**Carry forward:** FWBC-VLA, like every model so far, is trained offline and stays fixed. When contact differs from the data, it cannot improve. [TORL-VLA](torl-vla.html) keeps learning online.
+**Result.** Contact 2.75 N·m; body correction 0.152 m/s, never above 0.2.
 
-**Check question:** $\tau_{meas} = 4$, history expert $1$, state expert $3$, $\alpha_t = 0.5$. What is $\hat\tau_{ext}$? And with $r_{max} = 0.2$ m/s, what correction does $\bar r = -0.5$ produce?
+**Why it matters.** The estimator's quality decides everything downstream; the $\tanh$ bound means a wrong network output cannot throw the robot off balance.
+</div>
 
-*Answer:* $\hat\tau_{free} = 0.5 \times 1 + 0.5 \times 3 = 2$, so $\hat\tau_{ext} = 2$ N·m. $r = 0.2\tanh(-0.5) = 0.2 \times (-0.462) = -0.092$ m/s.
+## 4. Results
+
+[[bars:%]] Whiteboard · OpenPI 0.5=12; Whiteboard · ForceVLA=24; *Whiteboard · FWBC-VLA=64*; Door · OpenPI 0.5=0; Door · ForceVLA=12; *Door · FWBC-VLA=52* || Final-stage success, 25 trials per task.
+
+- Ablation, average over contact stages: no force 12%, force input only 35%, full method 65%.
+- Estimator force error with no load: 0.15 N.
+
+## 5. Training and data
+
+| Item | Value |
+|---|---|
+| Data | WL&Arm: > 5,000 teleoperation episodes, 200 Hz joints, 15 Hz demonstrations |
+| VLA | π0.5, fully fine-tuned |
+| Estimator | fitted on free-motion windows where contact ≈ 0 |
+| Compensation | $\ell_1$ regression on the demonstrated base residual |
+
+## 6. Caveats
+
+- Chunk length, WBC internals and the compensation rate are not stated.
+- The base output is described as velocity + steering in one place and $(\Delta v_x, \Delta v_y, \Delta\omega_z)$ in another.
+
+**Carry forward:** FWBC-VLA, like every model so far, is trained offline and stays fixed. [TORL-VLA](torl-vla.html) keeps learning online.
+
+**Check question:** $\tau_{meas} = 4$, $\hat\tau_{hist} = 1$, $\hat\tau_{state} = 3$, $\alpha_t = 0.5$; $r_{max} = 0.2$, $\bar r = -0.5$. Find $\hat\tau_{ext}$ and $r$.
+
+<details markdown="1">
+<summary>Answer</summary>
+
+$\hat\tau_{free} = 2$, so $\hat\tau_{ext} = 2$ N·m. $r = 0.2 \tanh(-0.5) = 0.2 \times (-0.462) = -0.092$ m/s.
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2609.03889](https://arxiv.org/abs/2609.03889) (tháng 9/2026).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2609.03889](https://arxiv.org/abs/2609.03889) · 09/2026 · nền π0.5 · robot bánh-chân có tay
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** Lau bảng hay đẩy cửa có lò xo đóng cũng đẩy ngược lên thân robot.
 
-Các VLA lực lấy cánh tay làm trung tâm ([ForceVLA](forcevla.html) và các bài tương tự) chỉ hiệu chỉnh **cánh tay**. Trên robot bánh-chân có tay, lau bảng hay mở cửa có lò xo đóng cũng đẩy lên **thân**; VLA bỏ qua điều này sẽ mất thăng bằng hoặc trôi. FWBC-VLA xây **hai vòng phản hồi** từ một ước lượng lực không cần cảm biến: một vào hành động tác vụ của VLA, một vào lệnh bù cho bộ điều khiển toàn thân (WBC).
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Fig. 1 của bài nêu cả hai: VLA toàn thân thuần động học "không có phản hồi tương tác"; VLA lực lấy cánh tay làm trung tâm (như [ForceVLA](forcevla.html)) "dùng lực để thích nghi task nhưng bỏ qua ảnh hưởng lên thân".
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** Một ước lượng tiếp xúc không cảm biến (HSR-Force, từ mô men khớp, 200 Hz) cấp cho hai vòng: token lực vào action expert của VLA, và một hiệu chỉnh thân bị chặn vào bộ điều khiển toàn thân.
 
-Đặt một VLA lực lấy cánh tay làm trung tâm lên robot có chân. ForceVLA đóng vai đó trong so sánh của bài, và sụp ở bước cuối: 24% khi lau bảng và 12% khi mở cửa, so với 64% và 52% của FWBC-VLA. Nó đọc lực đúng, nhưng lực đó cũng đẩy lên thân, và không có gì hiệu chỉnh phần thân.
+**KẾT QUẢ** Thành công ở bước cuối: lau bảng 64% so với 24% (ForceVLA), mở cửa 52% so với 12%.
+</div>
 
-## Tính tay: một khớp, 200 Hz
+## 1. Vấn đề: hai kiểu VLA trước, hai điểm mù
 
-Lấy một khớp; bộ ước lượng thật làm việc này cho cả sáu khớp tay. Mô men đo được là $\tau_{meas} = 5.0$ N·m. Expert lịch sử dự đoán mô men chuyển động tự do là $2.0$, expert trạng thái là $3.0$, và gate cho $\alpha_t = 0.25$:
+[[flow]]
+- Trước~VLA toàn thân động học | RGB + ngôn ngữ > VLA > !WBC~không phản hồi tiếp xúc! > Robot | đẩy mù: mở cửa 0% ở bước cuối
+- Trước~VLA lực trung tâm cánh tay | lực + RGB > VLA nhận biết lực > !WBC~không sửa thân! > Robot | tay thích nghi, thân bị đẩy đi: mở cửa 12%
++ FWBC-VLA | mô men khớp > *HSR-Force~không cảm biến, 200 Hz* > *Token lực cho VLA~+ bù thân* > WBC > Robot | mở cửa 52%, lau bảng 64%
+[[/flow]] Một ước lượng, hai vòng: hành động task và thăng bằng thân.
 
-$$\hat\tau_{free} = 0.75 \times 2.0 + 0.25 \times 3.0 = 2.25,\qquad \hat\tau_{ext} = 5.0 - 2.25 = 2.75\ \text{N·m}$$
+## 2. Kiến trúc
 
-Phần nào mô hình chuyển động không giải thích được thì coi là tiếp xúc. Với một khớp, $s_t = |\hat\tau_{ext}| = 2.75$; nếu bước trước có $s = 2.0$ thì $\Delta s_t = 0.75$: tiếp xúc đang tăng dần. Mười ba cặp như vậy đi vào GRU.
+[[fig:fwbc-vla]] Bộ ước lượng 200 Hz không cảm biến cấp token lực cho VLA 15 Hz và tải thân cho một mạng bù nhỏ; lệnh thân đã sửa đi vào WBC.
 
-**Chặn phần hiệu chỉnh thân.** Với $r_{max} = 0.2$ m/s (giá trị minh họa): $\bar r = 1$ cho $r = 0.2\tanh(1) = 0.152$ m/s, và $\bar r = 5$ cho $0.2\tanh(5) = 0.19998$ m/s. Đầu ra của mạng có sai đến đâu, hiệu chỉnh cũng không bao giờ vượt $r_{max}$.
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| HSR-Force (200 Hz) | mô men khớp, state tay/thân/chân/IMU | mô men ngoài $\hat\tau_{ext}$ | tách tiếp xúc khỏi chuyển động của chính robot |
+| Mô tả + GRU | 13 giá trị gần nhất của $[\lVert\hat\tau\rVert, \Delta]$ | token lực (rộng 1024) | độ mạnh và xu hướng tiếp xúc |
+| Action expert π0.5 (15 Hz) | đặc trưng VLA + cross-attention tới token lực | hành động tay, kẹp, thân danh định | hành động task |
+| Jacobian | $\hat\tau_{ext}$ | tải khung thân $\hat F_{body}$ | lực lên khung xe |
+| Bù $C_\psi$ | $\hat F_{body}$, độ lệch IMU, $u_{nom}$ | residual bị chặn $r$ | sửa phần thân |
+| WBC | $u_{nom} + r$, hành động tay | lệnh khớp | thăng bằng và bám lệnh |
 
-## Kiến trúc
+## 3. Tính tay: tách tiếp xúc khỏi chuyển động
 
-[[fig:fwbc-vla]] Một bộ ước lượng 200 Hz không cảm biến cấp cho hai nhánh: token lực cho VLA 15 Hz, và tải thân suy ra từ Jacobian cho một mạng bù nhỏ; lệnh thân đã hiệu chỉnh đi vào WBC.
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-1. **HSR-Force (200 Hz).** Hai expert gọn, expert *lịch sử* (lịch sử mô men và chuyển động nhân quả) và expert *trạng thái* (trạng thái tay, thân, chân và IMU hiện tại), mỗi cái dự đoán mô men chuyển động tự do. Một gate $\alpha_t = G(\lVert r_{state}\rVert)$ trộn chúng: $\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}$. Ước lượng mô men ngoài là $\hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}$.
-2. **Mô tả tiếp xúc.** $d_t = [s_t, \Delta s_t]$ với $s_t = \lVert\hat\tau_{ext}\rVert_2$. $K=13$ mô tả gần nhất (60 ms) qua lớp chuẩn hóa và một **GRU** để tạo token lực $Z^{force}$ (độ rộng 1024).
-3. **VLA điều kiện theo lực (15 Hz).** Backbone là π0.5, fine-tune toàn bộ. Lực vào action expert Gemma bằng cross-attention trên hidden state cuối: $\tilde Z^{act} = Z^{act} + \alpha_f\, g_t\, \text{CA}(Z^{act}, Z^{force})$, với gate "có lực" $g_t$ học được. Lực **không** được lan truyền qua backbone thị giác.
-4. **Bù thân.** Jacobian bình phương tối thiểu có giảm chấn ánh xạ $\hat\tau_{ext}$ sang wrench ở khung end-effector và khung thân. Một MLP nhỏ $C_\psi$ nhận tải khung thân $\hat F_{body}$, độ lệch hướng IMU và lệnh thân danh định, dự đoán phần dư $\bar r$ (cho $\Delta v_x, \Delta v_y, \Delta\omega_z$). Phần dư bị chặn, $r = r_{max}\tanh(\bar r)$, rồi cộng vào: $u_{base} = u_{nom} + r$, sau đó qua vùng chết, lọc thông thấp, giới hạn tốc độ thay đổi và cắt biên. Ước lượng cũ hoặc IMU không hợp lệ sẽ đặt phần dư bằng 0.
-5. **WBC policy** giữ thăng bằng và bám theo lệnh đã gộp.
+**Tính gì và vì sao.** Không có cảm biến lực, tiếp xúc phải được suy ra: mô men khớp đo được trừ đi phần mà chuyển động của chính robot giải thích. Hai expert đoán phần mô men chuyển động tự do đó và một gate trộn chúng. Sau đó hiệu chỉnh thân bị nén để không bao giờ vượt giới hạn an toàn.
 
-## Huấn luyện và dữ liệu
+| Ký hiệu | Nghĩa | Loại | Ví dụ (một khớp) |
+|---|---|---|---|
+| $\tau_{meas}$ | mô men khớp đo được | input | 5.0 N·m |
+| $\hat\tau_{hist}$, $\hat\tau_{state}$ | mô men tự do theo expert lịch sử / trạng thái | input | 2.0, 3.0 N·m |
+| $\alpha_t$ | trọng số gate | input | 0.25 (minh họa) |
+| $\hat\tau_{ext}$ | mô men do tiếp xúc | output | – |
+| $\bar r$, $r_{max}$ | hiệu chỉnh thô, giới hạn | input | 1.0; 0.2 m/s (minh họa) |
+| $r$ | hiệu chỉnh thân đã chặn | output | – |
 
-- Bộ **WL&Arm**: hơn 5.000 episode teleoperation bằng hệ Pico lai vị trí-lực, dữ liệu khớp 200 Hz và demo 15 Hz (nhặt-thả chai 41%, lau bảng 25%, mở cửa 21%).
-- Các expert ước lượng được fit trên cửa sổ chuyển động tự do nơi $\tau_{ext} \approx 0$. $C_\psi$ được huấn luyện bằng loss $\ell_1$ trên phần dư của demo. Không có loss phụ phân loại tiếp xúc hay dự đoán pha.
+**Công thức**
 
-## Kết quả
+$$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qquad \hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}, \qquad r = r_{max}\tanh(\bar r)$$
 
-25 lượt mỗi task; thành công ở bước cuối khi lau bảng: **FWBC-VLA 64%**, ForceVLA 24%, ACP 20%, OpenPI 0.5 12%. Mở cửa, bước cuối: **52%** so với ForceVLA 12% và OpenPI 0.5 0%. Trong ablation thành phần, không dùng lực cho 12,0% thành công trung bình ở các bước tiếp xúc, chỉ đưa lực vào VLA 35,0%, phương pháp đầy đủ 65%. Bộ ước lượng đạt sai số tuyệt đối trung bình 0,15 N khi không tải.
+**Từng bước**
 
-## Lưu ý
+1. $\hat\tau_{free} = 0.75 \times 2.0 + 0.25 \times 3.0 = 2.25$ N·m.
+2. $\hat\tau_{ext} = 5.0 - 2.25 = 2.75$ N·m: phần này là tiếp xúc.
+3. $r = 0.2 \times \tanh(1.0) = 0.2 \times 0.762 = 0.152$ m/s; kể cả $\bar r = 5$ cũng chỉ cho $0.19998$.
 
-Độ dài action chunk, nội bộ WBC và tần số của WBC và đường bù không được nêu. Bài mô tả đầu ra thân là vận tốc và góc lái ở một chỗ, và là phần dư $(\Delta v_x,\Delta v_y,\Delta\omega_z)$ ở chỗ khác. Phần mở đầu nói "dual LSTM" trong khi Sec. 4 chỉ mô tả hai "expert gọn".
+**Kết quả.** Tiếp xúc 2,75 N·m; hiệu chỉnh thân 0,152 m/s, không bao giờ quá 0,2.
 
-**Mang theo sang bài sau:** FWBC-VLA, như mọi mô hình tới đây, được huấn luyện offline rồi đứng yên. Khi tiếp xúc khác dữ liệu, nó không tự tiến bộ được. [TORL-VLA](torl-vla.html) tiếp tục học online.
+**Ý nghĩa.** Chất lượng bộ ước lượng quyết định mọi thứ phía sau; giới hạn $\tanh$ nghĩa là một đầu ra sai của mạng không thể làm robot mất thăng bằng.
+</div>
 
-**Câu kiểm tra:** $\tau_{meas} = 4$, expert lịch sử $1$, expert trạng thái $3$, $\alpha_t = 0.5$. $\hat\tau_{ext}$ bằng bao nhiêu? Và với $r_{max} = 0.2$ m/s, $\bar r = -0.5$ cho hiệu chỉnh bao nhiêu?
+## 4. Kết quả
 
-*Đáp án:* $\hat\tau_{free} = 0.5 \times 1 + 0.5 \times 3 = 2$, nên $\hat\tau_{ext} = 2$ N·m. $r = 0.2\tanh(-0.5) = 0.2 \times (-0.462) = -0.092$ m/s.
+[[bars:%]] Lau bảng · OpenPI 0.5=12; Lau bảng · ForceVLA=24; *Lau bảng · FWBC-VLA=64*; Mở cửa · OpenPI 0.5=0; Mở cửa · ForceVLA=12; *Mở cửa · FWBC-VLA=52* || Thành công ở bước cuối, 25 lượt mỗi task.
+
+- Ablation, trung bình các bước tiếp xúc: không lực 12%, chỉ đưa lực vào VLA 35%, đầy đủ 65%.
+- Sai số lực của bộ ước lượng khi không tải: 0,15 N.
+
+## 5. Huấn luyện và dữ liệu
+
+| Mục | Giá trị |
+|---|---|
+| Dữ liệu | WL&Arm: > 5.000 episode teleoperation, khớp 200 Hz, demo 15 Hz |
+| VLA | π0.5, fine-tune toàn bộ |
+| Bộ ước lượng | fit trên các đoạn chuyển động tự do, nơi tiếp xúc ≈ 0 |
+| Mạng bù | hồi quy $\ell_1$ trên residual thân của demo |
+
+## 6. Lưu ý
+
+- Độ dài chunk, nội bộ WBC và tần số của đường bù không được nêu.
+- Đầu ra thân được mô tả là vận tốc + góc lái ở một chỗ, và $(\Delta v_x, \Delta v_y, \Delta\omega_z)$ ở chỗ khác.
+
+**Mang sang bài sau:** FWBC-VLA, như mọi mô hình tới đây, được huấn luyện offline rồi đứng yên. [TORL-VLA](torl-vla.html) tiếp tục học online.
+
+**Câu kiểm tra:** $\tau_{meas} = 4$, $\hat\tau_{hist} = 1$, $\hat\tau_{state} = 3$, $\alpha_t = 0.5$; $r_{max} = 0.2$, $\bar r = -0.5$. Tìm $\hat\tau_{ext}$ và $r$.
+
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$\hat\tau_{free} = 2$, nên $\hat\tau_{ext} = 2$ N·m. $r = 0.2 \tanh(-0.5) = 0.2 \times (-0.462) = -0.092$ m/s.
+</details>
 :::

@@ -3,142 +3,215 @@ slug: forcevla
 date: 2026-10-18
 title_en: "ForceVLA: Force-aware MoE for Contact-rich Manipulation"
 title_vi: "ForceVLA: MoE nhận biết lực cho thao tác giàu tiếp xúc"
-excerpt_en: "ForceVLA treats 6-axis force as its own modality and fuses it into π0 after the VLM with a sparse mixture of experts (FVLMoE). Architecture, training and results."
-excerpt_vi: "ForceVLA coi lực 6 trục là một modality riêng và gộp vào π0 sau VLM bằng mixture-of-experts thưa (FVLMoE). Kiến trúc, cách huấn luyện và kết quả."
+excerpt_en: "Appending force to π0's state barely helps. ForceVLA gives force its own token and fuses it after the VLM with a 4-expert MoE: 60.5% vs 37.3% on five contact tasks."
+excerpt_vi: "Nối lực vào state của π0 gần như vô ích. ForceVLA cho lực một token riêng và gộp sau VLM bằng MoE 4 expert: 60,5% so với 37,3% trên năm task tiếp xúc."
 tags: [VLA, Force, Paper Notes, MoE, π0]
 ---
 
 :::en
-Paper: [arXiv 2505.22159](https://arxiv.org/abs/2505.22159) (NeurIPS 2025), built on π0.
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2505.22159](https://arxiv.org/abs/2505.22159) · 05/2025 · NeurIPS 2025 · built on π0
 
-## The pain it cures
+**PROBLEM** π0 sees only images, so it is blind to force exactly when contact decides the task: inserting a plug, wiping a board, or when the hand hides the object.
 
-Vision-language-action models are good at coarse motion but fail when the task is decided by contact: inserting a plug, wiping a board, peeling a cucumber. Naively concatenating force to the robot state barely helps. ForceVLA's claim is that force should be a **first-class modality** with its own token, and that it should be fused **after** the VLM has already processed vision and language.
+**WHAT FAILED BEFORE** The common fix, appending the 6 force numbers to π0's state, adds +2.9 points to π0-base and *costs* π0-fast 16.8 points.
 
-## Try the naive way first
+**IDEA** Treat force as its own modality (one token) and fuse it **after** the VLM with a sparse mixture of experts (FVLMoE).
 
-The obvious move is to append the 6 force numbers to the robot-state vector and fine-tune. The paper reports what happens:
+**RESULT** 60.5% vs 37.3% for π0-base on five contact-rich tasks (+23.2 points).
+</div>
 
-| Model | Without force | Force concatenated to state |
-|---|---|---|
-| π0-base | 37.3% | 40.2% |
-| π0-fast | 31.0% | 14.2% |
+## 1. The problem: what earlier approaches left unsolved
 
-Three points gained for one model, seventeen lost for the other. Six numbers inside a long sequence of image and state tokens are easy to ignore, and a signal that only matters during contact is near zero on every free-space step. Putting a MoE **before** the VLM was worse still: 0% in the ablation.
+[[flow]]
+- Before~π0 + force in state | RGB + instruction > VLM > !Action expert~state + 6 force numbers! | six numbers drown in the state: π0-fast falls 31.0% → 14.2%
+- Also tried~MoE before VLM | F/T + RGB > !MoE~before the VLM! > VLM > Action expert | a VLM pretrained without force is disrupted: 0% in the ablation
++ ForceVLA | RGB + instruction > VLM > *FVLMoE~fuse force AFTER VLM* > Action expert | force gets its own path: 60.5%
+[[/flow]] Three ways to add force to π0. Red marks where earlier attempts break; yellow marks ForceVLA's change.
 
-## Work it by hand: one top-1 routing step
+- A camera cannot see how hard the plug is pressed, and occlusion makes it worse.
+- *Where* force is fused matters more than *whether* it is fused:
 
-FVLMoE sends each token to exactly one of 4 experts. A router maps the token to 4 scores (logits), softmax turns them into probabilities, and the largest wins. Two tokens:
+[[bars:%]] Linear before VLM=55; MoE before VLM=0; Concat after VLM=60; *FVLMoE after VLM=80* || Ablation on fusion position (one task, success rate).
 
-- a token from a free-space step, logits $(2.0,\ 0.5,\ 0.1,\ -1.0)$
-- a token from a step where the plug is being pushed in, logits $(0.2,\ 0.1,\ 2.5,\ 0.3)$
+## 2. Architecture
 
-First token: $e^{2.0}=7.389$, $e^{0.5}=1.649$, $e^{0.1}=1.105$, $e^{-1}=0.368$, sum $10.511$, so $p=(0.703,\ 0.157,\ 0.105,\ 0.035)$: expert 0.
+[[fig:forcevla]] The force token joins the VLM output, passes an encoder and a top-1 MoE, and is added to the action expert's input before flow-matching decoding.
 
-Second token: $e^{0.2}=1.221$, $e^{0.1}=1.105$, $e^{2.5}=12.182$, $e^{0.3}=1.350$, sum $15.858$, so $p_2 = 0.768$: expert 2.
+| Block | Input | Output | Role |
+|---|---|---|---|
+| VLM (PaliGemma, SigLIP) | base + wrist RGB, instruction | $E_{VL}$, $N \times 2048$ | understand scene and command |
+| Linear $\phi_F$ | force $f \in \mathbb{R}^6$ | $E_F$, $1 \times 2048$ | turn force into one token |
+| Encoder (8 heads) | $[E_{VL}; E_F]$ | $E_{enc}$ | let the force token talk to image tokens |
+| FVLMoE | $E_{enc}$ | $E_{fused}$ | 4 expert MLPs, top-1 router, + residual |
+| Linear, add | $E_{fused}$ | $G$ added to $S_{suffix}$ | inject into the action expert |
+| Flow-matching head | $S_{suffix} + G$ | action chunk $A_t$ | generate actions |
 
-The same layer applies different weights to "moving" and "touching" tokens without being told which is which: the force token reaches every token through the encoder's self-attention and shifts the logits. The residual keeps the original token, output $= h + \text{expert}(h)$, so an expert only learns a correction. (Many top-1 MoEs also scale the expert output by its probability; the paper does not say whether FVLMoE does.) In the paper's routing analysis, expert 0 handles nearly half of all tokens.
+## 3. Work it by hand: one top-1 routing step
 
-## Architecture
+<div class="calc" markdown="1">
+Calculation card
 
-[[fig:forcevla]] ForceVLA: the force token E_F joins the VLM output, passes an encoder and a 4-expert top-1 MoE (FVLMoE), and the result is added to the action expert's suffix before flow-matching decoding.
+**What and why.** The FVLMoE router sends each token to one of 4 experts. Computing it shows how a "touching" token and a "moving" token end up in different experts without any label.
 
-Read it left to right:
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $h$ | one token after the encoder | input | – |
+| $r = (r_1, \dots, r_4)$ | router logits, one per expert | input | $(2.0,\ 0.5,\ 0.1,\ -1.0)$ (illustrative) |
+| $p_k$ | probability of expert $k$ | intermediate | – |
+| $k^*$ | chosen expert | output | – |
+| $E_k(\cdot)$ | expert $k$, a small MLP | – | – |
 
-1. **VLM.** Base and wrist RGB plus the instruction go through a SigLIP-based PaliGemma VLM, giving $E_{VL}$.
-2. **Force token.** The raw 6-axis force-torque reading $f \in \mathbb{R}^6$ goes through one linear layer to $\mathbb{R}^{2048}$, giving a single token $E_F$.
-3. **Concatenate and encode.** $E_{in} = [E_{VL}; E_F]$ passes a Transformer encoder block ($D=2048$, 8 heads) with self-attention and an FFN.
-4. **FVLMoE.** A sparse MoE with 4 expert MLPs and a top-1 router picks one expert per token; a residual connection adds the input back.
-5. **Inject into the action expert.** A linear layer maps $2048 \to 1024$, the last $H_{action}$ tokens become $G$, and $G$ is added element-wise to $S_{suffix}$ (the processed robot state plus noisy action). A flow-matching head decodes the action chunk.
+**Formula**
 
-The ablation supports the "after the VLM" choice: fusing with a linear layer before the VLM scored 55%, a MoE before the VLM collapsed to 0%, concatenation after the VLM 60%, and full ForceVLA 80% (on the ablation task).
+$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$
 
-## Training and data
+**Steps** for a free-space token, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:
 
-- Base: π0 with a conditional flow-matching action generator.
-- ForceVLA-Data: 244 trajectories, about 140 thousand synchronized timesteps, five tasks (bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling), collected by VR teleoperation on a Flexiv Rizon arm.
-- Optimiser: Adam ($\beta_1=0.9$, $\beta_2=0.95$), peak learning rate $2.5\times10^{-5}$ decaying to $2.5\times10^{-6}$ over 30,000 steps, bfloat16, gradient clipping 1.0.
+1. Exponentiate: $e^{2.0} = 7.389$, $e^{0.5} = 1.649$, $e^{0.1} = 1.105$, $e^{-1.0} = 0.368$.
+2. Sum: $7.389 + 1.649 + 1.105 + 0.368 = 10.511$.
+3. Divide: $p = (0.703,\ 0.157,\ 0.105,\ 0.035)$.
+4. Largest: $k^* = 1$.
 
-## Results
+Same steps for a token while the plug is pushed in, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)$: sum $= 15.858$, $p_3 = 12.182 / 15.858 = 0.768$, so $k^* = 3$.
 
-On the five tasks ForceVLA averages **60.5%** success against **37.3%** for a π0-base baseline, a gain of 23.2 points. In the multi-task setting it reaches 67.5% average (plug insertion 100%).
+**Result.** The two tokens go to experts 1 and 3.
 
-## Caveats from reading the paper
+**Why it matters.** Nobody labelled "contact"; the force token reaches every token through self-attention and shifts the logits. The residual $h + E_{k^*}(h)$ means an expert only learns a correction. (The paper does not say whether the expert output is also scaled by $p_{k^*}$.)
+</div>
 
-- Control frequency and the numeric action-chunk length are not stated.
-- The paper labels the 37.3% baseline inconsistently ("with force" in one sentence, "without" elsewhere), and the ablation baseline (45%) is on a different footing.
-- Which parts are frozen during fine-tuning is not stated.
-**Carry forward:** ForceVLA reads force but still outputs only an end-effector pose, so it cannot say how hard to push. [ForceVLA2](forcevla2.html) changes the output itself.
+## 4. Results
 
-**Check question:** a token's router logits are $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Which expert does it go to, and with what probability? And why might a MoE placed before the VLM collapse to 0%?
+[[bars:%]] π0-fast + force=14.2; π0-fast=31; π0-base=37.3; π0-base + force=40.2; *ForceVLA=60.5* || Average success over five tasks: bottle pumping, plug insertion, USB insertion, whiteboard wiping, cucumber peeling.
 
-*Answer:* $e^{1}=2.718$ twice, $e^{0}=1$, $e^{3}=20.086$, sum $26.522$: expert 3 with $p = 0.757$. Before the VLM, force features enter a model pretrained only on images and text and disturb the vision-language representation it relies on; after the VLM that representation is already formed and force only modulates the action. (The paper reports the 0%; this explanation is my reading of it.)
+- Multi-task training: 67.5% average, plug insertion 100%.
+- Under visual occlusion ForceVLA keeps 90% success.
+
+## 5. Training and data
+
+| Item | Value |
+|---|---|
+| Base | π0, conditional flow matching |
+| Data | ForceVLA-Data: 244 trajectories, ~140k timesteps, 5 tasks |
+| Robot | Flexiv Rizon arm, VR teleoperation |
+| Optimiser | Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k steps, bfloat16 |
+
+## 6. Caveats
+
+- Control rate, chunk length and frozen modules are not stated.
+- The 37.3% baseline is labelled inconsistently in the paper; the ablation baseline (45%) is on a different footing.
+
+**Carry forward:** ForceVLA reads force but still outputs only a pose, so it cannot say *how hard* to push. [ForceVLA2](forcevla2.html) changes the output.
+
+**Check question:** router logits $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Which expert, with what probability?
+
+<details markdown="1">
+<summary>Answer</summary>
+
+$e^1 = 2.718$ (twice), $e^0 = 1$, $e^3 = 20.086$; sum $26.522$; $p_4 = 20.086 / 26.522 = 0.757$, so expert 4.
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2505.22159](https://arxiv.org/abs/2505.22159) (NeurIPS 2025), xây trên π0.
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2505.22159](https://arxiv.org/abs/2505.22159) · 05/2025 · NeurIPS 2025 · nền π0
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** π0 chỉ nhìn ảnh nên mù lực đúng lúc tiếp xúc quyết định task: cắm phích, lau bảng, hoặc khi tay che mất vật.
 
-Các mô hình VLA làm tốt chuyển động thô nhưng thất bại khi nhiệm vụ do tiếp xúc quyết định: cắm phích, lau bảng, gọt dưa chuột. Chỉ nối lực vào state của robot gần như không giúp được gì. Ý tưởng của ForceVLA: lực phải là một **modality hạng nhất** với token riêng, và phải được gộp **sau** khi VLM đã xử lý xong ảnh và ngôn ngữ.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Cách sửa phổ biến, nối 6 số lực vào state của π0, chỉ giúp π0-base +2,9 điểm và còn *làm* π0-fast mất 16,8 điểm.
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** Coi lực là một modality riêng (một token) và gộp nó **sau** VLM bằng mixture of experts thưa (FVLMoE).
 
-Cách hiển nhiên nhất là nối 6 con số lực vào vector state của robot rồi fine-tune. Bài báo cho biết kết quả:
+**KẾT QUẢ** 60,5% so với 37,3% của π0-base trên năm task giàu tiếp xúc (+23,2 điểm).
+</div>
 
-| Mô hình | Không lực | Nối lực vào state |
-|---|---|---|
-| π0-base | 37,3% | 40,2% |
-| π0-fast | 31,0% | 14,2% |
+## 1. Vấn đề: các cách trước còn tồn đọng gì
 
-Một mô hình tăng 3 điểm, mô hình kia mất 17 điểm. Sáu con số lẫn trong một dãy dài token ảnh và state rất dễ bị bỏ qua, và một tín hiệu chỉ có ý nghĩa khi tiếp xúc thì gần bằng 0 ở mọi bước di chuyển tự do. Đặt MoE **trước** VLM còn tệ hơn: 0% trong ablation.
+[[flow]]
+- Trước~π0 + lực vào state | RGB + câu lệnh > VLM > !Action expert~state + 6 số lực! | sáu con số chìm trong state: π0-fast tụt 31,0% → 14,2%
+- Cũng đã thử~MoE trước VLM | F/T + RGB > !MoE~trước VLM! > VLM > Action expert | VLM pretrain không có lực bị xáo trộn: 0% trong ablation
++ ForceVLA | RGB + câu lệnh > VLM > *FVLMoE~gộp lực SAU VLM* > Action expert | lực có đường riêng: 60,5%
+[[/flow]] Ba cách thêm lực vào π0. Ô đỏ là chỗ các cách trước hỏng; ô vàng là thay đổi của ForceVLA.
 
-## Tính tay: một bước định tuyến top-1
+- Camera không thấy phích đang bị ấn mạnh đến đâu, và bị che khuất thì càng tệ.
+- Gộp lực *ở đâu* quan trọng hơn *có* gộp hay không:
 
-FVLMoE gửi mỗi token tới đúng một trong 4 expert. Router biến token thành 4 điểm số (logit), softmax biến chúng thành xác suất, cái lớn nhất thắng. Hai token:
+[[bars:%]] Linear trước VLM=55; MoE trước VLM=0; Concat sau VLM=60; *FVLMoE sau VLM=80* || Ablation vị trí gộp lực (một task, tỉ lệ thành công).
 
-- token ở một bước di chuyển tự do, logit $(2.0,\ 0.5,\ 0.1,\ -1.0)$
-- token ở bước đang ấn phích vào ổ, logit $(0.2,\ 0.1,\ 2.5,\ 0.3)$
+## 2. Kiến trúc
 
-Token thứ nhất: $e^{2.0}=7.389$, $e^{0.5}=1.649$, $e^{0.1}=1.105$, $e^{-1}=0.368$, tổng $10.511$, nên $p=(0.703,\ 0.157,\ 0.105,\ 0.035)$: expert 0.
+[[fig:forcevla]] Token lực nhập vào đầu ra của VLM, qua một encoder và MoE top-1, rồi được cộng vào đầu vào của action expert trước khi giải mã flow-matching.
 
-Token thứ hai: $e^{0.2}=1.221$, $e^{0.1}=1.105$, $e^{2.5}=12.182$, $e^{0.3}=1.350$, tổng $15.858$, nên $p_2 = 0.768$: expert 2.
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| VLM (PaliGemma, SigLIP) | RGB nền + cổ tay, câu lệnh | $E_{VL}$, $N \times 2048$ | hiểu cảnh và câu lệnh |
+| Linear $\phi_F$ | lực $f \in \mathbb{R}^6$ | $E_F$, $1 \times 2048$ | biến lực thành một token |
+| Encoder (8 head) | $[E_{VL}; E_F]$ | $E_{enc}$ | cho token lực "nói chuyện" với token ảnh |
+| FVLMoE | $E_{enc}$ | $E_{fused}$ | 4 expert MLP, router top-1, + residual |
+| Linear, cộng | $E_{fused}$ | $G$ cộng vào $S_{suffix}$ | đưa vào action expert |
+| Đầu flow-matching | $S_{suffix} + G$ | chunk hành động $A_t$ | sinh hành động |
 
-Cùng một lớp áp dụng trọng số khác nhau cho token "đang di chuyển" và token "đang chạm" mà không ai phải nói cho nó biết: token lực lan tới mọi token qua self-attention của encoder và làm lệch logit. Residual giữ lại token gốc, đầu ra $= h + \text{expert}(h)$, nên expert chỉ cần học phần hiệu chỉnh. (Nhiều MoE top-1 còn nhân đầu ra expert với xác suất của nó; bài không nói FVLMoE có làm vậy không.) Trong phân tích định tuyến của bài, expert 0 xử lý gần một nửa số token.
+## 3. Tính tay: một bước định tuyến top-1
 
-## Kiến trúc
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-[[fig:forcevla]] ForceVLA: token lực E_F nhập vào đầu ra của VLM, đi qua một encoder và MoE 4 expert top-1 (FVLMoE), kết quả được cộng vào suffix của action expert trước khi giải mã flow-matching.
+**Tính gì và vì sao.** Router của FVLMoE gửi mỗi token tới một trong 4 expert. Tính thử để thấy token "đang chạm" và token "đang di chuyển" đi tới hai expert khác nhau mà không cần nhãn nào.
 
-Đọc từ trái sang phải:
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $h$ | một token sau encoder | input | – |
+| $r = (r_1, \dots, r_4)$ | logit của router, mỗi expert một số | input | $(2.0,\ 0.5,\ 0.1,\ -1.0)$ (minh họa) |
+| $p_k$ | xác suất chọn expert $k$ | trung gian | – |
+| $k^*$ | expert được chọn | output | – |
+| $E_k(\cdot)$ | expert $k$, một MLP nhỏ | – | – |
 
-1. **VLM.** Ảnh RGB từ camera nền và camera cổ tay cùng câu lệnh đi qua VLM PaliGemma (dựa trên SigLIP), cho ra $E_{VL}$.
-2. **Token lực.** Số đo lực-mô men 6 trục $f \in \mathbb{R}^6$ qua một lớp linear lên $\mathbb{R}^{2048}$, thành một token $E_F$.
-3. **Nối và mã hóa.** $E_{in} = [E_{VL}; E_F]$ đi qua một block Transformer encoder ($D=2048$, 8 head) gồm self-attention và FFN.
-4. **FVLMoE.** MoE thưa với 4 expert MLP và router top-1 chọn một expert cho mỗi token; kết nối residual cộng đầu vào trở lại.
-5. **Tiêm vào action expert.** Một lớp linear $2048 \to 1024$, lấy $H_{action}$ token cuối làm $G$, rồi cộng từng phần tử vào $S_{suffix}$ (state đã xử lý cộng với action nhiễu). Đầu flow-matching giải mã ra chuỗi hành động.
+**Công thức**
 
-Ablation ủng hộ lựa chọn "sau VLM": gộp bằng linear trước VLM đạt 55%, MoE trước VLM sụp xuống 0%, concat sau VLM 60%, ForceVLA đầy đủ 80% (trên task dùng cho ablation).
+$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$
 
-## Huấn luyện và dữ liệu
+**Từng bước** với token di chuyển tự do, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:
 
-- Nền: π0 với bộ sinh hành động conditional flow matching.
-- ForceVLA-Data: 244 quỹ đạo, khoảng 140 nghìn timestep đồng bộ, năm task (bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột), thu bằng teleoperation VR trên tay Flexiv Rizon.
-- Optimizer: Adam ($\beta_1=0.9$, $\beta_2=0.95$), learning rate đỉnh $2.5\times10^{-5}$ giảm về $2.5\times10^{-6}$ trong 30.000 bước, bfloat16, clip gradient 1.0.
+1. Lũy thừa: $e^{2.0} = 7.389$, $e^{0.5} = 1.649$, $e^{0.1} = 1.105$, $e^{-1.0} = 0.368$.
+2. Cộng: $7.389 + 1.649 + 1.105 + 0.368 = 10.511$.
+3. Chia: $p = (0.703,\ 0.157,\ 0.105,\ 0.035)$.
+4. Lớn nhất: $k^* = 1$.
 
-## Kết quả
+Làm lại với token lúc đang ấn phích, $r = (0.2,\ 0.1,\ 2.5,\ 0.3)$: tổng $= 15.858$, $p_3 = 12.182 / 15.858 = 0.768$, nên $k^* = 3$.
 
-Trên năm task, ForceVLA trung bình **60,5%** thành công so với **37,3%** của baseline π0-base, hơn 23,2 điểm. Ở cài đặt multi-task đạt trung bình 67,5% (cắm phích 100%).
+**Kết quả.** Hai token đi tới expert 1 và expert 3.
 
-## Lưu ý khi đọc bài
+**Ý nghĩa.** Không ai gắn nhãn "đang chạm"; token lực lan tới mọi token qua self-attention và làm lệch logit. Residual $h + E_{k^*}(h)$ nghĩa là expert chỉ cần học phần hiệu chỉnh. (Bài không nói đầu ra expert có được nhân thêm $p_{k^*}$ hay không.)
+</div>
 
-- Tần số điều khiển và độ dài action chunk (con số cụ thể) không được nêu.
-- Bài gắn nhãn baseline 37,3% không nhất quán (chỗ ghi "có lực", chỗ ghi "không lực"), và baseline của ablation (45%) nằm trên một nền khác.
-- Không nêu phần nào bị đóng băng khi fine-tune.
+## 4. Kết quả
 
-**Mang theo sang bài sau:** ForceVLA đọc được lực nhưng đầu ra vẫn chỉ là pose của end-effector, nên không nói được cần ấn mạnh đến đâu. [ForceVLA2](forcevla2.html) thay đổi chính đầu ra.
+[[bars:%]] π0-fast + lực=14.2; π0-fast=31; π0-base=37.3; π0-base + lực=40.2; *ForceVLA=60.5* || Thành công trung bình trên năm task: bơm chai, cắm phích, cắm USB, lau bảng, gọt dưa chuột.
 
-**Câu kiểm tra:** logit router của một token là $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Token đi tới expert nào, với xác suất bao nhiêu? Và vì sao đặt MoE trước VLM có thể sụp xuống 0%?
+- Huấn luyện đa task: trung bình 67,5%, cắm phích 100%.
+- Khi camera bị che, ForceVLA vẫn giữ 90% thành công.
 
-*Đáp án:* $e^{1}=2.718$ hai lần, $e^{0}=1$, $e^{3}=20.086$, tổng $26.522$: expert 3 với $p = 0.757$. Đặt trước VLM, đặc trưng lực đi vào một mô hình chỉ được pretrain trên ảnh và văn bản, làm xáo trộn biểu diễn thị giác-ngôn ngữ mà nó dựa vào; đặt sau VLM thì biểu diễn đó đã hình thành và lực chỉ điều chỉnh hành động. (Bài chỉ báo con số 0%; lời giải thích này là cách tôi đọc kết quả.)
+## 5. Huấn luyện và dữ liệu
+
+| Mục | Giá trị |
+|---|---|
+| Nền | π0, conditional flow matching |
+| Dữ liệu | ForceVLA-Data: 244 quỹ đạo, ~140k timestep, 5 task |
+| Robot | tay Flexiv Rizon, teleoperation VR |
+| Optimizer | Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k bước, bfloat16 |
+
+## 6. Lưu ý
+
+- Không nêu tần số điều khiển, độ dài chunk, module nào bị đóng băng.
+- Baseline 37,3% được gắn nhãn không nhất quán trong bài; baseline của ablation (45%) nằm trên một nền khác.
+
+**Mang sang bài sau:** ForceVLA đọc được lực nhưng vẫn chỉ xuất pose, nên không nói được *ấn mạnh đến đâu*. [ForceVLA2](forcevla2.html) thay đổi đầu ra.
+
+**Câu kiểm tra:** logit router $(1.0,\ 1.0,\ 0.0,\ 3.0)$. Token đi tới expert nào, với xác suất bao nhiêu?
+
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$e^1 = 2.718$ (hai lần), $e^0 = 1$, $e^3 = 20.086$; tổng $26.522$; $p_4 = 20.086 / 26.522 = 0.757$, nên expert 4.
+</details>
 :::

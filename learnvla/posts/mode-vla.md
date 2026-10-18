@@ -3,110 +3,187 @@ slug: mode-vla
 date: 2026-10-18
 title_en: "MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch"
 title_vi: "MoDE-VLA: Mixture-of-Dexterous-Experts cho lực và xúc giác"
-excerpt_en: "MoDE-VLA adds force and tactile signals to π0 through a separate path with modality-aware routing and residual injection, so contact corrections do not overwrite pretrained knowledge."
-excerpt_vi: "MoDE-VLA thêm tín hiệu lực và xúc giác vào π0 qua một đường riêng với routing theo modality và tiêm residual, để hiệu chỉnh tiếp xúc không ghi đè tri thức đã pretrain."
+excerpt_en: "π0 is blind to arm torque and fingertip touch, and mixing them into shared layers risks overwriting what it learned. MoDE-VLA gives them a separate sparse-MoE path that only adds residual corrections."
+excerpt_vi: "π0 mù mô men tay và xúc giác đầu ngón, còn trộn chúng vào các lớp dùng chung dễ ghi đè những gì nó đã học. MoDE-VLA cho chúng một đường MoE thưa riêng, chỉ cộng thêm hiệu chỉnh residual."
 tags: [VLA, Force, Tactile, Paper Notes, MoE, π0]
 ---
 
 :::en
-Paper: [arXiv 2603.08122](https://arxiv.org/abs/2603.08122), *Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA* (the abstract names the architecture MoDE-VLA).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2603.08122](https://arxiv.org/abs/2603.08122) · 03/2026 · built on π0 · 63-DoF bimanual robot with two 22-DoF hands
 
-## The pain it cures
+**PROBLEM** Dexterous contact tasks (gear assembling, charger plugging, apple peeling) need arm torque *and* fingertip touch.
 
-A dual-arm humanoid with two 22-DoF dexterous hands has force at the arms and touch at ten fingertips. Mixing those signals straight into a pretrained VLA risks erasing what it learned. The paper has two parts: a **data** side (teleoperation with force and tactile feedback, plus an RL hand skill called IMCopilot) and a **model** side (MoDE-VLA). This note covers the model.
+**WHAT FAILED BEFORE** π0 sees neither. Feeding 74 new numbers through π0's shared layers risks overwriting pretrained knowledge, and one shared mapping must cover reaching, first contact, grasping and in-hand rotation alike.
 
-## Try the naive way first
+**IDEA** A separate path: force and touch tokens go through a sparse MoE (8 experts, top-1) and are added as **residuals**: force corrects the arm, touch corrects the hand. An RL skill (IMCopilot) can take over in-hand rotation.
 
-Append the 14 joint torques and 60 fingertip numbers to the state and fine-tune the whole π0. The paper designs against two problems with that. The new signals flow through the pretrained layers and can overwrite what they learned. And one shared mapping must cover very different contact regimes: reaching, first contact, stable grasp, in-hand rotation. MoDE instead keeps a separate path, routes per token, and only adds a residual.
+**RESULT** The abstract reports a doubled success rate over the π0 baseline.
+</div>
 
-## Work it by hand: why copy the force token H times?
+## 1. The problem: what π0 cannot do here
 
-One force reading $f$ gives one vector $z_f$. But the chunk has $H = 50$ future steps, and the right correction at step 1 (just touching) may differ from step 40 (holding). MoDE copies $z_f$ once per step and adds a step encoding, so each copy can be routed differently.
+[[flow]]
+- Before~π0 | RGB + language + state > VLM + action expert > !Arm + hand actions~no torque, no touch! | contact is invisible
+- Naive~concat into state | torque + touch > !Shared π0 layers! > Actions | new signals can overwrite pretrained knowledge
++ MoDE-VLA | torque + touch > *Sparse MoE~own path, 8 experts* > *Residual~force→arm, touch→hand* > Arm + hand velocity | pretrained path kept, corrections added
+[[/flow]] The paper's three design principles: a dedicated path, routing by modality, residual injection.
 
-Toy router: $z_f = (1,\ 0)$, two experts, logit of expert A = first coordinate, logit of expert B = second coordinate. Step encodings $\text{pos}_1 = (0,\ 0)$, $\text{pos}_2 = (0,\ 2)$.
+## 2. Architecture
 
-- step 1: $(1,0) + (0,0) = (1,\ 0)$: A scores 1, B scores 0, so **A**
-- step 2: $(1,0) + (0,2) = (1,\ 2)$: A scores 1, B scores 2, so **B**
+[[fig:mode-vla]] Force and tactile tokens pass a sparse MoE and become residual corrections for arm and hand velocity; an RL skill can take over the hand.
 
-Without the step encoding both copies equal $(1, 0)$ and both go to A: every future step would get the same expert.
+| Block | Input | Output | Role |
+|---|---|---|---|
+| SigLIP + PaliGemma (Gemma-3B) | 3 RGB views, language, proprioception | prefix $Z_{prefix}$ | π0's perception |
+| Action expert (Gemma-300M) | noisy action $x_t$, timestep | suffix $Z_{suffix}$ | π0's action path |
+| $W_f$, $W_g$ + copies | force $f \in \mathbb{R}^{14}$, touch $g \in \mathbb{R}^{60}$ | $\tilde Z_f$, $\tilde Z_g$ ($H$ copies) | one slot per future step |
+| Self-attention + MoE | all four token groups | $Z_f$, $Z_g$ | 8 experts, top-1 routing |
+| $W_1$, $W_2$ | $Z_f + Z_{suffix}$, $Z_g + Z_{suffix}$ | arm, hand velocity | residual injection |
+| IMCopilot (PPO) | hand state, fingertip forces | hand actions | takes over if trigger $c > 0.5$ |
 
-The sizes also check out: $d_f = 7 \times 2 = 14$ joint torques, $d_g = 5 \times 6 \times 2 = 60$ tactile values, and $(7+22)\times 2 + 2 + 3 = 63$ degrees of freedom in total.
+## 3. Work it by hand: why copy the force token H times
 
-## Architecture
+<div class="calc" markdown="1">
+Calculation card
 
-[[fig:mode-vla]] MoDE-VLA on a π0 backbone: force and tactile tokens go through a sparse MoE, produce residual corrections for arm and hand velocity, and an RL skill can take over the hand.
+**What and why.** One force reading gives one vector, but the action chunk has $H = 50$ future steps that may need different corrections (just touching vs holding). Copying the vector per step and adding a step encoding lets the router send each step to a different expert.
 
-1. **π0 backbone (left of the figure).** Three RGB views (224×224) go through a SigLIP So400m/14 encoder (256 tokens per view); with language and proprioception they form the PaliGemma (Gemma-3B) prefix. Noisy actions with a timestep form the suffix handled by a Gemma-300M action expert. Prefix and suffix share key-value pairs across layers.
-2. **Force and tactile paths.** Force $f \in \mathbb{R}^{14}$ (joint torques, 7 joints × 2 arms) and tactile $g \in \mathbb{R}^{60}$ (6-DoF wrench × 5 fingers × 2 hands) each get a learned linear projection into the model width, then are replicated $H$ times with step encodings so that each timestep can be routed separately.
-3. **Concatenate, then MoE.** $[Z_{prefix} \Vert Z_{suffix} \Vert \tilde Z_f \Vert \tilde Z_g]$ passes a self-attention layer and a token-level MoE (8 experts, top-1 routing). The routing is motivated by contact regimes (reaching, first contact, stable grasp, in-hand rotation).
-4. **Residual injection.** The velocity is $v_\theta = [W_1(Z_f + Z_{suffix}) \Vert W_2(Z_g + Z_{suffix})]$: the **force** path corrects **arm** actions, the **tactile** path corrects **hand** actions.
-5. **Sampling.** Flow matching with 10 Euler steps, action horizon $H=50$.
-6. **IMCopilot.** The VLA also outputs a trigger $c \in [0,1]$. If $c > 0.5$, a PPO-trained policy (IsaacLab, teacher–student distillation) takes over the hand for in-hand rotation.
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $z_f$ | projected force vector | input | $(1,\ 0)$ (toy, 2-D) |
+| $\text{pos}_i$ | step encoding for future step $i$ | input | $\text{pos}_1 = (0, 0)$, $\text{pos}_2 = (0, 2)$ |
+| $\tilde z^{(i)}$ | copy for step $i$ | intermediate | – |
+| $\ell_A, \ell_B$ | router logits for experts A, B | intermediate | toy router: $\ell_A$ = 1st coord, $\ell_B$ = 2nd |
+| $e_i$ | expert chosen for step $i$ | output | – |
 
-## Training
+**Formula**
 
-- Backbone initialised from the pretrained π0 checkpoint; the MoDE module and projections start from scratch.
-- 60,000 steps, AdamW, cosine learning-rate decay, colour-jitter augmentation.
-- Loss: flow matching $\lVert v_\theta(x_t,t) - (\epsilon - x_0)\rVert^2$ with $t \sim \text{Beta}(1.5, 1)$.
+$$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$
 
-## Results and caveats
+**Steps**
 
-The abstract claims "doubled success rate improvement over the baseline" on dexterous contact-rich tasks (Gear Assembling, Charger Plugging, Apple Peeling, Tube Rearranging), with π0 as the baseline. Per-task numbers come from a part of the paper I could not read verbatim, so I do not quote them. Also note that the body says π0 while the Fig. 3 caption says "OpenPI-0", and the control frequency is not stated.
-**Carry forward:** ForceVLA, ForceVLA2 and MoDE-VLA all fine-tune the VLA on the new signal. [VLA-Touch](vla-touch.html) asks whether touch can be added without changing the VLA's weights at all.
+1. Step 1: $\tilde z^{(1)} = (1, 0) + (0, 0) = (1, 0)$, so $\ell_A = 1 > \ell_B = 0$: expert **A**.
+2. Step 2: $\tilde z^{(2)} = (1, 0) + (0, 2) = (1, 2)$, so $\ell_B = 2 > \ell_A = 1$: expert **B**.
+3. Without step encodings both copies are $(1, 0)$: both go to A.
 
-**Check question:** in the same toy, $\text{pos}_3 = (0,\ 0.5)$. Which expert gets step 3? And which actions does the tactile path correct?
+**Result.** Same force reading, different experts for different future steps.
 
-*Answer:* $(1,0) + (0,0.5) = (1,\ 0.5)$; A scores 1 > 0.5, so expert A. The tactile path corrects **hand** actions (through $W_2$); the force path corrects **arm** actions (through $W_1$).
+**Why it matters.** The paper motivates routing by contact regime; the copies are what make per-step routing possible. (The router here is a toy; the real one is learned.)
+</div>
+
+## 4. Training and data
+
+| Item | Value |
+|---|---|
+| Init | π0 checkpoint; MoDE module and projections from scratch |
+| Schedule | 60,000 steps, AdamW, cosine decay, colour jitter |
+| Loss | flow matching, $t \sim \text{Beta}(1.5, 1)$; 10 Euler steps at inference, $H = 50$ |
+| Data | exoskeleton + VR teleoperation with force/tactile feedback; foot pedals trigger hand skills |
+| Sizes | $14 = 7 \times 2$ torques, $60 = 5 \times 6 \times 2$ tactile values, $63 = (7+22)\times 2 + 2 + 3$ DoF |
+
+## 5. Caveats
+
+- Per-task numbers are in a part of the paper I could not read verbatim, so no chart here.
+- The body says π0, the Fig. 3 caption says "OpenPI-0"; control frequency is not stated.
+
+**Carry forward:** ForceVLA, ForceVLA2 and MoDE-VLA all fine-tune the VLA on the new signal. [VLA-Touch](vla-touch.html) asks whether touch can be added without changing the VLA at all.
+
+**Check question:** same toy, $\text{pos}_3 = (0,\ 0.5)$. Which expert gets step 3? Which actions does the tactile path correct?
+
+<details markdown="1">
+<summary>Answer</summary>
+
+$(1, 0) + (0, 0.5) = (1, 0.5)$; $\ell_A = 1 > 0.5$, so expert A. The tactile path corrects **hand** actions (via $W_2$); force corrects the **arm** (via $W_1$).
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2603.08122](https://arxiv.org/abs/2603.08122), *Towards Human-Like Manipulation through RL-Augmented Teleoperation and Mixture-of-Dexterous-Experts VLA* (abstract gọi kiến trúc này là MoDE-VLA).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2603.08122](https://arxiv.org/abs/2603.08122) · 03/2026 · nền π0 · robot hai tay 63 bậc tự do, hai bàn tay 22 bậc
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** Task tiếp xúc khéo léo (lắp bánh răng, cắm sạc, gọt táo) cần cả mô men cánh tay *lẫn* xúc giác đầu ngón.
 
-Robot humanoid hai tay với hai bàn tay 22 bậc tự do có lực ở cánh tay và xúc giác ở mười đầu ngón. Trộn thẳng các tín hiệu đó vào một VLA đã pretrain dễ xóa mất những gì nó đã học. Bài có hai phần: phần **dữ liệu** (teleoperation có phản hồi lực/xúc giác, cộng một kỹ năng bàn tay học bằng RL tên IMCopilot) và phần **mô hình** (MoDE-VLA). Ghi chú này nói về mô hình.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** π0 không thấy cái nào. Đưa 74 con số mới qua các lớp dùng chung của π0 dễ ghi đè tri thức đã pretrain, và một ánh xạ chung phải lo cả với tới, chạm đầu tiên, nắm và xoay trong tay.
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** Một đường riêng: token lực và xúc giác qua MoE thưa (8 expert, top-1) rồi được cộng vào dưới dạng **residual**: lực hiệu chỉnh cánh tay, xúc giác hiệu chỉnh bàn tay. Một kỹ năng RL (IMCopilot) có thể tiếp quản việc xoay trong tay.
 
-Nối 14 mô men khớp và 60 giá trị đầu ngón vào state rồi fine-tune cả π0. Bài báo thiết kế để tránh hai vấn đề của cách này. Tín hiệu mới chảy qua các lớp đã pretrain và có thể ghi đè những gì chúng đã học. Và một ánh xạ dùng chung phải bao trọn những chế độ tiếp xúc rất khác nhau: với tới, chạm đầu tiên, nắm ổn định, xoay trong tay. MoDE thay vào đó giữ một đường riêng, định tuyến theo từng token, và chỉ cộng thêm phần residual.
+**KẾT QUẢ** Abstract nêu tỉ lệ thành công tăng gấp đôi so với baseline π0.
+</div>
 
-## Tính tay: vì sao nhân bản token lực H lần?
+## 1. Vấn đề: π0 không làm được gì ở đây
 
-Một lần đọc lực $f$ cho một vector $z_f$. Nhưng chunk có $H = 50$ bước tương lai, và hiệu chỉnh đúng ở bước 1 (vừa chạm) có thể khác bước 40 (đang giữ). MoDE nhân bản $z_f$ cho mỗi bước và cộng mã hóa bước, để mỗi bản có thể được định tuyến khác nhau.
+[[flow]]
+- Trước~π0 | RGB + ngôn ngữ + state > VLM + action expert > !Hành động tay~không mô men, không xúc giác! | tiếp xúc vô hình
+- Ngây thơ~nối vào state | mô men + xúc giác > !Lớp dùng chung của π0! > Hành động | tín hiệu mới có thể ghi đè tri thức đã pretrain
++ MoDE-VLA | mô men + xúc giác > *MoE thưa~đường riêng, 8 expert* > *Residual~lực→cánh tay, chạm→bàn tay* > Vận tốc tay | giữ đường pretrain, chỉ cộng hiệu chỉnh
+[[/flow]] Ba nguyên tắc thiết kế của bài: đường riêng, định tuyến theo modality, tiêm residual.
 
-Router đồ chơi: $z_f = (1,\ 0)$, hai expert, logit của expert A = tọa độ thứ nhất, logit của expert B = tọa độ thứ hai. Mã hóa bước $\text{pos}_1 = (0,\ 0)$, $\text{pos}_2 = (0,\ 2)$.
+## 2. Kiến trúc
 
-- bước 1: $(1,0) + (0,0) = (1,\ 0)$: A được 1, B được 0, nên **A**
-- bước 2: $(1,0) + (0,2) = (1,\ 2)$: A được 1, B được 2, nên **B**
+[[fig:mode-vla]] Token lực và xúc giác qua MoE thưa và thành hiệu chỉnh residual cho vận tốc cánh tay và bàn tay; một kỹ năng RL có thể tiếp quản bàn tay.
 
-Không có mã hóa bước, cả hai bản đều là $(1, 0)$ và đều đi tới A: mọi bước tương lai nhận cùng một expert.
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| SigLIP + PaliGemma (Gemma-3B) | 3 góc RGB, ngôn ngữ, proprioception | prefix $Z_{prefix}$ | phần cảm nhận của π0 |
+| Action expert (Gemma-300M) | action nhiễu $x_t$, timestep | suffix $Z_{suffix}$ | đường hành động của π0 |
+| $W_f$, $W_g$ + nhân bản | lực $f \in \mathbb{R}^{14}$, xúc giác $g \in \mathbb{R}^{60}$ | $\tilde Z_f$, $\tilde Z_g$ ($H$ bản) | mỗi bước tương lai một ô |
+| Self-attention + MoE | cả bốn nhóm token | $Z_f$, $Z_g$ | 8 expert, định tuyến top-1 |
+| $W_1$, $W_2$ | $Z_f + Z_{suffix}$, $Z_g + Z_{suffix}$ | vận tốc cánh tay, bàn tay | tiêm residual |
+| IMCopilot (PPO) | trạng thái bàn tay, lực đầu ngón | hành động bàn tay | tiếp quản nếu tín hiệu $c > 0{,}5$ |
 
-Kích thước cũng khớp: $d_f = 7 \times 2 = 14$ mô men khớp, $d_g = 5 \times 6 \times 2 = 60$ giá trị xúc giác, và tổng cộng $(7+22)\times 2 + 2 + 3 = 63$ bậc tự do.
+## 3. Tính tay: vì sao nhân bản token lực H lần
 
-## Kiến trúc
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-[[fig:mode-vla]] MoDE-VLA trên nền π0: token lực và xúc giác đi qua MoE thưa, tạo hiệu chỉnh residual cho vận tốc tay-cánh, và một kỹ năng RL có thể chiếm quyền điều khiển bàn tay.
+**Tính gì và vì sao.** Một lần đọc lực cho một vector, nhưng chunk hành động có $H = 50$ bước tương lai có thể cần hiệu chỉnh khác nhau (vừa chạm và đang giữ). Nhân bản vector cho mỗi bước và cộng mã hóa bước giúp router gửi mỗi bước tới một expert khác nhau.
 
-1. **Backbone π0 (bên trái hình).** Ba góc nhìn RGB (224×224) qua encoder SigLIP So400m/14 (256 token mỗi góc); cùng ngôn ngữ và proprioception tạo prefix của PaliGemma (Gemma-3B). Action nhiễu kèm timestep là suffix do action expert Gemma-300M xử lý. Prefix và suffix dùng chung cặp key-value ở mọi lớp.
-2. **Hai đường lực và xúc giác.** Lực $f \in \mathbb{R}^{14}$ (mô men khớp, 7 khớp × 2 tay) và xúc giác $g \in \mathbb{R}^{60}$ (wrench 6 bậc × 5 ngón × 2 bàn tay) mỗi cái qua một lớp linear học được vào chiều của mô hình, rồi nhân bản $H$ lần kèm mã hóa bước, để mỗi timestep có thể được định tuyến riêng.
-3. **Nối rồi MoE.** $[Z_{prefix} \Vert Z_{suffix} \Vert \tilde Z_f \Vert \tilde Z_g]$ qua một lớp self-attention và MoE mức token (8 expert, top-1). Việc định tuyến được lý giải bằng các chế độ tiếp xúc (với tới, chạm đầu tiên, nắm ổn định, xoay trong tay).
-4. **Tiêm residual.** Vận tốc là $v_\theta = [W_1(Z_f + Z_{suffix}) \Vert W_2(Z_g + Z_{suffix})]$: đường **lực** hiệu chỉnh hành động **cánh tay**, đường **xúc giác** hiệu chỉnh hành động **bàn tay**.
-5. **Lấy mẫu.** Flow matching với 10 bước Euler, horizon hành động $H=50$.
-6. **IMCopilot.** VLA còn xuất tín hiệu kích hoạt $c \in [0,1]$. Nếu $c > 0{,}5$, một chính sách học bằng PPO (IsaacLab, chưng cất teacher–student) tiếp quản bàn tay để xoay vật trong tay.
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $z_f$ | vector lực đã chiếu | input | $(1,\ 0)$ (đồ chơi, 2 chiều) |
+| $\text{pos}_i$ | mã hóa của bước tương lai $i$ | input | $\text{pos}_1 = (0, 0)$, $\text{pos}_2 = (0, 2)$ |
+| $\tilde z^{(i)}$ | bản sao cho bước $i$ | trung gian | – |
+| $\ell_A, \ell_B$ | logit router cho expert A, B | trung gian | router đồ chơi: $\ell_A$ = tọa độ 1, $\ell_B$ = tọa độ 2 |
+| $e_i$ | expert được chọn cho bước $i$ | output | – |
 
-## Huấn luyện
+**Công thức**
 
-- Backbone khởi tạo từ checkpoint π0 đã pretrain; module MoDE và các lớp chiếu khởi tạo từ đầu.
-- 60.000 bước, AdamW, giảm learning rate kiểu cosine, augmentation đổi màu.
-- Loss: flow matching $\lVert v_\theta(x_t,t) - (\epsilon - x_0)\rVert^2$ với $t \sim \text{Beta}(1.5, 1)$.
+$$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$
 
-## Kết quả và lưu ý
+**Từng bước**
 
-Abstract nêu "tỉ lệ thành công tăng gấp đôi so với baseline" trên các task khéo léo giàu tiếp xúc (lắp bánh răng, cắm sạc, gọt táo, sắp xếp ống), baseline là π0. Số liệu từng task nằm ở phần bài tôi không đọc được nguyên văn nên không trích. Cũng lưu ý phần thân bài ghi π0 còn chú thích Fig. 3 ghi "OpenPI-0", và tần số điều khiển không được nêu.
+1. Bước 1: $\tilde z^{(1)} = (1, 0) + (0, 0) = (1, 0)$, nên $\ell_A = 1 > \ell_B = 0$: expert **A**.
+2. Bước 2: $\tilde z^{(2)} = (1, 0) + (0, 2) = (1, 2)$, nên $\ell_B = 2 > \ell_A = 1$: expert **B**.
+3. Không có mã hóa bước, cả hai bản đều là $(1, 0)$: đều đi tới A.
 
-**Mang theo sang bài sau:** ForceVLA, ForceVLA2 và MoDE-VLA đều fine-tune VLA trên tín hiệu mới. [VLA-Touch](vla-touch.html) hỏi: có thêm được xúc giác mà không đổi trọng số của VLA không?
+**Kết quả.** Cùng một lần đọc lực, các bước tương lai khác nhau đi tới expert khác nhau.
 
-**Câu kiểm tra:** cùng router đồ chơi, $\text{pos}_3 = (0,\ 0.5)$. Bước 3 đi tới expert nào? Và đường xúc giác hiệu chỉnh hành động nào?
+**Ý nghĩa.** Bài lý giải định tuyến bằng các chế độ tiếp xúc; việc nhân bản là thứ cho phép định tuyến theo từng bước. (Router ở đây là đồ chơi; router thật được học.)
+</div>
 
-*Đáp án:* $(1,0) + (0,0.5) = (1,\ 0.5)$; A được 1 > 0,5, nên expert A. Đường xúc giác hiệu chỉnh hành động **bàn tay** (qua $W_2$); đường lực hiệu chỉnh hành động **cánh tay** (qua $W_1$).
+## 4. Huấn luyện và dữ liệu
+
+| Mục | Giá trị |
+|---|---|
+| Khởi tạo | checkpoint π0; module MoDE và các lớp chiếu từ đầu |
+| Lịch | 60.000 bước, AdamW, giảm cosine, đổi màu ảnh |
+| Loss | flow matching, $t \sim \text{Beta}(1.5, 1)$; 10 bước Euler khi suy luận, $H = 50$ |
+| Dữ liệu | teleoperation bằng exoskeleton + VR có phản hồi lực/xúc giác; bàn đạp chân kích hoạt kỹ năng tay |
+| Kích thước | $14 = 7 \times 2$ mô men, $60 = 5 \times 6 \times 2$ giá trị xúc giác, $63 = (7+22)\times 2 + 2 + 3$ bậc tự do |
+
+## 5. Lưu ý
+
+- Số liệu từng task nằm ở phần bài tôi không đọc được nguyên văn, nên không có biểu đồ ở đây.
+- Thân bài ghi π0, chú thích Fig. 3 ghi "OpenPI-0"; tần số điều khiển không được nêu.
+
+**Mang sang bài sau:** ForceVLA, ForceVLA2 và MoDE-VLA đều fine-tune VLA trên tín hiệu mới. [VLA-Touch](vla-touch.html) hỏi: có thêm được xúc giác mà không đổi gì ở VLA không?
+
+**Câu kiểm tra:** cùng router đồ chơi, $\text{pos}_3 = (0,\ 0.5)$. Bước 3 đi tới expert nào? Đường xúc giác hiệu chỉnh hành động nào?
+
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$(1, 0) + (0, 0.5) = (1, 0.5)$; $\ell_A = 1 > 0{,}5$, nên expert A. Đường xúc giác hiệu chỉnh hành động **bàn tay** (qua $W_2$); lực hiệu chỉnh **cánh tay** (qua $W_1$).
+</details>
 :::

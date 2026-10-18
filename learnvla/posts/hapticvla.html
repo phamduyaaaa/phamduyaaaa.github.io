@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.">
+<meta name="description" content="Plain imitation copies the demonstrations that crushed the egg, and a tactile sensor at run time is expensive. HapticVLA weights demonstrations by a tactile safety reward, then distils into a student that needs no sensor: 86.7%.">
 <title>HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference">
-<meta property="og:description" content="HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.">
+<meta property="og:description" content="Plain imitation copies the demonstrations that crushed the egg, and a tactile sensor at run time is expensive. HapticVLA weights demonstrations by a tactile safety reward, then distils into a student that needs no sensor: 86.7%.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -78,38 +60,30 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference</h1>
     <h1 data-vi>HapticVLA: Thao tác nhận biết xúc giác mà không cần cảm biến lúc suy luận</h1>
 
-    <p class="post-excerpt-lead" data-en>HapticVLA trains a teacher SmolVLA with a safety-aware tactile reward, then distils it into a student that sees only vision and state. A 0.45B model with no tactile hardware at run time.</p>
-    <p class="post-excerpt-lead" data-vi>HapticVLA huấn luyện một SmolVLA teacher với phần thưởng xúc giác có nhận biết an toàn, rồi chưng cất sang student chỉ thấy thị giác và state. Mô hình 0,45B không cần phần cứng xúc giác lúc chạy.</p>
+    <p class="post-excerpt-lead" data-en>Plain imitation copies the demonstrations that crushed the egg, and a tactile sensor at run time is expensive. HapticVLA weights demonstrations by a tactile safety reward, then distils into a student that needs no sensor: 86.7%.</p>
+    <p class="post-excerpt-lead" data-vi>Bắt chước thuần chép cả những demo làm vỡ trứng, còn cảm biến xúc giác lúc chạy thì đắt. HapticVLA gán trọng số demo bằng phần thưởng an toàn từ xúc giác, rồi chưng cất sang student không cần cảm biến: 86,7%.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">Distillation</span><span class="pill">Paper Notes</span><span class="pill">SmolVLA</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (March 2026), Skoltech; project page linked from the abstract.</p>
-<h2>The pain it cures</h2>
-<p>Pick a jar, a waffle and an egg with the same gripper. The jar tolerates force; the waffle and the egg do not. Success must mean "object intact", not just "object moved". HapticVLA gets there with <strong>two stages</strong>: first learn gentleness using tactile data, then make the policy independent of the tactile sensor.</p>
-<h2>Try the naive way first</h2>
-<p>Two obvious options:</p>
-<ol>
-<li><strong>Give the VLA the tactile signal at inference.</strong> The abstract reports that HapticVLA beats baseline VLAs "including versions provided with direct tactile feedback during inference". Having the sensor is not the same as knowing what force is safe.</li>
-<li><strong>Plain imitation on all demonstrations.</strong> The dataset deliberately contains 20–30 faulty episodes per task in which the object was damaged. Plain behaviour cloning copies those as faithfully as the good ones.</li>
-</ol>
-<p>HapticVLA's answer is to <strong>weight</strong> each demonstration by how safe its contact was, then remove the sensor.</p>
-<h2>Work it by hand: reward weights in one batch</h2>
-<p>Four samples have advantages $A = (-4,\ 0,\ 2,\ 6)$ (already clipped to $[-6, 6]$). With $\alpha = 0.25$, $w_{raw} = e^{\alpha A}$:</p>
-<p>$$w_{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$$</p>
-<p>Clip to $[0.25,\ 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$. Divide by the batch mean $1.754$:</p>
-<p>$$w = (0.210,\ 0.570,\ 0.940,\ 2.281)$$</p>
-<p>The safest sample counts about 11 times as much as the riskiest in the flow-matching loss, and the clip stops one sample from taking over the batch.</p>
-<p><strong>The distillation target.</strong> For one action dimension, the ground truth is $a^{GT} = 0.020$ and the teacher says $\hat a^T = 0.012$. With the blend weight $\alpha = 0.5$ (the paper reuses the letter $\alpha$ for a different quantity here), the student's target is $0.5 \times 0.020 + 0.5 \times 0.012 = 0.016$. The student is pulled towards the teacher's gentler action without losing the demonstration.</p>
-<h2>Architecture</h2>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> · 03/2026 · built on SmolVLA (0.45B) · Skoltech</p>
+<p><strong>PROBLEM</strong> For a jar, waffles and an egg, success means the object stays intact, not just that it moved.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Baseline VLAs (SmolVLA, X-VLA, VLA-0) imitate every demonstration equally, including ones where the object was damaged; X-VLA and VLA-0 score 0%. The abstract adds that HapticVLA beats even versions "provided with direct tactile feedback during inference".</p>
+<p><strong>IDEA</strong> Stage 1: compute a safety reward from tactile maps and train a teacher with reward-weighted flow matching. Stage 2: distil the teacher into a student that sees only vision and state.</p>
+<p><strong>RESULT</strong> 86.7% mean success with no tactile sensor at run time.</p>
+</div>
+<h2>1. The problem: imitation copies the bad grasps too</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Touch is used to decide *which* demonstrations to trust, then removed." class="dg-natural" width="861" height="304" viewBox="0 0 861 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">plain imitation</text><rect class="dg-box" x="147" y="22" width="254" height="38"/><text class="dg-t" x="274" y="45" text-anchor="middle">demos incl. 20–30 damaged ones</text><path class="dg-a" d="M401 41 H433"/><rect class="dg-badbox" x="435" y="14" width="180" height="54"/><text class="dg-t" x="525" y="37" text-anchor="middle">Behaviour cloning</text><text class="dg-s" x="525" y="53" text-anchor="middle">all demos weigh the same</text><path class="dg-a" d="M614 41 H646"/><rect class="dg-box" x="648" y="22" width="96" height="38"/><text class="dg-t" x="696" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="146.8" y="86">✗ copies the crushing grasps too</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">touch at run time</text><rect class="dg-box" x="147" y="120" width="178" height="38"/><text class="dg-t" x="236" y="143" text-anchor="middle">RGB + tactile sensor</text><path class="dg-a" d="M325 139 H357"/><rect class="dg-badbox" x="359" y="112" width="141" height="54"/><text class="dg-t" x="429" y="135" text-anchor="middle">VLA</text><text class="dg-s" x="429" y="151" text-anchor="middle">needs the hardware</text><path class="dg-a" d="M500 139 H532"/><rect class="dg-box" x="534" y="120" width="96" height="38"/><text class="dg-t" x="582" y="143" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="146.8" y="184">✗ costly, and still not safer</text><text class="dg-lab dg-green" x="14" y="241">HapticVLA</text><rect class="dg-box" x="147" y="218" width="117" height="38"/><text class="dg-t" x="205" y="241" text-anchor="middle">tactile maps</text><path class="dg-a" d="M264 237 H296"/><rect class="dg-key" x="298" y="218" width="125" height="38"/><text class="dg-t" x="360" y="241" text-anchor="middle">Safety reward</text><path class="dg-a" d="M423 237 H455"/><rect class="dg-key" x="457" y="218" width="201" height="38"/><text class="dg-t" x="557" y="241" text-anchor="middle">Reward-weighted teacher</text><path class="dg-a" d="M658 237 H690"/><rect class="dg-key" x="692" y="210" width="155" height="54"/><text class="dg-t" x="769" y="233" text-anchor="middle">Distilled student</text><text class="dg-s" x="769" y="249" text-anchor="middle">vision + state only</text><text class="dg-note dg-green" x="146.8" y="282">✓ safe grasps without a sensor: 86.7%</text></svg><figcaption>Touch is used to decide *which* demonstrations to trust, then removed.</figcaption></figure>
+<h2>2. Architecture</h2>
 <figure class="diagram"><svg role="img" aria-label="Stage 1 trains a teacher with a tactile reward as an extra condition; stage 2 distils the teacher's action targets into a student that never sees tactile data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
 <rect class="dg-ext" x="20" y="44" width="190" height="48"/><text class="dg-t" x="115" y="62" text-anchor="middle">Tactile maps M^L, M^R</text><text class="dg-s" x="115" y="77" text-anchor="middle">10×10 + manipulator state</text>
@@ -136,46 +110,148 @@
 <rect class="dg-ext" x="470" y="330" width="480" height="40"/><text class="dg-t" x="710" y="348" text-anchor="middle">Inference: vision + state → predicted tactile token → actions</text><text class="dg-s" x="710" y="362" text-anchor="middle">(token output/size not specified in the paper)</text>
 <path class="dg-ad" d="M575 304 V330"/>
 </svg><figcaption>Stage 1 trains a teacher with a tactile reward as an extra condition; stage 2 distils the teacher's action targets into a student that never sees tactile data.</figcaption></figure>
-<p><strong>Stage 1: the teacher (SA-RWFM).</strong></p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Offline tactile reward</td>
+<td>10×10 tactile maps, arm state</td>
+<td>$r_t$, $R_{episode}$, risk</td>
+<td>score each demonstration</td>
+</tr>
+<tr>
+<td>SA-RWFM action expert</td>
+<td>VLM features, reward</td>
+<td>teacher policy $\pi_T$</td>
+<td>safe actions, reward-weighted</td>
+</tr>
+<tr>
+<td>Teacher targets</td>
+<td>training set</td>
+<td>$\hat a^T$ for 51,251 samples</td>
+<td>computed once, offline</td>
+</tr>
+<tr>
+<td>Blend</td>
+<td>$a^{GT}$, $\hat a^T$</td>
+<td>$\tilde a = (1-\alpha)a^{GT} + \alpha\hat a^T$</td>
+<td>training target</td>
+</tr>
+<tr>
+<td>Student SmolVLA</td>
+<td>vision + state only</td>
+<td>actions</td>
+<td>deployed model</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Work it by hand: reward weights in one batch</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Each demonstration's loss is multiplied by a weight that grows with its advantage (how safe its contact was). Computing one batch shows how much more a safe sample counts than a risky one, and why weights are clipped.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_i$</td>
+<td>advantage of sample $i$ (already clipped to $[-6, 6]$)</td>
+<td>input</td>
+<td>$(-4,\ 0,\ 2,\ 6)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>temperature of the weighting</td>
+<td>constant</td>
+<td>0.25 (paper)</td>
+</tr>
+<tr>
+<td>$w_{min}, w_{max}$</td>
+<td>clip range</td>
+<td>constant</td>
+<td>0.25, 4.0 (paper)</td>
+</tr>
+<tr>
+<td>$w_i$</td>
+<td>final weight in the loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$w^{raw}_i = e^{\alpha A_i}, \qquad \bar w_i = \text{clip}(w^{raw}_i,\ w_{min},\ w_{max}), \qquad w_i = \frac{\bar w_i}{\text{mean}_j\,\bar w_j}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$w^{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$.</li>
+<li>Clip to $[0.25, 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$.</li>
+<li>Mean $= 7.017 / 4 = 1.754$.</li>
+<li>Divide: $w = (0.210,\ 0.570,\ 0.940,\ 2.281)$.</li>
+</ol>
+<p><strong>Result.</strong> The safest sample counts $2.281 / 0.210 \approx 11$ times as much as the riskiest.</p>
+<p><strong>Why it matters.</strong> Without the clip, $4.482$ would let one sample dominate; dividing by the mean keeps the average weight at 1 so the learning rate keeps its meaning.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Mean success over Jar, Waffles, Egg; 20 trials each. HapticVLA per task: 75%, 90%, 95%." class="dg-natural" width="710" height="132" viewBox="0 0 710 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="250" y="23" text-anchor="end">X-VLA</text><rect class="dg-bar" x="260" y="10" width="2" height="18"/><text class="dg-barval" x="270" y="23">0%</text><text class="dg-barlabel" x="250" y="53" text-anchor="end">VLA-0</text><rect class="dg-bar" x="260" y="40" width="2" height="18"/><text class="dg-barval" x="270" y="53">0%</text><text class="dg-barlabel" x="250" y="83" text-anchor="end">SmolVLA + SA-RWFM (no distillation)</text><rect class="dg-bar" x="260" y="70" width="270" height="18"/><text class="dg-barval" x="538" y="83">75%</text><text class="dg-barlabel" x="250" y="113" text-anchor="end">HapticVLA</text><rect class="dg-key" x="260" y="100" width="312" height="18"/><text class="dg-barval" x="580" y="113">86.7%</text></svg><figcaption>Mean success over Jar, Waffles, Egg; 20 trials each. HapticVLA per task: 75%, 90%, 95%.</figcaption></figure>
+<h2>5. Training and hardware</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data</td>
+<td>310 real episodes (70 good + 20 faulty per single-arm task, 100 + 30 bimanual) + 1,000 Isaac Sim episodes</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>two LeRobot SO-101 arms, tactile gripper (100 taxels per pad, 120 Hz), Jetson Orin NX</td>
+</tr>
+<tr>
+<td>Distillation</td>
+<td>blend $\alpha = 0.5$, flow-matching loss on $\tilde a$</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
 <ul>
-<li><strong>Offline tactile reward.</strong> From the two 10×10 tactile maps (100 taxels per finger) the method computes per-step statistics: mean force, peak pressure, how concentrated the pressure is, centre of pressure and slip. A per-step reward $r_t$ sums squared penalties for over-force, under-force while holding, peak pressure, concentration and asymmetry plus a slip term. An episode reward adds success and subtracts drop, damage and risk.</li>
-<li><strong>Reward-weighted flow matching (RWFM).</strong> The SmolVLA action expert is trained with a flow-matching loss in which each sample is weighted by $w = \exp(\alpha A)$, with advantage $A$ built from the episode and chunk-level rewards ($\alpha = 0.25$, weights clipped to $[0.25, 4]$). An anchor term keeps parameters near the pretrained model. Faulty demonstrations (the object was damaged) are kept and receive negative rewards.</li>
+<li>The abstract says the student predicts a "compact tactile token", but the only distillation loss given is on actions; token size and loss are not specified.</li>
+<li>Optimiser, learning rate, steps and control rate are not stated.</li>
 </ul>
-<p><strong>Stage 2: tactile distillation.</strong></p>
-<ul>
-<li>The teacher generates action targets $\hat a^T$ offline for $N = 51{,}251$ samples.</li>
-<li>The student is a standard SmolVLA with the teacher's weights except the tactile encoder; its state projection shrinks from $134 \to 6$ inputs.</li>
-<li>Training target: $\tilde a = (1-\alpha)\,a^{GT} + \alpha\,\hat a^T$ with $\alpha = 0.5$, trained by flow matching.</li>
-</ul>
-<h2>Hardware and data</h2>
-<p>Two LeRobot SO-101 arms (one with a tactile parallel gripper; 100 taxels per electrode, 120 Hz), a RealSense D435, wrist cameras, and a Jetson Orin NX. 310 real episodes over three tasks (70 good plus 20 faulty per single-arm task, 100 plus 30 for the bimanual one), plus 1,000 Isaac Sim episodes.</p>
-<h2>Results</h2>
-<p>20 trials per task (Jar, Waffles, Egg): HapticVLA reaches <strong>86.7%</strong> mean (75%, 90%, 95%), the teacher-style SmolVLA with the SA-RWFM expert alone <strong>75%</strong>, and X-VLA and VLA-0 score 0%. On the egg task it is a 45-point improvement over the base model. Asynchronous chunking sometimes lowers success because of added latency.</p>
-<h2>Caveats</h2>
-<p>The abstract says the student predicts a "compact tactile token", but the loss in the paper is only the action-level flow-matching distillation. No token size or token loss is given, so the figure marks that box as unspecified. Optimiser, learning rate, batch size, steps and control rate are not stated.
-<strong>Carry forward:</strong> all the arms so far stand on a fixed base. On a wheeled-legged robot, pushing a door also pushes the body, and there may be no force sensor at all. See <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
-<p><strong>Check question:</strong> a batch has only two samples, $A = (-6,\ 6)$, $\alpha = 0.25$. What are the final weights? And what is the blended target if $a^{GT} = 0.030$ and $\hat a^T = 0.010$?</p>
-<p><em>Answer:</em> $w_{raw} = (e^{-1.5},\ e^{1.5}) = (0.223,\ 4.482)$, clipped to $(0.25,\ 4.0)$, mean $2.125$, so $w = (0.118,\ 1.882)$. Target $= 0.5 \times 0.030 + 0.5 \times 0.010 = 0.020$.</p>
+<p><strong>Carry forward:</strong> all arms so far stand on a fixed base. On a wheeled-legged robot, pushing a door also pushes the body. See <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
+<p><strong>Check question:</strong> a batch of two samples, $A = (-6,\ 6)$, $\alpha = 0.25$. What are the final weights?</p>
+<details>
+<summary>Answer</summary>
+<p>$w^{raw} = (e^{-1.5}, e^{1.5}) = (0.223, 4.482)$ → clip $(0.25, 4.0)$ → mean $2.125$ → $w = (0.118, 1.882)$.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (tháng 3/2026), Skoltech; trang dự án có link trong abstract.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Nhặt một hũ, một cái bánh waffle và một quả trứng bằng cùng một kẹp. Hũ chịu được lực; waffle và trứng thì không. Thành công phải nghĩa là "vật còn nguyên vẹn", không chỉ "vật đã di chuyển". HapticVLA làm được qua <strong>hai giai đoạn</strong>: học sự nhẹ nhàng bằng dữ liệu xúc giác trước, rồi làm chính sách không còn phụ thuộc cảm biến xúc giác.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Hai lựa chọn hiển nhiên:</p>
-<ol>
-<li><strong>Cho VLA tín hiệu xúc giác lúc suy luận.</strong> Abstract nêu HapticVLA thắng các VLA baseline, "kể cả những bản được cho phản hồi xúc giác trực tiếp lúc suy luận". Có cảm biến không đồng nghĩa với biết lực nào là an toàn.</li>
-<li><strong>Bắt chước thuần trên mọi demo.</strong> Bộ dữ liệu cố ý chứa 20–30 episode lỗi mỗi task, trong đó vật bị hỏng. Behavior cloning thuần sẽ chép các episode đó trung thành y như episode tốt.</li>
-</ol>
-<p>Lời giải của HapticVLA là <strong>gán trọng số</strong> cho mỗi demo theo mức an toàn của tiếp xúc, rồi bỏ cảm biến.</p>
-<h2>Tính tay: trọng số phần thưởng trong một batch</h2>
-<p>Bốn mẫu có advantage $A = (-4,\ 0,\ 2,\ 6)$ (đã cắt trong $[-6, 6]$). Với $\alpha = 0.25$, $w_{raw} = e^{\alpha A}$:</p>
-<p>$$w_{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$$</p>
-<p>Cắt trong $[0.25,\ 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$. Chia cho trung bình batch $1.754$:</p>
-<p>$$w = (0.210,\ 0.570,\ 0.940,\ 2.281)$$</p>
-<p>Mẫu an toàn nhất có trọng lượng gấp khoảng 11 lần mẫu rủi ro nhất trong loss flow-matching, và việc cắt ngăn một mẫu chiếm hết batch.</p>
-<p><strong>Mục tiêu chưng cất.</strong> Với một chiều hành động, giá trị thật là $a^{GT} = 0.020$ và teacher nói $\hat a^T = 0.012$. Với trọng số trộn $\alpha = 0.5$ (bài dùng lại chữ $\alpha$ cho một đại lượng khác ở đây), mục tiêu của student là $0.5 \times 0.020 + 0.5 \times 0.012 = 0.016$. Student bị kéo về hành động nhẹ nhàng hơn của teacher mà không đánh mất demo.</p>
-<h2>Kiến trúc</h2>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> · 03/2026 · nền SmolVLA (0,45B) · Skoltech</p>
+<p><strong>VẤN ĐỀ</strong> Với hũ mứt, bánh waffle và quả trứng, thành công nghĩa là vật còn nguyên vẹn, không chỉ là vật đã được di chuyển.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các VLA baseline (SmolVLA, X-VLA, VLA-0) bắt chước mọi demo như nhau, kể cả demo làm hỏng vật; X-VLA và VLA-0 đạt 0%. Abstract còn nêu HapticVLA thắng cả những bản "được cho phản hồi xúc giác trực tiếp lúc suy luận".</p>
+<p><strong>Ý TƯỞNG</strong> Giai đoạn 1: tính phần thưởng an toàn từ bản đồ xúc giác và huấn luyện teacher bằng flow matching có trọng số theo phần thưởng. Giai đoạn 2: chưng cất teacher sang student chỉ thấy thị giác và state.</p>
+<p><strong>KẾT QUẢ</strong> Thành công trung bình 86,7% mà không cần cảm biến xúc giác lúc chạy.</p>
+</div>
+<h2>1. Vấn đề: bắt chước chép cả những lần nắm hỏng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Xúc giác được dùng để quyết định *nên tin* demo nào, rồi được bỏ đi." class="dg-natural" width="899" height="304" viewBox="0 0 899 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">bắt chước thuần</text><rect class="dg-box" x="147" y="22" width="231" height="38"/><text class="dg-t" x="262" y="45" text-anchor="middle">demo gồm 20–30 lần làm hỏng</text><path class="dg-a" d="M378 41 H410"/><rect class="dg-badbox" x="412" y="14" width="167" height="54"/><text class="dg-t" x="495" y="37" text-anchor="middle">Behavior cloning</text><text class="dg-s" x="495" y="53" text-anchor="middle">mọi demo nặng như nhau</text><path class="dg-a" d="M579 41 H611"/><rect class="dg-box" x="613" y="22" width="102" height="38"/><text class="dg-t" x="664" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="146.8" y="86">✗ chép luôn những lần bóp vỡ</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">xúc giác lúc chạy</text><rect class="dg-box" x="147" y="120" width="201" height="38"/><text class="dg-t" x="247" y="143" text-anchor="middle">RGB + cảm biến xúc giác</text><path class="dg-a" d="M348 139 H380"/><rect class="dg-badbox" x="382" y="112" width="109" height="54"/><text class="dg-t" x="436" y="135" text-anchor="middle">VLA</text><text class="dg-s" x="436" y="151" text-anchor="middle">cần phần cứng</text><path class="dg-a" d="M491 139 H523"/><rect class="dg-box" x="525" y="120" width="96" height="38"/><text class="dg-t" x="573" y="143" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="146.8" y="184">✗ tốn kém, mà vẫn không an toàn hơn</text><text class="dg-lab dg-green" x="14" y="241">HapticVLA</text><rect class="dg-box" x="147" y="218" width="140" height="38"/><text class="dg-t" x="217" y="241" text-anchor="middle">bản đồ xúc giác</text><path class="dg-a" d="M287 237 H319"/><rect class="dg-key" x="321" y="218" width="170" height="38"/><text class="dg-t" x="406" y="241" text-anchor="middle">Phần thưởng an toàn</text><path class="dg-a" d="M491 237 H523"/><rect class="dg-key" x="525" y="218" width="170" height="38"/><text class="dg-t" x="610" y="241" text-anchor="middle">Teacher có trọng số</text><path class="dg-a" d="M696 237 H728"/><rect class="dg-key" x="730" y="210" width="155" height="54"/><text class="dg-t" x="807" y="233" text-anchor="middle">Student chưng cất</text><text class="dg-s" x="807" y="249" text-anchor="middle">chỉ thị giác + state</text><text class="dg-note dg-green" x="146.8" y="282">✓ nắm an toàn mà không cần cảm biến: 86,7%</text></svg><figcaption>Xúc giác được dùng để quyết định *nên tin* demo nào, rồi được bỏ đi.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
 <figure class="diagram"><svg role="img" aria-label="Giai đoạn 1 huấn luyện teacher với phần thưởng xúc giác làm điều kiện phụ; giai đoạn 2 chưng cất mục tiêu hành động của teacher sang student không bao giờ thấy dữ liệu xúc giác." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
 <rect class="dg-ext" x="20" y="44" width="190" height="48"/><text class="dg-t" x="115" y="62" text-anchor="middle">Tactile maps M^L, M^R</text><text class="dg-s" x="115" y="77" text-anchor="middle">10×10 + manipulator state</text>
@@ -202,26 +278,136 @@
 <rect class="dg-ext" x="470" y="330" width="480" height="40"/><text class="dg-t" x="710" y="348" text-anchor="middle">Inference: vision + state → predicted tactile token → actions</text><text class="dg-s" x="710" y="362" text-anchor="middle">(token output/size not specified in the paper)</text>
 <path class="dg-ad" d="M575 304 V330"/>
 </svg><figcaption>Giai đoạn 1 huấn luyện teacher với phần thưởng xúc giác làm điều kiện phụ; giai đoạn 2 chưng cất mục tiêu hành động của teacher sang student không bao giờ thấy dữ liệu xúc giác.</figcaption></figure>
-<p><strong>Giai đoạn 1: teacher (SA-RWFM).</strong></p>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phần thưởng xúc giác offline</td>
+<td>bản đồ xúc giác 10×10, state cánh tay</td>
+<td>$r_t$, $R_{episode}$, rủi ro</td>
+<td>chấm điểm từng demo</td>
+</tr>
+<tr>
+<td>Action expert SA-RWFM</td>
+<td>đặc trưng VLM, phần thưởng</td>
+<td>chính sách teacher $\pi_T$</td>
+<td>hành động an toàn, có trọng số</td>
+</tr>
+<tr>
+<td>Mục tiêu teacher</td>
+<td>tập huấn luyện</td>
+<td>$\hat a^T$ cho 51.251 mẫu</td>
+<td>tính một lần, offline</td>
+</tr>
+<tr>
+<td>Trộn</td>
+<td>$a^{GT}$, $\hat a^T$</td>
+<td>$\tilde a = (1-\alpha)a^{GT} + \alpha\hat a^T$</td>
+<td>mục tiêu huấn luyện</td>
+</tr>
+<tr>
+<td>Student SmolVLA</td>
+<td>chỉ thị giác + state</td>
+<td>hành động</td>
+<td>mô hình triển khai</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Tính tay: trọng số phần thưởng trong một batch</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Loss của mỗi demo được nhân với một trọng số tăng theo advantage (tiếp xúc của nó an toàn đến đâu). Tính một batch để thấy mẫu an toàn được tính nặng hơn mẫu rủi ro bao nhiêu, và vì sao phải cắt trọng số.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_i$</td>
+<td>advantage của mẫu $i$ (đã cắt trong $[-6, 6]$)</td>
+<td>input</td>
+<td>$(-4,\ 0,\ 2,\ 6)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>nhiệt độ của việc gán trọng số</td>
+<td>hằng số</td>
+<td>0.25 (của bài)</td>
+</tr>
+<tr>
+<td>$w_{min}, w_{max}$</td>
+<td>khoảng cắt</td>
+<td>hằng số</td>
+<td>0.25, 4.0 (của bài)</td>
+</tr>
+<tr>
+<td>$w_i$</td>
+<td>trọng số cuối trong loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$w^{raw}_i = e^{\alpha A_i}, \qquad \bar w_i = \text{clip}(w^{raw}_i,\ w_{min},\ w_{max}), \qquad w_i = \frac{\bar w_i}{\text{mean}_j\,\bar w_j}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$w^{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$.</li>
+<li>Cắt trong $[0.25, 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$.</li>
+<li>Trung bình $= 7.017 / 4 = 1.754$.</li>
+<li>Chia: $w = (0.210,\ 0.570,\ 0.940,\ 2.281)$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Mẫu an toàn nhất được tính nặng gấp $2.281 / 0.210 \approx 11$ lần mẫu rủi ro nhất.</p>
+<p><strong>Ý nghĩa.</strong> Không cắt thì $4.482$ để một mẫu lấn át cả batch; chia cho trung bình giữ trọng số trung bình bằng 1 để learning rate vẫn giữ nghĩa.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên Jar, Waffles, Egg; 20 lượt mỗi task. HapticVLA từng task: 75%, 90%, 95%." class="dg-natural" width="703" height="132" viewBox="0 0 703 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="243" y="23" text-anchor="end">X-VLA</text><rect class="dg-bar" x="253" y="10" width="2" height="18"/><text class="dg-barval" x="263" y="23">0%</text><text class="dg-barlabel" x="243" y="53" text-anchor="end">VLA-0</text><rect class="dg-bar" x="253" y="40" width="2" height="18"/><text class="dg-barval" x="263" y="53">0%</text><text class="dg-barlabel" x="243" y="83" text-anchor="end">SmolVLA + SA-RWFM (chưa chưng cất)</text><rect class="dg-bar" x="253" y="70" width="270" height="18"/><text class="dg-barval" x="531" y="83">75%</text><text class="dg-barlabel" x="243" y="113" text-anchor="end">HapticVLA</text><rect class="dg-key" x="253" y="100" width="312" height="18"/><text class="dg-barval" x="573" y="113">86,7%</text></svg><figcaption>Thành công trung bình trên Jar, Waffles, Egg; 20 lượt mỗi task. HapticVLA từng task: 75%, 90%, 95%.</figcaption></figure>
+<h2>5. Huấn luyện và phần cứng</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu</td>
+<td>310 episode thật (70 tốt + 20 lỗi mỗi task một tay, 100 + 30 task hai tay) + 1.000 episode Isaac Sim</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>hai tay LeRobot SO-101, kẹp xúc giác (100 taxel mỗi miếng, 120 Hz), Jetson Orin NX</td>
+</tr>
+<tr>
+<td>Chưng cất</td>
+<td>trộn $\alpha = 0{,}5$, loss flow-matching trên $\tilde a$</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
 <ul>
-<li><strong>Phần thưởng xúc giác offline.</strong> Từ hai bản đồ xúc giác 10×10 (100 taxel mỗi ngón), phương pháp tính thống kê từng bước: lực trung bình, áp suất đỉnh, mức tập trung áp suất, tâm áp suất và trượt. Phần thưởng mỗi bước $r_t$ cộng các phạt bình phương cho lực quá lớn, lực quá nhỏ khi đang giữ, áp suất đỉnh, độ tập trung, mất đối xứng, cộng một số hạng trượt. Phần thưởng cả episode cộng thành công và trừ rơi, hỏng, rủi ro.</li>
-<li><strong>Flow matching có trọng số theo phần thưởng (RWFM).</strong> Action expert của SmolVLA được huấn luyện bằng loss flow-matching trong đó mỗi mẫu có trọng số $w = \exp(\alpha A)$, với advantage $A$ xây từ phần thưởng mức episode và mức chunk ($\alpha = 0{,}25$, trọng số bị cắt trong $[0{,}25, 4]$). Một số hạng neo giữ tham số gần mô hình pretrain. Demo lỗi (vật bị hỏng) được giữ lại và nhận phần thưởng âm.</li>
+<li>Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss chưng cất duy nhất được nêu là trên hành động; kích thước và loss của token không được đặc tả.</li>
+<li>Optimizer, learning rate, số bước và tần số điều khiển không được nêu.</li>
 </ul>
-<p><strong>Giai đoạn 2: chưng cất xúc giác.</strong></p>
-<ul>
-<li>Teacher sinh mục tiêu hành động $\hat a^T$ offline cho $N = 51{.}251$ mẫu.</li>
-<li>Student là SmolVLA chuẩn với trọng số của teacher trừ bộ mã hóa xúc giác; phép chiếu state thu từ 134 xuống 6 đầu vào.</li>
-<li>Mục tiêu huấn luyện: $\tilde a = (1-\alpha)\,a^{GT} + \alpha\,\hat a^T$ với $\alpha = 0{,}5$, huấn luyện bằng flow matching.</li>
-</ul>
-<h2>Phần cứng và dữ liệu</h2>
-<p>Hai tay LeRobot SO-101 (một tay có kẹp song song xúc giác; 100 taxel mỗi điện cực, 120 Hz), RealSense D435, camera cổ tay và Jetson Orin NX. 310 episode thật trên ba task (70 tốt cộng 20 lỗi cho mỗi task một tay, 100 cộng 30 cho task hai tay), thêm 1.000 episode trong Isaac Sim.</p>
-<h2>Kết quả</h2>
-<p>20 lượt mỗi task (Jar, Waffles, Egg): HapticVLA đạt <strong>86,7%</strong> trung bình (75%, 90%, 95%), SmolVLA chỉ có expert SA-RWFM đạt <strong>75%</strong>, X-VLA và VLA-0 đạt 0%. Ở task trứng, mô hình hơn mô hình gốc 45 điểm. Chunking bất đồng bộ đôi khi làm giảm thành công vì thêm độ trễ.</p>
-<h2>Lưu ý</h2>
-<p>Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss trong bài chỉ là chưng cất flow-matching ở mức hành động. Không có kích thước token hay loss riêng cho token, nên hình đánh dấu ô đó là chưa được đặc tả. Optimizer, learning rate, batch size, số bước và tần số điều khiển không được nêu.</p>
-<p><strong>Mang theo sang bài sau:</strong> mọi cánh tay tới đây đều đứng trên đế cố định. Trên robot bánh-chân, đẩy cửa cũng là đẩy cả thân, và có thể không có cảm biến lực nào. Xem <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
-<p><strong>Câu kiểm tra:</strong> batch chỉ có hai mẫu, $A = (-6,\ 6)$, $\alpha = 0.25$. Trọng số cuối là bao nhiêu? Và mục tiêu trộn là bao nhiêu nếu $a^{GT} = 0.030$ và $\hat a^T = 0.010$?</p>
-<p><em>Đáp án:</em> $w_{raw} = (e^{-1.5},\ e^{1.5}) = (0.223,\ 4.482)$, cắt thành $(0.25,\ 4.0)$, trung bình $2.125$, nên $w = (0.118,\ 1.882)$. Mục tiêu $= 0.5 \times 0.030 + 0.5 \times 0.010 = 0.020$.</p>
+<p><strong>Mang sang bài sau:</strong> mọi cánh tay tới đây đều đứng trên đế cố định. Trên robot bánh-chân, đẩy cửa cũng là đẩy cả thân. Xem <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
+<p><strong>Câu kiểm tra:</strong> batch có hai mẫu, $A = (-6,\ 6)$, $\alpha = 0.25$. Trọng số cuối là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$w^{raw} = (e^{-1.5}, e^{1.5}) = (0.223, 4.482)$ → cắt $(0.25, 4.0)$ → trung bình $2.125$ → $w = (0.118, 1.882)$.</p>
+</details>
     </div>
   </article>
 

@@ -9,6 +9,18 @@ tags: [VLA, Foundations, Tokenizer, Action]
 ---
 
 :::en
+<div class="tldr" markdown="1">
+**USED BY** RT-2 (07/2023), OpenVLA (06/2024): 256 bins per action dimension
+
+**PROBLEM** An LLM picks words from a finite vocabulary; a robot action is a real number.
+
+**IDEA** Split each action dimension into $K$ equal bins; each bin is one token. A 7-D action becomes 7 tokens.
+
+**COST** Maximum error $\Delta/2$; 7 tokens per step; cross-entropy forgets that bin 6 is next to bin 7.
+
+**NEXT** FAST compresses the trajectory first (DCT), then applies BPE.
+</div>
+
 ## The pain to cure
 
 An LLM generates tokens with a softmax over a finite vocabulary, so its output is a **discrete** variable. A robot action (for example moving the gripper by $\Delta x = 0.03$ m) is a **continuous** number.
@@ -96,10 +108,26 @@ Carry forward: binning solves the "continuous vs discrete" contradiction but cre
 
 **Check question:** with $K=10$ bins on $[-0.1, 0.1]$, which bin does the action $a=-0.095$ fall into, what does it decode to, and what is the error?
 
-*Answer:* $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. The bin covers $[-0.1,-0.08)$ with centre $-0.09$, so it decodes to $\hat a=-0.09$ and the error is $0.005$, within the bound $\Delta/2=0.01$.
+<details markdown="1">
+<summary>Answer</summary>
+
+$b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. The bin covers $[-0.1,-0.08)$ with centre $-0.09$, so it decodes to $\hat a=-0.09$ and the error is $0.005$, within the bound $\Delta/2=0.01$.
+</details>
 :::
 
 :::vi
+<div class="tldr" markdown="1">
+**ĐƯỢC DÙNG BỞI** RT-2 (07/2023), OpenVLA (06/2024): 256 thùng mỗi chiều hành động
+
+**VẤN ĐỀ** LLM chọn chữ trong một từ điển hữu hạn; hành động robot là số thực.
+
+**Ý TƯỞNG** Chia mỗi chiều hành động thành $K$ thùng bằng nhau; mỗi thùng là một token. Hành động 7 chiều thành 7 token.
+
+**CÁI GIÁ** Sai số tối đa $\Delta/2$; 7 token mỗi bước; cross-entropy quên rằng thùng 6 nằm cạnh thùng 7.
+
+**TIẾP THEO** FAST nén quỹ đạo trước (DCT), rồi mới dùng BPE.
+</div>
+
 ## Cái đau cần chữa
 
 LLM sinh token bằng softmax trên từ điển hữu hạn, nghĩa là đầu ra là một biến **rời rạc**. Còn hành động robot (ví dụ dịch tay máy $\Delta x = 0.03$ m) là số **liên tục**.
@@ -187,5 +215,9 @@ Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu 
 
 **Câu kiểm tra:** với $K=10$ thùng trên $[-0.1,0.1]$, hành động $a=-0.095$ rơi vào thùng số mấy, giải mã ra bao nhiêu, và sai số là bao nhiêu?
 
-*Đáp án:* $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. Thùng này phủ $[-0.1,-0.08)$, tâm là $-0.09$, nên giải mã ra $\hat a=-0.09$ và sai số là $0.005$, nằm trong giới hạn $\Delta/2=0.01$.
+<details markdown="1">
+<summary>Đáp án</summary>
+
+$b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. Thùng này phủ $[-0.1,-0.08)$, tâm là $-0.09$, nên giải mã ra $\hat a=-0.09$ và sai số là $0.005$, nằm trong giới hạn $\Delta/2=0.01$.
+</details>
 :::

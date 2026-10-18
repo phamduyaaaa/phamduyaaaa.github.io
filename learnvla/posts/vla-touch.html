@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="VLA-Touch leaves the base VLA (RDT) frozen and adds touch twice: as language for a GPT-4o planner, and as force for a small diffusion refiner on the action chunk.">
+<meta name="description" content="Adding touch usually means fine-tuning the VLA on paired tactile data. VLA-Touch leaves RDT unchanged and adds touch twice: as words for a GPT-4o planner, and as force for a small refiner of the action chunk.">
 <title>VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA">
-<meta property="og:description" content="VLA-Touch leaves the base VLA (RDT) frozen and adds touch twice: as language for a GPT-4o planner, and as force for a small diffusion refiner on the action chunk.">
+<meta property="og:description" content="Adding touch usually means fine-tuning the VLA on paired tactile data. VLA-Touch leaves RDT unchanged and adds touch twice: as words for a GPT-4o planner, and as force for a small refiner of the action chunk.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -84,26 +66,25 @@
     <h1 data-en>VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA</h1>
     <h1 data-vi>VLA-Touch: Phản hồi xúc giác hai tầng mà không train lại VLA</h1>
 
-    <p class="post-excerpt-lead" data-en>VLA-Touch leaves the base VLA (RDT) frozen and adds touch twice: as language for a GPT-4o planner, and as force for a small diffusion refiner on the action chunk.</p>
-    <p class="post-excerpt-lead" data-vi>VLA-Touch giữ nguyên VLA nền (RDT) và thêm xúc giác ở hai tầng: dưới dạng ngôn ngữ cho planner GPT-4o, và dưới dạng lực cho một bộ tinh chỉnh diffusion nhỏ trên action chunk.</p>
+    <p class="post-excerpt-lead" data-en>Adding touch usually means fine-tuning the VLA on paired tactile data. VLA-Touch leaves RDT unchanged and adds touch twice: as words for a GPT-4o planner, and as force for a small refiner of the action chunk.</p>
+    <p class="post-excerpt-lead" data-vi>Thêm xúc giác thường nghĩa là fine-tune VLA trên dữ liệu xúc giác ghép đôi. VLA-Touch giữ nguyên RDT và thêm xúc giác hai lần: thành chữ cho planner GPT-4o, và thành lực cho một bộ tinh chỉnh action chunk.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">Paper Notes</span><span class="pill">RDT</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2507.17294">arXiv 2507.17294</a> (accepted to RA-L 2026), code at <a href="https://github.com/jxbi1010/VLA-Touch">jxbi1010/VLA-Touch</a>.</p>
-<h2>The pain it cures</h2>
-<p>Fine-tuning a large VLA to read a new sensor needs a lot of paired data. VLA-Touch asks: can touch be added <strong>without fine-tuning the base VLA</strong>? It splits touch into two roles. Some tactile information is semantic ("this mango is soft") and helps <strong>planning</strong>. Some is continuous ("shear force is rising") and helps <strong>control</strong>.</p>
-<h2>Try the naive way first</h2>
-<p>Give GPT-4o the raw GelSight images and let it judge. The paper measured this for the planner. Raw tactile images were enough for roughness (100%) but reached only 50% on force and 60% on hardness, while tactile language (Octopi descriptions, plus marker-tracked force written as text) reached 90% and 75%. A large VLM has seen few gel images; it reads words better than deformation patterns. The other naive move, fine-tuning RDT with tactile input, needs paired data the authors chose not to collect.</p>
-<h2>Work it by hand</h2>
-<p><strong>Markers to $m_t$.</strong> Marker tracking gives a small shear vector for each marker. VLA-Touch sums them and keeps the magnitude. Three markers, in arbitrary units: $(0.1,\ 0)$, $(0.2,\ 0.1)$, $(0.1,\ -0.05)$.</p>
-<p>$$X = 0.1 + 0.2 + 0.1 = 0.4,\quad Y = 0 + 0.1 - 0.05 = 0.05,\quad M = \sqrt{0.4^2 + 0.05^2} \approx 0.403$$</p>
-<p>So $m_t = (0.4,\ 0.05,\ 0.403)$: three numbers per step instead of a tactile image. This is what the refiner receives.</p>
-<p><strong>Why start from the VLA chunk, not from noise?</strong> In one dimension: RDT proposes $a = 0.030$ m and the expert did $0.022$ m. A diffusion policy starting from Gaussian noise must carry a random sample (unit scale after normalisation) all the way to $0.022$. The interpolant starts at $0.030$ and only has to learn the $-0.008$ m correction, which the tactile force can explain.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="Two loops: an outer planning loop where tactile text updates the GPT-4o instruction, and an inner control loop where tactile force refines the chunk produced by the frozen RDT." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2507.17294">arXiv 2507.17294</a> · 07/2025 · RA-L 2026 · base VLA RDT-1B · <a href="https://github.com/jxbi1010/VLA-Touch">code</a></p>
+<p><strong>PROBLEM</strong> Some decisions need touch: is the cup full, which mango is softer, is the sponge pressing hard enough.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Giving a VLM planner raw tactile images: 50% correct on force, 60% on hardness. Fine-tuning the VLA on tactile input needs paired data and puts the pretrained VLA at risk.</p>
+<p><strong>IDEA</strong> Keep the VLA unchanged. Touch enters twice: tactile → language (Octopi) for a GPT-4o planner, and tactile force → an interpolant controller that refines the VLA's action chunk.</p>
+<p><strong>RESULT</strong> Up to 35% higher manipulation success than the vision-only VLA; wiping 5 → 12 successes out of 20.</p>
+</div>
+<h2>1. The problem: two ways that did not work</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The planner gets touch as words; the controller gets touch as force. The VLA in between is not retrained." class="dg-natural" width="910" height="304" viewBox="0 0 910 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">raw touch to planner</text><rect class="dg-box" x="166" y="22" width="132" height="38"/><text class="dg-t" x="232" y="45" text-anchor="middle">GelSight image</text><path class="dg-a" d="M298 41 H330"/><rect class="dg-badbox" x="332" y="14" width="132" height="54"/><text class="dg-t" x="399" y="37" text-anchor="middle">GPT-4o planner</text><text class="dg-s" x="399" y="53" text-anchor="middle">reads pixels</text><text class="dg-note dg-red" x="166.0" y="86">✗ 50% correct on force, 60% on hardness</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">fine-tune on touch</text><rect class="dg-box" x="166" y="120" width="125" height="38"/><text class="dg-t" x="228" y="143" text-anchor="middle">tactile + RGB</text><path class="dg-a" d="M291 139 H323"/><rect class="dg-badbox" x="325" y="112" width="135" height="54"/><text class="dg-t" x="392" y="135" text-anchor="middle">Fine-tune RDT</text><text class="dg-s" x="392" y="151" text-anchor="middle">needs paired data</text><path class="dg-a" d="M460 139 H492"/><rect class="dg-box" x="494" y="120" width="96" height="38"/><text class="dg-t" x="542" y="143" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="166.0" y="184">✗ costly, risks the pretrained VLA</text><text class="dg-lab dg-green" x="14" y="241">VLA-Touch</text><rect class="dg-box" x="166" y="218" width="96" height="38"/><text class="dg-t" x="214" y="241" text-anchor="middle">GelSight</text><path class="dg-a" d="M262 237 H294"/><rect class="dg-key" x="296" y="218" width="125" height="38"/><text class="dg-t" x="358" y="241" text-anchor="middle">Octopi → text</text><path class="dg-a" d="M421 237 H453"/><rect class="dg-box" x="455" y="218" width="132" height="38"/><text class="dg-t" x="521" y="241" text-anchor="middle">GPT-4o planner</text><path class="dg-a" d="M587 237 H619"/><rect class="dg-box" x="621" y="218" width="125" height="38"/><text class="dg-t" x="684" y="241" text-anchor="middle">RDT unchanged</text><path class="dg-a" d="M746 237 H778"/><rect class="dg-key" x="780" y="210" width="116" height="54"/><text class="dg-t" x="838" y="233" text-anchor="middle">Refiner</text><text class="dg-s" x="838" y="249" text-anchor="middle">+ marker force</text><text class="dg-note dg-green" x="166.0" y="282">✓ touch used twice, VLA untouched</text></svg><figcaption>The planner gets touch as words; the controller gets touch as force. The VLA in between is not retrained.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Outer loop: tactile text updates the GPT-4o instruction. Inner loop: tactile force refines the chunk from RDT." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="150" height="44"/><text class="dg-t" x="95" y="42" text-anchor="middle">Goal g</text><text class="dg-s" x="95" y="57" text-anchor="middle">+ scene image s_t</text>
 <rect class="dg-box" x="230" y="24" width="150" height="44"/><text class="dg-t" x="305" y="42" text-anchor="middle">Task planner</text><text class="dg-s" x="305" y="57" text-anchor="middle">GPT-4o (VLM)</text>
 <rect class="dg-box" x="440" y="24" width="150" height="44"/><text class="dg-t" x="515" y="42" text-anchor="middle">Base VLA</text><text class="dg-s" x="515" y="57" text-anchor="middle">RDT-1B, no tactile</text>
@@ -122,73 +103,147 @@
 <path class="dg-a" d="M380 230 H700 V160"/><text class="dg-l" x="540" y="224" text-anchor="middle">m_t = (X, Y, M) summed force</text>
 <text class="dg-h" x="20" y="300">OUTER LOOP: instruction done or max steps → tactile text → planner → next instruction</text>
 <text class="dg-h" x="20" y="318">INNER LOOP: VLA chunk → refine first 48 of 64 steps with tactile force → execute</text>
-</svg><figcaption>Two loops: an outer planning loop where tactile text updates the GPT-4o instruction, and an inner control loop where tactile force refines the chunk produced by the frozen RDT.</figcaption></figure>
-<p><strong>Planning level (outer loop).</strong></p>
-<ul>
-<li><strong>Task planner:</strong> GPT-4o receives the goal, a scene image, the tactile description $L^m_t$ and the previous instruction $I_k$, and returns the next one-sentence instruction $I_{k+1}$.</li>
-<li><strong>Tactile to text:</strong> Octopi, a tactile-language model, reads 6 frames from a GelSight Mini and describes properties such as hardness and roughness. Force is handled separately: marker-tracked shear force vectors are given to GPT-4o directly.</li>
-</ul>
-<p><strong>Control level (inner loop).</strong></p>
-<ul>
-<li><strong>Base VLA:</strong> RDT-1B maps the instruction and visual state to an action chunk with horizon $T_a = 64$.</li>
-<li><strong>Tactile state:</strong> OpenCV marker tracking on the GelSight image gives per-marker forces, summed into $m_t = (X, Y, M)$.</li>
-<li><strong>Interpolant controller</strong> ($\pi_I$, BRIDGeR-style): its input is $[z^r, z^o, m]$ (proprioception embedding, DINOv2 embedding, tactile force history). Instead of denoising from Gaussian noise it starts from the VLA's action chunk and refines it with a stochastic interpolant. It refines the first 48 of the 64 steps in sliding windows, executed at up to 8 Hz.</li>
-</ul>
-<h2>Training</h2>
-<ol>
-<li>RDT first fine-tuned on unrelated Franka data (100k steps) to align action spaces.</li>
-<li>Fine-tuned on the task data <strong>without</strong> tactile input (20k steps per task).</li>
-<li>The VLA is then run on task observations to collect chunks; the interpolant controller is trained by supervised MSE against expert actions.</li>
-</ol>
-<p>The paper states the method works "without fine-tuning the base VLA"; whether Octopi and DINOv2 are frozen is not stated.</p>
-<h2>Results</h2>
-<p>Tasks: Cup (does it hold water?), Wipe (pick the smoother sponge, then wipe), Peel (pick the softer mango, then peel). Successes out of 20:</p>
+</svg><figcaption>Outer loop: tactile text updates the GPT-4o instruction. Inner loop: tactile force refines the chunk from RDT.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Task (complete)</th>
-<th>RDT</th>
-<th>RDT + Interpolant</th>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Cup place</td>
-<td>7</td>
-<td>10</td>
+<td>Octopi</td>
+<td>6 GelSight frames</td>
+<td>words: hardness, roughness</td>
+<td>touch → language</td>
 </tr>
 <tr>
-<td>Wipe</td>
-<td>5</td>
-<td>12</td>
+<td>GPT-4o planner</td>
+<td>goal, scene image, tactile text, last instruction</td>
+<td>next instruction $I_{k+1}$</td>
+<td>re-plan with touch</td>
 </tr>
 <tr>
-<td>Peel</td>
-<td>6</td>
-<td>10</td>
+<td>RDT-1B (base VLA)</td>
+<td>instruction, RGB, proprioception</td>
+<td>chunk of $T_a = 64$ steps</td>
+<td>motion proposal</td>
+</tr>
+<tr>
+<td>Marker tracking</td>
+<td>GelSight image</td>
+<td>$m_t = (X, Y, M)$</td>
+<td>touch → 3 numbers</td>
+</tr>
+<tr>
+<td>Interpolant controller</td>
+<td>chunk, DINOv2 features, $m_t$ history</td>
+<td>refined first 48 steps</td>
+<td>correct contact, ≤ 8 Hz</td>
 </tr>
 </tbody>
 </table>
-<p>The abstract reports planning efficiency up to 40% higher and manipulation success up to 35% higher than vision-only VLAs. Removing touch from the controller cut cup placement by 50%.</p>
-<h2>Caveats</h2>
-<p>The controller does not yet use high-frequency tactile signals (25 Hz and above); data are logged at 10 Hz. Discretised Octopi categories failed to separate objects with subtle differences.
-<strong>Carry forward:</strong> VLA-Touch passes touch on as text or as a summed shear vector, but a gel image shows deformation, not force. <a href="taf-vla.html">TaF-VLA</a> first trains the tactile encoder to produce force-like features.</p>
+<h2>3. Work it by hand: turning markers into $m_t$</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The refiner runs at up to 8 Hz and cannot digest a tactile image each step. VLA-Touch compresses the gel's marker motion into three numbers: total shear in $x$, in $y$, and its size.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$v_i = (x_i, y_i)$</td>
+<td>shear vector of marker $i$</td>
+<td>input</td>
+<td>$(0.1, 0)$, $(0.2, 0.1)$, $(0.1, -0.05)$ (arbitrary units)</td>
+</tr>
+<tr>
+<td>$X, Y$</td>
+<td>summed shear</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$M$</td>
+<td>magnitude of the sum</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$X = 0.1 + 0.2 + 0.1 = 0.4$</li>
+<li>$Y = 0 + 0.1 - 0.05 = 0.05$</li>
+<li>$M = \sqrt{0.4^2 + 0.05^2} = \sqrt{0.1625} \approx 0.403$</li>
+</ol>
+<p><strong>Result.</strong> $m_t = (0.4,\ 0.05,\ 0.403)$.</p>
+<p><strong>Why it matters.</strong> Three numbers per step are cheap enough for a fast refiner, and they keep what matters for wiping and peeling: which way and how hard the gel is being dragged.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Full-task successes out of 20." class="dg-natural" width="654" height="192" viewBox="0 0 654 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="194" y="23" text-anchor="end">Cup place · RDT</text><rect class="dg-bar" x="204" y="10" width="126" height="18"/><text class="dg-barval" x="338" y="23">7/20</text><text class="dg-barlabel" x="194" y="53" text-anchor="end">Cup place · + touch refiner</text><rect class="dg-key" x="204" y="40" width="180" height="18"/><text class="dg-barval" x="392" y="53">10/20</text><text class="dg-barlabel" x="194" y="83" text-anchor="end">Wipe · RDT</text><rect class="dg-bar" x="204" y="70" width="90" height="18"/><text class="dg-barval" x="302" y="83">5/20</text><text class="dg-barlabel" x="194" y="113" text-anchor="end">Wipe · + touch refiner</text><rect class="dg-key" x="204" y="100" width="216" height="18"/><text class="dg-barval" x="428" y="113">12/20</text><text class="dg-barlabel" x="194" y="143" text-anchor="end">Peel · RDT</text><rect class="dg-bar" x="204" y="130" width="108" height="18"/><text class="dg-barval" x="320" y="143">6/20</text><text class="dg-barlabel" x="194" y="173" text-anchor="end">Peel · + touch refiner</text><rect class="dg-key" x="204" y="160" width="180" height="18"/><text class="dg-barval" x="392" y="173">10/20</text></svg><figcaption>Full-task successes out of 20.</figcaption></figure>
+<ul>
+<li>Planner with tactile language: force judged right 90%, hardness 75% (vs 50% and 60% from raw images).</li>
+<li>Removing touch from the controller cut cup placement by 50%.</li>
+</ul>
+<h2>5. Training</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>RDT fine-tuned on unrelated Franka data (100k steps) to align action spaces</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Fine-tuned on task data <strong>without</strong> touch (20k steps per task)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Run RDT on task data to collect chunks; train the refiner with MSE against expert actions</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
+<ul>
+<li>High-frequency touch (25 Hz and up) is not used yet; data were logged at 10 Hz.</li>
+<li>Whether Octopi and DINOv2 are frozen is not stated.</li>
+</ul>
+<p><strong>Carry forward:</strong> VLA-Touch passes touch on as words or as a summed shear, but a gel image shows deformation, not force. <a href="taf-vla.html">TaF-VLA</a> trains the tactile encoder to produce force-like features first.</p>
 <p><strong>Check question:</strong> two markers read $(0.3,\ 0.1)$ and $(-0.1,\ 0.2)$. What is $m_t$?</p>
-<p><em>Answer:</em> $X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$, so $m_t = (0.2,\ 0.3,\ 0.361)$.</p>
+<details>
+<summary>Answer</summary>
+<p>$X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2507.17294">arXiv 2507.17294</a> (được nhận ở RA-L 2026), code tại <a href="https://github.com/jxbi1010/VLA-Touch">jxbi1010/VLA-Touch</a>.</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Fine-tune một VLA lớn để đọc cảm biến mới cần rất nhiều dữ liệu ghép đôi. VLA-Touch hỏi: có thêm được xúc giác mà <strong>không fine-tune VLA nền</strong> không? Bài tách xúc giác thành hai vai trò. Một phần là ngữ nghĩa ("quả xoài này mềm") giúp <strong>lập kế hoạch</strong>. Một phần là liên tục ("lực trượt đang tăng") giúp <strong>điều khiển</strong>.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Đưa thẳng ảnh GelSight cho GPT-4o tự đánh giá. Bài báo đã đo điều này cho planner. Ảnh xúc giác thô đủ để nhận độ nhám (100%) nhưng chỉ đạt 50% với lực và 60% với độ cứng, trong khi ngôn ngữ xúc giác (mô tả của Octopi, cộng lực từ marker tracking viết thành văn bản) đạt 90% và 75%. VLM lớn ít khi thấy ảnh gel; nó đọc chữ tốt hơn đọc kiểu biến dạng. Cách ngây thơ còn lại, fine-tune RDT với đầu vào xúc giác, cần dữ liệu ghép đôi mà tác giả chọn không thu.</p>
-<h2>Tính tay</h2>
-<p><strong>Từ marker ra $m_t$.</strong> Marker tracking cho một vector trượt nhỏ ở mỗi marker. VLA-Touch cộng chúng lại và giữ độ lớn. Ba marker, đơn vị tùy ý: $(0.1,\ 0)$, $(0.2,\ 0.1)$, $(0.1,\ -0.05)$.</p>
-<p>$$X = 0.1 + 0.2 + 0.1 = 0.4,\quad Y = 0 + 0.1 - 0.05 = 0.05,\quad M = \sqrt{0.4^2 + 0.05^2} \approx 0.403$$</p>
-<p>Vậy $m_t = (0.4,\ 0.05,\ 0.403)$: ba con số mỗi bước thay vì một ảnh xúc giác. Đây là thứ bộ tinh chỉnh nhận được.</p>
-<p><strong>Vì sao bắt đầu từ chunk của VLA mà không từ nhiễu?</strong> Xét một chiều: RDT đề xuất $a = 0.030$ m còn chuyên gia làm $0.022$ m. Diffusion policy bắt đầu từ nhiễu Gaussian phải đưa một mẫu ngẫu nhiên (cỡ đơn vị sau chuẩn hóa) đi suốt tới $0.022$. Interpolant bắt đầu ở $0.030$ và chỉ cần học phần hiệu chỉnh $-0.008$ m, thứ mà lực xúc giác giải thích được.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="Hai vòng lặp: vòng ngoài lập kế hoạch, nơi văn bản xúc giác cập nhật chỉ dẫn của GPT-4o; vòng trong điều khiển, nơi lực xúc giác tinh chỉnh action chunk do RDT đóng băng tạo ra." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2507.17294">arXiv 2507.17294</a> · 07/2025 · RA-L 2026 · VLA nền RDT-1B · <a href="https://github.com/jxbi1010/VLA-Touch">code</a></p>
+<p><strong>VẤN ĐỀ</strong> Có những quyết định cần xúc giác: cốc có đầy không, quả xoài nào mềm hơn, bọt biển đã ấn đủ mạnh chưa.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Đưa ảnh xúc giác thô cho planner VLM: đúng 50% về lực, 60% về độ cứng. Fine-tune VLA với xúc giác cần dữ liệu ghép đôi và đặt VLA đã pretrain vào rủi ro.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ nguyên VLA. Xúc giác vào hai lần: xúc giác → ngôn ngữ (Octopi) cho planner GPT-4o, và lực xúc giác → một interpolant controller tinh chỉnh action chunk của VLA.</p>
+<p><strong>KẾT QUẢ</strong> Thao tác thành công cao hơn tới 35% so với VLA chỉ dùng thị giác; lau bảng 5 → 12 lần thành công trên 20.</p>
+</div>
+<h2>1. Vấn đề: hai cách đã không ổn</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Planner nhận xúc giác dưới dạng chữ; bộ điều khiển nhận xúc giác dưới dạng lực. VLA ở giữa không bị huấn luyện lại." class="dg-natural" width="944" height="304" viewBox="0 0 944 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">xúc giác thô cho planner</text><rect class="dg-box" x="192" y="22" width="117" height="38"/><text class="dg-t" x="250" y="45" text-anchor="middle">Ảnh GelSight</text><path class="dg-a" d="M309 41 H341"/><rect class="dg-badbox" x="343" y="14" width="132" height="54"/><text class="dg-t" x="409" y="37" text-anchor="middle">Planner GPT-4o</text><text class="dg-s" x="409" y="53" text-anchor="middle">đọc pixel</text><text class="dg-note dg-red" x="191.60000000000002" y="86">✗ đúng 50% về lực, 60% về độ cứng</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">fine-tune với xúc giác</text><rect class="dg-box" x="192" y="120" width="132" height="38"/><text class="dg-t" x="258" y="143" text-anchor="middle">xúc giác + RGB</text><path class="dg-a" d="M324 139 H356"/><rect class="dg-badbox" x="358" y="112" width="154" height="54"/><text class="dg-t" x="435" y="135" text-anchor="middle">Fine-tune RDT</text><text class="dg-s" x="435" y="151" text-anchor="middle">cần dữ liệu ghép đôi</text><path class="dg-a" d="M512 139 H544"/><rect class="dg-box" x="546" y="120" width="96" height="38"/><text class="dg-t" x="594" y="143" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="191.60000000000002" y="184">✗ tốn kém, rủi ro cho VLA đã pretrain</text><text class="dg-lab dg-green" x="14" y="241">VLA-Touch</text><rect class="dg-box" x="192" y="218" width="96" height="38"/><text class="dg-t" x="240" y="241" text-anchor="middle">GelSight</text><path class="dg-a" d="M288 237 H320"/><rect class="dg-key" x="322" y="218" width="117" height="38"/><text class="dg-t" x="380" y="241" text-anchor="middle">Octopi → chữ</text><path class="dg-a" d="M439 237 H471"/><rect class="dg-box" x="473" y="218" width="132" height="38"/><text class="dg-t" x="539" y="241" text-anchor="middle">Planner GPT-4o</text><path class="dg-a" d="M605 237 H637"/><rect class="dg-box" x="639" y="218" width="132" height="38"/><text class="dg-t" x="705" y="241" text-anchor="middle">RDT giữ nguyên</text><path class="dg-a" d="M772 237 H804"/><rect class="dg-key" x="806" y="210" width="125" height="54"/><text class="dg-t" x="868" y="233" text-anchor="middle">Bộ tinh chỉnh</text><text class="dg-s" x="868" y="249" text-anchor="middle">+ lực từ marker</text><text class="dg-note dg-green" x="191.60000000000002" y="282">✓ dùng xúc giác hai lần, không động VLA</text></svg><figcaption>Planner nhận xúc giác dưới dạng chữ; bộ điều khiển nhận xúc giác dưới dạng lực. VLA ở giữa không bị huấn luyện lại.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Vòng ngoài: văn bản xúc giác cập nhật chỉ dẫn của GPT-4o. Vòng trong: lực xúc giác tinh chỉnh chunk từ RDT." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="150" height="44"/><text class="dg-t" x="95" y="42" text-anchor="middle">Goal g</text><text class="dg-s" x="95" y="57" text-anchor="middle">+ scene image s_t</text>
 <rect class="dg-box" x="230" y="24" width="150" height="44"/><text class="dg-t" x="305" y="42" text-anchor="middle">Task planner</text><text class="dg-s" x="305" y="57" text-anchor="middle">GPT-4o (VLM)</text>
 <rect class="dg-box" x="440" y="24" width="150" height="44"/><text class="dg-t" x="515" y="42" text-anchor="middle">Base VLA</text><text class="dg-s" x="515" y="57" text-anchor="middle">RDT-1B, no tactile</text>
@@ -207,59 +262,134 @@
 <path class="dg-a" d="M380 230 H700 V160"/><text class="dg-l" x="540" y="224" text-anchor="middle">m_t = (X, Y, M) summed force</text>
 <text class="dg-h" x="20" y="300">OUTER LOOP: instruction done or max steps → tactile text → planner → next instruction</text>
 <text class="dg-h" x="20" y="318">INNER LOOP: VLA chunk → refine first 48 of 64 steps with tactile force → execute</text>
-</svg><figcaption>Hai vòng lặp: vòng ngoài lập kế hoạch, nơi văn bản xúc giác cập nhật chỉ dẫn của GPT-4o; vòng trong điều khiển, nơi lực xúc giác tinh chỉnh action chunk do RDT đóng băng tạo ra.</figcaption></figure>
-<p><strong>Tầng lập kế hoạch (vòng ngoài).</strong></p>
-<ul>
-<li><strong>Task planner:</strong> GPT-4o nhận mục tiêu, ảnh cảnh, mô tả xúc giác $L^m_t$ và chỉ dẫn trước $I_k$, rồi trả về chỉ dẫn một câu kế tiếp $I_{k+1}$.</li>
-<li><strong>Xúc giác thành văn bản:</strong> Octopi, một mô hình tactile-language, đọc 6 khung hình từ GelSight Mini và mô tả các thuộc tính như độ cứng, độ nhám. Lực được xử lý riêng: vector lực trượt từ marker tracking đưa thẳng cho GPT-4o.</li>
-</ul>
-<p><strong>Tầng điều khiển (vòng trong).</strong></p>
-<ul>
-<li><strong>VLA nền:</strong> RDT-1B ánh xạ chỉ dẫn và trạng thái thị giác thành action chunk với horizon $T_a = 64$.</li>
-<li><strong>Trạng thái xúc giác:</strong> marker tracking bằng OpenCV trên ảnh GelSight cho lực từng marker, cộng lại thành $m_t = (X, Y, M)$.</li>
-<li><strong>Interpolant controller</strong> ($\pi_I$, kiểu BRIDGeR): đầu vào là $[z^r, z^o, m]$ (embedding proprioception, embedding DINOv2, lịch sử lực xúc giác). Thay vì khử nhiễu từ Gaussian, nó bắt đầu từ action chunk của VLA và tinh chỉnh bằng stochastic interpolant. Nó tinh chỉnh 48 trong 64 bước đầu theo cửa sổ trượt, thực thi tối đa 8 Hz.</li>
-</ul>
-<h2>Huấn luyện</h2>
-<ol>
-<li>RDT được fine-tune trước trên dữ liệu Franka không liên quan (100k bước) để căn chỉnh không gian hành động.</li>
-<li>Fine-tune trên dữ liệu task <strong>không</strong> có xúc giác (20k bước mỗi task).</li>
-<li>Sau đó chạy VLA trên quan sát của task để thu các chunk; interpolant controller được huấn luyện có giám sát bằng MSE so với hành động chuyên gia.</li>
-</ol>
-<p>Bài khẳng định phương pháp chạy "không fine-tune VLA nền"; việc Octopi và DINOv2 có bị đóng băng hay không không được nêu.</p>
-<h2>Kết quả</h2>
-<p>Các task: Cup (cốc có nước không?), Wipe (chọn miếng bọt biển mịn hơn rồi lau), Peel (chọn quả xoài mềm hơn rồi gọt). Số lần thành công trên 20:</p>
+</svg><figcaption>Vòng ngoài: văn bản xúc giác cập nhật chỉ dẫn của GPT-4o. Vòng trong: lực xúc giác tinh chỉnh chunk từ RDT.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Task (hoàn chỉnh)</th>
-<th>RDT</th>
-<th>RDT + Interpolant</th>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Đặt cốc</td>
-<td>7</td>
-<td>10</td>
+<td>Octopi</td>
+<td>6 khung GelSight</td>
+<td>chữ: độ cứng, độ nhám</td>
+<td>xúc giác → ngôn ngữ</td>
 </tr>
 <tr>
-<td>Lau</td>
-<td>5</td>
-<td>12</td>
+<td>Planner GPT-4o</td>
+<td>mục tiêu, ảnh cảnh, chữ xúc giác, chỉ dẫn trước</td>
+<td>chỉ dẫn kế $I_{k+1}$</td>
+<td>lập kế hoạch lại theo xúc giác</td>
 </tr>
 <tr>
-<td>Gọt</td>
-<td>6</td>
-<td>10</td>
+<td>RDT-1B (VLA nền)</td>
+<td>chỉ dẫn, RGB, proprioception</td>
+<td>chunk $T_a = 64$ bước</td>
+<td>đề xuất chuyển động</td>
+</tr>
+<tr>
+<td>Marker tracking</td>
+<td>ảnh GelSight</td>
+<td>$m_t = (X, Y, M)$</td>
+<td>xúc giác → 3 con số</td>
+</tr>
+<tr>
+<td>Interpolant controller</td>
+<td>chunk, đặc trưng DINOv2, lịch sử $m_t$</td>
+<td>48 bước đầu đã tinh chỉnh</td>
+<td>sửa tiếp xúc, ≤ 8 Hz</td>
 </tr>
 </tbody>
 </table>
-<p>Abstract nêu hiệu quả lập kế hoạch tăng tới 40% và tỉ lệ thao tác thành công tăng tới 35% so với VLA chỉ dùng thị giác. Bỏ xúc giác khỏi bộ điều khiển làm giảm 50% ở bước đặt cốc.</p>
-<h2>Lưu ý</h2>
-<p>Bộ điều khiển chưa tận dụng tín hiệu xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu được ghi ở 10 Hz. Các nhóm Octopi rời rạc hóa không phân biệt được những vật khác biệt tinh tế.</p>
-<p><strong>Mang theo sang bài sau:</strong> VLA-Touch truyền xúc giác dưới dạng văn bản hoặc một vector trượt tổng, nhưng ảnh gel cho thấy biến dạng chứ không phải lực. <a href="taf-vla.html">TaF-VLA</a> huấn luyện bộ mã hóa xúc giác cho ra đặc trưng giống lực trước.</p>
+<h2>3. Tính tay: từ marker ra $m_t$</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Bộ tinh chỉnh chạy tới 8 Hz và không thể nuốt một ảnh xúc giác mỗi bước. VLA-Touch nén chuyển động của marker trên gel thành ba con số: tổng lực trượt theo $x$, theo $y$, và độ lớn.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$v_i = (x_i, y_i)$</td>
+<td>vector trượt của marker $i$</td>
+<td>input</td>
+<td>$(0.1, 0)$, $(0.2, 0.1)$, $(0.1, -0.05)$ (đơn vị tùy ý)</td>
+</tr>
+<tr>
+<td>$X, Y$</td>
+<td>tổng lực trượt</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$M$</td>
+<td>độ lớn của tổng</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$X = 0.1 + 0.2 + 0.1 = 0.4$</li>
+<li>$Y = 0 + 0.1 - 0.05 = 0.05$</li>
+<li>$M = \sqrt{0.4^2 + 0.05^2} = \sqrt{0.1625} \approx 0.403$</li>
+</ol>
+<p><strong>Kết quả.</strong> $m_t = (0.4,\ 0.05,\ 0.403)$.</p>
+<p><strong>Ý nghĩa.</strong> Ba con số mỗi bước đủ rẻ cho một bộ tinh chỉnh nhanh, và vẫn giữ điều quan trọng khi lau và gọt: gel đang bị kéo theo hướng nào và mạnh đến đâu.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Số lần thành công cả task trên 20." class="dg-natural" width="682" height="192" viewBox="0 0 682 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Đặt cốc · RDT</text><rect class="dg-bar" x="232" y="10" width="126" height="18"/><text class="dg-barval" x="366" y="23">7/20</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Đặt cốc · + tinh chỉnh xúc giác</text><rect class="dg-key" x="232" y="40" width="180" height="18"/><text class="dg-barval" x="420" y="53">10/20</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Lau · RDT</text><rect class="dg-bar" x="232" y="70" width="90" height="18"/><text class="dg-barval" x="330" y="83">5/20</text><text class="dg-barlabel" x="222" y="113" text-anchor="end">Lau · + tinh chỉnh xúc giác</text><rect class="dg-key" x="232" y="100" width="216" height="18"/><text class="dg-barval" x="456" y="113">12/20</text><text class="dg-barlabel" x="222" y="143" text-anchor="end">Gọt · RDT</text><rect class="dg-bar" x="232" y="130" width="108" height="18"/><text class="dg-barval" x="348" y="143">6/20</text><text class="dg-barlabel" x="222" y="173" text-anchor="end">Gọt · + tinh chỉnh xúc giác</text><rect class="dg-key" x="232" y="160" width="180" height="18"/><text class="dg-barval" x="420" y="173">10/20</text></svg><figcaption>Số lần thành công cả task trên 20.</figcaption></figure>
+<ul>
+<li>Planner dùng ngôn ngữ xúc giác: đoán đúng lực 90%, độ cứng 75% (so với 50% và 60% từ ảnh thô).</li>
+<li>Bỏ xúc giác khỏi bộ điều khiển làm giảm 50% ở bước đặt cốc.</li>
+</ul>
+<h2>5. Huấn luyện</h2>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Fine-tune RDT trên dữ liệu Franka không liên quan (100k bước) để căn không gian hành động</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Fine-tune trên dữ liệu task <strong>không</strong> có xúc giác (20k bước mỗi task)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chạy RDT trên dữ liệu task để thu chunk; huấn luyện bộ tinh chỉnh bằng MSE so với hành động chuyên gia</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Chưa dùng xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu ghi ở 10 Hz.</li>
+<li>Không nêu Octopi và DINOv2 có bị đóng băng không.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> VLA-Touch truyền xúc giác dưới dạng chữ hoặc một lực trượt tổng, nhưng ảnh gel cho thấy biến dạng chứ không phải lực. <a href="taf-vla.html">TaF-VLA</a> huấn luyện bộ mã hóa xúc giác cho ra đặc trưng giống lực trước.</p>
 <p><strong>Câu kiểm tra:</strong> hai marker đọc $(0.3,\ 0.1)$ và $(-0.1,\ 0.2)$. $m_t$ bằng bao nhiêu?</p>
-<p><em>Đáp án:</em> $X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$, nên $m_t = (0.2,\ 0.3,\ 0.361)$.</p>
+<details>
+<summary>Đáp án</summary>
+<p>$X = 0.2$, $Y = 0.3$, $M = \sqrt{0.04 + 0.09} = \sqrt{0.13} \approx 0.361$.</p>
+</details>
     </div>
   </article>
 

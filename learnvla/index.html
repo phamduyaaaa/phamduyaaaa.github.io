@@ -9,16 +9,16 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg?v=cubism-2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Learn VLA · Phạm Đức Duy">
 <meta property="og:description" content="Ghi chú học tập về Vision-Language-Action models, robotics và embodied AI.">
 <meta property="og:type" content="website">
 
-<link rel="stylesheet" href="../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../blog/styles/blog.css">
 <link rel="stylesheet" href="../blog/styles/cubism.css?v=cubism-2">
-<link rel="stylesheet" href="toc.css?v=1">
+<link rel="stylesheet" href="toc.css?v=2">
 </head>
 <body>
 
@@ -137,7 +137,8 @@ function toggleMenu(force) {
     listEl.innerHTML = toc.map(function (g, gi) {
       var ready = 0;
       var items = g.items.map(function (it) {
-        var t = '<span class="toc-label">' + escapeHtml(it.title) + '</span>';
+        var t = '<span class="toc-label">' + escapeHtml(it.title) +
+          (it.date ? '<small class="toc-date">arXiv · ' + escapeHtml(it.date) + '</small>' : '') + '</span>';
         if (done[it.slug]) {
           ready++;
           return '<li><a class="toc-item" href="posts/' + encodeURIComponent(it.slug) + '.html">' +

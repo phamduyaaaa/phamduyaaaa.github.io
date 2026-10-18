@@ -3,138 +3,195 @@ slug: taf-vla
 date: 2026-10-18
 title_en: "TaF-VLA: Aligning Tactile Images with Force Before the VLA"
 title_vi: "TaF-VLA: Căn chỉnh ảnh xúc giác với lực trước khi vào VLA"
-excerpt_en: "A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5."
-excerpt_vi: "Ảnh xúc giác thị giác cho thấy biến dạng chứ không phải lực. TaF-VLA trước hết căn chỉnh chuỗi xúc giác với tín hiệu lực/áp suất thật bằng học tương phản, rồi gắn adapter đã đóng băng vào π0.5."
+excerpt_en: "Earlier visuo-tactile policies such as FreeTacMan read a gel image as texture. TaF-VLA first aligns tactile images with real force over 10 million paired frames, then plugs the frozen adapter into π0.5: 64.8% vs 42.8%."
+excerpt_vi: "Các chính sách thị giác-xúc giác trước, như FreeTacMan, đọc ảnh gel như một kết cấu bề mặt. TaF-VLA trước hết căn ảnh xúc giác với lực thật trên 10 triệu cặp khung, rồi gắn adapter đóng băng vào π0.5: 64,8% so với 42,8%."
 tags: [VLA, Force, Tactile, Paper Notes, π0.5]
 ---
 
 :::en
-Paper: [arXiv 2601.20321](https://arxiv.org/abs/2601.20321) (January 2026).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2601.20321](https://arxiv.org/abs/2601.20321) · 01/2026 · built on π0.5
 
-## The pain it cures
+**PROBLEM** A vision-based tactile sensor shows how the gel *deforms*, not how hard it is pressed. VLAs built on it remain "force-blind".
 
-Earlier tactile VLAs treat a vision-based tactile sensor (VBTS) image as one more picture. But the image shows how the gel **deforms**, not how hard it is pressed. TaF-VLA's idea: teach a tactile encoder to predict **force-like latents** first, using a large dataset that pairs tactile images with a real 6-axis F/T sensor and a pressure array, then feed the resulting tokens to the policy.
+**WHAT FAILED BEFORE** Methods such as FreeTacMan treat tactile images "as auxiliary visual textures" (the paper's words), missing the link between deformation and force. FreeTacMan scores 42.8%.
 
-## Try the naive way first
+**IDEA** Pretrain a TaF-Adapter that pulls each tactile-image sequence towards the matching real force (6-axis F/T + 12×12 pressure map) by contrastive learning, then feed its tokens, frozen, to π0.5's action expert.
 
-Feed the tactile image to the policy as one more camera view. FreeTacMan, built on ACT, does essentially this. In TaF-VLA's tests it averaged 42.8%: better than vision-only π0.5 (37.1%), far below 64.8%. An image encoder learns what the gel looks like, not how hard it is pressed.
+**RESULT** 64.8% average success vs 37.1% for vision-only π0.5 and 42.8% for FreeTacMan.
+</div>
 
-## Work it by hand
+## 1. The problem: tactile read as texture
 
-**Quantising a force feature.** Say the pressure MLP outputs $z' = (0.9,\ 0.1)$ and the codebook holds $(1,0)$, $(0,1)$, $(0.5,0.5)$. Squared distances:
+[[flow]]
+- Before~FreeTacMan | Tactile image > !Image encoder~learns texture! > Policy | knows how the gel looks, not how hard it is pressed: 42.8%
++ TaF-VLA | Tactile image > *TaF-Adapter~aligned to F/T + pressure* > π0.5 action expert | tokens carry force meaning: 64.8%
+[[/flow]] The change is in what the tactile encoder is trained to agree with: real force instead of nothing.
 
-$$(0.9-1)^2 + 0.1^2 = 0.02,\qquad 0.9^2 + 0.9^2 = 1.62,\qquad 0.4^2 + 0.4^2 = 0.32$$
+## 2. Architecture
 
-The nearest code is $(1, 0)$, so the continuous feature snaps to that "physical anchor". Similar contacts land on the same code, which gives the contrastive step a stable target.
+[[fig:taf-vla]] Stage (a) aligns a tactile encoder with quantised force codes by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.
 
-**One InfoNCE term.** A batch of two pairs. The tactile embedding $z_1$ has cosine similarity $0.9$ with its own force code $c_1$ and $0.2$ with the other one, $c_2$. With temperature $\tau = 0.1$ (an illustrative value; the paper does not give it):
+| Block | Input | Output | Role |
+|---|---|---|---|
+| Force encoder | window of 5: pressure map $F'$ (12×12), wrench $F''$ (6) | codes $c^*$ (two VQ codebooks) | stable "physical anchors" |
+| Tactile encoder | window of 5 tactile images | $z^*$ (ViT + causal Transformer) | what the adapter outputs later |
+| InfoNCE | pairs $(z^*, c^*)$ | loss | pull matching pairs together |
+| π0.5 action expert | VLM features $\phi_t$, $z^{tac}_t$, proprio $q_t$ | action chunk | policy, Euler step 0.1 |
 
-$$L_1 = -\log\frac{e^{0.9/0.1}}{e^{0.9/0.1} + e^{0.2/0.1}} = -\log\frac{e^{9}}{e^{9} + e^{2}} = \log(1 + e^{-7}) \approx 0.0009$$
+## 3. Work it by hand: one InfoNCE term
 
-If instead the similarities were $0.5$ and $0.4$, the loss would be $\log(1 + e^{-1}) \approx 0.313$. The loss is small only when a tactile embedding is clearly closer to **its own** force code than to anyone else's.
+<div class="calc" markdown="1">
+Calculation card
 
-## Architecture
+**What and why.** InfoNCE is the loss that teaches the tactile encoder to agree with real force. Computing it shows when it is small (well aligned) and when it is large.
 
-[[fig:taf-vla]] Stage (a) aligns a tactile encoder with a quantised force code by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $z^*_1$ | tactile embedding of sample 1 | input | – |
+| $s_+$ | cosine similarity of $z^*_1$ with its own force code $c^*_1$ | input | 0.9 |
+| $s_-$ | similarity with the other force code $c^*_2$ | input | 0.2 |
+| $\tau$ | temperature | constant | 0.1 (illustrative; not given in the paper) |
+| $L_1$ | loss for sample 1 | output | – |
 
-**(a) Tactile–force alignment (self-supervised).**
+**Formula** (batch of two pairs)
 
-- **Force side.** Over a window of $N=5$ steps, a pressure map $F' \in \mathbb{R}^{12\times12}$ and a wrench $F'' \in \mathbb{R}^6$ each pass an MLP, then are quantised against two learnable codebooks (VQ-VAE style). The concatenated nearest codes form $c^*$. Decoders reconstruct the signals to prevent codebook collapse.
-- **Tactile side.** Each tactile frame goes through a ViT; a learnable summary token and a causal Transformer give the holistic embedding $z^*$.
-- **Loss.** $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, with InfoNCE pulling $z^*$ towards its paired $c^*$.
+$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$
 
-**(b) Policy integration.** The backbone is π0.5, a flow-matching policy. A vision-language encoder turns the global and wrist images and the instruction into conditioning $\phi_t$. The frozen TaF-Adapter provides force-aligned tactile tokens $z^{tac}_t$. The action expert is conditioned on $(\phi_t, z^{tac}_t, q_t)$ and integrates the flow with step $\delta = 0.1$.
+**Steps**
 
-## Data
+1. $(s_- - s_+)/\tau = (0.2 - 0.9)/0.1 = -7$.
+2. $e^{-7} \approx 0.00091$.
+3. $L_1 = \log(1.00091) \approx 0.0009$.
 
-The TaF-Dataset has over 10 million synchronised tactile frames, 6-axis F/T and 12×12 pressure maps, collected by an automated device with more than 60 indenters (40 rigid, 20 deformable) at 30 Hz. Policy data: over 10,000 force-aware episodes across more than 20 scenarios.
+Badly aligned case, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_1 = \log(1 + e^{-1}) = \log 1.368 \approx 0.313$.
 
-## Results
+**Result.** 0.0009 when the tactile embedding is clearly closer to its own force; 0.313 when it barely is.
 
-Success rate, 15 rollouts per task, averaged over tasks:
+**Why it matters.** The loss only goes to zero when each tactile sequence points to *its own* force reading, so the adapter's output becomes a force-like signal.
+</div>
 
-| Method | Avg success |
+## 4. Results
+
+[[bars:%]] ACT=26.7; Diffusion Policy=29.5; π0.5 (vision only)=37.1; FreeTacMan=42.8; *TaF-VLA=64.8* || Average success, 15 rollouts per task.
+
+- The adapter helps other backbones too: ACT 26.7% → 47.6%, Diffusion Policy 29.5% → 44.7%.
+- Ablation (whiteboard): full 60.0%, no history 26.7%, one shared codebook 13.3%.
+
+## 5. Data
+
+| Item | Value |
 |---|---|
-| ACT | 26.7% |
-| Diffusion Policy | 29.5% |
-| π0.5 (vision only) | 37.1% |
-| FreeTacMan | 42.8% |
-| TaF-VLA | **64.8%** |
+| TaF-Dataset | > 10 million synchronised tactile, 6-axis F/T and 12×12 pressure frames |
+| Rig | automated press-and-perturb device, > 60 indenters, 30 Hz |
+| Policy data | > 10,000 force-aware episodes, > 20 scenarios |
 
-The adapter also helps other backbones: ACT 26.7% to 47.6%, Diffusion Policy 29.5% to 44.7%. On the alignment ablation (three tasks), removing history (N=1) or sharing one codebook between modalities cut success sharply (for example whiteboard 60.0% to 26.7% and 13.3%).
+## 6. Caveats
 
-## Caveats
+- The task count (8 in text, 7 in Table I) and the number of baselines are inconsistent in the paper.
+- The adapter is called frozen, yet the text also mentions task-specific fine-tuning.
 
-The paper is inconsistent about the task count (eight in the text, seven columns in Table I) and the number of baselines. The token position inside π0.5's sequence, the policy control rate and the action chunk length are not stated. The text says the adapter is frozen but also mentions task-specific fine-tuning; it is not reconciled.
-**Carry forward:** TaF-VLA needed a custom rig and 10 million real frames. [Tabero](tabero.html) gets vision–touch–force data by replaying existing trajectories in a tactile simulator, and makes the word "gently" actually lower the force.
+**Carry forward:** TaF-VLA needed a custom rig and 10 million real frames. [Tabero](tabero.html) gets vision–touch–force data by replaying existing trajectories in a tactile simulator.
 
-**Check question:** with $\tau = 0.1$, the positive pair has similarity $0.8$ and the only negative $0.6$. What is the InfoNCE loss?
+**Check question:** $\tau = 0.1$, $s_+ = 0.8$, $s_- = 0.6$. What is $L_1$?
 
-*Answer:* $L = \log(1 + e^{(0.6-0.8)/0.1}) = \log(1 + e^{-2}) = \log(1.135) \approx 0.127$.
+<details markdown="1">
+<summary>Answer</summary>
+
+$(0.6 - 0.8)/0.1 = -2$; $L_1 = \log(1 + e^{-2}) = \log 1.135 \approx 0.127$.
+</details>
 :::
 
 :::vi
-Bài báo: [arXiv 2601.20321](https://arxiv.org/abs/2601.20321) (tháng 1/2026).
+<div class="tldr" markdown="1">
+**PAPER** [arXiv 2601.20321](https://arxiv.org/abs/2601.20321) · 01/2026 · nền π0.5
 
-## Vấn đề cần chữa
+**VẤN ĐỀ** Cảm biến xúc giác thị giác cho thấy gel *biến dạng* ra sao, không cho biết bị ấn mạnh đến đâu. VLA xây trên nó vẫn "mù lực".
 
-Các VLA xúc giác trước đây coi ảnh từ cảm biến xúc giác thị giác (VBTS) như thêm một bức ảnh. Nhưng ảnh chỉ cho thấy gel **biến dạng** ra sao, không cho biết ấn mạnh đến đâu. Ý tưởng của TaF-VLA: dạy bộ mã hóa xúc giác dự đoán **latent giống lực** trước, dùng một bộ dữ liệu lớn ghép ảnh xúc giác với cảm biến F/T 6 trục thật và ma trận áp suất, rồi mới đưa các token đó cho chính sách.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Các phương pháp như FreeTacMan coi ảnh xúc giác "như kết cấu thị giác phụ trợ" (lời bài báo), bỏ lỡ mối liên hệ giữa biến dạng và lực. FreeTacMan đạt 42,8%.
 
-## Thử cách ngây thơ trước
+**Ý TƯỞNG** Pretrain một TaF-Adapter kéo mỗi chuỗi ảnh xúc giác về phía lực thật tương ứng (F/T 6 trục + bản đồ áp suất 12×12) bằng học tương phản, rồi đưa token của nó (đóng băng) vào action expert của π0.5.
 
-Đưa ảnh xúc giác cho chính sách như thêm một góc camera. FreeTacMan, xây trên ACT, về cơ bản làm vậy. Trong thử nghiệm của TaF-VLA nó đạt trung bình 42,8%: hơn π0.5 chỉ dùng thị giác (37,1%), nhưng kém xa 64,8%. Một encoder ảnh học được gel trông thế nào, chứ không học được nó bị ấn mạnh đến đâu.
+**KẾT QUẢ** Thành công trung bình 64,8%, so với 37,1% của π0.5 chỉ dùng thị giác và 42,8% của FreeTacMan.
+</div>
 
-## Tính tay
+## 1. Vấn đề: xúc giác bị đọc như kết cấu bề mặt
 
-**Lượng tử hóa một đặc trưng lực.** Giả sử MLP áp suất cho ra $z' = (0.9,\ 0.1)$ và codebook có $(1,0)$, $(0,1)$, $(0.5,0.5)$. Bình phương khoảng cách:
+[[flow]]
+- Trước~FreeTacMan | Ảnh xúc giác > !Encoder ảnh~học kết cấu! > Chính sách | biết gel trông thế nào, không biết bị ấn mạnh đến đâu: 42,8%
++ TaF-VLA | Ảnh xúc giác > *TaF-Adapter~căn với F/T + áp suất* > Action expert π0.5 | token mang nghĩa lực: 64,8%
+[[/flow]] Thay đổi nằm ở thứ mà bộ mã hóa xúc giác được dạy để khớp với: lực thật, thay vì không gì cả.
 
-$$(0.9-1)^2 + 0.1^2 = 0.02,\qquad 0.9^2 + 0.9^2 = 1.62,\qquad 0.4^2 + 0.4^2 = 0.32$$
+## 2. Kiến trúc
 
-Mã gần nhất là $(1, 0)$, nên đặc trưng liên tục bị "hút" về mỏ neo vật lý đó. Các tiếp xúc giống nhau rơi vào cùng một mã, cho bước tương phản một mục tiêu ổn định.
+[[fig:taf-vla]] Giai đoạn (a) căn bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đóng băng vào action expert của π0.5.
 
-**Một số hạng InfoNCE.** Batch có hai cặp. Embedding xúc giác $z_1$ có cosine similarity $0.9$ với mã lực của chính nó $c_1$ và $0.2$ với mã còn lại $c_2$. Với nhiệt độ $\tau = 0.1$ (giá trị minh họa; bài không nêu):
+| Khối | Input | Output | Vai trò |
+|---|---|---|---|
+| Bộ mã hóa lực | cửa sổ 5 bước: bản đồ áp suất $F'$ (12×12), wrench $F''$ (6) | mã $c^*$ (hai codebook VQ) | "mỏ neo vật lý" ổn định |
+| Bộ mã hóa xúc giác | cửa sổ 5 ảnh xúc giác | $z^*$ (ViT + Transformer nhân quả) | thứ adapter xuất ra sau này |
+| InfoNCE | các cặp $(z^*, c^*)$ | loss | kéo các cặp khớp lại gần |
+| Action expert π0.5 | đặc trưng VLM $\phi_t$, $z^{tac}_t$, proprio $q_t$ | chunk hành động | chính sách, bước Euler 0,1 |
 
-$$L_1 = -\log\frac{e^{0.9/0.1}}{e^{0.9/0.1} + e^{0.2/0.1}} = -\log\frac{e^{9}}{e^{9} + e^{2}} = \log(1 + e^{-7}) \approx 0.0009$$
+## 3. Tính tay: một số hạng InfoNCE
 
-Nếu hai similarity là $0.5$ và $0.4$ thì loss là $\log(1 + e^{-1}) \approx 0.313$. Loss chỉ nhỏ khi embedding xúc giác gần mã lực **của chính nó** rõ rệt hơn mã của cặp khác.
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-## Kiến trúc
+**Tính gì và vì sao.** InfoNCE là loss dạy bộ mã hóa xúc giác khớp với lực thật. Tính nó để thấy khi nào loss nhỏ (căn tốt) và khi nào lớn.
 
-[[fig:taf-vla]] Giai đoạn (a) căn chỉnh bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đã đóng băng vào action expert của π0.5.
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $z^*_1$ | embedding xúc giác của mẫu 1 | input | – |
+| $s_+$ | cosine similarity giữa $z^*_1$ và mã lực của chính nó $c^*_1$ | input | 0.9 |
+| $s_-$ | similarity với mã lực còn lại $c^*_2$ | input | 0.2 |
+| $\tau$ | nhiệt độ | hằng số | 0.1 (minh họa; bài không nêu) |
+| $L_1$ | loss của mẫu 1 | output | – |
 
-**(a) Căn chỉnh xúc giác–lực (tự giám sát).**
+**Công thức** (batch hai cặp)
 
-- **Phía lực.** Trong cửa sổ $N=5$ bước, bản đồ áp suất $F' \in \mathbb{R}^{12\times12}$ và wrench $F'' \in \mathbb{R}^6$ mỗi cái qua một MLP, rồi được lượng tử hóa theo hai codebook học được (kiểu VQ-VAE). Các mã gần nhất ghép lại thành $c^*$. Decoder tái tạo tín hiệu để tránh sụp codebook.
-- **Phía xúc giác.** Mỗi khung xúc giác qua một ViT; token tóm tắt học được cùng một Transformer nhân quả cho ra embedding tổng thể $z^*$.
-- **Loss.** $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, trong đó InfoNCE kéo $z^*$ về $c^*$ cùng cặp.
+$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$
 
-**(b) Tích hợp chính sách.** Backbone là π0.5, chính sách flow-matching. Một encoder thị giác-ngôn ngữ biến ảnh toàn cảnh, ảnh cổ tay và câu lệnh thành điều kiện $\phi_t$. TaF-Adapter đã đóng băng cung cấp token xúc giác đã căn với lực $z^{tac}_t$. Action expert nhận điều kiện $(\phi_t, z^{tac}_t, q_t)$ và tích phân dòng với bước $\delta = 0{,}1$.
+**Từng bước**
 
-## Dữ liệu
+1. $(s_- - s_+)/\tau = (0.2 - 0.9)/0.1 = -7$.
+2. $e^{-7} \approx 0.00091$.
+3. $L_1 = \log(1.00091) \approx 0.0009$.
 
-TaF-Dataset có hơn 10 triệu khung xúc giác đồng bộ, F/T 6 trục và bản đồ áp suất 12×12, thu bằng thiết bị tự động với hơn 60 vật ấn (40 cứng, 20 biến dạng) ở 30 Hz. Dữ liệu chính sách: hơn 10.000 episode có nhận biết lực trên hơn 20 kịch bản.
+Trường hợp căn kém, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_1 = \log(1 + e^{-1}) = \log 1.368 \approx 0.313$.
 
-## Kết quả
+**Kết quả.** 0,0009 khi embedding xúc giác gần lực của chính nó rõ rệt; 0,313 khi chỉ gần hơn chút ít.
 
-Tỉ lệ thành công, 15 lượt mỗi task, trung bình theo task:
+**Ý nghĩa.** Loss chỉ về 0 khi mỗi chuỗi xúc giác chỉ đúng về *lực của chính nó*, nên đầu ra của adapter trở thành một tín hiệu giống lực.
+</div>
 
-| Phương pháp | Thành công TB |
+## 4. Kết quả
+
+[[bars:%]] ACT=26.7; Diffusion Policy=29.5; π0.5 (chỉ thị giác)=37.1; FreeTacMan=42.8; *TaF-VLA=64.8* || Thành công trung bình, 15 lượt mỗi task.
+
+- Adapter giúp cả backbone khác: ACT 26,7% → 47,6%, Diffusion Policy 29,5% → 44,7%.
+- Ablation (lau bảng): đầy đủ 60,0%, không lịch sử 26,7%, dùng chung một codebook 13,3%.
+
+## 5. Dữ liệu
+
+| Mục | Giá trị |
 |---|---|
-| ACT | 26,7% |
-| Diffusion Policy | 29,5% |
-| π0.5 (chỉ thị giác) | 37,1% |
-| FreeTacMan | 42,8% |
-| TaF-VLA | **64,8%** |
+| TaF-Dataset | > 10 triệu khung đồng bộ: xúc giác, F/T 6 trục, áp suất 12×12 |
+| Thiết bị | máy ấn-và-nhiễu tự động, > 60 vật ấn, 30 Hz |
+| Dữ liệu chính sách | > 10.000 episode có lực, > 20 kịch bản |
 
-Adapter cũng giúp các backbone khác: ACT từ 26,7% lên 47,6%, Diffusion Policy từ 29,5% lên 44,7%. Trong ablation căn chỉnh (ba task), bỏ lịch sử (N=1) hoặc dùng chung một codebook cho hai modality làm tụt mạnh (ví dụ whiteboard từ 60,0% xuống 26,7% và 13,3%).
+## 6. Lưu ý
 
-## Lưu ý
+- Số task (8 trong văn bản, 7 ở Bảng I) và số baseline không nhất quán trong bài.
+- Adapter được gọi là đóng băng, nhưng văn bản cũng nhắc fine-tune theo task.
 
-Bài không nhất quán về số task (tám trong văn bản, bảy cột ở Bảng I) và số baseline. Vị trí token trong chuỗi của π0.5, tần số điều khiển và độ dài action chunk không được nêu. Văn bản nói adapter bị đóng băng nhưng cũng nhắc đến fine-tune theo task; hai điều này không được dung hòa.
+**Mang sang bài sau:** TaF-VLA cần một thiết bị tự chế và 10 triệu khung thật. [Tabero](tabero.html) có dữ liệu thị giác–xúc giác–lực bằng cách phát lại quỹ đạo sẵn có trong mô phỏng xúc giác.
 
-**Mang theo sang bài sau:** TaF-VLA cần một thiết bị tự chế và 10 triệu khung hình thật. [Tabero](tabero.html) có dữ liệu thị giác–xúc giác–lực bằng cách phát lại quỹ đạo có sẵn trong mô phỏng xúc giác, và làm cho chữ "gently" thực sự giảm lực.
+**Câu kiểm tra:** $\tau = 0.1$, $s_+ = 0.8$, $s_- = 0.6$. $L_1$ bằng bao nhiêu?
 
-**Câu kiểm tra:** với $\tau = 0.1$, cặp dương có similarity $0.8$ và cặp âm duy nhất $0.6$. Loss InfoNCE bằng bao nhiêu?
+<details markdown="1">
+<summary>Đáp án</summary>
 
-*Đáp án:* $L = \log(1 + e^{(0.6-0.8)/0.1}) = \log(1 + e^{-2}) = \log(1.135) \approx 0.127$.
+$(0.6 - 0.8)/0.1 = -2$; $L_1 = \log(1 + e^{-2}) = \log 1.135 \approx 0.127$.
+</details>
 :::

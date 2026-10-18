@@ -1,0 +1,90 @@
+/* ==========================================================
+   Thành phần dạng cheatsheet cho trang bài viết (blog + Learn VLA)
+   - công thức KaTeX, sơ đồ SVG, bảng
+   - thẻ TL;DR, thẻ "tính tay", đáp án ẩn
+   ========================================================== */
+
+.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+
+/* ---------- Sơ đồ ---------- */
+.post-body figure.diagram {
+  box-sizing: border-box;
+  width: min(1080px, calc(100vw - 32px));
+  margin: 28px 0 28px 50%;
+  transform: translateX(-50%);
+  padding: 14px;
+  border: 2px solid var(--ink);
+  background: var(--cream-2);
+  overflow-x: auto;
+}
+.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+.post-body figure.diagram svg.dg-natural { width: auto; min-width: 0; max-width: 100%; margin: 0 auto; }
+.post-body figure.diagram.compact {
+  width: auto;
+  margin: 22px 0;
+  transform: none;
+  border-width: 1px;
+  border-color: var(--border-2, var(--ink-4));
+}
+.post-body figure.diagram.compact svg.dg-natural { margin: 0; }
+.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); }
+
+.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
+.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
+.dg-badbox { fill: #b3261e; fill-opacity: .1; stroke: #b3261e; stroke-width: 1.8; }
+.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
+.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
+.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
+.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
+.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
+.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
+.dg-m { fill: var(--ink); }
+.dg-lab { font: 700 11px var(--font-mono); letter-spacing: .05em; }
+.dg-note { font: 600 11.5px var(--font-mono); }
+.dg-red { fill: #b3261e; }
+.dg-green { fill: #2e7d32; }
+.dg-mute { fill: var(--ink-4); }
+.dg-bar { fill: var(--ink-4); fill-opacity: .45; }
+.dg-barlabel { fill: var(--ink-2, var(--ink)); font: 500 11.5px var(--font-mono); }
+.dg-barval { fill: var(--ink); font: 700 11.5px var(--font-mono); }
+
+/* ---------- Bảng ---------- */
+.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; line-height: 1.5; }
+.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+.post-body th { font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; color: var(--ink-4); text-transform: uppercase; }
+
+/* ---------- Thẻ TL;DR ---------- */
+.post-body .tldr {
+  margin: 0 0 32px;
+  padding: 16px 20px;
+  border: 2px solid var(--ink);
+  background: var(--cream-2);
+  box-shadow: 6px 6px 0 var(--amber);
+}
+.post-body .tldr p { margin: 0 0 6px; font-size: 15.5px; line-height: 1.6; }
+.post-body .tldr p:last-child { margin-bottom: 0; }
+.post-body .tldr p > strong:first-child { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .04em; color: var(--amber-a11y); margin-right: 4px; }
+
+/* ---------- Thẻ "tính tay" ---------- */
+.post-body .calc {
+  margin: 24px 0;
+  padding: 16px 20px 6px;
+  border: 2px dashed var(--ink-4);
+  background: var(--cream);
+}
+.post-body .calc > p:first-child { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; }
+.post-body .calc p, .post-body .calc li { font-size: 15.5px; }
+.post-body .calc table { font-size: 14px; }
+
+/* ---------- Đáp án ẩn ---------- */
+.post-body details {
+  margin: 8px 0 24px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--amber);
+  background: var(--cream-2);
+}
+.post-body details summary { cursor: pointer; font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--amber-a11y); }
+.post-body details[open] summary { margin-bottom: 8px; }
+.post-body details p { margin-bottom: 8px; font-size: 15.5px; }

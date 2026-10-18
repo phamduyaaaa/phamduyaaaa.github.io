@@ -1,0 +1,22 @@
+/* Tiêu đề tiếng Việt.
+   Syne (font tiêu đề) không có glyph tiếng Việt: các chữ như Ư, Ở, Ầ rơi sang
+   font dự phòng nên một tiêu đề in hoa bị lẫn hai kiểu chữ. Letter-spacing âm
+   mạnh còn làm dấu chồng đè lên nhau. Khi trang ở tiếng Việt, dùng Be Vietnam Pro
+   và nới khoảng cách chữ, chiều cao dòng cho tiêu đề lớn. */
+html[lang="vi"] {
+  --font-display: 'Be Vietnam Pro', 'Arial Black', sans-serif;
+}
+
+html[lang="vi"] .blog-hero h1,
+html[lang="vi"] .post-header h1 {
+  letter-spacing: -0.015em;
+  line-height: 1.22;
+}
+
+html[lang="vi"] .post-body h2,
+html[lang="vi"] .post-body h3,
+html[lang="vi"] .post-title,
+html[lang="vi"] .toc-group-title,
+html[lang="vi"] .toc-item {
+  letter-spacing: -0.005em;
+}

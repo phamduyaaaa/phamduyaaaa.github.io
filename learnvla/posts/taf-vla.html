@@ -3,40 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.">
+<meta name="description" content="Earlier visuo-tactile policies such as FreeTacMan read a gel image as texture. TaF-VLA first aligns tactile images with real force over 10 million paired frames, then plugs the frozen adapter into π0.5: 64.8% vs 42.8%.">
 <title>TaF-VLA: Aligning Tactile Images with Force Before the VLA · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TaF-VLA: Aligning Tactile Images with Force Before the VLA">
-<meta property="og:description" content="A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.">
+<meta property="og:description" content="Earlier visuo-tactile policies such as FreeTacMan read a gel image as texture. TaF-VLA first aligns tactile images with real force over 10 million paired frames, then plugs the frozen adapter into π0.5: 64.8% vs 42.8%.">
 <meta property="og:type" content="article">
 
-<link rel="stylesheet" href="../../styles/main.css?v=cursor-fix">
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<style>
-.post-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
-.post-body figure.diagram { box-sizing: border-box; width: min(1080px, calc(100vw - 32px)); margin: 28px 0 28px 50%; transform: translateX(-50%); padding: 14px; border: 2px solid var(--ink); background: var(--cream-2); overflow-x: auto; }
-.post-body figure.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
-.post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid var(--border); }
-.post-body figure.diagram figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); }
-.dg-box { fill: var(--cream); stroke: var(--ink); stroke-width: 1.5; }
-.dg-key { fill: var(--amber); fill-opacity: .38; stroke: var(--ink); stroke-width: 1.5; }
-.dg-ext { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.dg-grp { fill: none; stroke: var(--ink-4); stroke-width: 1.2; stroke-dasharray: 2 4; }
-.dg-t { fill: var(--ink); font: 600 12.5px var(--font-mono); }
-.dg-s { fill: var(--ink-3); font: 500 10.5px var(--font-mono); }
-.dg-h { fill: var(--ink-4); font: 700 10.5px var(--font-mono); letter-spacing: .08em; }
-.dg-a { fill: none; stroke: var(--ink); stroke-width: 1.5; marker-end: url(#dg-arrow); }
-.dg-ad { fill: none; stroke: var(--amber-a11y); stroke-width: 1.5; stroke-dasharray: 5 3; marker-end: url(#dg-arrow); }
-.dg-l { fill: var(--amber-a11y); font: 600 10.5px var(--font-mono); }
-.dg-m { fill: var(--ink); }
-</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
@@ -84,28 +66,25 @@
     <h1 data-en>TaF-VLA: Aligning Tactile Images with Force Before the VLA</h1>
     <h1 data-vi>TaF-VLA: Căn chỉnh ảnh xúc giác với lực trước khi vào VLA</h1>
 
-    <p class="post-excerpt-lead" data-en>A vision-based tactile image shows deformation, not force. TaF-VLA first aligns tactile sequences with real force/pressure signals by contrastive learning, then plugs the frozen adapter into π0.5.</p>
-    <p class="post-excerpt-lead" data-vi>Ảnh xúc giác thị giác cho thấy biến dạng chứ không phải lực. TaF-VLA trước hết căn chỉnh chuỗi xúc giác với tín hiệu lực/áp suất thật bằng học tương phản, rồi gắn adapter đã đóng băng vào π0.5.</p>
+    <p class="post-excerpt-lead" data-en>Earlier visuo-tactile policies such as FreeTacMan read a gel image as texture. TaF-VLA first aligns tactile images with real force over 10 million paired frames, then plugs the frozen adapter into π0.5: 64.8% vs 42.8%.</p>
+    <p class="post-excerpt-lead" data-vi>Các chính sách thị giác-xúc giác trước, như FreeTacMan, đọc ảnh gel như một kết cấu bề mặt. TaF-VLA trước hết căn ảnh xúc giác với lực thật trên 10 triệu cặp khung, rồi gắn adapter đóng băng vào π0.5: 64,8% so với 42,8%.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
   </header>
 
   <article class="post-body">
     <div data-en>
-<p>Paper: <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> (January 2026).</p>
-<h2>The pain it cures</h2>
-<p>Earlier tactile VLAs treat a vision-based tactile sensor (VBTS) image as one more picture. But the image shows how the gel <strong>deforms</strong>, not how hard it is pressed. TaF-VLA's idea: teach a tactile encoder to predict <strong>force-like latents</strong> first, using a large dataset that pairs tactile images with a real 6-axis F/T sensor and a pressure array, then feed the resulting tokens to the policy.</p>
-<h2>Try the naive way first</h2>
-<p>Feed the tactile image to the policy as one more camera view. FreeTacMan, built on ACT, does essentially this. In TaF-VLA's tests it averaged 42.8%: better than vision-only π0.5 (37.1%), far below 64.8%. An image encoder learns what the gel looks like, not how hard it is pressed.</p>
-<h2>Work it by hand</h2>
-<p><strong>Quantising a force feature.</strong> Say the pressure MLP outputs $z' = (0.9,\ 0.1)$ and the codebook holds $(1,0)$, $(0,1)$, $(0.5,0.5)$. Squared distances:</p>
-<p>$$(0.9-1)^2 + 0.1^2 = 0.02,\qquad 0.9^2 + 0.9^2 = 1.62,\qquad 0.4^2 + 0.4^2 = 0.32$$</p>
-<p>The nearest code is $(1, 0)$, so the continuous feature snaps to that "physical anchor". Similar contacts land on the same code, which gives the contrastive step a stable target.</p>
-<p><strong>One InfoNCE term.</strong> A batch of two pairs. The tactile embedding $z_1$ has cosine similarity $0.9$ with its own force code $c_1$ and $0.2$ with the other one, $c_2$. With temperature $\tau = 0.1$ (an illustrative value; the paper does not give it):</p>
-<p>$$L_1 = -\log\frac{e^{0.9/0.1}}{e^{0.9/0.1} + e^{0.2/0.1}} = -\log\frac{e^{9}}{e^{9} + e^{2}} = \log(1 + e^{-7}) \approx 0.0009$$</p>
-<p>If instead the similarities were $0.5$ and $0.4$, the loss would be $\log(1 + e^{-1}) \approx 0.313$. The loss is small only when a tactile embedding is clearly closer to <strong>its own</strong> force code than to anyone else's.</p>
-<h2>Architecture</h2>
-<figure class="diagram"><svg role="img" aria-label="Stage (a) aligns a tactile encoder with a quantised force code by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> · 01/2026 · built on π0.5</p>
+<p><strong>PROBLEM</strong> A vision-based tactile sensor shows how the gel <em>deforms</em>, not how hard it is pressed. VLAs built on it remain "force-blind".</p>
+<p><strong>WHAT FAILED BEFORE</strong> Methods such as FreeTacMan treat tactile images "as auxiliary visual textures" (the paper's words), missing the link between deformation and force. FreeTacMan scores 42.8%.</p>
+<p><strong>IDEA</strong> Pretrain a TaF-Adapter that pulls each tactile-image sequence towards the matching real force (6-axis F/T + 12×12 pressure map) by contrastive learning, then feed its tokens, frozen, to π0.5's action expert.</p>
+<p><strong>RESULT</strong> 64.8% average success vs 37.1% for vision-only π0.5 and 42.8% for FreeTacMan.</p>
+</div>
+<h2>1. The problem: tactile read as texture</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is in what the tactile encoder is trained to agree with: real force instead of nothing." class="dg-natural" width="680" height="206" viewBox="0 0 680 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">FreeTacMan</text><rect class="dg-box" x="124" y="22" width="125" height="38"/><text class="dg-t" x="186" y="45" text-anchor="middle">Tactile image</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="125" height="54"/><text class="dg-t" x="345" y="37" text-anchor="middle">Image encoder</text><text class="dg-s" x="345" y="53" text-anchor="middle">learns texture</text><path class="dg-a" d="M408 41 H440"/><rect class="dg-box" x="442" y="22" width="96" height="38"/><text class="dg-t" x="490" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="124" y="86">✗ knows how the gel looks, not how hard it is pressed: 42.8%</text><text class="dg-lab dg-green" x="14" y="143">TaF-VLA</text><rect class="dg-box" x="124" y="120" width="125" height="38"/><text class="dg-t" x="186" y="143" text-anchor="middle">Tactile image</text><path class="dg-a" d="M249 139 H281"/><rect class="dg-key" x="283" y="112" width="186" height="54"/><text class="dg-t" x="376" y="135" text-anchor="middle">TaF-Adapter</text><text class="dg-s" x="376" y="151" text-anchor="middle">aligned to F/T + pressure</text><path class="dg-a" d="M469 139 H501"/><rect class="dg-box" x="503" y="120" width="163" height="38"/><text class="dg-t" x="584" y="143" text-anchor="middle">π0.5 action expert</text><text class="dg-note dg-green" x="124" y="184">✓ tokens carry force meaning: 64.8%</text></svg><figcaption>The change is in what the tactile encoder is trained to agree with: real force instead of nothing.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Stage (a) aligns a tactile encoder with quantised force codes by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">(a) TACTILE–FORCE ALIGNMENT (self-supervised)</text>
 <rect class="dg-ext" x="20" y="42" width="160" height="48"/><text class="dg-t" x="100" y="60" text-anchor="middle">Force window N=5</text><text class="dg-s" x="100" y="75" text-anchor="middle">F' 12×12 map, F'' 6-axis</text>
 <rect class="dg-box" x="220" y="42" width="130" height="48"/><text class="dg-t" x="285" y="60" text-anchor="middle">MLP f_φ' f_φ''</text><text class="dg-s" x="285" y="75" text-anchor="middle">z', z''</text>
@@ -129,70 +108,154 @@
 <path class="dg-ad" d="M900 132 V236 H560 V250"/><text class="dg-l" x="730" y="230" text-anchor="middle">force-aligned tactile tokens</text>
 <rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
 <path class="dg-a" d="M640 292 H720"/>
-</svg><figcaption>Stage (a) aligns a tactile encoder with a quantised force code by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.</figcaption></figure>
-<p><strong>(a) Tactile–force alignment (self-supervised).</strong></p>
-<ul>
-<li><strong>Force side.</strong> Over a window of $N=5$ steps, a pressure map $F' \in \mathbb{R}^{12\times12}$ and a wrench $F'' \in \mathbb{R}^6$ each pass an MLP, then are quantised against two learnable codebooks (VQ-VAE style). The concatenated nearest codes form $c^*$. Decoders reconstruct the signals to prevent codebook collapse.</li>
-<li><strong>Tactile side.</strong> Each tactile frame goes through a ViT; a learnable summary token and a causal Transformer give the holistic embedding $z^*$.</li>
-<li><strong>Loss.</strong> $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, with InfoNCE pulling $z^*$ towards its paired $c^*$.</li>
-</ul>
-<p><strong>(b) Policy integration.</strong> The backbone is π0.5, a flow-matching policy. A vision-language encoder turns the global and wrist images and the instruction into conditioning $\phi_t$. The frozen TaF-Adapter provides force-aligned tactile tokens $z^{tac}_t$. The action expert is conditioned on $(\phi_t, z^{tac}_t, q_t)$ and integrates the flow with step $\delta = 0.1$.</p>
-<h2>Data</h2>
-<p>The TaF-Dataset has over 10 million synchronised tactile frames, 6-axis F/T and 12×12 pressure maps, collected by an automated device with more than 60 indenters (40 rigid, 20 deformable) at 30 Hz. Policy data: over 10,000 force-aware episodes across more than 20 scenarios.</p>
-<h2>Results</h2>
-<p>Success rate, 15 rollouts per task, averaged over tasks:</p>
+</svg><figcaption>Stage (a) aligns a tactile encoder with quantised force codes by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Avg success</th>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>ACT</td>
-<td>26.7%</td>
+<td>Force encoder</td>
+<td>window of 5: pressure map $F'$ (12×12), wrench $F''$ (6)</td>
+<td>codes $c^*$ (two VQ codebooks)</td>
+<td>stable "physical anchors"</td>
 </tr>
 <tr>
-<td>Diffusion Policy</td>
-<td>29.5%</td>
+<td>Tactile encoder</td>
+<td>window of 5 tactile images</td>
+<td>$z^*$ (ViT + causal Transformer)</td>
+<td>what the adapter outputs later</td>
 </tr>
 <tr>
-<td>π0.5 (vision only)</td>
-<td>37.1%</td>
+<td>InfoNCE</td>
+<td>pairs $(z^*, c^*)$</td>
+<td>loss</td>
+<td>pull matching pairs together</td>
 </tr>
 <tr>
-<td>FreeTacMan</td>
-<td>42.8%</td>
-</tr>
-<tr>
-<td>TaF-VLA</td>
-<td><strong>64.8%</strong></td>
+<td>π0.5 action expert</td>
+<td>VLM features $\phi_t$, $z^{tac}_t$, proprio $q_t$</td>
+<td>action chunk</td>
+<td>policy, Euler step 0.1</td>
 </tr>
 </tbody>
 </table>
-<p>The adapter also helps other backbones: ACT 26.7% to 47.6%, Diffusion Policy 29.5% to 44.7%. On the alignment ablation (three tasks), removing history (N=1) or sharing one codebook between modalities cut success sharply (for example whiteboard 60.0% to 26.7% and 13.3%).</p>
-<h2>Caveats</h2>
-<p>The paper is inconsistent about the task count (eight in the text, seven columns in Table I) and the number of baselines. The token position inside π0.5's sequence, the policy control rate and the action chunk length are not stated. The text says the adapter is frozen but also mentions task-specific fine-tuning; it is not reconciled.
-<strong>Carry forward:</strong> TaF-VLA needed a custom rig and 10 million real frames. <a href="tabero.html">Tabero</a> gets vision–touch–force data by replaying existing trajectories in a tactile simulator, and makes the word "gently" actually lower the force.</p>
-<p><strong>Check question:</strong> with $\tau = 0.1$, the positive pair has similarity $0.8$ and the only negative $0.6$. What is the InfoNCE loss?</p>
-<p><em>Answer:</em> $L = \log(1 + e^{(0.6-0.8)/0.1}) = \log(1 + e^{-2}) = \log(1.135) \approx 0.127$.</p>
+<h2>3. Work it by hand: one InfoNCE term</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> InfoNCE is the loss that teaches the tactile encoder to agree with real force. Computing it shows when it is small (well aligned) and when it is large.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$z^*_1$</td>
+<td>tactile embedding of sample 1</td>
+<td>input</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$s_+$</td>
+<td>cosine similarity of $z^*_1$ with its own force code $c^*_1$</td>
+<td>input</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>$s_-$</td>
+<td>similarity with the other force code $c^*_2$</td>
+<td>input</td>
+<td>0.2</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>temperature</td>
+<td>constant</td>
+<td>0.1 (illustrative; not given in the paper)</td>
+</tr>
+<tr>
+<td>$L_1$</td>
+<td>loss for sample 1</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (batch of two pairs)</p>
+<p>$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$(s_- - s_+)/\tau = (0.2 - 0.9)/0.1 = -7$.</li>
+<li>$e^{-7} \approx 0.00091$.</li>
+<li>$L_1 = \log(1.00091) \approx 0.0009$.</li>
+</ol>
+<p>Badly aligned case, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_1 = \log(1 + e^{-1}) = \log 1.368 \approx 0.313$.</p>
+<p><strong>Result.</strong> 0.0009 when the tactile embedding is clearly closer to its own force; 0.313 when it barely is.</p>
+<p><strong>Why it matters.</strong> The loss only goes to zero when each tactile sequence points to <em>its own</em> force reading, so the adapter's output becomes a force-like signal.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Average success, 15 rollouts per task." class="dg-natural" width="592" height="162" viewBox="0 0 592 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="132" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="142" y="10" width="96" height="18"/><text class="dg-barval" x="246" y="23">26.7%</text><text class="dg-barlabel" x="132" y="53" text-anchor="end">Diffusion Policy</text><rect class="dg-bar" x="142" y="40" width="106" height="18"/><text class="dg-barval" x="256" y="53">29.5%</text><text class="dg-barlabel" x="132" y="83" text-anchor="end">π0.5 (vision only)</text><rect class="dg-bar" x="142" y="70" width="134" height="18"/><text class="dg-barval" x="284" y="83">37.1%</text><text class="dg-barlabel" x="132" y="113" text-anchor="end">FreeTacMan</text><rect class="dg-bar" x="142" y="100" width="154" height="18"/><text class="dg-barval" x="304" y="113">42.8%</text><text class="dg-barlabel" x="132" y="143" text-anchor="end">TaF-VLA</text><rect class="dg-key" x="142" y="130" width="233" height="18"/><text class="dg-barval" x="383" y="143">64.8%</text></svg><figcaption>Average success, 15 rollouts per task.</figcaption></figure>
+<ul>
+<li>The adapter helps other backbones too: ACT 26.7% → 47.6%, Diffusion Policy 29.5% → 44.7%.</li>
+<li>Ablation (whiteboard): full 60.0%, no history 26.7%, one shared codebook 13.3%.</li>
+</ul>
+<h2>5. Data</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TaF-Dataset</td>
+<td>&gt; 10 million synchronised tactile, 6-axis F/T and 12×12 pressure frames</td>
+</tr>
+<tr>
+<td>Rig</td>
+<td>automated press-and-perturb device, &gt; 60 indenters, 30 Hz</td>
+</tr>
+<tr>
+<td>Policy data</td>
+<td>&gt; 10,000 force-aware episodes, &gt; 20 scenarios</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
+<ul>
+<li>The task count (8 in text, 7 in Table I) and the number of baselines are inconsistent in the paper.</li>
+<li>The adapter is called frozen, yet the text also mentions task-specific fine-tuning.</li>
+</ul>
+<p><strong>Carry forward:</strong> TaF-VLA needed a custom rig and 10 million real frames. <a href="tabero.html">Tabero</a> gets vision–touch–force data by replaying existing trajectories in a tactile simulator.</p>
+<p><strong>Check question:</strong> $\tau = 0.1$, $s_+ = 0.8$, $s_- = 0.6$. What is $L_1$?</p>
+<details>
+<summary>Answer</summary>
+<p>$(0.6 - 0.8)/0.1 = -2$; $L_1 = \log(1 + e^{-2}) = \log 1.135 \approx 0.127$.</p>
+</details>
     </div>
     <div data-vi>
-<p>Bài báo: <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> (tháng 1/2026).</p>
-<h2>Vấn đề cần chữa</h2>
-<p>Các VLA xúc giác trước đây coi ảnh từ cảm biến xúc giác thị giác (VBTS) như thêm một bức ảnh. Nhưng ảnh chỉ cho thấy gel <strong>biến dạng</strong> ra sao, không cho biết ấn mạnh đến đâu. Ý tưởng của TaF-VLA: dạy bộ mã hóa xúc giác dự đoán <strong>latent giống lực</strong> trước, dùng một bộ dữ liệu lớn ghép ảnh xúc giác với cảm biến F/T 6 trục thật và ma trận áp suất, rồi mới đưa các token đó cho chính sách.</p>
-<h2>Thử cách ngây thơ trước</h2>
-<p>Đưa ảnh xúc giác cho chính sách như thêm một góc camera. FreeTacMan, xây trên ACT, về cơ bản làm vậy. Trong thử nghiệm của TaF-VLA nó đạt trung bình 42,8%: hơn π0.5 chỉ dùng thị giác (37,1%), nhưng kém xa 64,8%. Một encoder ảnh học được gel trông thế nào, chứ không học được nó bị ấn mạnh đến đâu.</p>
-<h2>Tính tay</h2>
-<p><strong>Lượng tử hóa một đặc trưng lực.</strong> Giả sử MLP áp suất cho ra $z' = (0.9,\ 0.1)$ và codebook có $(1,0)$, $(0,1)$, $(0.5,0.5)$. Bình phương khoảng cách:</p>
-<p>$$(0.9-1)^2 + 0.1^2 = 0.02,\qquad 0.9^2 + 0.9^2 = 1.62,\qquad 0.4^2 + 0.4^2 = 0.32$$</p>
-<p>Mã gần nhất là $(1, 0)$, nên đặc trưng liên tục bị "hút" về mỏ neo vật lý đó. Các tiếp xúc giống nhau rơi vào cùng một mã, cho bước tương phản một mục tiêu ổn định.</p>
-<p><strong>Một số hạng InfoNCE.</strong> Batch có hai cặp. Embedding xúc giác $z_1$ có cosine similarity $0.9$ với mã lực của chính nó $c_1$ và $0.2$ với mã còn lại $c_2$. Với nhiệt độ $\tau = 0.1$ (giá trị minh họa; bài không nêu):</p>
-<p>$$L_1 = -\log\frac{e^{0.9/0.1}}{e^{0.9/0.1} + e^{0.2/0.1}} = -\log\frac{e^{9}}{e^{9} + e^{2}} = \log(1 + e^{-7}) \approx 0.0009$$</p>
-<p>Nếu hai similarity là $0.5$ và $0.4$ thì loss là $\log(1 + e^{-1}) \approx 0.313$. Loss chỉ nhỏ khi embedding xúc giác gần mã lực <strong>của chính nó</strong> rõ rệt hơn mã của cặp khác.</p>
-<h2>Kiến trúc</h2>
-<figure class="diagram"><svg role="img" aria-label="Giai đoạn (a) căn chỉnh bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đã đóng băng vào action expert của π0.5." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2601.20321">arXiv 2601.20321</a> · 01/2026 · nền π0.5</p>
+<p><strong>VẤN ĐỀ</strong> Cảm biến xúc giác thị giác cho thấy gel <em>biến dạng</em> ra sao, không cho biết bị ấn mạnh đến đâu. VLA xây trên nó vẫn "mù lực".</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các phương pháp như FreeTacMan coi ảnh xúc giác "như kết cấu thị giác phụ trợ" (lời bài báo), bỏ lỡ mối liên hệ giữa biến dạng và lực. FreeTacMan đạt 42,8%.</p>
+<p><strong>Ý TƯỞNG</strong> Pretrain một TaF-Adapter kéo mỗi chuỗi ảnh xúc giác về phía lực thật tương ứng (F/T 6 trục + bản đồ áp suất 12×12) bằng học tương phản, rồi đưa token của nó (đóng băng) vào action expert của π0.5.</p>
+<p><strong>KẾT QUẢ</strong> Thành công trung bình 64,8%, so với 37,1% của π0.5 chỉ dùng thị giác và 42,8% của FreeTacMan.</p>
+</div>
+<h2>1. Vấn đề: xúc giác bị đọc như kết cấu bề mặt</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở thứ mà bộ mã hóa xúc giác được dạy để khớp với: lực thật, thay vì không gì cả." class="dg-natural" width="646" height="206" viewBox="0 0 646 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">FreeTacMan</text><rect class="dg-box" x="124" y="22" width="117" height="38"/><text class="dg-t" x="183" y="45" text-anchor="middle">Ảnh xúc giác</text><path class="dg-a" d="M241 41 H273"/><rect class="dg-badbox" x="275" y="14" width="110" height="54"/><text class="dg-t" x="330" y="37" text-anchor="middle">Encoder ảnh</text><text class="dg-s" x="330" y="53" text-anchor="middle">học kết cấu</text><path class="dg-a" d="M385 41 H417"/><rect class="dg-box" x="419" y="22" width="102" height="38"/><text class="dg-t" x="470" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="124" y="86">✗ biết gel trông thế nào, không biết bị ấn mạnh đến đâu: 42,8%</text><text class="dg-lab dg-green" x="14" y="143">TaF-VLA</text><rect class="dg-box" x="124" y="120" width="117" height="38"/><text class="dg-t" x="183" y="143" text-anchor="middle">Ảnh xúc giác</text><path class="dg-a" d="M241 139 H273"/><rect class="dg-key" x="275" y="112" width="160" height="54"/><text class="dg-t" x="355" y="135" text-anchor="middle">TaF-Adapter</text><text class="dg-s" x="355" y="151" text-anchor="middle">căn với F/T + áp suất</text><path class="dg-a" d="M436 139 H468"/><rect class="dg-box" x="470" y="120" width="163" height="38"/><text class="dg-t" x="551" y="143" text-anchor="middle">Action expert π0.5</text><text class="dg-note dg-green" x="124" y="184">✓ token mang nghĩa lực: 64,8%</text></svg><figcaption>Thay đổi nằm ở thứ mà bộ mã hóa xúc giác được dạy để khớp với: lực thật, thay vì không gì cả.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Giai đoạn (a) căn bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đóng băng vào action expert của π0.5." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">(a) TACTILE–FORCE ALIGNMENT (self-supervised)</text>
 <rect class="dg-ext" x="20" y="42" width="160" height="48"/><text class="dg-t" x="100" y="60" text-anchor="middle">Force window N=5</text><text class="dg-s" x="100" y="75" text-anchor="middle">F' 12×12 map, F'' 6-axis</text>
 <rect class="dg-box" x="220" y="42" width="130" height="48"/><text class="dg-t" x="285" y="60" text-anchor="middle">MLP f_φ' f_φ''</text><text class="dg-s" x="285" y="75" text-anchor="middle">z', z''</text>
@@ -216,54 +279,141 @@
 <path class="dg-ad" d="M900 132 V236 H560 V250"/><text class="dg-l" x="730" y="230" text-anchor="middle">force-aligned tactile tokens</text>
 <rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
 <path class="dg-a" d="M640 292 H720"/>
-</svg><figcaption>Giai đoạn (a) căn chỉnh bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đã đóng băng vào action expert của π0.5.</figcaption></figure>
-<p><strong>(a) Căn chỉnh xúc giác–lực (tự giám sát).</strong></p>
-<ul>
-<li><strong>Phía lực.</strong> Trong cửa sổ $N=5$ bước, bản đồ áp suất $F' \in \mathbb{R}^{12\times12}$ và wrench $F'' \in \mathbb{R}^6$ mỗi cái qua một MLP, rồi được lượng tử hóa theo hai codebook học được (kiểu VQ-VAE). Các mã gần nhất ghép lại thành $c^*$. Decoder tái tạo tín hiệu để tránh sụp codebook.</li>
-<li><strong>Phía xúc giác.</strong> Mỗi khung xúc giác qua một ViT; token tóm tắt học được cùng một Transformer nhân quả cho ra embedding tổng thể $z^*$.</li>
-<li><strong>Loss.</strong> $L = L_{NCE} + \lambda_1 L_{quant} + \lambda_2 L_{recon}$, trong đó InfoNCE kéo $z^*$ về $c^*$ cùng cặp.</li>
-</ul>
-<p><strong>(b) Tích hợp chính sách.</strong> Backbone là π0.5, chính sách flow-matching. Một encoder thị giác-ngôn ngữ biến ảnh toàn cảnh, ảnh cổ tay và câu lệnh thành điều kiện $\phi_t$. TaF-Adapter đã đóng băng cung cấp token xúc giác đã căn với lực $z^{tac}_t$. Action expert nhận điều kiện $(\phi_t, z^{tac}_t, q_t)$ và tích phân dòng với bước $\delta = 0{,}1$.</p>
-<h2>Dữ liệu</h2>
-<p>TaF-Dataset có hơn 10 triệu khung xúc giác đồng bộ, F/T 6 trục và bản đồ áp suất 12×12, thu bằng thiết bị tự động với hơn 60 vật ấn (40 cứng, 20 biến dạng) ở 30 Hz. Dữ liệu chính sách: hơn 10.000 episode có nhận biết lực trên hơn 20 kịch bản.</p>
-<h2>Kết quả</h2>
-<p>Tỉ lệ thành công, 15 lượt mỗi task, trung bình theo task:</p>
+</svg><figcaption>Giai đoạn (a) căn bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đóng băng vào action expert của π0.5.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Phương pháp</th>
-<th>Thành công TB</th>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>ACT</td>
-<td>26,7%</td>
+<td>Bộ mã hóa lực</td>
+<td>cửa sổ 5 bước: bản đồ áp suất $F'$ (12×12), wrench $F''$ (6)</td>
+<td>mã $c^*$ (hai codebook VQ)</td>
+<td>"mỏ neo vật lý" ổn định</td>
 </tr>
 <tr>
-<td>Diffusion Policy</td>
-<td>29,5%</td>
+<td>Bộ mã hóa xúc giác</td>
+<td>cửa sổ 5 ảnh xúc giác</td>
+<td>$z^*$ (ViT + Transformer nhân quả)</td>
+<td>thứ adapter xuất ra sau này</td>
 </tr>
 <tr>
-<td>π0.5 (chỉ thị giác)</td>
-<td>37,1%</td>
+<td>InfoNCE</td>
+<td>các cặp $(z^*, c^*)$</td>
+<td>loss</td>
+<td>kéo các cặp khớp lại gần</td>
 </tr>
 <tr>
-<td>FreeTacMan</td>
-<td>42,8%</td>
-</tr>
-<tr>
-<td>TaF-VLA</td>
-<td><strong>64,8%</strong></td>
+<td>Action expert π0.5</td>
+<td>đặc trưng VLM $\phi_t$, $z^{tac}_t$, proprio $q_t$</td>
+<td>chunk hành động</td>
+<td>chính sách, bước Euler 0,1</td>
 </tr>
 </tbody>
 </table>
-<p>Adapter cũng giúp các backbone khác: ACT từ 26,7% lên 47,6%, Diffusion Policy từ 29,5% lên 44,7%. Trong ablation căn chỉnh (ba task), bỏ lịch sử (N=1) hoặc dùng chung một codebook cho hai modality làm tụt mạnh (ví dụ whiteboard từ 60,0% xuống 26,7% và 13,3%).</p>
-<h2>Lưu ý</h2>
-<p>Bài không nhất quán về số task (tám trong văn bản, bảy cột ở Bảng I) và số baseline. Vị trí token trong chuỗi của π0.5, tần số điều khiển và độ dài action chunk không được nêu. Văn bản nói adapter bị đóng băng nhưng cũng nhắc đến fine-tune theo task; hai điều này không được dung hòa.</p>
-<p><strong>Mang theo sang bài sau:</strong> TaF-VLA cần một thiết bị tự chế và 10 triệu khung hình thật. <a href="tabero.html">Tabero</a> có dữ liệu thị giác–xúc giác–lực bằng cách phát lại quỹ đạo có sẵn trong mô phỏng xúc giác, và làm cho chữ "gently" thực sự giảm lực.</p>
-<p><strong>Câu kiểm tra:</strong> với $\tau = 0.1$, cặp dương có similarity $0.8$ và cặp âm duy nhất $0.6$. Loss InfoNCE bằng bao nhiêu?</p>
-<p><em>Đáp án:</em> $L = \log(1 + e^{(0.6-0.8)/0.1}) = \log(1 + e^{-2}) = \log(1.135) \approx 0.127$.</p>
+<h2>3. Tính tay: một số hạng InfoNCE</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> InfoNCE là loss dạy bộ mã hóa xúc giác khớp với lực thật. Tính nó để thấy khi nào loss nhỏ (căn tốt) và khi nào lớn.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$z^*_1$</td>
+<td>embedding xúc giác của mẫu 1</td>
+<td>input</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$s_+$</td>
+<td>cosine similarity giữa $z^*_1$ và mã lực của chính nó $c^*_1$</td>
+<td>input</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>$s_-$</td>
+<td>similarity với mã lực còn lại $c^*_2$</td>
+<td>input</td>
+<td>0.2</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>nhiệt độ</td>
+<td>hằng số</td>
+<td>0.1 (minh họa; bài không nêu)</td>
+</tr>
+<tr>
+<td>$L_1$</td>
+<td>loss của mẫu 1</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (batch hai cặp)</p>
+<p>$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$(s_- - s_+)/\tau = (0.2 - 0.9)/0.1 = -7$.</li>
+<li>$e^{-7} \approx 0.00091$.</li>
+<li>$L_1 = \log(1.00091) \approx 0.0009$.</li>
+</ol>
+<p>Trường hợp căn kém, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_1 = \log(1 + e^{-1}) = \log 1.368 \approx 0.313$.</p>
+<p><strong>Kết quả.</strong> 0,0009 khi embedding xúc giác gần lực của chính nó rõ rệt; 0,313 khi chỉ gần hơn chút ít.</p>
+<p><strong>Ý nghĩa.</strong> Loss chỉ về 0 khi mỗi chuỗi xúc giác chỉ đúng về <em>lực của chính nó</em>, nên đầu ra của adapter trở thành một tín hiệu giống lực.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình, 15 lượt mỗi task." class="dg-natural" width="599" height="162" viewBox="0 0 599 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="149" y="10" width="96" height="18"/><text class="dg-barval" x="253" y="23">26,7%</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">Diffusion Policy</text><rect class="dg-bar" x="149" y="40" width="106" height="18"/><text class="dg-barval" x="263" y="53">29,5%</text><text class="dg-barlabel" x="139" y="83" text-anchor="end">π0.5 (chỉ thị giác)</text><rect class="dg-bar" x="149" y="70" width="134" height="18"/><text class="dg-barval" x="291" y="83">37,1%</text><text class="dg-barlabel" x="139" y="113" text-anchor="end">FreeTacMan</text><rect class="dg-bar" x="149" y="100" width="154" height="18"/><text class="dg-barval" x="311" y="113">42,8%</text><text class="dg-barlabel" x="139" y="143" text-anchor="end">TaF-VLA</text><rect class="dg-key" x="149" y="130" width="233" height="18"/><text class="dg-barval" x="390" y="143">64,8%</text></svg><figcaption>Thành công trung bình, 15 lượt mỗi task.</figcaption></figure>
+<ul>
+<li>Adapter giúp cả backbone khác: ACT 26,7% → 47,6%, Diffusion Policy 29,5% → 44,7%.</li>
+<li>Ablation (lau bảng): đầy đủ 60,0%, không lịch sử 26,7%, dùng chung một codebook 13,3%.</li>
+</ul>
+<h2>5. Dữ liệu</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TaF-Dataset</td>
+<td>&gt; 10 triệu khung đồng bộ: xúc giác, F/T 6 trục, áp suất 12×12</td>
+</tr>
+<tr>
+<td>Thiết bị</td>
+<td>máy ấn-và-nhiễu tự động, &gt; 60 vật ấn, 30 Hz</td>
+</tr>
+<tr>
+<td>Dữ liệu chính sách</td>
+<td>&gt; 10.000 episode có lực, &gt; 20 kịch bản</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Số task (8 trong văn bản, 7 ở Bảng I) và số baseline không nhất quán trong bài.</li>
+<li>Adapter được gọi là đóng băng, nhưng văn bản cũng nhắc fine-tune theo task.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> TaF-VLA cần một thiết bị tự chế và 10 triệu khung thật. <a href="tabero.html">Tabero</a> có dữ liệu thị giác–xúc giác–lực bằng cách phát lại quỹ đạo sẵn có trong mô phỏng xúc giác.</p>
+<p><strong>Câu kiểm tra:</strong> $\tau = 0.1$, $s_+ = 0.8$, $s_- = 0.6$. $L_1$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$(0.6 - 0.8)/0.1 = -2$; $L_1 = \log(1 + e^{-2}) = \log 1.135 \approx 0.127$.</p>
+</details>
     </div>
   </article>
 

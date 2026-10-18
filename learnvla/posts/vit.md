@@ -9,6 +9,18 @@ tags: [VLA, Foundations, ViT, Transformer]
 ---
 
 :::en
+<div class="tldr" markdown="1">
+**PAPER** ViT, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
+
+**PROBLEM** A Transformer reads a sequence of vectors; an image is a grid. One token per pixel gives 50,176 tokens and about 2.5 billion attention pairs for a 224×224 image.
+
+**IDEA** Cut the image into patches, flatten each, project it linearly to a vector, and add a position vector.
+
+**RESULT** A 224×224 image becomes 256 tokens (14×14 patches) that a Transformer, and later a VLA, can attend over.
+
+**KEY POINT** Without position embeddings the model cannot tell left from right.
+</div>
+
 ## The pain to cure
 
 A Transformer eats a sequence of vectors. An image is a grid of numbers. How do we turn the grid into a sequence without losing anything important?
@@ -105,10 +117,26 @@ Carry forward: the image is now continuous tokens used only as **input**, and no
 
 **Check question:** if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?
 
-*Answer:* the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.
+<details markdown="1">
+<summary>Answer</summary>
+
+the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.
+</details>
 :::
 
 :::vi
+<div class="tldr" markdown="1">
+**PAPER** ViT, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
+
+**VẤN ĐỀ** Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention.
+
+**Ý TƯỞNG** Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector, rồi cộng một vector vị trí.
+
+**KẾT QUẢ** Ảnh 224×224 thành 256 token (patch 14×14) để Transformer, và sau này là VLA, chú ý qua lại.
+
+**ĐIỂM CỐT LÕI** Không có mã vị trí, mô hình không phân biệt được trái với phải.
+</div>
+
 ## Cái đau cần chữa
 
 Transformer ăn một dãy vector. Ảnh lại là một lưới số. Làm sao biến lưới thành dãy mà không mất thứ gì quan trọng?
@@ -205,5 +233,9 @@ Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm **đ�
 
 **Câu kiểm tra:** nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?
 
-*Đáp án:* ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.
+<details markdown="1">
+<summary>Đáp án</summary>
+
+ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.
+</details>
 :::
