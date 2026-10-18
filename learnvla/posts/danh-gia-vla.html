@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A bare success rate from 15 trials hides huge uncertainty, and the same method scores 12% to 60.5% across papers. A cheatsheet of what to report, how to read a confidence interval, and which benchmark measures what.">
+<title>How to Evaluate a VLA: Success Rate Is Not Enough · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="How to Evaluate a VLA: Success Rate Is Not Enough">
+<meta property="og:description" content="A bare success rate from 15 trials hides huge uncertainty, and the same method scores 12% to 60.5% across papers. A cheatsheet of what to report, how to read a confidence interval, and which benchmark measures what.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>How to Evaluate a VLA: Success Rate Is Not Enough</h1>
+    <h1 data-vi>Cách đánh giá VLA: Tỉ lệ thành công là chưa đủ</h1>
+
+    <p class="post-excerpt-lead" data-en>A bare success rate from 15 trials hides huge uncertainty, and the same method scores 12% to 60.5% across papers. A cheatsheet of what to report, how to read a confidence interval, and which benchmark measures what.</p>
+    <p class="post-excerpt-lead" data-vi>Một tỉ lệ thành công trần từ 15 lần thử che giấu độ bất định lớn, và cùng một phương pháp ra từ 12% đến 60,5% giữa các paper. Cheatsheet về nên báo cáo gì, đọc khoảng tin cậy ra sao, và benchmark nào đo điều gì.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Benchmark</span><span class="pill">Evaluation</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>TOPIC</strong> Evaluating VLA policies. No single paper; benchmarks are covered on their own pages (LIBERO, SimplerEnv, CALVIN, RoboTwin).</p>
+<p><strong>PROBLEM</strong> To say "method A beats method B" we need a number we can trust. Robot trials are slow and costly, so each number comes from few rollouts.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Papers report one success percentage, often from about 15 rollouts per task, with different tasks, scenes and protocols. <a href="survey-force-output.html">Survey 3</a> shows ForceVLA scored anywhere from 12% to 60.5% depending on the paper that ran it, so a bare number does not travel between papers.</p>
+<p><strong>IDEA</strong> Report the number <em>with</em> its uncertainty, a partial-credit score, the protocol, and the generalisation split. Compare only under the same protocol.</p>
+<p><strong>RESULT</strong> A checklist (below) and one calculation: the Wilson confidence interval for a success rate.</p>
+</div>
+<h2>1. The problem: a number without error bars</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is to say how sure we are, and under which conditions." class="dg-natural" width="675" height="206" viewBox="0 0 675 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Typical report</text><rect class="dg-box" x="128" y="14" width="96" height="54"/><text class="dg-t" x="176" y="37" text-anchor="middle">Run</text><text class="dg-s" x="176" y="53" text-anchor="middle">15 trials</text><path class="dg-a" d="M224 41 H256"/><rect class="dg-badbox" x="258" y="14" width="186" height="54"/><text class="dg-t" x="351" y="37" text-anchor="middle">One success %</text><text class="dg-s" x="351" y="53" text-anchor="middle">no interval, own protocol</text><path class="dg-a" d="M444 41 H476"/><rect class="dg-box" x="478" y="22" width="96" height="38"/><text class="dg-t" x="526" y="45" text-anchor="middle">Ranking</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ "A beats B" from overlapping noise</text><text class="dg-lab dg-green" x="14" y="143">Better report</text><rect class="dg-box" x="128" y="120" width="117" height="38"/><text class="dg-t" x="186" y="143" text-anchor="middle">Run n trials</text><path class="dg-a" d="M245 139 H277"/><rect class="dg-key" x="279" y="112" width="246" height="54"/><text class="dg-t" x="402" y="135" text-anchor="middle">Success + interval + progress</text><text class="dg-s" x="402" y="151" text-anchor="middle">+ protocol, + splits</text><path class="dg-a" d="M525 139 H557"/><rect class="dg-box" x="559" y="120" width="102" height="38"/><text class="dg-t" x="610" y="143" text-anchor="middle">Comparison</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ only claim what the interval supports</text></svg><figcaption>The change is to say how sure we are, and under which conditions.</figcaption></figure>
+<h2>2. What to measure</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Input</th>
+<th>Output</th>
+<th>Tells you</th>
+<th>Misses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Success rate</td>
+<td>pass/fail per rollout</td>
+<td>fraction in [0, 1]</td>
+<td>does the task finish</td>
+<td><em>how close</em> a failure was</td>
+</tr>
+<tr>
+<td>Progress / partial score</td>
+<td>sub-goal checkpoints</td>
+<td>score per rollout</td>
+<td>where it breaks (reach, grasp, insert)</td>
+<td>depends on how checkpoints are defined</td>
+</tr>
+<tr>
+<td>Average length (CALVIN)</td>
+<td>chain of tasks</td>
+<td>tasks done in a row</td>
+<td>long-horizon robustness</td>
+<td>one early failure ends the chain</td>
+</tr>
+<tr>
+<td>Time / steps</td>
+<td>rollout</td>
+<td>duration</td>
+<td>speed</td>
+<td>quality</td>
+</tr>
+<tr>
+<td>Contact quality (force papers)</td>
+<td>force log</td>
+<td>peak or mean force</td>
+<td>gentle vs crushing</td>
+<td>not shown by pass/fail</td>
+</tr>
+<tr>
+<td>Generalisation split</td>
+<td>held-out objects, scenes, instructions</td>
+<td>success per split</td>
+<td>does it transfer</td>
+<td>needs a separate test set</td>
+</tr>
+</tbody>
+</table>
+<p>Rule of thumb: a force-sensitive task can "succeed" while crushing the object, so contact papers should also report force, not only pass/fail.</p>
+<h2>3. Which benchmark measures what</h2>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Date</th>
+<th>Setting</th>
+<th>Main reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CALVIN</td>
+<td>12/2021</td>
+<td>simulation, language-conditioned</td>
+<td>average number of tasks completed in a row (out of 5)</td>
+</tr>
+<tr>
+<td>LIBERO</td>
+<td>06/2023</td>
+<td>simulation, four suites (Spatial, Object, Goal, Long)</td>
+<td>success per suite: each suite changes one thing</td>
+</tr>
+<tr>
+<td>SimplerEnv</td>
+<td>05/2024</td>
+<td>simulation built to track real-robot results</td>
+<td>does the sim ranking match the real ranking</td>
+</tr>
+<tr>
+<td>RoboTwin</td>
+<td>09/2024</td>
+<td>simulation, two-arm tasks</td>
+<td>bimanual coordination</td>
+</tr>
+<tr>
+<td>Real robot</td>
+<td>–</td>
+<td>your own tasks</td>
+<td>closest to deployment, least comparable</td>
+</tr>
+</tbody>
+</table>
+<p>Simulation is cheap and repeatable. Real robots show what simulation hides (friction, sensor noise), but a lab's setup cannot be copied exactly.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> With $n$ rollouts and $k$ successes, how wide is the plausible range for the true success rate? This decides whether "9/15 beats 6/15" means anything. We use the Wilson interval, which behaves well for small $n$.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>number of rollouts</td>
+<td>input</td>
+<td>15</td>
+</tr>
+<tr>
+<td>$k$</td>
+<td>successes</td>
+<td>input</td>
+<td>9</td>
+</tr>
+<tr>
+<td>$\hat p = k/n$</td>
+<td>observed success rate</td>
+<td>derived</td>
+<td>0.60</td>
+</tr>
+<tr>
+<td>$z$</td>
+<td>normal quantile for 95%</td>
+<td>constant</td>
+<td>1.96</td>
+</tr>
+<tr>
+<td>$[L, U]$</td>
+<td>interval for the true rate</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\text{centre} = \frac{\hat p + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}, \qquad \text{half-width} = \frac{z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
+<p><strong>Steps</strong> ($n = 15$, $k = 9$)</p>
+<ol>
+<li>$z^2 = 3.8416$; $z^2/n = 0.2561$; denominator $= 1.2561$.</li>
+<li>Centre $= (0.60 + 0.1281)/1.2561 = 0.580$.</li>
+<li>Inside the root: $0.6 \times 0.4/15 + 3.8416/900 = 0.0160 + 0.0043 = 0.0203$; root $= 0.1424$.</li>
+<li>Half-width $= 1.96 \times 0.1424 / 1.2561 = 0.222$.</li>
+<li>Interval $= [0.36,\ 0.80]$.</li>
+</ol>
+<p>For 6/15 ($\hat p = 0.4$) the same steps give $[0.20,\ 0.64]$.</p>
+<p><strong>Result.</strong> 9/15 gives 36% to 80%; 6/15 gives 20% to 64%. The intervals overlap broadly, so 60% vs 40% from 15 trials does <strong>not</strong> show that one method is better.</p>
+<p><strong>Why it matters.</strong> The interval narrows slowly, like $1/\sqrt{n}$ (computed with the same steps, $\hat p = 0.6$):</p>
+</div>
+<figure class="diagram compact"><svg role="img" aria-label="Half-width of the 95% Wilson interval for a measured 60% success rate." class="dg-natural" width="565" height="102" viewBox="0 0 565 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="105" y="23" text-anchor="end">n = 15 trials</text><rect class="dg-bar" x="115" y="10" width="313" height="18"/><text class="dg-barval" x="436" y="23">22 pp</text><text class="dg-barlabel" x="105" y="53" text-anchor="end">n = 50 trials</text><rect class="dg-bar" x="115" y="40" width="185" height="18"/><text class="dg-barval" x="308" y="53">13 pp</text><text class="dg-barlabel" x="105" y="83" text-anchor="end">n = 100 trials</text><rect class="dg-key" x="115" y="70" width="128" height="18"/><text class="dg-barval" x="251" y="83">9 pp</text></svg><figcaption>Half-width of the 95% Wilson interval for a measured 60% success rate.</figcaption></figure>
+<h2>4. Reading a results table: checklist</h2>
+<ul>
+<li>How many rollouts per task, and how many tasks? (Small $n$ means wide intervals.)</li>
+<li>Same tasks, scenes, instruction wording and initial conditions for every method?</li>
+<li>Were baselines re-run by the authors, or copied from other papers? (Copied numbers may use another protocol.)</li>
+<li>Is there a held-out split (new objects, scenes, instructions), or only the training setup?</li>
+<li>Do failures count partially? Is force or damage reported for contact tasks?</li>
+<li>Is the gain larger than the interval?</li>
+</ul>
+<p><strong>Carry forward:</strong> every force paper on this site reports success rates; use this card to judge how much each gap really shows. Next: <a href="libero.html">LIBERO</a> in detail.</p>
+<p><strong>Check question:</strong> 3 successes in 5 rollouts gives $\hat p = 0.6$. Is the interval narrower or wider than for 9 in 15?</p>
+<details>
+<summary>Answer</summary>
+<p>Wider. $n = 5$ gives $z^2/n = 0.768$, denominator $1.768$, centre $(0.6 + 0.384)/1.768 = 0.557$; inside the root $0.048 + 0.0384 = 0.0864$ (root $0.294$), half-width $= 1.96 \times 0.294/1.768 = 0.326$. Interval about $[0.23,\ 0.88]$, much wider than $[0.36, 0.80]$ for 9/15.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>CHỦ ĐỀ</strong> Đánh giá chính sách VLA. Không có paper riêng; các benchmark có trang riêng (LIBERO, SimplerEnv, CALVIN, RoboTwin).</p>
+<p><strong>VẤN ĐỀ</strong> Để nói "phương pháp A hơn B" ta cần một con số đáng tin. Thử trên robot chậm và đắt, nên mỗi con số đến từ ít lần chạy.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các paper báo cáo một tỉ lệ thành công duy nhất, thường từ khoảng 15 lần chạy mỗi tác vụ, với tác vụ, cảnh và quy trình khác nhau. <a href="survey-force-output.html">Survey 3</a> cho thấy ForceVLA đạt từ 12% đến 60,5% tùy paper chạy nó, nên một con số trần không mang sang paper khác được.</p>
+<p><strong>Ý TƯỞNG</strong> Báo cáo con số <em>kèm</em> độ bất định, điểm từng phần, quy trình và phần tách kiểm tra tổng quát hóa. Chỉ so sánh khi cùng quy trình.</p>
+<p><strong>KẾT QUẢ</strong> Một danh sách kiểm tra (bên dưới) và một phép tính: khoảng tin cậy Wilson cho tỉ lệ thành công.</p>
+</div>
+<h2>1. Vấn đề: con số không có thanh sai số</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là nói rõ ta chắc đến đâu, và trong điều kiện nào." class="dg-natural" width="690" height="206" viewBox="0 0 690 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Báo cáo thường gặp</text><rect class="dg-box" x="153" y="14" width="96" height="54"/><text class="dg-t" x="201" y="37" text-anchor="middle">Chạy</text><text class="dg-s" x="201" y="53" text-anchor="middle">15 lần</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="263" height="54"/><text class="dg-t" x="415" y="37" text-anchor="middle">Một % thành công</text><text class="dg-s" x="415" y="53" text-anchor="middle">không khoảng tin cậy, quy trình riêng</text><path class="dg-a" d="M546 41 H578"/><rect class="dg-box" x="580" y="22" width="96" height="38"/><text class="dg-t" x="628" y="45" text-anchor="middle">Xếp hạng</text><text class="dg-note dg-red" x="153.2" y="86">✗ "A hơn B" từ nhiễu chồng lấn</text><text class="dg-lab dg-green" x="14" y="143">Báo cáo tốt hơn</text><rect class="dg-box" x="153" y="120" width="102" height="38"/><text class="dg-t" x="204" y="143" text-anchor="middle">Chạy n lần</text><path class="dg-a" d="M255 139 H287"/><rect class="dg-key" x="289" y="112" width="246" height="54"/><text class="dg-t" x="412" y="135" text-anchor="middle">Thành công + khoảng + tiến độ</text><text class="dg-s" x="412" y="151" text-anchor="middle">+ quy trình, + các split</text><path class="dg-a" d="M536 139 H568"/><rect class="dg-box" x="570" y="120" width="96" height="38"/><text class="dg-t" x="618" y="143" text-anchor="middle">So sánh</text><text class="dg-note dg-green" x="153.2" y="184">✓ chỉ khẳng định điều khoảng tin cậy ủng hộ</text></svg><figcaption>Thay đổi là nói rõ ta chắc đến đâu, và trong điều kiện nào.</figcaption></figure>
+<h2>2. Đo cái gì</h2>
+<table>
+<thead>
+<tr>
+<th>Chỉ số</th>
+<th>Input</th>
+<th>Output</th>
+<th>Cho biết</th>
+<th>Bỏ sót</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tỉ lệ thành công</td>
+<td>đạt/không mỗi lần chạy</td>
+<td>tỉ lệ trong [0, 1]</td>
+<td>tác vụ có xong không</td>
+<td>thất bại <em>gần đến đâu</em></td>
+</tr>
+<tr>
+<td>Tiến độ / điểm từng phần</td>
+<td>các mốc con</td>
+<td>điểm mỗi lần chạy</td>
+<td>hỏng ở đâu (với, nắm, lắp)</td>
+<td>phụ thuộc cách định nghĩa mốc</td>
+</tr>
+<tr>
+<td>Độ dài trung bình (CALVIN)</td>
+<td>chuỗi tác vụ</td>
+<td>số tác vụ liên tiếp xong</td>
+<td>độ bền dài hạn</td>
+<td>một lỗi sớm cắt cả chuỗi</td>
+</tr>
+<tr>
+<td>Thời gian / số bước</td>
+<td>lần chạy</td>
+<td>thời lượng</td>
+<td>tốc độ</td>
+<td>chất lượng</td>
+</tr>
+<tr>
+<td>Chất lượng tiếp xúc (paper lực)</td>
+<td>log lực</td>
+<td>lực đỉnh hoặc trung bình</td>
+<td>nhẹ tay hay bóp nát</td>
+<td>pass/fail không thấy</td>
+</tr>
+<tr>
+<td>Split tổng quát hóa</td>
+<td>vật, cảnh, câu lệnh chưa thấy</td>
+<td>thành công mỗi split</td>
+<td>có chuyển được không</td>
+<td>cần tập kiểm tra riêng</td>
+</tr>
+</tbody>
+</table>
+<p>Quy tắc: tác vụ nhạy lực có thể "thành công" mà vẫn bóp nát vật, nên paper về tiếp xúc cần báo cáo cả lực, không chỉ pass/fail.</p>
+<h2>3. Benchmark nào đo gì</h2>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Ngày</th>
+<th>Bối cảnh</th>
+<th>Cách đọc chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CALVIN</td>
+<td>12/2021</td>
+<td>mô phỏng, điều kiện theo ngôn ngữ</td>
+<td>số tác vụ hoàn thành liên tiếp trung bình (tối đa 5)</td>
+</tr>
+<tr>
+<td>LIBERO</td>
+<td>06/2023</td>
+<td>mô phỏng, bốn suite (Spatial, Object, Goal, Long)</td>
+<td>thành công theo suite: mỗi suite đổi một yếu tố</td>
+</tr>
+<tr>
+<td>SimplerEnv</td>
+<td>05/2024</td>
+<td>mô phỏng được thiết kế để bám kết quả robot thật</td>
+<td>thứ hạng trong mô phỏng có khớp thứ hạng thật không</td>
+</tr>
+<tr>
+<td>RoboTwin</td>
+<td>09/2024</td>
+<td>mô phỏng, tác vụ hai tay</td>
+<td>phối hợp hai tay</td>
+</tr>
+<tr>
+<td>Robot thật</td>
+<td>–</td>
+<td>tác vụ của bạn</td>
+<td>gần triển khai nhất, khó so sánh nhất</td>
+</tr>
+</tbody>
+</table>
+<p>Mô phỏng rẻ và lặp lại được. Robot thật cho thấy điều mô phỏng che (ma sát, nhiễu cảm biến), nhưng thiết lập của một phòng thí nghiệm không sao chép nguyên được.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Với $n$ lần chạy và $k$ thành công, khoảng hợp lý cho tỉ lệ thành công thật rộng bao nhiêu? Điều này quyết định "9/15 hơn 6/15" có ý nghĩa không. Dùng khoảng Wilson, hoạt động tốt với $n$ nhỏ.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>số lần chạy</td>
+<td>input</td>
+<td>15</td>
+</tr>
+<tr>
+<td>$k$</td>
+<td>số lần thành công</td>
+<td>input</td>
+<td>9</td>
+</tr>
+<tr>
+<td>$\hat p = k/n$</td>
+<td>tỉ lệ quan sát</td>
+<td>suy ra</td>
+<td>0,60</td>
+</tr>
+<tr>
+<td>$z$</td>
+<td>phân vị chuẩn cho 95%</td>
+<td>hằng số</td>
+<td>1,96</td>
+</tr>
+<tr>
+<td>$[L, U]$</td>
+<td>khoảng cho tỉ lệ thật</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\text{tâm} = \frac{\hat p + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}, \qquad \text{nửa rộng} = \frac{z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
+<p><strong>Các bước</strong> ($n = 15$, $k = 9$)</p>
+<ol>
+<li>$z^2 = 3{,}8416$; $z^2/n = 0{,}2561$; mẫu số $= 1{,}2561$.</li>
+<li>Tâm $= (0{,}60 + 0{,}1281)/1{,}2561 = 0{,}580$.</li>
+<li>Trong căn: $0{,}6 \times 0{,}4/15 + 3{,}8416/900 = 0{,}0160 + 0{,}0043 = 0{,}0203$; căn $= 0{,}1424$.</li>
+<li>Nửa rộng $= 1{,}96 \times 0{,}1424 / 1{,}2561 = 0{,}222$.</li>
+<li>Khoảng $= [0{,}36;\ 0{,}80]$.</li>
+</ol>
+<p>Với 6/15 ($\hat p = 0{,}4$) cùng các bước cho $[0{,}20;\ 0{,}64]$.</p>
+<p><strong>Kết quả.</strong> 9/15 cho 36% đến 80%; 6/15 cho 20% đến 64%. Hai khoảng chồng lấn nhiều, nên 60% so với 40% từ 15 lần chạy <strong>không</strong> chứng minh một phương pháp tốt hơn.</p>
+<p><strong>Ý nghĩa.</strong> Khoảng thu hẹp chậm, như $1/\sqrt{n}$ (tính cùng các bước, $\hat p = 0{,}6$):</p>
+</div>
+<figure class="diagram compact"><svg role="img" aria-label="Nửa rộng khoảng Wilson 95% khi đo được tỉ lệ thành công 60%." class="dg-natural" width="544" height="102" viewBox="0 0 544 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="84" y="23" text-anchor="end">n = 15 lần</text><rect class="dg-bar" x="94" y="10" width="313" height="18"/><text class="dg-barval" x="415" y="23">22 pp</text><text class="dg-barlabel" x="84" y="53" text-anchor="end">n = 50 lần</text><rect class="dg-bar" x="94" y="40" width="185" height="18"/><text class="dg-barval" x="287" y="53">13 pp</text><text class="dg-barlabel" x="84" y="83" text-anchor="end">n = 100 lần</text><rect class="dg-key" x="94" y="70" width="128" height="18"/><text class="dg-barval" x="230" y="83">9 pp</text></svg><figcaption>Nửa rộng khoảng Wilson 95% khi đo được tỉ lệ thành công 60%.</figcaption></figure>
+<h2>4. Đọc bảng kết quả: danh sách kiểm tra</h2>
+<ul>
+<li>Bao nhiêu lần chạy mỗi tác vụ, bao nhiêu tác vụ? ($n$ nhỏ nghĩa là khoảng rộng.)</li>
+<li>Mọi phương pháp dùng cùng tác vụ, cảnh, cách diễn đạt câu lệnh và điều kiện ban đầu không?</li>
+<li>Baseline được tác giả chạy lại, hay chép số từ paper khác? (Số chép có thể theo quy trình khác.)</li>
+<li>Có split giữ lại (vật, cảnh, câu lệnh mới), hay chỉ thiết lập lúc huấn luyện?</li>
+<li>Thất bại có tính điểm từng phần không? Với tác vụ tiếp xúc có báo cáo lực hay hư hại không?</li>
+<li>Mức cải thiện có lớn hơn khoảng tin cậy không?</li>
+</ul>
+<p><strong>Mang theo:</strong> mọi paper lực trên trang này đều báo cáo tỉ lệ thành công; dùng thẻ này để đánh giá mỗi khoảng chênh thực sự cho thấy bao nhiêu. Tiếp theo: <a href="libero.html">LIBERO</a> chi tiết.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> 3 thành công trong 5 lần chạy cho $\hat p = 0{,}6$. Khoảng hẹp hơn hay rộng hơn 9 trên 15?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Rộng hơn. $n = 5$ cho $z^2/n = 0{,}768$, mẫu số $1{,}768$, tâm $(0{,}6 + 0{,}384)/1{,}768 = 0{,}557$; trong căn $0{,}048 + 0{,}0384 = 0{,}0864$ (căn $0{,}294$), nửa rộng $= 1{,}96 \times 0{,}294/1{,}768 = 0{,}326$. Khoảng $[0{,}23;\ 0{,}88]$, rộng hơn nhiều so với $[0{,}36; 0{,}80]$ của 9/15.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

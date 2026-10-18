@@ -32,6 +32,21 @@
     "read_min": 3
   },
   {
+    "slug": "danh-gia-vla",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "How to Evaluate a VLA: Success Rate Is Not Enough",
+    "title_vi": "Cách đánh giá VLA: Tỉ lệ thành công là chưa đủ",
+    "excerpt_en": "A bare success rate from 15 trials hides huge uncertainty, and the same method scores 12% to 60.5% across papers. A cheatsheet of what to report, how to read a confidence interval, and which benchmark measures what.",
+    "excerpt_vi": "Một tỉ lệ thành công trần từ 15 lần thử che giấu độ bất định lớn, và cùng một phương pháp ra từ 12% đến 60,5% giữa các paper. Cheatsheet về nên báo cáo gì, đọc khoảng tin cậy ra sao, và benchmark nào đo điều gì.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "Evaluation"
+    ],
+    "read_min": 4
+  },
+  {
     "slug": "fd-vla",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",
