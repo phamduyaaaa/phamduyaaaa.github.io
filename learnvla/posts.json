@@ -1,5 +1,22 @@
 [
   {
+    "slug": "action-chunking",
+    "date": "2026-10-18",
+    "date_display": "18 Oct 2026",
+    "title_en": "Action Chunking: Predict k Steps, Blend the Overlaps",
+    "title_vi": "Action Chunking: Dự đoán k bước, trộn các đoạn chồng nhau",
+    "excerpt_en": "A single-step policy makes a decision at every step, so small errors compound. ACT predicts a chunk of k future actions, which shrinks the effective horizon k-fold, and blends overlapping chunks into smooth motion.",
+    "excerpt_vi": "Chính sách từng bước quyết định ở mọi bước nên lỗi nhỏ cộng dồn. ACT dự đoán một đoạn k hành động tương lai, thu ngắn horizon hiệu dụng k lần, rồi trộn các đoạn chồng nhau thành chuyển động mượt.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Action Chunking",
+      "ACT",
+      "Imitation Learning"
+    ],
+    "read_min": 5
+  },
+  {
     "slug": "action-tokenization",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",

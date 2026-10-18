@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A single-step policy makes a decision at every step, so small errors compound. ACT predicts a chunk of k future actions, which shrinks the effective horizon k-fold, and blends overlapping chunks into smooth motion.">
+<title>Action Chunking: Predict k Steps, Blend the Overlaps · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Action Chunking: Predict k Steps, Blend the Overlaps">
+<meta property="og:description" content="A single-step policy makes a decision at every step, so small errors compound. ACT predicts a chunk of k future actions, which shrinks the effective horizon k-fold, and blends overlapping chunks into smooth motion.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">18 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Action Chunking: Predict k Steps, Blend the Overlaps</h1>
+    <h1 data-vi>Action Chunking: Dự đoán k bước, trộn các đoạn chồng nhau</h1>
+
+    <p class="post-excerpt-lead" data-en>A single-step policy makes a decision at every step, so small errors compound. ACT predicts a chunk of k future actions, which shrinks the effective horizon k-fold, and blends overlapping chunks into smooth motion.</p>
+    <p class="post-excerpt-lead" data-vi>Chính sách từng bước quyết định ở mọi bước nên lỗi nhỏ cộng dồn. ACT dự đoán một đoạn k hành động tương lai, thu ngắn horizon hiệu dụng k lần, rồi trộn các đoạn chồng nhau thành chuyển động mượt.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Action Chunking</span><span class="pill">ACT</span><span class="pill">Imitation Learning</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Zhao et al., <em>Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware</em> (ACT, ALOHA), <a href="https://arxiv.org/abs/2304.13705">arXiv 2304.13705</a> · 04/2023</p>
+<p><strong>PROBLEM</strong> Learn precise two-arm tasks (the paper's examples include inserting a battery and opening a cup lid) from about 50 demonstrations, about 10 minutes of data.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Single-step behavior cloning. The paper names "compounding errors": errors from earlier steps accumulate and push the robot off its training distribution into "hard-to-recover states". It also notes such a policy struggles with temporally correlated pauses in human demonstrations.</p>
+<p><strong>IDEA</strong> Predict the next $k$ actions at once (an <em>action chunk</em>), which implies "a k-fold reduction in the effective horizon". Query the policy every step and average the overlapping chunks with exponential weights (<em>temporal ensembling</em>).</p>
+<p><strong>RESULT</strong> With only human demonstrations, ACT reaches 88% and 96% final success on Slide Ziploc and Slot Battery; the baselines in the same table score 0%. Modern VLAs such as π0 reuse chunking ($H = 50$).</p>
+</div>
+<h2>1. The problem: one decision per step</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the unit of prediction: a short plan instead of a single action." class="dg-natural" width="654" height="206" viewBox="0 0 654 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Single-step BC</text><rect class="dg-box" x="128" y="22" width="96" height="38"/><text class="dg-t" x="176" y="45" text-anchor="middle">State s_t</text><path class="dg-a" d="M224 41 H256"/><rect class="dg-badbox" x="258" y="14" width="116" height="54"/><text class="dg-t" x="315" y="37" text-anchor="middle">Predict a_t</text><text class="dg-s" x="315" y="53" text-anchor="middle">one step ahead</text><path class="dg-a" d="M373 41 H405"/><rect class="dg-box" x="407" y="22" width="96" height="38"/><text class="dg-t" x="455" y="45" text-anchor="middle">Execute</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ T decisions; each small error compounds</text><text class="dg-lab dg-green" x="14" y="143">ACT</text><rect class="dg-box" x="128" y="120" width="96" height="38"/><text class="dg-t" x="176" y="143" text-anchor="middle">State s_t</text><path class="dg-a" d="M224 139 H256"/><rect class="dg-key" x="258" y="112" width="208" height="54"/><text class="dg-t" x="362" y="135" text-anchor="middle">Predict chunk a_t..a_t+k</text><text class="dg-s" x="362" y="151" text-anchor="middle">k steps at once</text><path class="dg-a" d="M466 139 H498"/><rect class="dg-box" x="500" y="120" width="140" height="38"/><text class="dg-t" x="570" y="143" text-anchor="middle">Execute k steps</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ T/k decisions; fewer chances to drift</text></svg><figcaption>The change is the unit of prediction: a short plan instead of a single action.</figcaption></figure>
+<h2>2. How it works</h2>
+<figure class="diagram"><svg role="img" aria-label="Top: a single-step policy decides every step. Bottom: ACT predicts a chunk, but is still queried at every step, so the current step gets several predictions, which are blended." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="92"/><text class="dg-h" x="22" y="26">SINGLE-STEP POLICY: one decision per step, errors compound</text>
+<rect class="dg-ext" x="30" y="44" width="110" height="40"/><text class="dg-t" x="85" y="68" text-anchor="middle">obs s_t</text>
+<rect class="dg-box" x="200" y="44" width="150" height="40"/><text class="dg-t" x="275" y="68" text-anchor="middle">π(a_t | s_t)</text>
+<rect class="dg-badbox" x="410" y="44" width="110" height="40"/><text class="dg-t" x="465" y="68" text-anchor="middle">a_t</text>
+<path class="dg-a" d="M140 64 H200"/><path class="dg-a" d="M350 64 H410"/>
+<text class="dg-note dg-red" x="560" y="68">T decisions in an episode of T steps</text>
+<rect class="dg-grp" x="10" y="116" width="960" height="206"/><text class="dg-h" x="22" y="134">ACTION CHUNKING + TEMPORAL ENSEMBLING (ACT)</text>
+<rect class="dg-box" x="30" y="156" width="270" height="34"/><text class="dg-s" x="165" y="177" text-anchor="middle">query at t: chunk a_t ... a_t+k</text>
+<rect class="dg-box" x="90" y="200" width="270" height="34"/><text class="dg-s" x="225" y="221" text-anchor="middle">query at t+1: chunk a_t+1 ... a_t+1+k</text>
+<rect class="dg-box" x="150" y="244" width="270" height="34"/><text class="dg-s" x="285" y="265" text-anchor="middle">query at t+2: chunk a_t+2 ... a_t+2+k</text>
+<path class="dg-ad" d="M300 173 H470 V222"/><path class="dg-ad" d="M360 217 H470"/><path class="dg-ad" d="M420 261 H470 V222"/>
+<text class="dg-l" x="478" y="160">3 predictions for the same step</text>
+<rect class="dg-key" x="540" y="196" width="190" height="52"/><text class="dg-t" x="635" y="218" text-anchor="middle">Weighted average</text><text class="dg-s" x="635" y="234" text-anchor="middle">w_i = exp(−m·i), oldest i=0</text>
+<path class="dg-a" d="M470 222 H540"/>
+<rect class="dg-box" x="790" y="196" width="150" height="52"/><text class="dg-t" x="865" y="218" text-anchor="middle">Executed a</text><text class="dg-s" x="865" y="234" text-anchor="middle">no extra training</text>
+<path class="dg-a" d="M730 222 H790"/>
+<text class="dg-note dg-green" x="560" y="290">Chunk of k: effective horizon shrinks k-fold</text>
+</svg><figcaption>Top: a single-step policy decides every step. Bottom: ACT predicts a chunk, but is still queried at every step, so the current step gets several predictions, which are blended.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image backbone (ResNet18)</td>
+<td>camera images</td>
+<td>feature tokens</td>
+<td>what the scene looks like</td>
+</tr>
+<tr>
+<td>Transformer encoder-decoder</td>
+<td>image tokens, joint positions, latent $z$</td>
+<td>chunk of $k$ target joint positions</td>
+<td>the policy $\pi_\theta(a_{t:t+k} \mid s_t)$</td>
+</tr>
+<tr>
+<td>CVAE encoder (training only)</td>
+<td>action sequence, joint positions</td>
+<td>latent $z$</td>
+<td>captures the many ways a human can do the same thing; discarded at test time</td>
+</tr>
+<tr>
+<td>Test time</td>
+<td>$z = 0$ (prior mean)</td>
+<td>deterministic chunk</td>
+<td>no sampling at run time</td>
+</tr>
+<tr>
+<td>Temporal ensembling</td>
+<td>all chunks that cover step $t$</td>
+<td>one action $a_t$</td>
+<td>smoothness at no training cost</td>
+</tr>
+</tbody>
+</table>
+<p>Teleoperation and recording run at 50 Hz; the model has about 80M parameters and is trained from scratch per task (paper's figures).</p>
+<figure class="diagram compact"><svg role="img" aria-label="Final-stage success on two real tasks, human demonstrations only (paper's Table I; 25 evaluations)." class="dg-natural" width="640" height="102" viewBox="0 0 640 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="180" y="23" text-anchor="end">Slide Ziploc, ACT</text><rect class="dg-bar" x="190" y="10" width="317" height="18"/><text class="dg-barval" x="515" y="23">88%</text><text class="dg-barlabel" x="180" y="53" text-anchor="end">Slot Battery, ACT</text><rect class="dg-bar" x="190" y="40" width="346" height="18"/><text class="dg-barval" x="544" y="53">96%</text><text class="dg-barlabel" x="180" y="83" text-anchor="end">Both tasks, other methods</text><rect class="dg-bar" x="190" y="70" width="2" height="18"/><text class="dg-barval" x="200" y="83">0%</text></svg><figcaption>Final-stage success on two real tasks, human demonstrations only (paper's Table I; 25 evaluations).</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How does temporal ensembling turn several overlapping predictions for the same step into one action? This is the step that makes chunked motion smooth.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_t[i]$</td>
+<td>prediction for step $t$ from the $i$-th chunk covering it, $i = 0$ the oldest</td>
+<td>input</td>
+<td>1.0, 1.2, 1.5</td>
+</tr>
+<tr>
+<td>$m$</td>
+<td>decay rate; smaller $m$ lets new observations in faster</td>
+<td>constant</td>
+<td>0.1 (illustrative; the paper's value was not read)</td>
+</tr>
+<tr>
+<td>$w_i$</td>
+<td>weight of the $i$-th prediction</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$a_t$</td>
+<td>executed action</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$w_0 = 1$, $w_1 = e^{-0.1} = 0.905$, $w_2 = e^{-0.2} = 0.819$. Sum $= 2.724$.</li>
+<li>Numerator: $1 \times 1.0 + 0.905 \times 1.2 + 0.819 \times 1.5 = 1.0 + 1.086 + 1.228 = 3.314$.</li>
+<li>$a_t = 3.314 / 2.724 = 1.217$.</li>
+</ol>
+<p><strong>Result.</strong> The executed action is 1.217, between the oldest (1.0) and newest (1.5) predictions. Plain averaging ($m = 0$) would give 1.233.</p>
+<p><strong>Why it matters.</strong> The average is over predictions for the <em>same</em> step, not over neighbouring steps, so motion is smoothed without lagging behind. It costs only inference time, no training. Note the text says the oldest prediction gets $w_0$, the largest weight.</p>
+</div>
+<p><strong>Chunk horizon, in numbers.</strong> An episode of $T = 500$ steps with $k = 50$ needs $T/k = 10$ chunk decisions instead of 500 single-step decisions (illustrative $T$ and $k$; the paper states the $k$-fold reduction).</p>
+<h2>3. Why the CVAE?</h2>
+<p>Humans solve the same task in different ways, and are more variable where precision does not matter. A policy trained with a plain regression loss averages those ways. The CVAE gives the model a latent $z$ for "which way", used in training and set to zero at test time.</p>
+<h2>4. In VLA</h2>
+<ul>
+<li>π0 outputs a chunk of $H = 50$ actions and runs at up to 50 Hz: <a href="pi0.html">π0</a>.</li>
+<li>Chunks are produced differently there (flow matching instead of a CVAE): <a href="flowmatching.html">flow matching</a>.</li>
+<li>In force-sensitive tasks a long open-loop chunk reacts late to contact; this is a recurring trade-off in the force papers.</li>
+</ul>
+<h2>5. Caveats</h2>
+<ul>
+<li>The chunk size used in the experiments and the value of $m$ were not in the part of the paper I read verbatim; the examples use illustrative values.</li>
+<li>Ablation numbers (effect of $k$, of temporal ensembling, of the CVAE) came from a summary and are not quoted.</li>
+<li>Table II (more real tasks) was read in flattened form; I quote only the two tasks above.</li>
+</ul>
+<p><strong>Carry forward:</strong> chunks predicted by ACT are a deterministic decode of one latent. π0 replaces that with flow matching: <a href="pi0.html">π0</a>.</p>
+<p><strong>Check question:</strong> $T = 600$, $k = 20$. How many chunk decisions does one episode need, and by what factor did the number of decisions shrink?</p>
+<details>
+<summary>Answer</summary>
+<p>$600 / 20 = 30$ decisions, instead of 600: a factor of $k = 20$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Zhao et al., <em>Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware</em> (ACT, ALOHA), <a href="https://arxiv.org/abs/2304.13705">arXiv 2304.13705</a> · 04/2023</p>
+<p><strong>VẤN ĐỀ</strong> Học các tác vụ hai tay chính xác (ví dụ trong paper có lắp pin và mở nắp cốc) từ khoảng 50 bản demo, cỡ 10 phút dữ liệu.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Behavior cloning từng bước. Paper gọi tên "compounding errors": lỗi ở các bước trước cộng dồn và đẩy robot ra khỏi phân phối huấn luyện vào "trạng thái khó phục hồi". Paper cũng chỉ ra chính sách như vậy khó với các quãng dừng có tương quan theo thời gian trong demo của người.</p>
+<p><strong>Ý TƯỞNG</strong> Dự đoán $k$ hành động kế tiếp cùng lúc (một <em>action chunk</em>), tức "giảm horizon hiệu dụng k lần". Truy vấn chính sách ở mọi bước và lấy trung bình các đoạn chồng nhau với trọng số mũ (<em>temporal ensembling</em>).</p>
+<p><strong>KẾT QUẢ</strong> Chỉ với demo của người, ACT đạt 88% và 96% thành công ở bước cuối trên Slide Ziploc và Slot Battery; các baseline trong cùng bảng đạt 0%. VLA hiện đại như π0 dùng lại chunking ($H = 50$).</p>
+</div>
+<h2>1. Vấn đề: một quyết định mỗi bước</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là đơn vị dự đoán: một kế hoạch ngắn thay cho một hành động." class="dg-natural" width="679" height="206" viewBox="0 0 679 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">BC từng bước</text><rect class="dg-box" x="124" y="22" width="132" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Trạng thái s_t</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="135" height="54"/><text class="dg-t" x="358" y="37" text-anchor="middle">Dự đoán a_t</text><text class="dg-s" x="358" y="53" text-anchor="middle">đi trước một bước</text><path class="dg-a" d="M425 41 H457"/><rect class="dg-box" x="459" y="22" width="96" height="38"/><text class="dg-t" x="507" y="45" text-anchor="middle">Thực thi</text><text class="dg-note dg-red" x="124" y="86">✗ T quyết định; mỗi lỗi nhỏ cộng dồn</text><text class="dg-lab dg-green" x="14" y="143">ACT</text><rect class="dg-box" x="124" y="120" width="132" height="38"/><text class="dg-t" x="190" y="143" text-anchor="middle">Trạng thái s_t</text><path class="dg-a" d="M256 139 H288"/><rect class="dg-key" x="290" y="112" width="201" height="54"/><text class="dg-t" x="391" y="135" text-anchor="middle">Dự đoán đoạn a_t..a_t+k</text><text class="dg-s" x="391" y="151" text-anchor="middle">k bước cùng lúc</text><path class="dg-a" d="M491 139 H523"/><rect class="dg-box" x="525" y="120" width="140" height="38"/><text class="dg-t" x="595" y="143" text-anchor="middle">Thực thi k bước</text><text class="dg-note dg-green" x="124" y="184">✓ T/k quyết định; ít cơ hội trôi hơn</text></svg><figcaption>Thay đổi là đơn vị dự đoán: một kế hoạch ngắn thay cho một hành động.</figcaption></figure>
+<h2>2. Cách hoạt động</h2>
+<figure class="diagram"><svg role="img" aria-label="Trên: chính sách từng bước quyết định mỗi bước. Dưới: ACT dự đoán một đoạn nhưng vẫn được truy vấn ở mọi bước, nên bước hiện tại nhận nhiều dự đoán và được trộn lại." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="92"/><text class="dg-h" x="22" y="26">SINGLE-STEP POLICY: one decision per step, errors compound</text>
+<rect class="dg-ext" x="30" y="44" width="110" height="40"/><text class="dg-t" x="85" y="68" text-anchor="middle">obs s_t</text>
+<rect class="dg-box" x="200" y="44" width="150" height="40"/><text class="dg-t" x="275" y="68" text-anchor="middle">π(a_t | s_t)</text>
+<rect class="dg-badbox" x="410" y="44" width="110" height="40"/><text class="dg-t" x="465" y="68" text-anchor="middle">a_t</text>
+<path class="dg-a" d="M140 64 H200"/><path class="dg-a" d="M350 64 H410"/>
+<text class="dg-note dg-red" x="560" y="68">T decisions in an episode of T steps</text>
+<rect class="dg-grp" x="10" y="116" width="960" height="206"/><text class="dg-h" x="22" y="134">ACTION CHUNKING + TEMPORAL ENSEMBLING (ACT)</text>
+<rect class="dg-box" x="30" y="156" width="270" height="34"/><text class="dg-s" x="165" y="177" text-anchor="middle">query at t: chunk a_t ... a_t+k</text>
+<rect class="dg-box" x="90" y="200" width="270" height="34"/><text class="dg-s" x="225" y="221" text-anchor="middle">query at t+1: chunk a_t+1 ... a_t+1+k</text>
+<rect class="dg-box" x="150" y="244" width="270" height="34"/><text class="dg-s" x="285" y="265" text-anchor="middle">query at t+2: chunk a_t+2 ... a_t+2+k</text>
+<path class="dg-ad" d="M300 173 H470 V222"/><path class="dg-ad" d="M360 217 H470"/><path class="dg-ad" d="M420 261 H470 V222"/>
+<text class="dg-l" x="478" y="160">3 predictions for the same step</text>
+<rect class="dg-key" x="540" y="196" width="190" height="52"/><text class="dg-t" x="635" y="218" text-anchor="middle">Weighted average</text><text class="dg-s" x="635" y="234" text-anchor="middle">w_i = exp(−m·i), oldest i=0</text>
+<path class="dg-a" d="M470 222 H540"/>
+<rect class="dg-box" x="790" y="196" width="150" height="52"/><text class="dg-t" x="865" y="218" text-anchor="middle">Executed a</text><text class="dg-s" x="865" y="234" text-anchor="middle">no extra training</text>
+<path class="dg-a" d="M730 222 H790"/>
+<text class="dg-note dg-green" x="560" y="290">Chunk of k: effective horizon shrinks k-fold</text>
+</svg><figcaption>Trên: chính sách từng bước quyết định mỗi bước. Dưới: ACT dự đoán một đoạn nhưng vẫn được truy vấn ở mọi bước, nên bước hiện tại nhận nhiều dự đoán và được trộn lại.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone ảnh (ResNet18)</td>
+<td>ảnh camera</td>
+<td>token đặc trưng</td>
+<td>cảnh trông thế nào</td>
+</tr>
+<tr>
+<td>Transformer encoder-decoder</td>
+<td>token ảnh, vị trí khớp, latent $z$</td>
+<td>đoạn $k$ vị trí khớp mục tiêu</td>
+<td>chính sách $\pi_\theta(a_{t:t+k} \mid s_t)$</td>
+</tr>
+<tr>
+<td>Encoder CVAE (chỉ khi huấn luyện)</td>
+<td>chuỗi hành động, vị trí khớp</td>
+<td>latent $z$</td>
+<td>nắm bắt nhiều cách người làm cùng một việc; bỏ khi chạy thật</td>
+</tr>
+<tr>
+<td>Lúc chạy</td>
+<td>$z = 0$ (trung bình prior)</td>
+<td>đoạn xác định</td>
+<td>không lấy mẫu khi chạy</td>
+</tr>
+<tr>
+<td>Temporal ensembling</td>
+<td>mọi đoạn phủ bước $t$</td>
+<td>một hành động $a_t$</td>
+<td>mượt mà, không tốn huấn luyện</td>
+</tr>
+</tbody>
+</table>
+<p>Teleoperation và ghi dữ liệu chạy 50 Hz; mô hình khoảng 80M tham số, huấn luyện từ đầu cho từng tác vụ (số liệu của paper).</p>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công ở giai đoạn cuối trên hai tác vụ thật, chỉ dùng demo của người (Bảng I của paper; 25 lần đánh giá)." class="dg-natural" width="682" height="102" viewBox="0 0 682 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Slide Ziploc, ACT</text><rect class="dg-bar" x="232" y="10" width="317" height="18"/><text class="dg-barval" x="557" y="23">88%</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Slot Battery, ACT</text><rect class="dg-bar" x="232" y="40" width="346" height="18"/><text class="dg-barval" x="586" y="53">96%</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Cả hai tác vụ, phương pháp khác</text><rect class="dg-bar" x="232" y="70" width="2" height="18"/><text class="dg-barval" x="242" y="83">0%</text></svg><figcaption>Thành công ở giai đoạn cuối trên hai tác vụ thật, chỉ dùng demo của người (Bảng I của paper; 25 lần đánh giá).</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Temporal ensembling biến nhiều dự đoán chồng nhau cho cùng một bước thành một hành động thế nào? Đây là bước làm cho chuyển động theo đoạn mượt.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_t[i]$</td>
+<td>dự đoán cho bước $t$ từ đoạn thứ $i$ phủ nó, $i = 0$ là cũ nhất</td>
+<td>input</td>
+<td>1,0; 1,2; 1,5</td>
+</tr>
+<tr>
+<td>$m$</td>
+<td>tốc độ suy giảm; $m$ nhỏ thì quan sát mới vào nhanh hơn</td>
+<td>hằng số</td>
+<td>0,1 (minh họa; chưa đọc giá trị của paper)</td>
+</tr>
+<tr>
+<td>$w_i$</td>
+<td>trọng số của dự đoán thứ $i$</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$a_t$</td>
+<td>hành động được thực thi</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$w_0 = 1$, $w_1 = e^{-0{,}1} = 0{,}905$, $w_2 = e^{-0{,}2} = 0{,}819$. Tổng $= 2{,}724$.</li>
+<li>Tử số: $1 \times 1{,}0 + 0{,}905 \times 1{,}2 + 0{,}819 \times 1{,}5 = 1{,}0 + 1{,}086 + 1{,}228 = 3{,}314$.</li>
+<li>$a_t = 3{,}314 / 2{,}724 = 1{,}217$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Hành động thực thi là 1,217, nằm giữa dự đoán cũ nhất (1,0) và mới nhất (1,5). Trung bình thường ($m = 0$) cho 1,233.</p>
+<p><strong>Ý nghĩa.</strong> Trung bình lấy trên các dự đoán cho <em>cùng một</em> bước, không phải các bước lân cận, nên chuyển động mượt mà không bị trễ. Chỉ tốn thời gian suy luận, không tốn huấn luyện. Lưu ý theo paper, dự đoán cũ nhất có $w_0$, trọng số lớn nhất.</p>
+</div>
+<p><strong>Horizon theo số liệu.</strong> Một episode $T = 500$ bước với $k = 50$ cần $T/k = 10$ quyết định theo đoạn thay vì 500 quyết định từng bước ($T$ và $k$ minh họa; paper nêu mức giảm $k$ lần).</p>
+<h2>3. Vì sao có CVAE?</h2>
+<p>Con người giải cùng một tác vụ theo nhiều cách, và thay đổi nhiều hơn ở chỗ không cần chính xác. Chính sách huấn luyện bằng loss hồi quy thuần sẽ lấy trung bình các cách đó. CVAE cho mô hình một latent $z$ chỉ "cách nào", dùng khi huấn luyện và đặt bằng 0 khi chạy.</p>
+<h2>4. Trong VLA</h2>
+<ul>
+<li>π0 xuất đoạn $H = 50$ hành động và chạy tới 50 Hz: <a href="pi0.html">π0</a>.</li>
+<li>Ở đó đoạn được tạo theo cách khác (flow matching thay cho CVAE): <a href="flowmatching.html">flow matching</a>.</li>
+<li>Với tác vụ nhạy lực, đoạn dài chạy hở phản ứng muộn khi chạm; đây là sự đánh đổi lặp lại trong các paper lực.</li>
+</ul>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Cỡ chunk dùng trong thí nghiệm và giá trị $m$ không nằm trong phần paper tôi đọc nguyên văn; các ví dụ dùng giá trị minh họa.</li>
+<li>Số liệu ablation (ảnh hưởng của $k$, temporal ensembling, CVAE) đến từ bản tóm tắt nên không trích.</li>
+<li>Bảng II (thêm tác vụ thật) đọc ở dạng bị làm phẳng; tôi chỉ trích hai tác vụ ở trên.</li>
+</ul>
+<p><strong>Mang theo:</strong> các đoạn do ACT dự đoán là giải mã xác định từ một latent. π0 thay bằng flow matching: <a href="pi0.html">π0</a>.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> $T = 600$, $k = 20$. Một episode cần bao nhiêu quyết định theo đoạn, và số quyết định giảm bao nhiêu lần?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$600 / 20 = 30$ quyết định, thay vì 600: giảm $k = 20$ lần.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

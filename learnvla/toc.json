@@ -16,7 +16,7 @@
       { "title": "Mixture of Experts (MoE)", "slug": "moe" },
       { "title": "Diffusion Policy", "slug": "diffusion-policy", "date": "03/2023" },
       { "title": "Flowmatching", "slug": "flowmatching", "date": "10/2022" },
-      { "title": "Action Chunking", "slug": "action-chunking" },
+      { "title": "Action Chunking", "slug": "action-chunking", "date": "04/2023" },
       { "title": "Cross-embodiment & Dữ liệu", "slug": "cross-embodiment-data" },
       { "title": "Contrastive Learning / InfoNCE", "slug": "contrastive-learning", "date": "07/2018" },
       { "title": "VQ-VAE", "slug": "vq-vae", "date": "11/2017" },
