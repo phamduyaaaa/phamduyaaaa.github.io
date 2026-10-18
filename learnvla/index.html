@@ -61,8 +61,8 @@
     </p>
   </section>
 
-  <section id="postList" class="post-list" aria-live="polite">
-    <!-- Được render động bằng JS từ learnvla/posts.json -->
+  <section id="postList" class="toc" aria-live="polite">
+    <!-- Mục lục render từ learnvla/toc.json; bài có trong posts.json sẽ thành link -->
   </section>
 
   <footer>
@@ -129,17 +129,38 @@ function toggleMenu(force) {
     }).join('');
   }
 
-  fetch('posts.json')
-    .then(function (res) {
-      if (!res.ok) throw new Error('posts.json not found');
-      return res.json();
-    })
-    .then(renderPosts)
+  function renderToc(toc, posts) {
+    var done = {};
+    posts.forEach(function (p) { done[p.slug] = true; });
+
+    listEl.innerHTML = toc.map(function (g) {
+      var items = g.items.map(function (it) {
+        var t = escapeHtml(it.title);
+        if (done[it.slug]) {
+          return '<li><a class="toc-item" href="posts/' + encodeURIComponent(it.slug) + '.html">' +
+            '<span class="toc-mark" aria-hidden="true">●</span>' + t +
+            '<span class="toc-status">→</span></a></li>';
+        }
+        return '<li><div class="toc-item is-draft">' +
+          '<span class="toc-mark" aria-hidden="true">○</span>' + t +
+          '<span class="toc-status"><span data-en>Coming soon</span><span data-vi>Sắp có</span></span></div></li>';
+      }).join('');
+      return '<div class="toc-group">' +
+        '<div class="toc-group-title" data-en>' + escapeHtml(g.title_en) + '</div>' +
+        '<div class="toc-group-title" data-vi>' + escapeHtml(g.title_vi) + '</div>' +
+        '<ul class="toc-list">' + items + '</ul></div>';
+    }).join('');
+  }
+
+  Promise.all([
+    fetch('toc.json').then(function (r) { if (!r.ok) throw new Error(); return r.json(); }),
+    fetch('posts.json').then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })
+  ]).then(function (res) { renderToc(res[0], res[1]); })
     .catch(function () {
       listEl.innerHTML =
         '<div class="post-list-empty">' +
-        '<span data-en>Could not load VLA notes right now.</span>' +
-        '<span data-vi>Không tải được danh sách bài viết lúc này.</span>' +
+        '<span data-en>Could not load the contents right now.</span>' +
+        '<span data-vi>Không tải được mục lục lúc này.</span>' +
         '</div>';
     });
 })();

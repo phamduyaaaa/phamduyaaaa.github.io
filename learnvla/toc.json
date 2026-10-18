@@ -1,0 +1,67 @@
+[
+  {
+    "title_vi": "Kiến thức nền tảng",
+    "title_en": "Foundations",
+    "items": [
+      { "title": "Imitation Learning / Behavior Cloning", "slug": "imitation-learning" },
+      { "title": "Proprioception & Robot State", "slug": "proprioception" },
+      { "title": "Token", "slug": "token" },
+      { "title": "Tokenizer & Action Tokenization", "slug": "action-tokenization" },
+      { "title": "Attention / Self-attention", "slug": "attention" },
+      { "title": "Transformer", "slug": "transformer" },
+      { "title": "ViT", "slug": "vit" },
+      { "title": "VLM", "slug": "vlm" },
+      { "title": "Backbone", "slug": "backbone" },
+      { "title": "Diffusion Policy", "slug": "diffusion-policy" },
+      { "title": "Flowmatching", "slug": "flowmatching" },
+      { "title": "Action Chunking", "slug": "action-chunking" },
+      { "title": "Cross-embodiment & Dữ liệu", "slug": "cross-embodiment-data" }
+    ]
+  },
+  {
+    "title_vi": "Benchmark",
+    "title_en": "Benchmarks",
+    "items": [
+      { "title": "Cách đánh giá VLA", "slug": "danh-gia-vla" },
+      { "title": "LIBERO", "slug": "libero" },
+      { "title": "GM-100", "slug": "gm-100" },
+      { "title": "SimplerEnv", "slug": "simplerenv" },
+      { "title": "CALVIN", "slug": "calvin" },
+      { "title": "RoboTwin", "slug": "robotwin" }
+    ]
+  },
+  {
+    "title_vi": "VLA-Paper",
+    "title_en": "VLA Papers",
+    "items": [
+      { "title": "RT-1 / RT-2", "slug": "rt-1-rt-2" },
+      { "title": "Octo", "slug": "octo" },
+      { "title": "OpenVLA", "slug": "openvla" },
+      { "title": "Pi0", "slug": "pi0" },
+      { "title": "Pi0.5", "slug": "pi0-5" },
+      { "title": "GR00T N1", "slug": "gr00t-n1" },
+      { "title": "SmolVLA", "slug": "smolvla" },
+      { "title": "Lingbotv2", "slug": "lingbotv2" }
+    ]
+  },
+  {
+    "title_vi": "Force-Paper",
+    "title_en": "Force Papers",
+    "items": [
+      { "title": "Cảm biến lực & xúc giác (F/T, GelSight)", "slug": "force-tactile-sensing" },
+      { "title": "Contact-rich Manipulation & Impedance/Admittance Control", "slug": "contact-rich-control" },
+      { "title": "ForceVLA", "slug": "forcevla" },
+      { "title": "ForceVLA2", "slug": "forcevla2" },
+      { "title": "MoDE-VLA", "slug": "mode-vla" },
+      { "title": "VLA-Touch", "slug": "vla-touch" },
+      { "title": "TaF-VLA", "slug": "taf-vla" },
+      { "title": "Tabero", "slug": "tabero" },
+      { "title": "FD-VLA", "slug": "fd-vla" },
+      { "title": "HapticVLA", "slug": "hapticvla" },
+      { "title": "FWBC-VLA", "slug": "fwbc-vla" },
+      { "title": "TORL-VLA", "slug": "torl-vla" },
+      { "title": "TER-Dagger", "slug": "ter-dagger" },
+      { "title": "So sánh các cách ghép Force vào VLA", "slug": "force-integration-comparison" }
+    ]
+  }
+]
