@@ -37,7 +37,7 @@ $$
 \underbrace{\begin{pmatrix}3&2\\4&6\end{pmatrix}}_{D}
 $$
 
-(The numbers are made up for illustration.) 16 tokens become 4, and the number of pairs drops from 256 to 16. For a real $224 \times 224$ image with $14 \times 14$ patches, we get 256 tokens.
+(The numbers are made up for illustration.) 16 tokens become 4, and the number of pairs drops from 256 to 16. For a real $224 \times 224$ image with $14 \times 14$ patches, we get 256 tokens. (The original ViT used $16 \times 16$ patches, giving 196 tokens; encoders common in VLAs, such as SigLIP So400m/14, use $14 \times 14$.)
 
 ## Step 3: Flatten (reshape)
 
@@ -65,7 +65,7 @@ $$
 
 Likewise $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.
 
-**Meaning:** each column of $W_p$ is a $2\times 2$ "template", and $z$ is how well the patch matches each template (a dot product). This is pattern matching: $W_p$ learns filters for edges, colour and texture. It resembles the lookup $E$ that turns a word into a vector, except that patches have no dictionary (there are endlessly many possible patches), so we use a projection instead of a table lookup. And $W_p$ is learned by gradient like any other matrix.
+**Meaning:** each column of $W_p$ is a $2\times 2$ "template", and $z$ is how well the patch matches each template (a dot product). This is pattern matching: $W_p$ learns filters for edges, colour and texture. It resembles the lookup $E$ that turns a word into a vector, except that patches have no dictionary (there are endlessly many possible patches), so we use a projection instead of a table lookup. And $W_p$ is learned by gradient like any other matrix. In code, cutting patches and projecting them is usually one convolution whose kernel size and stride both equal the patch size.
 
 ## Step 5: The big problem, attention is blind to order
 
@@ -89,9 +89,11 @@ $$
 
 Now each token carries both content (what the patch looks like) and coordinates (where it is). Permuting tokens changes the result, because each token is already labelled with its position.
 
+The toy uses 2D (column, row) coordinates to make the idea visible. The original ViT simply numbers the patches $0, 1, \dots, N-1$ and learns one vector per number; the authors found 2D-aware variants gave no significant gain.
+
 ## Step 7: From here on it is pure Transformer
 
-The four vectors $\tilde z_A,\dots,\tilde z_D$ enter exactly the attention mechanism: $q,k,v$, softmax, mixing. Image tokens look at each other just like text tokens. A "cup handle" patch pulls in information from the surrounding patches to become the representation of "cup".
+The four vectors $\tilde z_A,\dots,\tilde z_D$ enter exactly the attention mechanism: $q,k,v$, softmax, mixing. Image tokens look at each other just like text tokens. A "cup handle" patch pulls in information from the surrounding patches to become the representation of "cup". (The original ViT also prepends a learned [CLS] token to summarise the image for classification; VLAs usually drop it and pass all patch tokens to the language model.)
 
 ## Summary of the flow
 
@@ -103,7 +105,7 @@ Carry forward: the image is now continuous tokens used only as **input**, and no
 
 **Check question:** if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?
 
-*Answer:* the original image and a version cut into patches and shuffled (for example a cup on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.
+*Answer:* the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.
 :::
 
 :::vi
@@ -135,7 +137,7 @@ $$
 \underbrace{\begin{pmatrix}3&2\\4&6\end{pmatrix}}_{D}
 $$
 
-(Số bịa để minh họa.) Từ 16 token còn 4 token, và số cặp giảm từ 256 xuống 16. Với ảnh thật $224 \times 224$, patch $14 \times 14$ cho 256 token.
+(Số bịa để minh họa.) Từ 16 token còn 4 token, và số cặp giảm từ 256 xuống 16. Với ảnh thật $224 \times 224$, patch $14 \times 14$ cho 256 token. (ViT gốc dùng patch $16 \times 16$ nên ra 196 token; các encoder hay dùng trong VLA như SigLIP So400m/14 dùng $14 \times 14$.)
 
 ## Bước 3: Duỗi phẳng (reshape)
 
@@ -163,7 +165,7 @@ $$
 
 Tương tự $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.
 
-**Ý nghĩa:** mỗi cột của $W_p$ là một "mẫu" cỡ $2\times 2$, và $z$ chính là độ khớp của patch với từng mẫu (tích vô hướng). Đây là so khớp mẫu: $W_p$ học ra các bộ lọc cạnh, màu, kết cấu. Nó giống phép tra bảng $E$ biến từ thành vector, chỉ khác là patch không có từ điển (vô số patch có thể có), nên ta dùng phép chiếu thay cho tra bảng. Đồng thời $W_p$ cũng học bằng gradient như mọi ma trận khác.
+**Ý nghĩa:** mỗi cột của $W_p$ là một "mẫu" cỡ $2\times 2$, và $z$ chính là độ khớp của patch với từng mẫu (tích vô hướng). Đây là so khớp mẫu: $W_p$ học ra các bộ lọc cạnh, màu, kết cấu. Nó giống phép tra bảng $E$ biến từ thành vector, chỉ khác là patch không có từ điển (vô số patch có thể có), nên ta dùng phép chiếu thay cho tra bảng. Đồng thời $W_p$ cũng học bằng gradient như mọi ma trận khác. Trong code, bước cắt patch và chiếu thường gộp thành một lớp tích chập có kernel và stride đều bằng kích thước patch.
 
 ## Bước 5: Vấn đề lớn, attention mù thứ tự
 
@@ -187,9 +189,11 @@ $$
 
 Giờ token vừa mang nội dung (patch trông thế nào) vừa mang tọa độ (nó nằm đâu). Hoán vị token sẽ làm thay đổi kết quả, vì mỗi token đã gắn nhãn vị trí.
 
+Ví dụ đồ chơi dùng tọa độ 2D (cột, hàng) cho dễ thấy. ViT gốc chỉ đánh số patch $0, 1, \dots, N-1$ và học một vector cho mỗi số; tác giả thấy các biến thể biết cấu trúc 2D không tốt hơn đáng kể.
+
 ## Bước 7: Từ đây trở đi là Transformer thuần túy
 
-Bốn vector $\tilde z_A,\dots,\tilde z_D$ vào đúng cơ chế attention: $q,k,v$, softmax, trộn. Token ảnh cũng nhìn nhau như token chữ. Patch "quai cốc" hút thông tin từ patch xung quanh để thành biểu diễn "cốc".
+Bốn vector $\tilde z_A,\dots,\tilde z_D$ vào đúng cơ chế attention: $q,k,v$, softmax, trộn. Token ảnh cũng nhìn nhau như token chữ. Patch "quai cốc" hút thông tin từ patch xung quanh để thành biểu diễn "cốc". (ViT gốc còn thêm một token [CLS] học được ở đầu dãy để tóm tắt ảnh cho bài toán phân loại; VLA thường bỏ token này và đưa toàn bộ token patch cho mô hình ngôn ngữ.)
 
 ## Tóm tắt dòng chảy
 
@@ -201,5 +205,5 @@ Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm **đ�
 
 **Câu kiểm tra:** nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?
 
-*Đáp án:* ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc ở trái và cốc ở phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.
+*Đáp án:* ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.
 :::

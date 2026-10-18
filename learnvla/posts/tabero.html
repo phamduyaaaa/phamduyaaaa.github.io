@@ -78,7 +78,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Tabero: Gentle Manipulation with Closed-Loop Force Feedback</h1>
@@ -95,6 +95,14 @@
 <p>Paper: <a href="https://arxiv.org/abs/2605.27886">arXiv 2605.27886</a> (ICML 2026), code at <a href="https://github.com/NathanWu7/Tabero">NathanWu7/Tabero</a>. It is both a <strong>benchmark/data pipeline</strong> and a <strong>model</strong>.</p>
 <h2>The pain it cures</h2>
 <p>A VLA told to "pick up the egg gently" has no way to make the gripper squeeze less: it never saw force, and an open-loop position command cannot hold a target force. Tabero attacks both ends: it creates force-aware data cheaply, and it gives the policy a force-position command interface that a low-level loop can actually track.</p>
+<h2>Try the naive way first</h2>
+<p>Add "gently" to the instruction of a position-only policy. The gripper still closes to the commanded width, so the squeeze depends on the object, not on the word. Table 3 of the paper shows the result on Dataset B: a model with no tactile or force input scores 0.00 success on both firm and gentle runs, and models that get tactile tokens but no force supervision reach 0.37–0.40 when told to be firm and only 0.01 when told to be gentle.</p>
+<h2>Work it by hand: two forces from two fingertips</h2>
+<p>Use one common gripper frame where $z$ is the closing axis and $y$ points up. The left fingertip measures $F_L = (0,\ 1.5,\ 5)$ N, the right $F_R = (0,\ 1.5,\ -5)$ N.</p>
+<p>$$F_{grip} = 2\min(|5|,\ |{-5}|) = 10\ \text{N}$$</p>
+<p>$$F_{applied} = -(F_L + F_R) = -(0,\ 3,\ 0) = (0,\ -3,\ 0)\ \text{N}$$</p>
+<p>The two squeezing components cancel in $F_{applied}$, leaving a net 3 N downward push on the object; the squeeze appears only in $F_{grip}$. That is what "decoupled" means: the policy can ask for a gentle squeeze and a firm press at the same time. Taking the <strong>minimum</strong> finger makes $F_{grip}$ follow the weaker contact: if one finger read 5 N and the other 3 N, $F_{grip} = 6$ N.</p>
+<p>The grip loop then boosts the policy's request by a feedforward gain. With the paper's $k_{ff} = 0.6$, a predicted grip of 5 N becomes a target of $(1 + 0.6) \times 5 = 8$ N.</p>
 <h2>The benchmark pipeline</h2>
 <p>Take open-source trajectories made for another simulator (LIBERO tasks, originally MuJoCo) and <strong>replay</strong> them in Isaac Lab with a simulated GelSight gripper (320×240 image, 11×9 marker grid; Taxim for tactile images, FOTS for the marker field, physics-engine ground-truth contact force), sampled at 20 Hz. Force diversity comes from impedance gains for 100%, 25% and 10% force levels, and the paired instruction uses adverbs ("firmly", "gently"). Evaluation scores physical interaction quality as well as success: SR, mean grip force AG, peak grip force MG, and the matching applied-force metrics.</p>
 <h2>Architecture (Tabero-VTLA)</h2>
@@ -136,12 +144,23 @@
 <li>Both the feedforward term and the admittance loop are needed for accurate force tracking (ablation).</li>
 </ul>
 <h2>Caveats</h2>
-<p>The visual encoder, the language encoder, the policy and controller rates and the action-chunk length are not stated. The text says the force input is 6D while Table 7 lists an MLP input of $8\times 6 = 48$. The authors note the framework does not jointly optimise task success and minimal force.</p>
+<p>The visual encoder, the language encoder, the policy and controller rates and the action-chunk length are not stated. The text says the force input is 6D while Table 7 lists an MLP input of $8\times 6 = 48$. The authors note the framework does not jointly optimise task success and minimal force.
+<strong>Carry forward:</strong> every method so far needs a tactile or force sensor at run time. <a href="fd-vla.html">FD-VLA</a> asks whether the force can be inferred from vision and arm state instead.</p>
+<p><strong>Check question:</strong> in the same frame, $F_L = (0,\ 1,\ 4)$ N and $F_R = (0,\ 2,\ -6)$ N. Compute $F_{grip}$ and $F_{applied}$. What target does the grip loop use if the policy predicts 10 N?</p>
+<p><em>Answer:</em> $F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0,\ 3,\ -2) = (0,\ -3,\ 2)$ N: 3 N down, plus 2 N along the closing axis because the fingers do not squeeze evenly. Target $= 1.6 \times 10 = 16$ N.</p>
     </div>
     <div data-vi>
 <p>Bài báo: <a href="https://arxiv.org/abs/2605.27886">arXiv 2605.27886</a> (ICML 2026), code tại <a href="https://github.com/NathanWu7/Tabero">NathanWu7/Tabero</a>. Đây vừa là <strong>benchmark/pipeline dữ liệu</strong> vừa là <strong>mô hình</strong>.</p>
 <h2>Vấn đề cần chữa</h2>
 <p>Một VLA được bảo "nhặt quả trứng nhẹ tay" không có cách nào làm kẹp siết nhẹ hơn: nó chưa từng thấy lực, và lệnh vị trí vòng hở không giữ được lực mục tiêu. Tabero xử lý cả hai đầu: tạo dữ liệu có lực với chi phí thấp, và cho chính sách một giao diện lệnh lực-vị trí mà vòng điều khiển thấp có thể bám theo thật.</p>
+<h2>Thử cách ngây thơ trước</h2>
+<p>Thêm chữ "gently" vào câu lệnh của một chính sách chỉ điều khiển vị trí. Kẹp vẫn đóng tới độ mở được ra lệnh, nên lực siết phụ thuộc vào vật chứ không phụ thuộc vào chữ. Bảng 3 của bài cho thấy kết quả trên Dataset B: mô hình không có đầu vào xúc giác hay lực đạt 0,00 cả khi bảo "firm" lẫn "gentle", và các mô hình có token xúc giác nhưng không có giám sát lực đạt 0,37–0,40 khi bảo "firm" và chỉ 0,01 khi bảo "gentle".</p>
+<h2>Tính tay: hai lực từ hai đầu ngón</h2>
+<p>Dùng một khung chung của kẹp, trong đó $z$ là trục đóng kẹp và $y$ hướng lên. Đầu ngón trái đo $F_L = (0,\ 1.5,\ 5)$ N, đầu ngón phải $F_R = (0,\ 1.5,\ -5)$ N.</p>
+<p>$$F_{grip} = 2\min(|5|,\ |{-5}|) = 10\ \text{N}$$</p>
+<p>$$F_{applied} = -(F_L + F_R) = -(0,\ 3,\ 0) = (0,\ -3,\ 0)\ \text{N}$$</p>
+<p>Hai thành phần siết triệt tiêu nhau trong $F_{applied}$, còn lại một lực đẩy xuống 3 N lên vật; lực siết chỉ xuất hiện trong $F_{grip}$. Đó là nghĩa của "tách rời": chính sách có thể đòi siết nhẹ và ấn mạnh cùng lúc. Lấy ngón <strong>nhỏ hơn</strong> khiến $F_{grip}$ bám theo tiếp xúc yếu hơn: nếu một ngón đọc 5 N và ngón kia 3 N thì $F_{grip} = 6$ N.</p>
+<p>Vòng kẹp sau đó tăng yêu cầu của chính sách bằng một hệ số feedforward. Với $k_{ff} = 0.6$ của bài, lực kẹp dự đoán 5 N thành mục tiêu $(1 + 0.6) \times 5 = 8$ N.</p>
 <h2>Pipeline benchmark</h2>
 <p>Lấy các quỹ đạo mã nguồn mở làm cho mô phỏng khác (task LIBERO, gốc là MuJoCo) rồi <strong>phát lại</strong> chúng trong Isaac Lab với kẹp GelSight mô phỏng (ảnh 320×240, lưới marker 11×9; Taxim cho ảnh xúc giác, FOTS cho trường marker, lực tiếp xúc chuẩn từ engine vật lý), lấy mẫu 20 Hz. Độ đa dạng lực đến từ hệ số impedance cho mức lực 100%, 25% và 10%, và câu lệnh đi kèm dùng trạng từ ("firmly", "gently"). Đánh giá chấm cả chất lượng tương tác vật lý chứ không chỉ thành công: SR, lực kẹp trung bình AG, lực kẹp đỉnh MG, và các chỉ số lực tác dụng tương ứng.</p>
 <h2>Kiến trúc (Tabero-VTLA)</h2>
@@ -184,6 +203,9 @@
 </ul>
 <h2>Lưu ý</h2>
 <p>Encoder thị giác, encoder ngôn ngữ, tần số chính sách và bộ điều khiển, và độ dài action chunk không được nêu. Văn bản nói lực đầu vào là 6D trong khi Bảng 7 ghi đầu vào MLP là $8\times 6 = 48$. Các tác giả thừa nhận khung chưa tối ưu đồng thời thành công nhiệm vụ và lực tối thiểu.</p>
+<p><strong>Mang theo sang bài sau:</strong> mọi phương pháp tới đây đều cần cảm biến xúc giác hoặc lực lúc chạy. <a href="fd-vla.html">FD-VLA</a> hỏi: có suy ra được lực từ thị giác và state của cánh tay không?</p>
+<p><strong>Câu kiểm tra:</strong> cùng khung đó, $F_L = (0,\ 1,\ 4)$ N và $F_R = (0,\ 2,\ -6)$ N. Tính $F_{grip}$ và $F_{applied}$. Vòng kẹp dùng mục tiêu bao nhiêu nếu chính sách dự đoán 10 N?</p>
+<p><em>Đáp án:</em> $F_{grip} = 2\min(4, 6) = 8$ N. $F_{applied} = -(0,\ 3,\ -2) = (0,\ -3,\ 2)$ N: 3 N đẩy xuống, cộng 2 N dọc trục đóng kẹp vì hai ngón siết không đều. Mục tiêu $= 1.6 \times 10 = 16$ N.</p>
     </div>
   </article>
 

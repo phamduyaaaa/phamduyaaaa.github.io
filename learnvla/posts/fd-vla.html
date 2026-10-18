@@ -78,7 +78,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>FD-VLA: Force Distilled from Vision and State</h1>
@@ -95,6 +95,21 @@
 <p>Paper: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (February 2026), built on SmolVLA.</p>
 <h2>The pain it cures</h2>
 <p>Force sensors are costly, fragile and often absent on deployed robots. Yet the earlier force VLAs in this series (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) need them at run time. FD-VLA's idea: the force during contact is largely <strong>predictable from what the robot sees and how its arm is posed</strong>, so train a small module to predict a latent force token and throw the sensor away at inference.</p>
+<h2>Try the naive way first</h2>
+<p>There are three obvious options, and the paper measures two of them on its three tasks:</p>
+<ol>
+<li>Feed the raw sensor force in. It helps, but needs the sensor at run time, the very thing to remove.</li>
+<li>Encode force with a plain MLP and no distillation module: <strong>38.9%</strong>.</li>
+<li>Use the encoded ground-truth force itself as the attention query: <strong>51.1%</strong>.</li>
+</ol>
+<p>A learnable query that has to <em>predict</em> the force latent does best, <strong>61.1%</strong>. Forcing the model to rebuild force from what it sees seems to teach it which visual cues matter.</p>
+<h2>Work it by hand: one single-query attention step</h2>
+<p>The FDM's only query is $p$. Take three context tokens $[p,\ f^V,\ f^S]$ with values $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, and let the scaled scores $q \cdot k / \sqrt{d_k}$ be $(0,\ 2,\ 1)$.</p>
+<p>$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$</p>
+<p>$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$</p>
+<p>Ignoring $W_O$, LayerNorm, the FFN and the $+p$ residual, $Z$ is the predicted force token. If the teacher's encoded force is $f^{aF} = (1.5,\ 1.0)$:</p>
+<p>$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$</p>
+<p>The gradient asks for more of the first coordinate and less of the second, so the scores shift weight from the vision token towards the state token. Over many samples, the module learns which mix of visual and arm cues predicts the force.</p>
 <h2>Architecture</h2>
 <figure class="diagram"><svg role="img" aria-label="The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
@@ -154,12 +169,30 @@
 </tbody>
 </table>
 <h2>Caveats</h2>
-<p>The text's gains for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative), and the π0 numbers do not obviously add up against FD-VLA's 61.1%. Hidden sizes, $\lambda$, the chunk length, control rate and training schedule are not stated. The paper says the model has about one tenth of π0's parameters.</p>
+<p>The text's gains for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative), and the π0 numbers do not obviously add up against FD-VLA's 61.1%. Hidden sizes, $\lambda$, the chunk length, control rate and training schedule are not stated. The paper says the model has about one tenth of π0's parameters.
+<strong>Carry forward:</strong> FD-VLA learns force by regressing onto a sensor latent, so it learns what the force <em>is</em>, not what force is <em>safe</em>. <a href="hapticvla.html">HapticVLA</a> turns tactile data into a safety reward, then also removes the sensor by distillation.</p>
+<p><strong>Check question:</strong> same values, but the scores are $(0,\ 0,\ 2)$. What is $Z$, and what is $L_{dist}$ against $f^{aF} = (1.5,\ 1.0)$?</p>
+<p><em>Answer:</em> softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, much worse than before: too much weight on the state token now.</p>
     </div>
     <div data-vi>
 <p>Bài báo: <a href="https://arxiv.org/abs/2602.02142">arXiv 2602.02142</a> (tháng 2/2026), xây trên SmolVLA.</p>
 <h2>Vấn đề cần chữa</h2>
 <p>Cảm biến lực đắt, dễ hỏng và thường không có trên robot triển khai. Vậy mà các VLA lực trước trong series này (<a href="forcevla.html">ForceVLA</a>, <a href="forcevla2.html">ForceVLA2</a>) cần chúng lúc chạy. Ý tưởng FD-VLA: lực khi tiếp xúc phần lớn <strong>đoán được từ những gì robot thấy và tư thế cánh tay</strong>, nên huấn luyện một module nhỏ dự đoán token lực ẩn rồi bỏ cảm biến lúc suy luận.</p>
+<h2>Thử cách ngây thơ trước</h2>
+<p>Có ba lựa chọn hiển nhiên, và bài báo đo hai trong số đó trên ba task của mình:</p>
+<ol>
+<li>Đưa thẳng lực từ cảm biến vào. Có giúp, nhưng cần cảm biến lúc chạy, đúng thứ ta muốn bỏ.</li>
+<li>Mã hóa lực bằng một MLP thường, không có module chưng cất: <strong>38,9%</strong>.</li>
+<li>Dùng chính lực thật đã mã hóa làm query cho attention: <strong>51,1%</strong>.</li>
+</ol>
+<p>Một query học được, buộc phải <em>dự đoán</em> latent lực, cho kết quả tốt nhất, <strong>61,1%</strong>. Bắt mô hình dựng lại lực từ những gì nó thấy dường như dạy nó tín hiệu thị giác nào mới quan trọng.</p>
+<h2>Tính tay: một bước attention một query</h2>
+<p>Query duy nhất của FDM là $p$. Lấy ba token ngữ cảnh $[p,\ f^V,\ f^S]$ với value $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, và cho điểm đã chia tỉ lệ $q \cdot k / \sqrt{d_k}$ là $(0,\ 2,\ 1)$.</p>
+<p>$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$</p>
+<p>$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$</p>
+<p>Bỏ qua $W_O$, LayerNorm, FFN và residual $+p$, $Z$ chính là token lực dự đoán. Nếu lực thật đã mã hóa của teacher là $f^{aF} = (1.5,\ 1.0)$:</p>
+<p>$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$</p>
+<p>Gradient đòi tăng tọa độ thứ nhất và giảm tọa độ thứ hai, nên điểm số dịch trọng số từ token thị giác sang token state. Qua nhiều mẫu, module học được cách pha trộn tín hiệu thị giác và cánh tay để đoán lực.</p>
 <h2>Kiến trúc</h2>
 <figure class="diagram"><svg role="img" aria-label="Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó được kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
@@ -220,6 +253,9 @@
 </table>
 <h2>Lưu ý</h2>
 <p>Mức cải thiện bài nêu cho baseline có dùng lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối, và số của π0 không khớp rõ ràng với 61,1% của FD-VLA. Kích thước ẩn, $\lambda$, độ dài chunk, tần số điều khiển và lịch huấn luyện không được nêu. Bài cho biết mô hình có khoảng một phần mười số tham số của π0.</p>
+<p><strong>Mang theo sang bài sau:</strong> FD-VLA học lực bằng cách hồi quy về latent của cảm biến, nên nó học lực <em>là bao nhiêu</em>, không học lực nào là <em>an toàn</em>. <a href="hapticvla.html">HapticVLA</a> biến dữ liệu xúc giác thành phần thưởng an toàn, rồi cũng bỏ cảm biến bằng chưng cất.</p>
+<p><strong>Câu kiểm tra:</strong> cùng value, nhưng điểm số là $(0,\ 0,\ 2)$. $Z$ bằng bao nhiêu, và $L_{dist}$ so với $f^{aF} = (1.5,\ 1.0)$ là bao nhiêu?</p>
+<p><em>Đáp án:</em> softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, tệ hơn nhiều so với trước: giờ dồn quá nhiều trọng số vào token state.</p>
     </div>
   </article>
 

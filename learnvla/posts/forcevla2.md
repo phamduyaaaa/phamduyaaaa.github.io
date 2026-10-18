@@ -15,6 +15,23 @@ Paper: [arXiv 2603.15169](https://arxiv.org/abs/2603.15169) (March 2026), the su
 
 ForceVLA feeds force in but still **outputs only an end-effector pose**. When the contact itself is the goal (press a button with the right force, polish a surface), a pose command cannot say how hard to push. ForceVLA2 changes the **output** too: the policy predicts a pose change and a contact force, a hybrid force-position action. It also lets force steer the task at a higher level, deciding when a subtask is done.
 
+## Try the naive way first
+
+Keep ForceVLA's output, a target pose only, and let an impedance controller track it. Against a rigid surface that controller behaves like a spring of stiffness $K$: the force it applies is $F = K\,\Delta x$, where $\Delta x$ is how far the commanded pose lies inside the surface.
+
+## Work it by hand
+
+Say the task needs $10$ N and $K = 1000$ N/m. A pose-only policy has to command
+
+$$\Delta x = \frac{F}{K} = \frac{10}{1000} = 0.01\ \text{m} = 10\ \text{mm}$$
+
+inside the surface. Now let its estimate of where the surface is be 5 mm off:
+
+- surface 5 mm closer than believed: $\Delta x = 15$ mm, so $F = 15$ N
+- surface 5 mm farther than believed: $\Delta x = 5$ mm, so $F = 5$ N
+
+A 5 mm perception error becomes a ±50% force error, because the force is only implied by the pose through a geometry the policy has to guess. ForceVLA2 makes the policy state the force directly, $a_t = [\Delta p_t;\ f_t]$, so the low-level control can regulate towards $f_t$ instead of relying on that guess. ($K$ and the 5 mm are illustrative values, not from the paper.)
+
 ## Architecture
 
 [[fig:forcevla2]] ForceVLA2: force enters as a text-like force prompt in the VLM and as force tokens next to the EE pose; the Cross-Scale MoE fuses VLM output, state and force, with a bypass that keeps the raw force signal.
@@ -35,6 +52,11 @@ ForceVLA feeds force in but still **outputs only an end-effector pose**. When th
 
 - The text says the gate "activates the most relevant expert" but the equation sums all three experts weighted by $w$. Top-k and load-balancing are not described.
 - Loss equations, the list of frozen modules and the number of denoising steps are not given in the part of the paper I could read in full. Appendix details (control rate, hyper-parameters) were not verified, so they are left out here.
+**Carry forward:** ForceVLA2 has one parallel gripper and one wrist F/T sensor. A humanoid with two dexterous hands has torque at 14 arm joints and touch at 10 fingertips: which signal should correct which part of the body? See [MoDE-VLA](mode-vla.html).
+
+**Check question:** $K = 500$ N/m, the task needs 8 N, and the surface is actually 4 mm closer than the pose-only policy believes. What force is applied, and how large is the error?
+
+*Answer:* the policy commands $\Delta x = 8/500 = 0.016$ m = 16 mm. The real penetration is $16 + 4 = 20$ mm, so $F = 500 \times 0.020 = 10$ N: 2 N too much, a 25% error.
 :::
 
 :::vi
@@ -43,6 +65,23 @@ Bài báo: [arXiv 2603.15169](https://arxiv.org/abs/2603.15169) (tháng 3/2026),
 ## Vấn đề cần chữa
 
 ForceVLA đưa lực vào nhưng **đầu ra vẫn chỉ là pose của end-effector**. Khi chính lực tiếp xúc là mục tiêu (ấn nút với đúng lực, đánh bóng bề mặt), lệnh pose không nói được cần ấn mạnh đến đâu. ForceVLA2 đổi cả **đầu ra**: chính sách dự đoán độ dịch pose và lực tiếp xúc, tức hành động lai lực-vị trí. Lực còn được dùng ở mức cao hơn để quyết định khi nào xong một subtask.
+
+## Thử cách ngây thơ trước
+
+Giữ đầu ra như ForceVLA, chỉ có pose mục tiêu, và để bộ điều khiển impedance bám theo. Khi ấn vào bề mặt cứng, bộ điều khiển đó hoạt động như một lò xo có độ cứng $K$: lực tác dụng là $F = K\,\Delta x$, với $\Delta x$ là độ sâu pose được ra lệnh nằm bên trong bề mặt.
+
+## Tính tay
+
+Giả sử task cần $10$ N và $K = 1000$ N/m. Chính sách chỉ xuất pose phải ra lệnh
+
+$$\Delta x = \frac{F}{K} = \frac{10}{1000} = 0.01\ \text{m} = 10\ \text{mm}$$
+
+vào trong bề mặt. Giờ cho ước lượng vị trí bề mặt của nó lệch 5 mm:
+
+- bề mặt gần hơn 5 mm so với nó nghĩ: $\Delta x = 15$ mm, nên $F = 15$ N
+- bề mặt xa hơn 5 mm: $\Delta x = 5$ mm, nên $F = 5$ N
+
+Sai số nhận thức 5 mm biến thành sai số lực ±50%, vì lực chỉ được ngầm định qua pose, qua một hình học mà chính sách phải đoán. ForceVLA2 bắt chính sách nói thẳng lực, $a_t = [\Delta p_t;\ f_t]$, để điều khiển mức thấp điều chỉnh về $f_t$ thay vì dựa vào phỏng đoán đó. ($K$ và 5 mm là giá trị minh họa, không lấy từ bài báo.)
 
 ## Kiến trúc
 
@@ -64,4 +103,10 @@ ForceVLA đưa lực vào nhưng **đầu ra vẫn chỉ là pose của end-effe
 
 - Bài viết gate "kích hoạt expert liên quan nhất" nhưng công thức lại cộng cả ba expert theo trọng số $w$. Top-k và cân bằng tải không được mô tả.
 - Công thức loss, danh sách module đóng băng và số bước denoise không có trong phần bài tôi đọc nguyên văn. Chi tiết ở phụ lục (tần số điều khiển, siêu tham số) chưa được kiểm chứng nên tôi bỏ qua.
+
+**Mang theo sang bài sau:** ForceVLA2 có một kẹp song song và một cảm biến F/T ở cổ tay. Một humanoid hai bàn tay khéo léo có mô men ở 14 khớp tay và xúc giác ở 10 đầu ngón: tín hiệu nào nên hiệu chỉnh phần nào của cơ thể? Xem [MoDE-VLA](mode-vla.html).
+
+**Câu kiểm tra:** $K = 500$ N/m, task cần 8 N, và bề mặt thực ra gần hơn 4 mm so với chính sách chỉ-xuất-pose nghĩ. Lực tác dụng là bao nhiêu, sai số lớn cỡ nào?
+
+*Đáp án:* chính sách ra lệnh $\Delta x = 8/500 = 0.016$ m = 16 mm. Độ ấn thực là $16 + 4 = 20$ mm, nên $F = 500 \times 0.020 = 10$ N: thừa 2 N, sai 25%.
 :::

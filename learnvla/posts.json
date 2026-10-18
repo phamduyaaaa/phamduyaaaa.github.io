@@ -13,7 +13,7 @@
       "Tokenizer",
       "Action"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "fd-vla",
@@ -30,7 +30,7 @@
       "Paper Notes",
       "SmolVLA"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "forcevla",
@@ -47,7 +47,7 @@
       "MoE",
       "π0"
     ],
-    "read_min": 2
+    "read_min": 4
   },
   {
     "slug": "forcevla2",
@@ -64,7 +64,7 @@
       "MoE",
       "π0"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "fwbc-vla",
@@ -81,7 +81,7 @@
       "Paper Notes",
       "π0.5"
     ],
-    "read_min": 3
+    "read_min": 5
   },
   {
     "slug": "hapticvla",
@@ -98,7 +98,7 @@
       "Paper Notes",
       "SmolVLA"
     ],
-    "read_min": 3
+    "read_min": 5
   },
   {
     "slug": "mode-vla",
@@ -116,7 +116,7 @@
       "MoE",
       "π0"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "tabero",
@@ -134,7 +134,7 @@
       "Paper Notes",
       "π0"
     ],
-    "read_min": 3
+    "read_min": 5
   },
   {
     "slug": "taf-vla",
@@ -151,7 +151,7 @@
       "Paper Notes",
       "π0.5"
     ],
-    "read_min": 2
+    "read_min": 4
   },
   {
     "slug": "ter-dagger",
@@ -168,7 +168,7 @@
       "Imitation Learning",
       "Paper Notes"
     ],
-    "read_min": 4
+    "read_min": 6
   },
   {
     "slug": "torl-vla",
@@ -185,7 +185,7 @@
       "Paper Notes",
       "π0.5"
     ],
-    "read_min": 3
+    "read_min": 5
   },
   {
     "slug": "vit",
@@ -217,6 +217,6 @@
       "Paper Notes",
       "RDT"
     ],
-    "read_min": 3
+    "read_min": 4
   }
 ]

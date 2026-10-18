@@ -78,7 +78,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>HapticVLA: Tactile-aware Manipulation Without Tactile Sensing at Inference</h1>
@@ -95,6 +95,20 @@
 <p>Paper: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (March 2026), Skoltech; project page linked from the abstract.</p>
 <h2>The pain it cures</h2>
 <p>Pick a jar, a waffle and an egg with the same gripper. The jar tolerates force; the waffle and the egg do not. Success must mean "object intact", not just "object moved". HapticVLA gets there with <strong>two stages</strong>: first learn gentleness using tactile data, then make the policy independent of the tactile sensor.</p>
+<h2>Try the naive way first</h2>
+<p>Two obvious options:</p>
+<ol>
+<li><strong>Give the VLA the tactile signal at inference.</strong> The abstract reports that HapticVLA beats baseline VLAs "including versions provided with direct tactile feedback during inference". Having the sensor is not the same as knowing what force is safe.</li>
+<li><strong>Plain imitation on all demonstrations.</strong> The dataset deliberately contains 20–30 faulty episodes per task in which the object was damaged. Plain behaviour cloning copies those as faithfully as the good ones.</li>
+</ol>
+<p>HapticVLA's answer is to <strong>weight</strong> each demonstration by how safe its contact was, then remove the sensor.</p>
+<h2>Work it by hand: reward weights in one batch</h2>
+<p>Four samples have advantages $A = (-4,\ 0,\ 2,\ 6)$ (already clipped to $[-6, 6]$). With $\alpha = 0.25$, $w_{raw} = e^{\alpha A}$:</p>
+<p>$$w_{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$$</p>
+<p>Clip to $[0.25,\ 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$. Divide by the batch mean $1.754$:</p>
+<p>$$w = (0.210,\ 0.570,\ 0.940,\ 2.281)$$</p>
+<p>The safest sample counts about 11 times as much as the riskiest in the flow-matching loss, and the clip stops one sample from taking over the batch.</p>
+<p><strong>The distillation target.</strong> For one action dimension, the ground truth is $a^{GT} = 0.020$ and the teacher says $\hat a^T = 0.012$. With the blend weight $\alpha = 0.5$ (the paper reuses the letter $\alpha$ for a different quantity here), the student's target is $0.5 \times 0.020 + 0.5 \times 0.012 = 0.016$. The student is pulled towards the teacher's gentler action without losing the demonstration.</p>
 <h2>Architecture</h2>
 <figure class="diagram"><svg role="img" aria-label="Stage 1 trains a teacher with a tactile reward as an extra condition; stage 2 distils the teacher's action targets into a student that never sees tactile data." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
@@ -138,12 +152,29 @@
 <h2>Results</h2>
 <p>20 trials per task (Jar, Waffles, Egg): HapticVLA reaches <strong>86.7%</strong> mean (75%, 90%, 95%), the teacher-style SmolVLA with the SA-RWFM expert alone <strong>75%</strong>, and X-VLA and VLA-0 score 0%. On the egg task it is a 45-point improvement over the base model. Asynchronous chunking sometimes lowers success because of added latency.</p>
 <h2>Caveats</h2>
-<p>The abstract says the student predicts a "compact tactile token", but the loss in the paper is only the action-level flow-matching distillation. No token size or token loss is given, so the figure marks that box as unspecified. Optimiser, learning rate, batch size, steps and control rate are not stated.</p>
+<p>The abstract says the student predicts a "compact tactile token", but the loss in the paper is only the action-level flow-matching distillation. No token size or token loss is given, so the figure marks that box as unspecified. Optimiser, learning rate, batch size, steps and control rate are not stated.
+<strong>Carry forward:</strong> all the arms so far stand on a fixed base. On a wheeled-legged robot, pushing a door also pushes the body, and there may be no force sensor at all. See <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
+<p><strong>Check question:</strong> a batch has only two samples, $A = (-6,\ 6)$, $\alpha = 0.25$. What are the final weights? And what is the blended target if $a^{GT} = 0.030$ and $\hat a^T = 0.010$?</p>
+<p><em>Answer:</em> $w_{raw} = (e^{-1.5},\ e^{1.5}) = (0.223,\ 4.482)$, clipped to $(0.25,\ 4.0)$, mean $2.125$, so $w = (0.118,\ 1.882)$. Target $= 0.5 \times 0.030 + 0.5 \times 0.010 = 0.020$.</p>
     </div>
     <div data-vi>
 <p>Bài báo: <a href="https://arxiv.org/abs/2603.15257">arXiv 2603.15257</a> (tháng 3/2026), Skoltech; trang dự án có link trong abstract.</p>
 <h2>Vấn đề cần chữa</h2>
 <p>Nhặt một hũ, một cái bánh waffle và một quả trứng bằng cùng một kẹp. Hũ chịu được lực; waffle và trứng thì không. Thành công phải nghĩa là "vật còn nguyên vẹn", không chỉ "vật đã di chuyển". HapticVLA làm được qua <strong>hai giai đoạn</strong>: học sự nhẹ nhàng bằng dữ liệu xúc giác trước, rồi làm chính sách không còn phụ thuộc cảm biến xúc giác.</p>
+<h2>Thử cách ngây thơ trước</h2>
+<p>Hai lựa chọn hiển nhiên:</p>
+<ol>
+<li><strong>Cho VLA tín hiệu xúc giác lúc suy luận.</strong> Abstract nêu HapticVLA thắng các VLA baseline, "kể cả những bản được cho phản hồi xúc giác trực tiếp lúc suy luận". Có cảm biến không đồng nghĩa với biết lực nào là an toàn.</li>
+<li><strong>Bắt chước thuần trên mọi demo.</strong> Bộ dữ liệu cố ý chứa 20–30 episode lỗi mỗi task, trong đó vật bị hỏng. Behavior cloning thuần sẽ chép các episode đó trung thành y như episode tốt.</li>
+</ol>
+<p>Lời giải của HapticVLA là <strong>gán trọng số</strong> cho mỗi demo theo mức an toàn của tiếp xúc, rồi bỏ cảm biến.</p>
+<h2>Tính tay: trọng số phần thưởng trong một batch</h2>
+<p>Bốn mẫu có advantage $A = (-4,\ 0,\ 2,\ 6)$ (đã cắt trong $[-6, 6]$). Với $\alpha = 0.25$, $w_{raw} = e^{\alpha A}$:</p>
+<p>$$w_{raw} = (e^{-1},\ e^{0},\ e^{0.5},\ e^{1.5}) = (0.368,\ 1.000,\ 1.649,\ 4.482)$$</p>
+<p>Cắt trong $[0.25,\ 4]$: $(0.368,\ 1.000,\ 1.649,\ 4.000)$. Chia cho trung bình batch $1.754$:</p>
+<p>$$w = (0.210,\ 0.570,\ 0.940,\ 2.281)$$</p>
+<p>Mẫu an toàn nhất có trọng lượng gấp khoảng 11 lần mẫu rủi ro nhất trong loss flow-matching, và việc cắt ngăn một mẫu chiếm hết batch.</p>
+<p><strong>Mục tiêu chưng cất.</strong> Với một chiều hành động, giá trị thật là $a^{GT} = 0.020$ và teacher nói $\hat a^T = 0.012$. Với trọng số trộn $\alpha = 0.5$ (bài dùng lại chữ $\alpha$ cho một đại lượng khác ở đây), mục tiêu của student là $0.5 \times 0.020 + 0.5 \times 0.012 = 0.016$. Student bị kéo về hành động nhẹ nhàng hơn của teacher mà không đánh mất demo.</p>
 <h2>Kiến trúc</h2>
 <figure class="diagram"><svg role="img" aria-label="Giai đoạn 1 huấn luyện teacher với phần thưởng xúc giác làm điều kiện phụ; giai đoạn 2 chưng cất mục tiêu hành động của teacher sang student không bao giờ thấy dữ liệu xúc giác." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-grp" x="10" y="8" width="960" height="170"/><text class="dg-h" x="22" y="26">STAGE 1 · TEACHER (uses tactile, offline)</text>
@@ -188,6 +219,9 @@
 <p>20 lượt mỗi task (Jar, Waffles, Egg): HapticVLA đạt <strong>86,7%</strong> trung bình (75%, 90%, 95%), SmolVLA chỉ có expert SA-RWFM đạt <strong>75%</strong>, X-VLA và VLA-0 đạt 0%. Ở task trứng, mô hình hơn mô hình gốc 45 điểm. Chunking bất đồng bộ đôi khi làm giảm thành công vì thêm độ trễ.</p>
 <h2>Lưu ý</h2>
 <p>Abstract nói student dự đoán một "token xúc giác gọn", nhưng loss trong bài chỉ là chưng cất flow-matching ở mức hành động. Không có kích thước token hay loss riêng cho token, nên hình đánh dấu ô đó là chưa được đặc tả. Optimizer, learning rate, batch size, số bước và tần số điều khiển không được nêu.</p>
+<p><strong>Mang theo sang bài sau:</strong> mọi cánh tay tới đây đều đứng trên đế cố định. Trên robot bánh-chân, đẩy cửa cũng là đẩy cả thân, và có thể không có cảm biến lực nào. Xem <a href="fwbc-vla.html">FWBC-VLA</a>.</p>
+<p><strong>Câu kiểm tra:</strong> batch chỉ có hai mẫu, $A = (-6,\ 6)$, $\alpha = 0.25$. Trọng số cuối là bao nhiêu? Và mục tiêu trộn là bao nhiêu nếu $a^{GT} = 0.030$ và $\hat a^T = 0.010$?</p>
+<p><em>Đáp án:</em> $w_{raw} = (e^{-1.5},\ e^{1.5}) = (0.223,\ 4.482)$, cắt thành $(0.25,\ 4.0)$, trung bình $2.125$, nên $w = (0.118,\ 1.882)$. Mục tiêu $= 0.5 \times 0.030 + 0.5 \times 0.010 = 0.020$.</p>
     </div>
   </article>
 

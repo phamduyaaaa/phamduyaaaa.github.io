@@ -15,6 +15,30 @@ Paper: [arXiv 2602.02142](https://arxiv.org/abs/2602.02142) (February 2026), bui
 
 Force sensors are costly, fragile and often absent on deployed robots. Yet the earlier force VLAs in this series ([ForceVLA](forcevla.html), [ForceVLA2](forcevla2.html)) need them at run time. FD-VLA's idea: the force during contact is largely **predictable from what the robot sees and how its arm is posed**, so train a small module to predict a latent force token and throw the sensor away at inference.
 
+## Try the naive way first
+
+There are three obvious options, and the paper measures two of them on its three tasks:
+
+1. Feed the raw sensor force in. It helps, but needs the sensor at run time, the very thing to remove.
+2. Encode force with a plain MLP and no distillation module: **38.9%**.
+3. Use the encoded ground-truth force itself as the attention query: **51.1%**.
+
+A learnable query that has to *predict* the force latent does best, **61.1%**. Forcing the model to rebuild force from what it sees seems to teach it which visual cues matter.
+
+## Work it by hand: one single-query attention step
+
+The FDM's only query is $p$. Take three context tokens $[p,\ f^V,\ f^S]$ with values $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, and let the scaled scores $q \cdot k / \sqrt{d_k}$ be $(0,\ 2,\ 1)$.
+
+$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$
+
+$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$
+
+Ignoring $W_O$, LayerNorm, the FFN and the $+p$ residual, $Z$ is the predicted force token. If the teacher's encoded force is $f^{aF} = (1.5,\ 1.0)$:
+
+$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$
+
+The gradient asks for more of the first coordinate and less of the second, so the scores shift weight from the vision token towards the state token. Over many samples, the module learns which mix of visual and arm cues predicts the force.
+
 ## Architecture
 
 [[fig:fd-vla]] The Force Distillation Module predicts a force token from vision and state; during training it is pulled towards the encoding of real force; at inference only the prediction branch runs.
@@ -40,6 +64,11 @@ FD-VLA reaches a **61.1%** mean success, against 23.3% for SmolVLA without force
 ## Caveats
 
 The text's gains for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative), and the π0 numbers do not obviously add up against FD-VLA's 61.1%. Hidden sizes, $\lambda$, the chunk length, control rate and training schedule are not stated. The paper says the model has about one tenth of π0's parameters.
+**Carry forward:** FD-VLA learns force by regressing onto a sensor latent, so it learns what the force *is*, not what force is *safe*. [HapticVLA](hapticvla.html) turns tactile data into a safety reward, then also removes the sensor by distillation.
+
+**Check question:** same values, but the scores are $(0,\ 0,\ 2)$. What is $Z$, and what is $L_{dist}$ against $f^{aF} = (1.5,\ 1.0)$?
+
+*Answer:* softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, much worse than before: too much weight on the state token now.
 :::
 
 :::vi
@@ -48,6 +77,30 @@ Bài báo: [arXiv 2602.02142](https://arxiv.org/abs/2602.02142) (tháng 2/2026),
 ## Vấn đề cần chữa
 
 Cảm biến lực đắt, dễ hỏng và thường không có trên robot triển khai. Vậy mà các VLA lực trước trong series này ([ForceVLA](forcevla.html), [ForceVLA2](forcevla2.html)) cần chúng lúc chạy. Ý tưởng FD-VLA: lực khi tiếp xúc phần lớn **đoán được từ những gì robot thấy và tư thế cánh tay**, nên huấn luyện một module nhỏ dự đoán token lực ẩn rồi bỏ cảm biến lúc suy luận.
+
+## Thử cách ngây thơ trước
+
+Có ba lựa chọn hiển nhiên, và bài báo đo hai trong số đó trên ba task của mình:
+
+1. Đưa thẳng lực từ cảm biến vào. Có giúp, nhưng cần cảm biến lúc chạy, đúng thứ ta muốn bỏ.
+2. Mã hóa lực bằng một MLP thường, không có module chưng cất: **38,9%**.
+3. Dùng chính lực thật đã mã hóa làm query cho attention: **51,1%**.
+
+Một query học được, buộc phải *dự đoán* latent lực, cho kết quả tốt nhất, **61,1%**. Bắt mô hình dựng lại lực từ những gì nó thấy dường như dạy nó tín hiệu thị giác nào mới quan trọng.
+
+## Tính tay: một bước attention một query
+
+Query duy nhất của FDM là $p$. Lấy ba token ngữ cảnh $[p,\ f^V,\ f^S]$ với value $v_p = (0,0)$, $v_V = (1,2)$, $v_S = (3,0)$, và cho điểm đã chia tỉ lệ $q \cdot k / \sqrt{d_k}$ là $(0,\ 2,\ 1)$.
+
+$$\text{softmax}(0, 2, 1) = \frac{(1,\ 7.389,\ 2.718)}{11.107} = (0.090,\ 0.665,\ 0.245)$$
+
+$$Z = 0.090\,(0,0) + 0.665\,(1,2) + 0.245\,(3,0) = (1.400,\ 1.330)$$
+
+Bỏ qua $W_O$, LayerNorm, FFN và residual $+p$, $Z$ chính là token lực dự đoán. Nếu lực thật đã mã hóa của teacher là $f^{aF} = (1.5,\ 1.0)$:
+
+$$L_{dist} = (1.400 - 1.5)^2 + (1.330 - 1.0)^2 = 0.010 + 0.109 = 0.119$$
+
+Gradient đòi tăng tọa độ thứ nhất và giảm tọa độ thứ hai, nên điểm số dịch trọng số từ token thị giác sang token state. Qua nhiều mẫu, module học được cách pha trộn tín hiệu thị giác và cánh tay để đoán lực.
 
 ## Kiến trúc
 
@@ -74,4 +127,10 @@ FD-VLA đạt **61,1%** thành công trung bình, so với 23,3% của SmolVLA k
 ## Lưu ý
 
 Mức cải thiện bài nêu cho baseline có dùng lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối, và số của π0 không khớp rõ ràng với 61,1% của FD-VLA. Kích thước ẩn, $\lambda$, độ dài chunk, tần số điều khiển và lịch huấn luyện không được nêu. Bài cho biết mô hình có khoảng một phần mười số tham số của π0.
+
+**Mang theo sang bài sau:** FD-VLA học lực bằng cách hồi quy về latent của cảm biến, nên nó học lực *là bao nhiêu*, không học lực nào là *an toàn*. [HapticVLA](hapticvla.html) biến dữ liệu xúc giác thành phần thưởng an toàn, rồi cũng bỏ cảm biến bằng chưng cất.
+
+**Câu kiểm tra:** cùng value, nhưng điểm số là $(0,\ 0,\ 2)$. $Z$ bằng bao nhiêu, và $L_{dist}$ so với $f^{aF} = (1.5,\ 1.0)$ là bao nhiêu?
+
+*Đáp án:* softmax $= (1, 1, 7.389)/9.389 = (0.107,\ 0.107,\ 0.787)$. $Z = 0.107\,(1,2) + 0.787\,(3,0) = (2.468,\ 0.213)$. $L_{dist} = 0.968^2 + 0.787^2 = 0.937 + 0.619 = 1.556$, tệ hơn nhiều so với trước: giờ dồn quá nhiều trọng số vào token state.
 :::

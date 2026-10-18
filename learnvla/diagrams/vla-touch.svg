@@ -1,7 +1,7 @@
 <svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-ext" x="20" y="24" width="150" height="44"/><text class="dg-t" x="95" y="42" text-anchor="middle">Goal g</text><text class="dg-s" x="95" y="57" text-anchor="middle">+ scene image s_t</text>
 <rect class="dg-box" x="230" y="24" width="150" height="44"/><text class="dg-t" x="305" y="42" text-anchor="middle">Task planner</text><text class="dg-s" x="305" y="57" text-anchor="middle">GPT-4o (VLM)</text>
-<rect class="dg-box" x="440" y="24" width="150" height="44"/><text class="dg-t" x="515" y="42" text-anchor="middle">Base VLA</text><text class="dg-s" x="515" y="57" text-anchor="middle">RDT-1B, frozen</text>
+<rect class="dg-box" x="440" y="24" width="150" height="44"/><text class="dg-t" x="515" y="42" text-anchor="middle">Base VLA</text><text class="dg-s" x="515" y="57" text-anchor="middle">RDT-1B, no tactile</text>
 <path class="dg-a" d="M170 46 H230"/><path class="dg-a" d="M380 46 H440"/><text class="dg-l" x="410" y="38" text-anchor="middle">I_k</text>
 <rect class="dg-key" x="650" y="96" width="170" height="64"/><text class="dg-t" x="735" y="122" text-anchor="middle">Interpolant</text><text class="dg-t" x="735" y="138" text-anchor="middle">controller π_I</text><text class="dg-s" x="735" y="152" text-anchor="middle">(BRIDGeR-style)</text>
 <path class="dg-a" d="M590 46 H735 V96"/><text class="dg-l" x="660" y="38" text-anchor="middle">chunk a (T_a=64)</text>

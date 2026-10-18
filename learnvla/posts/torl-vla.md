@@ -15,6 +15,31 @@ Paper: [arXiv 2606.09337](https://arxiv.org/abs/2606.09337) (June 2026), project
 
 A tactile VLA trained offline cannot adapt when contact conditions shift (a slightly different latch, a harder egg). It retries inefficiently or presses too hard. TORL-VLA keeps the offline policy as a **reference** and learns a **small online correction** on top, using human interventions near failure.
 
+## Try the naive way first
+
+Two obvious options, both measured in the paper (full-task successes out of 30):
+
+1. **Stay offline.** The wrench-aware reference model alone reaches 21/30. Better than π0.5 (12/30), but it cannot fix the failures it keeps making.
+2. **Standard online refinement** (RLT), treating human-corrected chunks like any other experience: 23/30.
+
+TORL-VLA reaches 28/30. The difference is mostly **how human takeovers are credited**.
+
+## Work it by hand: who gets the credit?
+
+A policy chunk earns no reward ($R^K_t = 0$). The robot is drifting towards an unsafe contact, so a human takes over, and the next state, now under human control, is worth $Q = 1.0$. Take $\gamma^K = 0.9$.
+
+Ordinary target:
+
+$$y_{task} = R^K_t + \gamma^K Q_{next} = 0 + 0.9 \times 1.0 = 0.9$$
+
+The policy's chunk looks good, but it was the human who saved the episode. The intervention-censored target sets the mask $m^{int} = 1$ for this handover, cuts the bootstrap and subtracts a penalty $c_{int}$ (take $c_{int} = 1$ for illustration):
+
+$$y_{ic} = R^K_t - c_{int}\,m^{int} + (1 - d_t)(1 - m^{int})\,\gamma^K Q_{next} = 0 - 1 + 0 = -1$$
+
+Now the chunk that led to the takeover is scored as bad, which is what the actor should learn.
+
+**The zero-initialised bypass.** At the start of training $\alpha = 0$, so $G_t = \Pi(F_t) + 0 \cdot P(z^{tac})$: the bypass adds nothing and cannot disturb the pretrained action expert. Training grows $\alpha$ only as far as the wrench actually helps.
+
 ## Architecture
 
 [[fig:torl-vla]] Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online from policy and human data.
@@ -51,6 +76,11 @@ Ablations on the reference model: removing the MoE drops to 18/17/19, the bypass
 ## Caveats
 
 I read the HTML verbatim only up to the middle of the experiments; details such as H, K, control rate, update ratios and latencies come from a summary and are not quoted here. The number of experts, the sample rate of the tactile pads and the VLM size are not stated in the part I read.
+**Carry forward:** TORL-VLA needs a human ready to intervene, and learns from whatever that human did. [TER-DAgger](ter-dagger.html) asks when exactly to call the human, and how to turn a messy correction into clean training data.
+
+**Check question:** $R^K_t = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, not terminal, $c_{int} = 1$. Compute $y_{task}$, and $y_{ic}$ when the next chunk is a human takeover.
+
+*Answer:* $y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. With $m^{int} = 1$: $y_{ic} = 0.5 - 1 + 0 = -0.5$.
 :::
 
 :::vi
@@ -59,6 +89,31 @@ Bài báo: [arXiv 2606.09337](https://arxiv.org/abs/2606.09337) (tháng 6/2026),
 ## Vấn đề cần chữa
 
 VLA xúc giác huấn luyện offline không thích nghi được khi điều kiện tiếp xúc đổi (chốt hơi khác, quả trứng cứng hơn). Nó thử lại kém hiệu quả hoặc ấn quá mạnh. TORL-VLA giữ chính sách offline làm **tham chiếu** và học thêm một **hiệu chỉnh online nhỏ**, dùng can thiệp của con người khi sắp thất bại.
+
+## Thử cách ngây thơ trước
+
+Hai lựa chọn hiển nhiên, cả hai đều được đo trong bài (số lần thành công cả chuỗi trên 30):
+
+1. **Ở yên offline.** Riêng mô hình tham chiếu nhận biết wrench đạt 21/30. Hơn π0.5 (12/30), nhưng không sửa được những lỗi nó cứ lặp lại.
+2. **Tinh chỉnh online tiêu chuẩn** (RLT), coi các chunk do con người sửa như mọi kinh nghiệm khác: 23/30.
+
+TORL-VLA đạt 28/30. Khác biệt chủ yếu nằm ở **cách ghi công khi con người tiếp quản**.
+
+## Tính tay: ai được ghi công?
+
+Một chunk của chính sách không nhận phần thưởng ($R^K_t = 0$). Robot đang trôi về phía tiếp xúc không an toàn, nên con người tiếp quản, và trạng thái kế tiếp, giờ do con người điều khiển, có giá trị $Q = 1.0$. Lấy $\gamma^K = 0.9$.
+
+Mục tiêu thông thường:
+
+$$y_{task} = R^K_t + \gamma^K Q_{next} = 0 + 0.9 \times 1.0 = 0.9$$
+
+Chunk của chính sách trông có vẻ tốt, nhưng thực ra con người đã cứu episode. Mục tiêu bị kiểm duyệt theo can thiệp đặt mask $m^{int} = 1$ cho lần chuyển giao này, cắt bootstrap và trừ một mức phạt $c_{int}$ (lấy $c_{int} = 1$ để minh họa):
+
+$$y_{ic} = R^K_t - c_{int}\,m^{int} + (1 - d_t)(1 - m^{int})\,\gamma^K Q_{next} = 0 - 1 + 0 = -1$$
+
+Giờ chunk dẫn tới việc tiếp quản bị chấm là tệ, đúng điều actor cần học.
+
+**Bypass khởi tạo bằng 0.** Lúc bắt đầu huấn luyện $\alpha = 0$, nên $G_t = \Pi(F_t) + 0 \cdot P(z^{tac})$: bypass chưa cộng gì và không thể làm xáo trộn action expert đã pretrain. Huấn luyện chỉ tăng $\alpha$ tới mức wrench thực sự có ích.
 
 ## Kiến trúc
 
@@ -96,4 +151,10 @@ Ablation mô hình tham chiếu: bỏ MoE tụt xuống 18/17/19, bỏ bypass 23
 ## Lưu ý
 
 Tôi chỉ đọc HTML nguyên văn đến khoảng giữa phần thực nghiệm; các chi tiết như H, K, tần số điều khiển, tỉ lệ cập nhật và độ trễ lấy từ bản tóm tắt nên không trích ở đây. Số expert, tần số lấy mẫu của miếng xúc giác và kích thước VLM không được nêu trong phần tôi đọc.
+
+**Mang theo sang bài sau:** TORL-VLA cần một người sẵn sàng can thiệp, và học từ bất cứ điều gì người đó làm. [TER-DAgger](ter-dagger.html) hỏi chính xác khi nào nên gọi con người, và làm sao biến một bản sửa lộn xộn thành dữ liệu huấn luyện sạch.
+
+**Câu kiểm tra:** $R^K_t = 0.5$, $\gamma^K = 0.9$, $Q_{next} = 0.8$, chưa kết thúc, $c_{int} = 1$. Tính $y_{task}$, và $y_{ic}$ khi chunk kế tiếp là con người tiếp quản.
+
+*Đáp án:* $y_{task} = 0.5 + 0.9 \times 0.8 = 1.22$. Với $m^{int} = 1$: $y_{ic} = 0.5 - 1 + 0 = -0.5$.
 :::

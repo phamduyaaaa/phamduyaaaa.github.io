@@ -78,7 +78,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Action Tokenization: Turning Actions into Tokens</h1>
@@ -122,6 +122,7 @@ $$</p>
 |a-\hat a| \le \frac{\Delta}{2} = 0.01
 $$</p>
 <p>For higher accuracy, increase $K$. With $K=256$, $\Delta = 0.2/256 \approx 0.00078$ and the maximum error is about $0.0004$ m, under half a millimetre.</p>
+<p>In practice the range is not set by hand. OpenVLA spreads the 256 bins uniformly between the 1st and 99th percentile of each action dimension in the training data, so rare outliers do not waste bins. Values outside the range are clipped to the first or last bin; otherwise the formula would give $b=10$ for $a=0.1$, a bin that does not exist.</p>
 <h2>Plugging into an LLM</h2>
 <p>Each bin gets a token of the vocabulary (OpenVLA overwrites 256 rarely used tokens of the Llama tokenizer). A 7-dimensional action becomes 7 consecutive tokens:</p>
 <p>$$
@@ -145,7 +146,7 @@ $$</p>
 <li><strong>Sequences get long.</strong> Each step costs 7 tokens. A robot controlled at 50 Hz over a 1-second chunk of 50 steps needs $50\times 7=350$ tokens, heavy for $O(N^2)$ attention.</li>
 <li><strong>Redundant tokens.</strong> At high frequency $a_t \approx a_{t-1}$, so the next token is almost predictable from the previous one, and each token carries very little new information.</li>
 </ol>
-<p>Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT), then tokenize it, using the same BPE as text tokenizers.</p>
+<p>Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT and quantisation), then merge frequent patterns with BPE, the same algorithm text tokenizers use, but trained on action data.</p>
 <p><strong>Check question:</strong> with $K=10$ bins on $[-0.1, 0.1]$, which bin does the action $a=-0.095$ fall into, what does it decode to, and what is the error?</p>
 <p><em>Answer:</em> $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. The bin covers $[-0.1,-0.08)$ with centre $-0.09$, so it decodes to $\hat a=-0.09$ and the error is $0.005$, within the bound $\Delta/2=0.01$.</p>
     </div>
@@ -180,6 +181,7 @@ $$</p>
 |a-\hat a| \le \frac{\Delta}{2} = 0.01
 $$</p>
 <p>Muốn chính xác hơn thì tăng $K$. Với $K=256$, $\Delta = 0.2/256 \approx 0.00078$, sai số tối đa $\approx 0.0004$ m, tức dưới nửa milimét.</p>
+<p>Thực tế khoảng giá trị không đặt bằng tay. OpenVLA chia đều 256 thùng giữa phân vị 1% và 99% của từng chiều hành động trong dữ liệu huấn luyện, để vài giá trị ngoại lai không chiếm mất thùng. Giá trị nằm ngoài khoảng bị kẹp vào thùng đầu hoặc thùng cuối; nếu không, công thức trên cho $b=10$ với $a=0.1$, một thùng không tồn tại.</p>
 <h2>Nối vào LLM như thế nào?</h2>
 <p>Mỗi thùng được gán một token trong từ điển (OpenVLA ghi đè 256 token ít dùng của tokenizer Llama). Một hành động 7 chiều trở thành 7 token liên tiếp:</p>
 <p>$$
@@ -203,7 +205,7 @@ $$</p>
 <li><strong>Dãy quá dài.</strong> Mỗi bước tốn 7 token. Robot điều khiển ở 50 Hz, một đoạn 1 giây gồm 50 bước sẽ là $50\times 7=350$ token, nặng cho attention $O(N^2)$.</li>
 <li><strong>Token dư thừa.</strong> Ở tần số cao, $a_t \approx a_{t-1}$, nên token tiếp theo gần như đoán được ngay từ token trước, và mỗi token mang rất ít thông tin mới.</li>
 </ol>
-<p>Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT) rồi mới token hóa, dùng chính BPE của tokenizer văn bản.</p>
+<p>Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT và lượng tử hóa) rồi gộp các mẫu hay gặp bằng BPE, cùng thuật toán với tokenizer văn bản nhưng được huấn luyện trên dữ liệu hành động.</p>
 <p><strong>Câu kiểm tra:</strong> với $K=10$ thùng trên $[-0.1,0.1]$, hành động $a=-0.095$ rơi vào thùng số mấy, giải mã ra bao nhiêu, và sai số là bao nhiêu?</p>
 <p><em>Đáp án:</em> $b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. Thùng này phủ $[-0.1,-0.08)$, tâm là $-0.09$, nên giải mã ra $\hat a=-0.09$ và sai số là $0.005$, nằm trong giới hạn $\Delta/2=0.01$.</p>
     </div>

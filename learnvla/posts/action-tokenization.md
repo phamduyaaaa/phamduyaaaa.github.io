@@ -59,6 +59,8 @@ $$
 
 For higher accuracy, increase $K$. With $K=256$, $\Delta = 0.2/256 \approx 0.00078$ and the maximum error is about $0.0004$ m, under half a millimetre.
 
+In practice the range is not set by hand. OpenVLA spreads the 256 bins uniformly between the 1st and 99th percentile of each action dimension in the training data, so rare outliers do not waste bins. Values outside the range are clipped to the first or last bin; otherwise the formula would give $b=10$ for $a=0.1$, a bin that does not exist.
+
 ## Plugging into an LLM
 
 Each bin gets a token of the vocabulary (OpenVLA overwrites 256 rarely used tokens of the Llama tokenizer). A 7-dimensional action becomes 7 consecutive tokens:
@@ -90,7 +92,7 @@ So tokenization is not only a trick to reuse LLMs. It also lets the model repres
 2. **Sequences get long.** Each step costs 7 tokens. A robot controlled at 50 Hz over a 1-second chunk of 50 steps needs $50\times 7=350$ tokens, heavy for $O(N^2)$ attention.
 3. **Redundant tokens.** At high frequency $a_t \approx a_{t-1}$, so the next token is almost predictable from the previous one, and each token carries very little new information.
 
-Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT), then tokenize it, using the same BPE as text tokenizers.
+Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT and quantisation), then merge frequent patterns with BPE, the same algorithm text tokenizers use, but trained on action data.
 
 **Check question:** with $K=10$ bins on $[-0.1, 0.1]$, which bin does the action $a=-0.095$ fall into, what does it decode to, and what is the error?
 
@@ -148,6 +150,8 @@ $$
 
 Muốn chính xác hơn thì tăng $K$. Với $K=256$, $\Delta = 0.2/256 \approx 0.00078$, sai số tối đa $\approx 0.0004$ m, tức dưới nửa milimét.
 
+Thực tế khoảng giá trị không đặt bằng tay. OpenVLA chia đều 256 thùng giữa phân vị 1% và 99% của từng chiều hành động trong dữ liệu huấn luyện, để vài giá trị ngoại lai không chiếm mất thùng. Giá trị nằm ngoài khoảng bị kẹp vào thùng đầu hoặc thùng cuối; nếu không, công thức trên cho $b=10$ với $a=0.1$, một thùng không tồn tại.
+
 ## Nối vào LLM như thế nào?
 
 Mỗi thùng được gán một token trong từ điển (OpenVLA ghi đè 256 token ít dùng của tokenizer Llama). Một hành động 7 chiều trở thành 7 token liên tiếp:
@@ -179,7 +183,7 @@ Vậy token hóa không chỉ là mẹo để dùng LLM, mà còn cho mô hình 
 2. **Dãy quá dài.** Mỗi bước tốn 7 token. Robot điều khiển ở 50 Hz, một đoạn 1 giây gồm 50 bước sẽ là $50\times 7=350$ token, nặng cho attention $O(N^2)$.
 3. **Token dư thừa.** Ở tần số cao, $a_t \approx a_{t-1}$, nên token tiếp theo gần như đoán được ngay từ token trước, và mỗi token mang rất ít thông tin mới.
 
-Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT) rồi mới token hóa, dùng chính BPE của tokenizer văn bản.
+Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT và lượng tử hóa) rồi gộp các mẫu hay gặp bằng BPE, cùng thuật toán với tokenizer văn bản nhưng được huấn luyện trên dữ liệu hành động.
 
 **Câu kiểm tra:** với $K=10$ thùng trên $[-0.1,0.1]$, hành động $a=-0.095$ rơi vào thùng số mấy, giải mã ra bao nhiêu, và sai số là bao nhiêu?
 
