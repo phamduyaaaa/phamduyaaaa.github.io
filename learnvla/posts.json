@@ -1,5 +1,22 @@
 [
   {
+    "slug": "cr-vla-force",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "CR-VLA-Force (CC-VLA): A Compliance Controller Guided by the VLA",
+    "title_vi": "CR-VLA-Force (CC-VLA): Bộ điều khiển mềm dẻo do VLA dẫn đường",
+    "excerpt_en": "A force-aware VLA still emits one action chunk per second as poses, so it cannot track a force or react fast. CC-VLA makes the VLA predict a desired force too, and a 500 Hz adaptive-stiffness controller tracks pose and force on a UR5e: 89.2% against 73.2% for ForceVLA.",
+    "excerpt_vi": "Một VLA có lực vẫn xuất mỗi giây một chunk dưới dạng pose, nên không bám được một lực cho trước và không phản ứng nhanh. CC-VLA bắt VLA dự đoán thêm lực mong muốn, rồi một bộ điều khiển độ cứng thích nghi 500 Hz bám cả pose lẫn lực trên UR5e: 89,2% so với 73,2% của ForceVLA.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Compliance",
+      "Paper Notes",
+      "π0"
+    ],
+    "read_min": 8
+  },
+  {
     "slug": "facet-0",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",
@@ -314,7 +331,7 @@
       "Tactile",
       "Survey"
     ],
-    "read_min": 17
+    "read_min": 18
   },
   {
     "slug": "survey-force-output",

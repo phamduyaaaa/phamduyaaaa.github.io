@@ -1,0 +1,22 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SLOW VLA (ONCE A SECOND) PLANS POSE AND FORCE, FAST CONTROLLER (500 Hz) TRACKS THEM</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">2 cameras + instruction</text><text class="dg-s" x="120" y="86" text-anchor="middle">wrist and side view</text>
+<rect class="dg-ext" x="20" y="112" width="200" height="54"/><text class="dg-t" x="120" y="134" text-anchor="middle">pose, gripper, force (13)</text><text class="dg-s" x="120" y="152" text-anchor="middle">proprioceptive state</text>
+<rect class="dg-key" x="20" y="178" width="200" height="54"/><text class="dg-t" x="120" y="200" text-anchor="middle">force history h x 6</text><text class="dg-s" x="120" y="218" text-anchor="middle">sampled every 0.1 s</text>
+<rect class="dg-box" x="270" y="46" width="200" height="110"/><text class="dg-t" x="370" y="82" text-anchor="middle">pi0 backbone</text><text class="dg-s" x="370" y="104" text-anchor="middle">PaliGemma + flow-matching</text><text class="dg-s" x="370" y="120" text-anchor="middle">action expert</text>
+<rect class="dg-key" x="270" y="170" width="200" height="70"/><text class="dg-t" x="370" y="196" text-anchor="middle">Cross-modal fusion expert</text><text class="dg-s" x="370" y="214" text-anchor="middle">force token + sparse MoE</text>
+<path class="dg-a" d="M220 73 H245 V90 H270"/><path class="dg-a" d="M220 139 H270"/><path class="dg-a" d="M220 205 H270"/><path class="dg-a" d="M370 170 V156"/>
+<rect class="dg-box" x="520" y="80" width="190" height="90"/><text class="dg-t" x="615" y="110" text-anchor="middle">Action chunk, H = 40</text><text class="dg-s" x="615" y="132" text-anchor="middle">desired pose + gripper</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ desired force</text>
+<path class="dg-a" d="M470 100 H520"/><path class="dg-a" d="M470 205 H495 V150 H520"/>
+<text class="dg-s" x="520" y="192">interpolated to 500 Hz</text>
+<rect class="dg-key" x="760" y="46" width="200" height="110"/><text class="dg-t" x="860" y="72" text-anchor="middle">VLA-guided adaptive</text><text class="dg-t" x="860" y="90" text-anchor="middle">compliance controller</text><text class="dg-s" x="860" y="114" text-anchor="middle">F = K(x - x_d) + D x' + F_d</text><text class="dg-s" x="860" y="132" text-anchor="middle">K adapts to the force error</text>
+<path class="dg-a" d="M710 125 H760"/>
+<rect class="dg-ext" x="760" y="190" width="200" height="60"/><text class="dg-t" x="860" y="214" text-anchor="middle">UR5e through RTDE</text><text class="dg-s" x="860" y="232" text-anchor="middle">6-DoF F/T sensor</text>
+<path class="dg-a" d="M860 156 V190"/>
+<path class="dg-ad" d="M860 250 V285 H120 V232"/><text class="dg-l" x="250" y="279">measured force: fast into the controller, slow into the history</text>
+<text class="dg-h" x="20" y="326">DATA AND TRAINING</text>
+<rect class="dg-ext" x="20" y="342" width="290" height="70"/><text class="dg-t" x="165" y="366" text-anchor="middle">Shared teleoperation</text><text class="dg-s" x="165" y="384" text-anchor="middle">gamepad or 3D mouse, made softer</text><text class="dg-s" x="165" y="400" text-anchor="middle">by a compensated virtual impedance</text>
+<rect class="dg-box" x="345" y="342" width="290" height="70"/><text class="dg-t" x="490" y="366" text-anchor="middle">Stage I</text><text class="dg-s" x="490" y="384" text-anchor="middle">fine-tune pi0 on images, language,</text><text class="dg-s" x="490" y="400" text-anchor="middle">proprioception</text>
+<rect class="dg-key" x="670" y="342" width="290" height="70"/><text class="dg-t" x="815" y="366" text-anchor="middle">Stage II</text><text class="dg-s" x="815" y="384" text-anchor="middle">add the force fusion expert as a</text><text class="dg-s" x="815" y="400" text-anchor="middle">residual branch of the action expert</text>
+<path class="dg-a" d="M310 377 H345"/><path class="dg-a" d="M635 377 H670"/>
+</svg>

@@ -107,7 +107,7 @@ Pick the row that looks most like your robot and your task. ● means start ther
 
 | Scenario: a concrete picture | What goes wrong with a plain VLA | Start with, and why | Then |
 |---|---|---|---|
-| **A.** A robot arm has a force/torque sensor at the wrist and must push a plug into a socket, wipe a whiteboard or peel a cucumber | It sees the plug but not how hard it pushes. Simply appending force to the state barely helps (+2.9 points for π0-base) | [ForceVLA](forcevla.html): gives force its own module after the VLM. 60.5% against 37.3% for π0-base on five tasks | [ForceVLA2](forcevla2.html) if you also want to ask for a force; [TORL-VLA](torl-vla.html) to keep improving online |
+| **A.** A robot arm has a force/torque sensor at the wrist and must push a plug into a socket, wipe a whiteboard or peel a cucumber | It sees the plug but not how hard it pushes. Simply appending force to the state barely helps (+2.9 points for π0-base) | [ForceVLA](forcevla.html): gives force its own module after the VLM. 60.5% against 37.3% for π0-base on five tasks | [ForceVLA2](forcevla2.html) if you also want to ask for a force; [CR-VLA-Force](cr-vla-force.html) if the arm is a UR and you want a controller that holds the force (89.2% against 73.2% for ForceVLA); [TORL-VLA](torl-vla.html) to keep improving online |
 | **B.** The instruction says "pick up the egg gently", or the object is a thin waffle | A pose-only policy cannot squeeze less; the force comes from the controller's stiffness | [Tabero](tabero.html): policy that outputs force targets; 89% less grip force when told "gently". [ForceVLA2](forcevla2.html): outputs pose and force; 66% against 48% for π0 on its five tasks (wiping, pressing, assembling) | [HapticVLA](hapticvla.html) if the deployed gripper has no touch sensor |
 | **C.** A parallel gripper carries a gel touch sensor; tasks involve a tool or a deformable object | Touch images are read like extra camera views: texture is captured, how hard the press is is not | [TaF-VLA](taf-vla.html): aligns touch with force first. 64.8% against 42.8% for FreeTacMan and 37.1% for π0.5 without touch | [VLA-Touch](vla-touch.html) (touch without retraining the VLA); [GelSight](gelsight.html) (how the sensor works) |
 | **D.** You use a VLA such as RDT and do not want to change it, but a planner should tell hard from soft by touch | A language model cannot read raw touch images; it answers that it cannot determine | [VLA-Touch](vla-touch.html): turns touch into words for the planner and adds a small refiner. Out of 20: cup placing 10 against 7, wiping 12 against 5, peeling 10 against 6 | [GelSight](gelsight.html) |
@@ -152,7 +152,7 @@ Two cautions. The numbers in the "start with" column come from different papers,
 | 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | six-axis force sensor, ultrasound probe | ② | probe motion | n/s | abstract+ |
 | 25 | [FWBC-VLA](fwbc-vla.html) | 09/2026 | sensorless, from joint torque | ③ ④ | actions + base residual | imitation, π0.5 | full |
 | 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | tactile images | ④ ⑥ | corrected chunk | flow-matching world-action model + tactile corrector trained on its own plans | abstract+ |
-| 27 | [CR-VLA-Force](https://arxiv.org/abs/2609.05832) | 09/2026 | F/T sequence | ② ④ | via compliance controller | multi-stage imitation | abstract |
+| 27 | [CR-VLA-Force](cr-vla-force.html) | 09/2026 | F/T history, UR5e | ② ④ | pose + force, tracked by a compliance controller | two-stage imitation on π0 | full |
 | 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | tactile images + 6-DoF fingertip force estimated from them | ② ⑥ | actions | mixture-of-transformers, factorised flow matching for arm and hand | abstract+ |
 | 29 | [ForceDelta-VLA](https://arxiv.org/abs/2609.18242) | 09/2026 | force history | ④ | corrected actions | distillation | abstract |
 | 30 | [ForceRFT](https://arxiv.org/abs/2609.22840) | 09/2026 | wrist wrench | ④ | pose residuals | residual RL, SmolVLA prior | abstract |
@@ -162,7 +162,7 @@ Two cautions. The numbers in the "start with" column come from different papers,
 
 ## 7. Caveats
 
-- 14 of the 33 rows come from abstracts only and 7 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.
+- 13 of the 33 rows come from abstracts only and 7 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.
 - The set reflects one search in October 2026. It is a snapshot, not a complete census.
 - Dates are the first arXiv submission (v1).
 - Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.
@@ -322,7 +322,7 @@ Hãy chọn hàng giống nhất với robot và tác vụ của bạn. ● ngh�
 
 | Tình huống: một hình dung cụ thể | Với VLA thường, chuyện gì hỏng | Bắt đầu từ đâu, và vì sao | Đọc tiếp |
 |---|---|---|---|
-| **A.** Cánh tay robot có cảm biến lực/mô-men ở cổ tay, cần ấn đầu cắm vào ổ, lau bảng trắng hoặc gọt dưa chuột | Nó thấy đầu cắm nhưng không biết đang ấn mạnh thế nào. Chỉ nối lực vào trạng thái thì gần như không giúp (+2,9 điểm với π0-base) | [ForceVLA](forcevla.html): cho lực một khối riêng sau VLM. 60,5% so với 37,3% của π0-base trên năm tác vụ | [ForceVLA2](forcevla2.html) nếu bạn còn muốn yêu cầu một lực; [TORL-VLA](torl-vla.html) để tiếp tục cải thiện online |
+| **A.** Cánh tay robot có cảm biến lực/mô-men ở cổ tay, cần ấn đầu cắm vào ổ, lau bảng trắng hoặc gọt dưa chuột | Nó thấy đầu cắm nhưng không biết đang ấn mạnh thế nào. Chỉ nối lực vào trạng thái thì gần như không giúp (+2,9 điểm với π0-base) | [ForceVLA](forcevla.html): cho lực một khối riêng sau VLM. 60,5% so với 37,3% của π0-base trên năm tác vụ | [ForceVLA2](forcevla2.html) nếu bạn còn muốn yêu cầu một lực; [CR-VLA-Force](cr-vla-force.html) nếu cánh tay là UR và bạn muốn bộ điều khiển giữ được lực (89,2% so với 73,2% của ForceVLA); [TORL-VLA](torl-vla.html) để tiếp tục cải thiện online |
 | **B.** Câu lệnh là "nhặt quả trứng nhẹ nhàng", hoặc vật là chiếc bánh waffle mỏng | Chính sách chỉ xuất pose thì không bóp nhẹ hơn được; lực do độ cứng bộ điều khiển quyết định | [Tabero](tabero.html): chính sách xuất lực mục tiêu; lực kẹp giảm 89% khi được dặn "nhẹ nhàng". [ForceVLA2](forcevla2.html): xuất pose và lực; 66% so với 48% của π0 trên năm tác vụ của nó (lau, ấn, lắp ráp) | [HapticVLA](hapticvla.html) nếu tay kẹp khi triển khai không có cảm biến chạm |
 | **C.** Tay kẹp song song gắn cảm biến chạm kiểu gel; tác vụ có dùng dụng cụ hoặc vật biến dạng | Ảnh xúc giác bị đọc như thêm một góc camera: nắm được kết cấu, không nắm được ấn mạnh đến đâu | [TaF-VLA](taf-vla.html): căn xúc giác với lực trước. 64,8% so với 42,8% của FreeTacMan và 37,1% của π0.5 không có xúc giác | [VLA-Touch](vla-touch.html) (thêm xúc giác mà không huấn luyện lại VLA); [GelSight](gelsight.html) (cảm biến hoạt động ra sao) |
 | **D.** Bạn dùng VLA như RDT và không muốn đổi nó, nhưng một planner cần phân biệt cứng và mềm bằng xúc giác | Mô hình ngôn ngữ không đọc được ảnh xúc giác thô; nó trả lời là không xác định được | [VLA-Touch](vla-touch.html): đổi xúc giác thành lời cho planner và thêm một bộ tinh chỉnh nhỏ. Trên 20 lượt: đặt cốc 10 so với 7, lau 12 so với 5, gọt 10 so với 6 | [GelSight](gelsight.html) |
@@ -367,7 +367,7 @@ Hai điều cần lưu ý. Các con số ở cột "bắt đầu từ đâu" đ�
 | 24 | [ForceU-VLA](https://arxiv.org/abs/2608.15009) | 08/2026 | cảm biến lực sáu trục, đầu dò siêu âm | ② | chuyển động đầu dò | n/s | abstract+ |
 | 25 | [FWBC-VLA](fwbc-vla.html) | 09/2026 | không cảm biến, suy từ mô-men khớp | ③ ④ | hành động + residual cho thân | imitation, π0.5 | full |
 | 26 | [TacPAC](https://arxiv.org/abs/2609.05266) | 09/2026 | ảnh xúc giác | ④ ⑥ | đoạn hành động đã chỉnh | world-action model flow matching + bộ chỉnh xúc giác huấn luyện trên chính kế hoạch của nó | abstract+ |
-| 27 | [CR-VLA-Force](https://arxiv.org/abs/2609.05832) | 09/2026 | chuỗi F/T | ② ④ | qua bộ điều khiển mềm dẻo | imitation nhiều giai đoạn | abstract |
+| 27 | [CR-VLA-Force](cr-vla-force.html) | 09/2026 | lịch sử F/T, UR5e | ② ④ | pose + lực, bám bằng bộ điều khiển mềm dẻo | imitation hai giai đoạn trên π0 | full |
 | 28 | [DeCAL](https://arxiv.org/abs/2609.09119) | 09/2026 | ảnh xúc giác + lực 6 bậc ở đầu ngón ước lượng từ chính ảnh đó | ② ⑥ | hành động | mixture-of-transformers, flow matching phân tách cho tay máy và bàn tay | abstract+ |
 | 29 | [ForceDelta-VLA](https://arxiv.org/abs/2609.18242) | 09/2026 | lịch sử lực | ④ | hành động đã chỉnh | chưng cất | abstract |
 | 30 | [ForceRFT](https://arxiv.org/abs/2609.22840) | 09/2026 | wrench cổ tay | ④ | residual cho pose | RL residual, tiên nghiệm SmolVLA | abstract |
@@ -377,7 +377,7 @@ Hai điều cần lưu ý. Các con số ở cột "bắt đầu từ đâu" đ�
 
 ## 7. Lưu ý
 
-- 14 trên 33 hàng chỉ dựa vào abstract và 7 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.
+- 13 trên 33 hàng chỉ dựa vào abstract và 7 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.
 - Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.
 - Ngày là ngày đăng arXiv lần đầu (v1).
 - Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.

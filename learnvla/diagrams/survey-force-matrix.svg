@@ -149,10 +149,10 @@
 <circle cx="830" cy="641" r="6.5" class="dg-box"/>
 <rect x="10" y="652" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
 <text class="dg-s" x="24" y="667">27</text>
-<text class="dg-s" x="54" y="667">CR-VLA-Force</text>
+<text class="dg-t" x="54" y="667">CR-VLA-Force</text>
 <text class="dg-mute dg-s" x="250" y="667">2026-09</text>
-<circle cx="430" cy="663" r="6.5" class="dg-box"/>
-<circle cx="630" cy="663" r="6.5" class="dg-box"/>
+<circle cx="430" cy="663" r="6.5" class="dg-key"/>
+<circle cx="630" cy="663" r="6.5" class="dg-key"/>
 <text class="dg-s" x="24" y="689">28</text>
 <text class="dg-s" x="54" y="689">DeCAL</text>
 <text class="dg-mute dg-s" x="250" y="689">2026-09</text>

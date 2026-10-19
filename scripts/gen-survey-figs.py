@@ -15,7 +15,7 @@ ENTRY = {
  "UniTacVLA": "46", "H-Tac": "56", "LIFT": "3", "FM-VLA": "3", "ForceU-VLA": "2", "FWBC-VLA": "34", "TacPAC": "46",
  "CR-VLA-Force": "24", "DeCAL": "26", "ForceDelta-VLA": "4", "ForceRFT": "4", "CompVLA": "4", "Opt2VLA": "4", "DexTacWAM": "6",
 }
-FULL = {"ForceVLA", "VLA-Touch", "ForceVLA2", "MoDE-VLA", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA"}
+FULL = {"CR-VLA-Force", "ForceVLA", "VLA-Touch", "ForceVLA2", "MoDE-VLA", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA"}
 HEAD = ["① VLM input", "② After VLM", "③ Action expert", "④ Outside VLA", "⑤ Training only", "⑥ Predicted"]
 
 def esc(s): return s.replace("&", "&amp;").replace("<", "&lt;")
@@ -61,9 +61,9 @@ print(len(meth), "methods;", H, "px tall")
 
 
 # ---- Sơ đồ "bản đồ chọn bài" (Survey 1, mục 5): tình huống x bài đọc ----
-POSTS = ["ForceVLA", "ForceVLA2", "MoDE-VLA", "VLA-Touch", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA", "GelSight"]
+POSTS = ["ForceVLA", "ForceVLA2", "CR-VLA-Force", "MoDE-VLA", "VLA-Touch", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA", "GelSight"]
 SCEN = [  # (nhãn, [bài chính], [bài đọc tiếp])
-    ("A  Wrist F/T sensor, insert / wipe / peel", ["ForceVLA"], ["ForceVLA2", "TORL-VLA"]),
+    ("A  Wrist F/T sensor, insert / wipe / peel", ["ForceVLA"], ["ForceVLA2", "CR-VLA-Force", "TORL-VLA"]),
     ("B  Must press softly: \"pick up the egg gently\"", ["Tabero", "ForceVLA2"], ["HapticVLA"]),
     ("C  Only a gel touch sensor on the gripper", ["TaF-VLA"], ["VLA-Touch", "GelSight"]),
     ("D  Planner should judge hard / soft from touch", ["VLA-Touch"], ["GelSight"]),
@@ -74,7 +74,7 @@ SCEN = [  # (nhãn, [bài chính], [bài đọc tiếp])
     ("I  Dexterous hand: peel an apple, assemble", ["MoDE-VLA"], ["ForceVLA"]),
     ("J  Same contact keeps failing, learn online", ["TORL-VLA"], ["TER-DAgger"]),
 ]
-x0, dx, top, rh = 400, 44, 120, 30
+x0, dx, top, rh = 400, 40, 120, 30
 H = top + rh * len(SCEN) + 44
 o = [f'<svg viewBox="0 0 980 {H}" xmlns="http://www.w3.org/2000/svg">']
 for j, name in enumerate(POSTS):

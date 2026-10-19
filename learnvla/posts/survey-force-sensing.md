@@ -91,7 +91,7 @@ $$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, 
 
 ## 4. Caveats
 
-- FAVLA [12], LIFT [22], CompliantVLA-adaptor [8] and CR-VLA-Force [27] say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.
+- FAVLA [12], LIFT [22] and CompliantVLA-adaptor [8] say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.
 - Rates are what the papers report, not properties of the sensor type.
 - Methods marked "abstract" in Survey 1 were classified from abstracts only.
 
@@ -232,7 +232,7 @@ $$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, 
 
 ## 4. Lưu ý
 
-- FAVLA [12], LIFT [22], CompliantVLA-adaptor [8] và CR-VLA-Force [27] ghi "lực/mô-men" hay "lực 6D" mà không nói đo ở đâu; có thể chúng ước lượng từ mô-men khớp.
+- FAVLA [12], LIFT [22] và CompliantVLA-adaptor [8] ghi "lực/mô-men" hay "lực 6D" mà không nói đo ở đâu; có thể chúng ước lượng từ mô-men khớp.
 - Tốc độ là con số các paper báo cáo, không phải đặc tính cố hữu của loại cảm biến.
 - Các phương pháp ghi "abstract" ở Survey 1 chỉ được phân loại từ abstract.
 

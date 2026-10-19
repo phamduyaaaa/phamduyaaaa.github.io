@@ -30,7 +30,7 @@ Think of telling someone to push a door. You can say *where to put the hand* (po
 | Interface | The policy outputs | Who sets the force | Examples |
 |---|---|---|---|
 | (a) Pose only | a target pose | controller stiffness × geometry error | ForceVLA [2], FD-VLA [10], TaF-VLA [9], LIFT [22], FM-VLA [23], HapticVLA [16] |
-| (b) Pose + force target | pose and $F^*$ | a hybrid or admittance controller that uses measured force | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CR-VLA-Force [27] |
+| (b) Pose + force target | pose and $F^*$ | a hybrid or admittance controller that uses measured force | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], [CR-VLA-Force](cr-vla-force.html) [27] |
 | (c) Pose + stiffness | pose and $K(t)$ | the policy decides how soft to be | CompVLA [31], CompliantVLA-adaptor [8] |
 | (d) Base + residual | a base action plus a small fast correction | the residual, between base updates | ForceDelta-VLA [29], ForceRFT [30], TER-DAgger [13], VLA-Touch [4], MoDE-VLA [14], TacPAC [26] |
 
@@ -189,7 +189,7 @@ Hãy nghĩ đến chuyện bảo ai đó đẩy cánh cửa. Bạn có thể nó
 | Giao diện | Chính sách xuất ra | Ai quyết định lực | Ví dụ |
 |---|---|---|---|
 | (a) Chỉ pose | một pose đích | độ cứng bộ điều khiển × sai lệch hình học | ForceVLA [2], FD-VLA [10], TaF-VLA [9], LIFT [22], FM-VLA [23], HapticVLA [16] |
-| (b) Pose + lực mục tiêu | pose và $F^*$ | bộ điều khiển lai hoặc admittance dùng lực đo được | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CR-VLA-Force [27] |
+| (b) Pose + lực mục tiêu | pose và $F^*$ | bộ điều khiển lai hoặc admittance dùng lực đo được | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], [CR-VLA-Force](cr-vla-force.html) [27] |
 | (c) Pose + độ cứng | pose và $K(t)$ | chính sách quyết định nên mềm đến đâu | CompVLA [31], CompliantVLA-adaptor [8] |
 | (d) Nền + residual | hành động nền cộng một bản hiệu chỉnh nhỏ, nhanh | phần residual, giữa hai lần cập nhật nền | ForceDelta-VLA [29], ForceRFT [30], TER-DAgger [13], VLA-Touch [4], MoDE-VLA [14], TacPAC [26] |
 

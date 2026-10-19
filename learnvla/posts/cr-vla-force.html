@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A force-aware VLA still emits one action chunk per second as poses, so it cannot track a force or react fast. CC-VLA makes the VLA predict a desired force too, and a 500 Hz adaptive-stiffness controller tracks pose and force on a UR5e: 89.2% against 73.2% for ForceVLA.">
+<title>CR-VLA-Force (CC-VLA): A Compliance Controller Guided by the VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="CR-VLA-Force (CC-VLA): A Compliance Controller Guided by the VLA">
+<meta property="og:description" content="A force-aware VLA still emits one action chunk per second as poses, so it cannot track a force or react fast. CC-VLA makes the VLA predict a desired force too, and a 500 Hz adaptive-stiffness controller tracks pose and force on a UR5e: 89.2% against 73.2% for ForceVLA.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">8 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>CR-VLA-Force (CC-VLA): A Compliance Controller Guided by the VLA</h1>
+    <h1 data-vi>CR-VLA-Force (CC-VLA): Bộ điều khiển mềm dẻo do VLA dẫn đường</h1>
+
+    <p class="post-excerpt-lead" data-en>A force-aware VLA still emits one action chunk per second as poses, so it cannot track a force or react fast. CC-VLA makes the VLA predict a desired force too, and a 500 Hz adaptive-stiffness controller tracks pose and force on a UR5e: 89.2% against 73.2% for ForceVLA.</p>
+    <p class="post-excerpt-lead" data-vi>Một VLA có lực vẫn xuất mỗi giây một chunk dưới dạng pose, nên không bám được một lực cho trước và không phản ứng nhanh. CC-VLA bắt VLA dự đoán thêm lực mong muốn, rồi một bộ điều khiển độ cứng thích nghi 500 Hz bám cả pose lẫn lực trên UR5e: 89,2% so với 73,2% của ForceVLA.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Compliance</span><span class="pill">Paper Notes</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2609.05832">arXiv 2609.05832</a> · 09/2026 · Huawei, South China University of Technology, Ola Dimensions, Hong Kong Polytechnic University · built on π0. The title says CR-VLA-Force; the framework is called CC-VLA (Control-aware Compliance VLA) inside the paper. No code or project link in the text.</p>
+<p><strong>PROBLEM</strong> Contact tasks need a force held steady (wiping at 40 N) and fast reactions, but a VLA runs about once a second.</p>
+<p><strong>WHAT FAILED BEFORE</strong> ForceVLA and TA-VLA put force into the VLA but still output position commands, so they work "without explicit or implicit force control" (the paper's words) and cannot track a force. In wiping, π0 and π0.5 hit the 75 N protective stop; ForceVLA's force error is 35.6% of the demonstrated force.</p>
+<p><strong>IDEA</strong> The VLA predicts a desired pose and a desired force each chunk; a 500 Hz controller follows them and adapts its stiffness to the force error. A force-history token and two-stage training feed the VLA.</p>
+<p><strong>RESULT</strong> 89.2% average success over six conditions against 73.2% for ForceVLA, and wiping-force error of 5.5% against 35.6%, on a UR5e.</p>
+</div>
+<h2>1. The problem: a pose-only chunk cannot hold a force</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The VLA stays slow (one inference per second); the controller is what makes the reaction fast and the contact safe." class="dg-natural" width="908" height="304" viewBox="0 0 908 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0 / π0.5</text><rect class="dg-box" x="124" y="22" width="125" height="38"/><text class="dg-t" x="186" y="45" text-anchor="middle">Images + text</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="141" height="54"/><text class="dg-t" x="353" y="37" text-anchor="middle">Pose chunk</text><text class="dg-s" x="353" y="53" text-anchor="middle">no force awareness</text><path class="dg-a" d="M424 41 H456"/><rect class="dg-box" x="458" y="22" width="96" height="38"/><text class="dg-t" x="506" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ wiping hits the 75 N protective stop</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">ForceVLA</text><rect class="dg-box" x="124" y="120" width="117" height="38"/><text class="dg-t" x="183" y="143" text-anchor="middle">F/T + images</text><path class="dg-a" d="M241 139 H273"/><rect class="dg-badbox" x="275" y="112" width="135" height="54"/><text class="dg-t" x="343" y="135" text-anchor="middle">Pose chunk</text><text class="dg-s" x="343" y="151" text-anchor="middle">force not tracked</text><path class="dg-a" d="M410 139 H442"/><rect class="dg-box" x="444" y="120" width="96" height="38"/><text class="dg-t" x="492" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="184">✗ 73.2% success, 35.6% force error</text><text class="dg-lab dg-green" x="14" y="241">CC-VLA</text><rect class="dg-box" x="124" y="218" width="178" height="38"/><text class="dg-t" x="213" y="241" text-anchor="middle">F/T history + images</text><path class="dg-a" d="M302 237 H334"/><rect class="dg-key" x="336" y="218" width="163" height="38"/><text class="dg-t" x="417" y="241" text-anchor="middle">Pose + force chunk</text><path class="dg-a" d="M499 237 H531"/><rect class="dg-key" x="533" y="210" width="231" height="54"/><text class="dg-t" x="648" y="233" text-anchor="middle">Adaptive compliance control</text><text class="dg-s" x="648" y="249" text-anchor="middle">500 Hz</text><path class="dg-a" d="M764 237 H796"/><rect class="dg-box" x="798" y="218" width="96" height="38"/><text class="dg-t" x="846" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 89.2%, 5.5% force error</text></svg><figcaption>The VLA stays slow (one inference per second); the controller is what makes the reaction fast and the contact safe.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The VLA outputs desired pose and force once a second; an asynchronous layer interpolates them to 500 Hz and the controller adapts stiffness to the force error." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SLOW VLA (ONCE A SECOND) PLANS POSE AND FORCE, FAST CONTROLLER (500 Hz) TRACKS THEM</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">2 cameras + instruction</text><text class="dg-s" x="120" y="86" text-anchor="middle">wrist and side view</text>
+<rect class="dg-ext" x="20" y="112" width="200" height="54"/><text class="dg-t" x="120" y="134" text-anchor="middle">pose, gripper, force (13)</text><text class="dg-s" x="120" y="152" text-anchor="middle">proprioceptive state</text>
+<rect class="dg-key" x="20" y="178" width="200" height="54"/><text class="dg-t" x="120" y="200" text-anchor="middle">force history h x 6</text><text class="dg-s" x="120" y="218" text-anchor="middle">sampled every 0.1 s</text>
+<rect class="dg-box" x="270" y="46" width="200" height="110"/><text class="dg-t" x="370" y="82" text-anchor="middle">pi0 backbone</text><text class="dg-s" x="370" y="104" text-anchor="middle">PaliGemma + flow-matching</text><text class="dg-s" x="370" y="120" text-anchor="middle">action expert</text>
+<rect class="dg-key" x="270" y="170" width="200" height="70"/><text class="dg-t" x="370" y="196" text-anchor="middle">Cross-modal fusion expert</text><text class="dg-s" x="370" y="214" text-anchor="middle">force token + sparse MoE</text>
+<path class="dg-a" d="M220 73 H245 V90 H270"/><path class="dg-a" d="M220 139 H270"/><path class="dg-a" d="M220 205 H270"/><path class="dg-a" d="M370 170 V156"/>
+<rect class="dg-box" x="520" y="80" width="190" height="90"/><text class="dg-t" x="615" y="110" text-anchor="middle">Action chunk, H = 40</text><text class="dg-s" x="615" y="132" text-anchor="middle">desired pose + gripper</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ desired force</text>
+<path class="dg-a" d="M470 100 H520"/><path class="dg-a" d="M470 205 H495 V150 H520"/>
+<text class="dg-s" x="520" y="192">interpolated to 500 Hz</text>
+<rect class="dg-key" x="760" y="46" width="200" height="110"/><text class="dg-t" x="860" y="72" text-anchor="middle">VLA-guided adaptive</text><text class="dg-t" x="860" y="90" text-anchor="middle">compliance controller</text><text class="dg-s" x="860" y="114" text-anchor="middle">F = K(x - x_d) + D x' + F_d</text><text class="dg-s" x="860" y="132" text-anchor="middle">K adapts to the force error</text>
+<path class="dg-a" d="M710 125 H760"/>
+<rect class="dg-ext" x="760" y="190" width="200" height="60"/><text class="dg-t" x="860" y="214" text-anchor="middle">UR5e through RTDE</text><text class="dg-s" x="860" y="232" text-anchor="middle">6-DoF F/T sensor</text>
+<path class="dg-a" d="M860 156 V190"/>
+<path class="dg-ad" d="M860 250 V285 H120 V232"/><text class="dg-l" x="250" y="279">measured force: fast into the controller, slow into the history</text>
+<text class="dg-h" x="20" y="326">DATA AND TRAINING</text>
+<rect class="dg-ext" x="20" y="342" width="290" height="70"/><text class="dg-t" x="165" y="366" text-anchor="middle">Shared teleoperation</text><text class="dg-s" x="165" y="384" text-anchor="middle">gamepad or 3D mouse, made softer</text><text class="dg-s" x="165" y="400" text-anchor="middle">by a compensated virtual impedance</text>
+<rect class="dg-box" x="345" y="342" width="290" height="70"/><text class="dg-t" x="490" y="366" text-anchor="middle">Stage I</text><text class="dg-s" x="490" y="384" text-anchor="middle">fine-tune pi0 on images, language,</text><text class="dg-s" x="490" y="400" text-anchor="middle">proprioception</text>
+<rect class="dg-key" x="670" y="342" width="290" height="70"/><text class="dg-t" x="815" y="366" text-anchor="middle">Stage II</text><text class="dg-s" x="815" y="384" text-anchor="middle">add the force fusion expert as a</text><text class="dg-s" x="815" y="400" text-anchor="middle">residual branch of the action expert</text>
+<path class="dg-a" d="M310 377 H345"/><path class="dg-a" d="M635 377 H670"/>
+</svg><figcaption>The VLA outputs desired pose and force once a second; an asynchronous layer interpolates them to 500 Hz and the controller adapts stiffness to the force error.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0 backbone</td>
+<td>2 images, instruction</td>
+<td>context embeddings</td>
+<td>PaliGemma + flow-matching action expert</td>
+</tr>
+<tr>
+<td>Force-history encoder</td>
+<td>$F_t \in \mathbb{R}^{h \times 6}$</td>
+<td>one force token</td>
+<td>split into segments, MLP per segment, cross-attention by a learnable token</td>
+</tr>
+<tr>
+<td>Cross-modal fusion expert</td>
+<td>force token, vision-language features</td>
+<td>residual to the action expert</td>
+<td>sparse MoE of 4 experts, as in ForceVLA</td>
+</tr>
+<tr>
+<td>Action chunk</td>
+<td>–</td>
+<td>$a_t = \{p_t, g_t, f_t\}$, $H = 40$</td>
+<td>desired pose, gripper and force</td>
+</tr>
+<tr>
+<td>Adaptive compliance controller</td>
+<td>desired pose and force, measured force</td>
+<td>robot command at 500 Hz</td>
+<td>$F_{ext} = K_d(x - x_d) + D_d\dot x + F_d$</td>
+</tr>
+</tbody>
+</table>
+<p>State is 13-D: TCP pose, gripper width and the current wrench. The history length $h$ and segment length are not given in the text.</p>
+<h2>3. Work it by hand: one stiffness update</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The controller raises stiffness when the force error is shrinking and lowers it when the error is growing, in steps proportional to the error. Computing one update shows how stiffness stays inside bounds and moves smoothly.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$K^{t-1}$</td>
+<td>stiffness before the update (N/m)</td>
+<td>input</td>
+<td>800</td>
+</tr>
+<tr>
+<td>$\lvert F_{err}^{k}\rvert,\ \lvert F_{err}^{k-1}\rvert$</td>
+<td>force error now and one step earlier (N)</td>
+<td>input</td>
+<td>10 and 14</td>
+</tr>
+<tr>
+<td>$\lambda$</td>
+<td>step-size parameter</td>
+<td>constant</td>
+<td>2 (illustrative; not given in the paper)</td>
+</tr>
+<tr>
+<td>$\beta$</td>
+<td>low-pass weight</td>
+<td>constant</td>
+<td>0.5 (illustrative)</td>
+</tr>
+<tr>
+<td>$K_{min}, K_{max}$</td>
+<td>stiffness limits (N/m)</td>
+<td>constant</td>
+<td>400 and 2500 (from the paper)</td>
+</tr>
+<tr>
+<td>$K_d$</td>
+<td>stiffness sent to the controller</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$K^{t} = K^{t-1} - \alpha\,\mathrm{sign}\big(\lvert F_{err}^{k}\rvert - \lvert F_{err}^{k-1}\rvert\big),\quad \alpha = \lambda\lvert F_{err}^{k}\rvert$$</p>
+<p>$$K_{filt} = \beta K^{t} + (1-\beta)K^{t-1},\qquad K_d = \min\big(\max(K_{filt}, K_{min}), K_{max}\big)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>The error fell from 14 N to 10 N, so $\mathrm{sign}(10 - 14) = -1$.</li>
+<li>$\alpha = 2\times 10 = 20$.</li>
+<li>$K^{t} = 800 - 20\times(-1) = 820$.</li>
+<li>Filter: $0.5\times 820 + 0.5\times 800 = 810$; inside $[400, 2500]$, so $K_d = 810$ N/m.</li>
+</ol>
+<p>Opposite case, error rising from 10 N to 14 N: $\alpha = 2\times 14 = 28$, $\mathrm{sign}(+4) = +1$, $K^t = 772$, filtered $= 786$ N/m.</p>
+<p><strong>Result.</strong> Stiffness goes to 810 N/m when the error is shrinking and to 786 N/m when it is growing.</p>
+<p><strong>Why it matters.</strong> A stiff controller tracks well but jumps in force when the pose is a little wrong; a soft one is safe but loses force. Letting the error steer the stiffness gives both, within fixed bounds.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Average success over six conditions (the text names button, plug-insertion and window-opening variants, including out-of-distribution height and proximal start); wiping is reported by force error below. 24–25 trials per condition." class="dg-natural" width="620" height="192" viewBox="0 0 620 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="160" y="23" text-anchor="end">Diffusion Policy</text><rect class="dg-bar" x="170" y="10" width="113" height="18"/><text class="dg-barval" x="290" y="23">31.3%</text><text class="dg-barlabel" x="160" y="53" text-anchor="end">π0.5</text><rect class="dg-bar" x="170" y="40" width="161" height="18"/><text class="dg-barval" x="339" y="53">44.7%</text><text class="dg-barlabel" x="160" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="170" y="70" width="170" height="18"/><text class="dg-barval" x="348" y="83">47.3%</text><text class="dg-barlabel" x="160" y="113" text-anchor="end">π0 with force in state</text><rect class="dg-bar" x="170" y="100" width="217" height="18"/><text class="dg-barval" x="395" y="113">60.2%</text><text class="dg-barlabel" x="160" y="143" text-anchor="end">ForceVLA</text><rect class="dg-bar" x="170" y="130" width="264" height="18"/><text class="dg-barval" x="441" y="143">73.2%</text><text class="dg-barlabel" x="160" y="173" text-anchor="end">CC-VLA</text><rect class="dg-key" x="170" y="160" width="321" height="18"/><text class="dg-barval" x="499" y="173">89.2%</text></svg><figcaption>Average success over six conditions (the text names button, plug-insertion and window-opening variants, including out-of-distribution height and proximal start); wiping is reported by force error below. 24–25 trials per condition.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Wiping force error (lower is better)</th>
+<th>DP</th>
+<th>π0</th>
+<th>π0.5</th>
+<th>π0 with force</th>
+<th>ForceVLA</th>
+<th>CC-VLA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base</td>
+<td>83.8%</td>
+<td>n/a</td>
+<td>76.1%</td>
+<td>28.1%</td>
+<td>35.6%</td>
+<td>5.5%</td>
+</tr>
+<tr>
+<td>Board 6 cm lower (OOD)</td>
+<td>79.3%</td>
+<td>81.2%</td>
+<td>82.2%</td>
+<td>38.2%</td>
+<td>52.3%</td>
+<td>8.8%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Wiping force error is the mean of $\lvert F_{ext} - F_{demo}\rvert / F_{demo}$ against the demonstrated 40 N. π0 and π0.5 triggered the protective stop above 75 N, so π0 has no base value.</li>
+<li>Controller ablation (wiping, base): without the VLA-guided controller 17.7%; fixed low stiffness 7.9%; fixed high stiffness 13.3%; adaptive stiffness 5.5%.</li>
+<li>Training ablations: two-stage training raises button pressing by 12% (as the paper states it) and cuts false presses from 28% to 8%; plug insertion reaches 76% (+8%); the force-history encoder lifts the proximal-start plug task from 72% to 92%.</li>
+</ul>
+<h2>5. Data and setup</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>UR5e (position-controlled), UMI-like gripper, wrist RealSense D435, a second side camera, 6-DoF F/T sensor, controlled through UR RTDE</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>one computer with an Intel i7-13700KF; inference once per second, action horizon 40, force sampled every 0.1 s, control at 500 Hz</td>
+</tr>
+<tr>
+<td>Demonstrations</td>
+<td>50 per task for button, window and wiping; 100 for plug insertion</td>
+</tr>
+<tr>
+<td>Trials</td>
+<td>24–25 per test condition</td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>press an emergency-stop button, insert a charging plug (multiple peg-in-hole), open a rotary window, wipe a whiteboard at constant force</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>shared teleoperation: a compensated virtual impedance makes the environment feel softer to a gamepad or 3D mouse, so a small error does not trigger a protective stop</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> This is the closest published match to a UR arm with a 6-DoF F/T sensor: the experiments use a UR5e, UR RTDE and π0, and a UR10e is the same family. Hardware is the easy part; the paper gives no code and no training details. "Not stated" means I looked in the full text and did not find it.</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arm</td>
+<td>UR5e, position-controlled, controlled through UR RTDE</td>
+<td>A UR10e is another model of the same family; the paper does not test it</td>
+</tr>
+<tr>
+<td>Force sensing</td>
+<td>A 6-DoF F/T sensor; where it is mounted is not stated</td>
+<td>Whether it was the arm's built-in sensor is not stated</td>
+</tr>
+<tr>
+<td>Gripper</td>
+<td>A UMI-like gripper</td>
+<td>Not stated for other grippers</td>
+</tr>
+<tr>
+<td>Cameras</td>
+<td>One wrist and one side camera</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Compute at run time</td>
+<td>One host computer with an Intel i7-13700KF running RTDE and the controller; where the VLA runs is not stated</td>
+<td>Inference once per second is slow, so the model need not be fast</td>
+</tr>
+<tr>
+<td>Demonstrations</td>
+<td>50 to 100 per task, collected with shared teleoperation</td>
+<td>The paper warns that data collection "relies heavily on precise force control and temporal consistency"</td>
+</tr>
+<tr>
+<td>Controller settings</td>
+<td>Stiffness 400–2500 N/m, 500 Hz, critical damping with a fixed ratio</td>
+<td>$\lambda$, $\beta$ and the damping ratio are not stated; you tune them</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>Two stages on π0 with a sparse MoE of 4 experts</td>
+<td>GPU, steps and time: not stated</td>
+</tr>
+<tr>
+<td>Code and weights</td>
+<td>None mentioned in the text I read</td>
+<td>You would implement it on openpi plus ForceVLA's MoE</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Which parts carry over.</strong> The press-an-e-stop and plug-insertion tasks are close to pressing a cap. The shared teleoperation trick matters if you collect demonstrations with a 3D mouse on a position-controlled UR: it avoids protective stops when the tool meets a rigid surface.</p>
+<h2>7. Caveats</h2>
+<ul>
+<li>The paper reports a single average over six conditions (89.2%). Per-task numbers are in a figure that the text does not list, so I cannot give them.</li>
+<li>With 24–25 trials per condition, one trial is about 4 points. The average over six conditions is about 150 trials.</li>
+<li>The wiping comparison is a force-tracking result on one task; it supports the controller more than it supports the VLA.</li>
+<li>The authors say the method needs precise force control during demonstration collection and covers only object-level variable impedance, not finger-level gripper control.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="forcevla.html">ForceVLA</a> supplies the MoE fusion block this paper reuses, and <a href="ta-vla.html">TA-VLA</a> also predicts a force target. <a href="ter-dagger.html">TER-DAgger</a> and <a href="fire.html">FIRe</a> correct a policy with a fast residual; CC-VLA instead replaces the low-level executor with an adaptive-stiffness controller.</p>
+<p><strong>Check question:</strong> Stiffness before the update is 1000 N/m, $\lambda = 2$, the force error went from 5 N to 6 N, and there is no filter. What is the new stiffness?</p>
+<details>
+<summary>Answer</summary>
+<p>$\mathrm{sign}(6 - 5) = +1$, $\alpha = 2\times 6 = 12$, so $K = 1000 - 12\times(+1) = 988$ N/m.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2609.05832">arXiv 2609.05832</a> · 09/2026 · Huawei, South China University of Technology, Ola Dimensions, Hong Kong Polytechnic University · nền π0. Tiêu đề ghi CR-VLA-Force; trong bài, khung được gọi là CC-VLA (Control-aware Compliance VLA). Văn bản không có link code hay trang dự án.</p>
+<p><strong>VẤN ĐỀ</strong> Tác vụ tiếp xúc cần giữ một lực ổn định (lau với 40 N) và phản ứng nhanh, nhưng VLA chỉ chạy khoảng mỗi giây một lần.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> ForceVLA và TA-VLA đưa lực vào VLA nhưng vẫn xuất lệnh vị trí, nên chúng hoạt động "không có điều khiển lực tường minh hay ngầm" (lời bài báo) và không bám được một lực. Khi lau, π0 và π0.5 chạm ngưỡng dừng bảo vệ 75 N; sai số lực của ForceVLA là 35,6% so với lực được trình diễn.</p>
+<p><strong>Ý TƯỞNG</strong> VLA dự đoán một pose mong muốn và một lực mong muốn ở mỗi chunk; một bộ điều khiển 500 Hz bám theo chúng và điều chỉnh độ cứng theo sai số lực. Một token lịch sử lực và huấn luyện hai giai đoạn nuôi VLA.</p>
+<p><strong>KẾT QUẢ</strong> Thành công trung bình 89,2% trên sáu điều kiện so với 73,2% của ForceVLA, và sai số lực khi lau 5,5% so với 35,6%, trên UR5e.</p>
+</div>
+<h2>1. Vấn đề: một chunk chỉ có pose thì không giữ được lực</h2>
+<figure class="diagram flow"><svg role="img" aria-label="VLA vẫn chậm (một lần suy luận mỗi giây); chính bộ điều khiển làm phản ứng nhanh và tiếp xúc an toàn." class="dg-natural" width="885" height="304" viewBox="0 0 885 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0 / π0.5</text><rect class="dg-box" x="124" y="22" width="132" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Ảnh + câu lệnh</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="167" height="54"/><text class="dg-t" x="374" y="37" text-anchor="middle">Chunk pose</text><text class="dg-s" x="374" y="53" text-anchor="middle">không có nhận biết lực</text><path class="dg-a" d="M457 41 H489"/><rect class="dg-box" x="491" y="22" width="96" height="38"/><text class="dg-t" x="539" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ khi lau chạm dừng bảo vệ 75 N</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">ForceVLA</text><rect class="dg-box" x="124" y="120" width="96" height="38"/><text class="dg-t" x="172" y="143" text-anchor="middle">F/T + ảnh</text><path class="dg-a" d="M220 139 H252"/><rect class="dg-badbox" x="254" y="112" width="141" height="54"/><text class="dg-t" x="325" y="135" text-anchor="middle">Chunk pose</text><text class="dg-s" x="325" y="151" text-anchor="middle">lực không được bám</text><path class="dg-a" d="M395 139 H427"/><rect class="dg-box" x="429" y="120" width="96" height="38"/><text class="dg-t" x="477" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="184">✗ 73,2% thành công, sai số lực 35,6%</text><text class="dg-lab dg-green" x="14" y="241">CC-VLA</text><rect class="dg-box" x="124" y="218" width="155" height="38"/><text class="dg-t" x="202" y="241" text-anchor="middle">Lịch sử F/T + ảnh</text><path class="dg-a" d="M279 237 H311"/><rect class="dg-key" x="313" y="218" width="148" height="38"/><text class="dg-t" x="387" y="241" text-anchor="middle">Chunk pose + lực</text><path class="dg-a" d="M461 237 H493"/><rect class="dg-key" x="495" y="210" width="246" height="54"/><text class="dg-t" x="618" y="233" text-anchor="middle">Điều khiển mềm dẻo thích nghi</text><text class="dg-s" x="618" y="249" text-anchor="middle">500 Hz</text><path class="dg-a" d="M741 237 H773"/><rect class="dg-box" x="775" y="218" width="96" height="38"/><text class="dg-t" x="823" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 89,2%, sai số lực 5,5%</text></svg><figcaption>VLA vẫn chậm (một lần suy luận mỗi giây); chính bộ điều khiển làm phản ứng nhanh và tiếp xúc an toàn.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="VLA xuất pose và lực mong muốn mỗi giây một lần; một lớp bất đồng bộ nội suy chúng lên 500 Hz và bộ điều khiển chỉnh độ cứng theo sai số lực." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SLOW VLA (ONCE A SECOND) PLANS POSE AND FORCE, FAST CONTROLLER (500 Hz) TRACKS THEM</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">2 cameras + instruction</text><text class="dg-s" x="120" y="86" text-anchor="middle">wrist and side view</text>
+<rect class="dg-ext" x="20" y="112" width="200" height="54"/><text class="dg-t" x="120" y="134" text-anchor="middle">pose, gripper, force (13)</text><text class="dg-s" x="120" y="152" text-anchor="middle">proprioceptive state</text>
+<rect class="dg-key" x="20" y="178" width="200" height="54"/><text class="dg-t" x="120" y="200" text-anchor="middle">force history h x 6</text><text class="dg-s" x="120" y="218" text-anchor="middle">sampled every 0.1 s</text>
+<rect class="dg-box" x="270" y="46" width="200" height="110"/><text class="dg-t" x="370" y="82" text-anchor="middle">pi0 backbone</text><text class="dg-s" x="370" y="104" text-anchor="middle">PaliGemma + flow-matching</text><text class="dg-s" x="370" y="120" text-anchor="middle">action expert</text>
+<rect class="dg-key" x="270" y="170" width="200" height="70"/><text class="dg-t" x="370" y="196" text-anchor="middle">Cross-modal fusion expert</text><text class="dg-s" x="370" y="214" text-anchor="middle">force token + sparse MoE</text>
+<path class="dg-a" d="M220 73 H245 V90 H270"/><path class="dg-a" d="M220 139 H270"/><path class="dg-a" d="M220 205 H270"/><path class="dg-a" d="M370 170 V156"/>
+<rect class="dg-box" x="520" y="80" width="190" height="90"/><text class="dg-t" x="615" y="110" text-anchor="middle">Action chunk, H = 40</text><text class="dg-s" x="615" y="132" text-anchor="middle">desired pose + gripper</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ desired force</text>
+<path class="dg-a" d="M470 100 H520"/><path class="dg-a" d="M470 205 H495 V150 H520"/>
+<text class="dg-s" x="520" y="192">interpolated to 500 Hz</text>
+<rect class="dg-key" x="760" y="46" width="200" height="110"/><text class="dg-t" x="860" y="72" text-anchor="middle">VLA-guided adaptive</text><text class="dg-t" x="860" y="90" text-anchor="middle">compliance controller</text><text class="dg-s" x="860" y="114" text-anchor="middle">F = K(x - x_d) + D x' + F_d</text><text class="dg-s" x="860" y="132" text-anchor="middle">K adapts to the force error</text>
+<path class="dg-a" d="M710 125 H760"/>
+<rect class="dg-ext" x="760" y="190" width="200" height="60"/><text class="dg-t" x="860" y="214" text-anchor="middle">UR5e through RTDE</text><text class="dg-s" x="860" y="232" text-anchor="middle">6-DoF F/T sensor</text>
+<path class="dg-a" d="M860 156 V190"/>
+<path class="dg-ad" d="M860 250 V285 H120 V232"/><text class="dg-l" x="250" y="279">measured force: fast into the controller, slow into the history</text>
+<text class="dg-h" x="20" y="326">DATA AND TRAINING</text>
+<rect class="dg-ext" x="20" y="342" width="290" height="70"/><text class="dg-t" x="165" y="366" text-anchor="middle">Shared teleoperation</text><text class="dg-s" x="165" y="384" text-anchor="middle">gamepad or 3D mouse, made softer</text><text class="dg-s" x="165" y="400" text-anchor="middle">by a compensated virtual impedance</text>
+<rect class="dg-box" x="345" y="342" width="290" height="70"/><text class="dg-t" x="490" y="366" text-anchor="middle">Stage I</text><text class="dg-s" x="490" y="384" text-anchor="middle">fine-tune pi0 on images, language,</text><text class="dg-s" x="490" y="400" text-anchor="middle">proprioception</text>
+<rect class="dg-key" x="670" y="342" width="290" height="70"/><text class="dg-t" x="815" y="366" text-anchor="middle">Stage II</text><text class="dg-s" x="815" y="384" text-anchor="middle">add the force fusion expert as a</text><text class="dg-s" x="815" y="400" text-anchor="middle">residual branch of the action expert</text>
+<path class="dg-a" d="M310 377 H345"/><path class="dg-a" d="M635 377 H670"/>
+</svg><figcaption>VLA xuất pose và lực mong muốn mỗi giây một lần; một lớp bất đồng bộ nội suy chúng lên 500 Hz và bộ điều khiển chỉnh độ cứng theo sai số lực.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone π0</td>
+<td>2 ảnh, câu lệnh</td>
+<td>embedding ngữ cảnh</td>
+<td>PaliGemma + action expert flow matching</td>
+</tr>
+<tr>
+<td>Bộ mã hóa lịch sử lực</td>
+<td>$F_t \in \mathbb{R}^{h \times 6}$</td>
+<td>một token lực</td>
+<td>chia thành các đoạn, mỗi đoạn qua MLP, một token học được cross-attend lên chúng</td>
+</tr>
+<tr>
+<td>Chuyên gia hợp nhất đa phương thức</td>
+<td>token lực, đặc trưng thị giác-ngôn ngữ</td>
+<td>residual cộng vào action expert</td>
+<td>MoE thưa 4 chuyên gia, như ForceVLA</td>
+</tr>
+<tr>
+<td>Chunk hành động</td>
+<td>–</td>
+<td>$a_t = \{p_t, g_t, f_t\}$, $H = 40$</td>
+<td>pose, tay kẹp và lực mong muốn</td>
+</tr>
+<tr>
+<td>Bộ điều khiển mềm dẻo thích nghi</td>
+<td>pose và lực mong muốn, lực đo được</td>
+<td>lệnh robot ở 500 Hz</td>
+<td>$F_{ext} = K_d(x - x_d) + D_d\dot x + F_d$</td>
+</tr>
+</tbody>
+</table>
+<p>Trạng thái là 13 chiều: TCP pose, độ mở tay kẹp và wrench hiện tại. Độ dài lịch sử $h$ và độ dài đoạn không được nêu trong văn bản.</p>
+<h2>3. Tính tay: một lần cập nhật độ cứng</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Bộ điều khiển tăng độ cứng khi sai số lực đang giảm và hạ độ cứng khi sai số đang tăng, với bước tỉ lệ với sai số. Tính một lần cập nhật để thấy độ cứng nằm trong giới hạn và đổi mượt ra sao.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$K^{t-1}$</td>
+<td>độ cứng trước cập nhật (N/m)</td>
+<td>input</td>
+<td>800</td>
+</tr>
+<tr>
+<td>$\lvert F_{err}^{k}\rvert,\ \lvert F_{err}^{k-1}\rvert$</td>
+<td>sai số lực hiện tại và một bước trước (N)</td>
+<td>input</td>
+<td>10 và 14</td>
+</tr>
+<tr>
+<td>$\lambda$</td>
+<td>tham số kích thước bước</td>
+<td>hằng số</td>
+<td>2 (minh họa; bài không nêu)</td>
+</tr>
+<tr>
+<td>$\beta$</td>
+<td>trọng số lọc thông thấp</td>
+<td>hằng số</td>
+<td>0,5 (minh họa)</td>
+</tr>
+<tr>
+<td>$K_{min}, K_{max}$</td>
+<td>giới hạn độ cứng (N/m)</td>
+<td>hằng số</td>
+<td>400 và 2500 (từ bài)</td>
+</tr>
+<tr>
+<td>$K_d$</td>
+<td>độ cứng gửi cho bộ điều khiển</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$K^{t} = K^{t-1} - \alpha\,\mathrm{sign}\big(\lvert F_{err}^{k}\rvert - \lvert F_{err}^{k-1}\rvert\big),\quad \alpha = \lambda\lvert F_{err}^{k}\rvert$$</p>
+<p>$$K_{filt} = \beta K^{t} + (1-\beta)K^{t-1},\qquad K_d = \min\big(\max(K_{filt}, K_{min}), K_{max}\big)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Sai số giảm từ 14 N xuống 10 N, nên $\mathrm{sign}(10 - 14) = -1$.</li>
+<li>$\alpha = 2\times 10 = 20$.</li>
+<li>$K^{t} = 800 - 20\times(-1) = 820$.</li>
+<li>Lọc: $0{,}5\times 820 + 0{,}5\times 800 = 810$; nằm trong $[400, 2500]$ nên $K_d = 810$ N/m.</li>
+</ol>
+<p>Trường hợp ngược lại, sai số tăng từ 10 N lên 14 N: $\alpha = 2\times 14 = 28$, $\mathrm{sign}(+4) = +1$, $K^t = 772$, sau lọc $= 786$ N/m.</p>
+<p><strong>Kết quả.</strong> Độ cứng lên 810 N/m khi sai số đang giảm và xuống 786 N/m khi sai số đang tăng.</p>
+<p><strong>Ý nghĩa.</strong> Bộ điều khiển cứng thì bám tốt nhưng lực nhảy vọt khi pose hơi sai; bộ mềm thì an toàn nhưng mất lực. Để sai số điều khiển độ cứng thì có cả hai, trong giới hạn cố định.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên sáu điều kiện (văn bản nêu các biến thể ấn nút, cắm phích và mở cửa sổ, gồm lệch chiều cao ngoài phân phối và xuất phát gần); lau bảng được báo cáo bằng sai số lực ở dưới. 24–25 lượt mỗi điều kiện." class="dg-natural" width="613" height="192" viewBox="0 0 613 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="153" y="23" text-anchor="end">Diffusion Policy</text><rect class="dg-bar" x="163" y="10" width="113" height="18"/><text class="dg-barval" x="284" y="23">31,3%</text><text class="dg-barlabel" x="153" y="53" text-anchor="end">π0.5</text><rect class="dg-bar" x="163" y="40" width="161" height="18"/><text class="dg-barval" x="332" y="53">44,7%</text><text class="dg-barlabel" x="153" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="163" y="70" width="170" height="18"/><text class="dg-barval" x="341" y="83">47,3%</text><text class="dg-barlabel" x="153" y="113" text-anchor="end">π0 có lực trong state</text><rect class="dg-bar" x="163" y="100" width="217" height="18"/><text class="dg-barval" x="388" y="113">60,2%</text><text class="dg-barlabel" x="153" y="143" text-anchor="end">ForceVLA</text><rect class="dg-bar" x="163" y="130" width="264" height="18"/><text class="dg-barval" x="434" y="143">73,2%</text><text class="dg-barlabel" x="153" y="173" text-anchor="end">CC-VLA</text><rect class="dg-key" x="163" y="160" width="321" height="18"/><text class="dg-barval" x="492" y="173">89,2%</text></svg><figcaption>Thành công trung bình trên sáu điều kiện (văn bản nêu các biến thể ấn nút, cắm phích và mở cửa sổ, gồm lệch chiều cao ngoài phân phối và xuất phát gần); lau bảng được báo cáo bằng sai số lực ở dưới. 24–25 lượt mỗi điều kiện.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Sai số lực khi lau (thấp hơn là tốt hơn)</th>
+<th>DP</th>
+<th>π0</th>
+<th>π0.5</th>
+<th>π0 có lực</th>
+<th>ForceVLA</th>
+<th>CC-VLA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cơ sở</td>
+<td>83,8%</td>
+<td>không có</td>
+<td>76,1%</td>
+<td>28,1%</td>
+<td>35,6%</td>
+<td>5,5%</td>
+</tr>
+<tr>
+<td>Bảng thấp hơn 6 cm (OOD)</td>
+<td>79,3%</td>
+<td>81,2%</td>
+<td>82,2%</td>
+<td>38,2%</td>
+<td>52,3%</td>
+<td>8,8%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Sai số lực khi lau là trung bình của $\lvert F_{ext} - F_{demo}\rvert / F_{demo}$ so với lực trình diễn 40 N. π0 và π0.5 chạm dừng bảo vệ khi trên 75 N, nên π0 không có giá trị cơ sở.</li>
+<li>Ablation bộ điều khiển (lau, cơ sở): không có bộ điều khiển do VLA dẫn 17,7%; độ cứng thấp cố định 7,9%; độ cứng cao cố định 13,3%; độ cứng thích nghi 5,5%.</li>
+<li>Ablation huấn luyện: huấn luyện hai giai đoạn tăng ấn nút thêm 12% (theo cách bài viết) và giảm ấn nhầm từ 28% xuống 8%; cắm phích đạt 76% (+8%); bộ mã hóa lịch sử lực nâng tác vụ phích cắm xuất phát gần từ 72% lên 92%.</li>
+</ul>
+<h2>5. Dữ liệu và thiết lập</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>UR5e (điều khiển vị trí), tay kẹp kiểu UMI, camera cổ tay RealSense D435, một camera bên hông, cảm biến F/T 6 bậc tự do, điều khiển qua UR RTDE</td>
+</tr>
+<tr>
+<td>Máy chủ</td>
+<td>một máy có Intel i7-13700KF; suy luận mỗi giây một lần, horizon hành động 40, lực lấy mẫu mỗi 0,1 s, điều khiển 500 Hz</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>50 mỗi tác vụ cho nút, cửa sổ và lau; 100 cho cắm phích</td>
+</tr>
+<tr>
+<td>Số lượt thử</td>
+<td>24–25 mỗi điều kiện kiểm tra</td>
+</tr>
+<tr>
+<td>Tác vụ</td>
+<td>ấn nút dừng khẩn cấp, cắm phích sạc (nhiều lỗ), mở cửa sổ xoay, lau bảng trắng với lực không đổi</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>teleoperation chia sẻ: một trở kháng ảo bù làm môi trường "mềm" hơn với tay game hoặc chuột 3D, nên sai số nhỏ không gây dừng bảo vệ</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Đây là bài công bố gần nhất với cánh tay UR có cảm biến F/T 6 bậc tự do: thí nghiệm dùng UR5e, UR RTDE và π0, còn UR10e cùng họ. Phần cứng là phần dễ; bài không cho code và không nêu chi tiết huấn luyện. "Không nêu" nghĩa là mình đã tìm trong toàn văn mà không thấy.</p>
+<table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cánh tay</td>
+<td>UR5e, điều khiển vị trí, điều khiển qua UR RTDE</td>
+<td>UR10e là mẫu khác cùng họ; bài không thử</td>
+</tr>
+<tr>
+<td>Cảm biến lực</td>
+<td>Cảm biến F/T 6 bậc tự do; vị trí gắn không nêu</td>
+<td>Đó có phải cảm biến tích hợp của cánh tay không: không nêu</td>
+</tr>
+<tr>
+<td>Tay kẹp</td>
+<td>Tay kẹp kiểu UMI</td>
+<td>Tay kẹp khác: không nêu</td>
+</tr>
+<tr>
+<td>Camera</td>
+<td>Một camera cổ tay và một camera bên hông</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Tính toán khi chạy</td>
+<td>Một máy có Intel i7-13700KF chạy RTDE và bộ điều khiển; VLA chạy ở đâu không nêu</td>
+<td>Suy luận một lần mỗi giây là chậm, nên mô hình không cần nhanh</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>50 đến 100 mỗi tác vụ, thu bằng teleoperation chia sẻ</td>
+<td>Bài cảnh báo việc thu dữ liệu "phụ thuộc nhiều vào điều khiển lực chính xác và nhất quán về thời gian"</td>
+</tr>
+<tr>
+<td>Thiết lập bộ điều khiển</td>
+<td>Độ cứng 400–2500 N/m, 500 Hz, giảm chấn tới hạn với tỉ số cố định</td>
+<td>$\lambda$, $\beta$ và tỉ số giảm chấn không nêu; bạn tự chỉnh</td>
+</tr>
+<tr>
+<td>Huấn luyện</td>
+<td>Hai giai đoạn trên π0 với MoE thưa 4 chuyên gia</td>
+<td>GPU, số bước, thời gian: không nêu</td>
+</tr>
+<tr>
+<td>Code và trọng số</td>
+<td>Văn bản mình đọc không nhắc</td>
+<td>Bạn sẽ tự cài trên openpi cộng khối MoE của ForceVLA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Phần nào mang sang được.</strong> Các tác vụ ấn nút dừng khẩn cấp và cắm phích gần với việc ấn nắp. Mẹo teleoperation chia sẻ có ý nghĩa nếu bạn thu demo bằng chuột 3D trên UR điều khiển vị trí: nó tránh dừng bảo vệ khi dụng cụ chạm bề mặt cứng.</p>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>Bài báo cáo một trung bình duy nhất trên sáu điều kiện (89,2%). Số theo từng tác vụ nằm trong một hình mà văn bản không liệt kê, nên mình không đưa được.</li>
+<li>Với 24–25 lượt mỗi điều kiện, một lượt là khoảng 4 điểm. Trung bình sáu điều kiện dựa trên khoảng 150 lượt.</li>
+<li>So sánh khi lau là kết quả bám lực trên một tác vụ; nó ủng hộ bộ điều khiển hơn là ủng hộ VLA.</li>
+<li>Các tác giả nói phương pháp cần điều khiển lực chính xác khi thu demo và chỉ bao quát trở kháng biến thiên ở mức vật thể, chưa phải điều khiển tay kẹp ở mức ngón.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> <a href="forcevla.html">ForceVLA</a> cung cấp khối MoE hợp nhất mà bài này dùng lại, và <a href="ta-vla.html">TA-VLA</a> cũng dự đoán một mục tiêu lực. <a href="ter-dagger.html">TER-DAgger</a> và <a href="fire.html">FIRe</a> hiệu chỉnh chính sách bằng một residual nhanh; CC-VLA thay vào đó thay thế bộ thực thi mức thấp bằng một bộ điều khiển độ cứng thích nghi.</p>
+<p><strong>Câu kiểm tra:</strong> Độ cứng trước cập nhật là 1000 N/m, $\lambda = 2$, sai số lực tăng từ 5 N lên 6 N, và không có lọc. Độ cứng mới là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\mathrm{sign}(6 - 5) = +1$, $\alpha = 2\times 6 = 12$, nên $K = 1000 - 12\times(+1) = 988$ N/m.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
