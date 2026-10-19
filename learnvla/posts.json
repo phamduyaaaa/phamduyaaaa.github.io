@@ -1,5 +1,23 @@
 [
   {
+    "slug": "fire",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "FIRe: A Force-Informed Residual on Top of a Frozen VLA",
+    "title_vi": "FIRe: Một residual nhận biết lực đặt trên VLA đóng băng",
+    "excerpt_en": "A chunked VLA runs open-loop and cannot react to contact; RL can, but needs a new dense reward per task. FIRe keeps the VLA frozen and trains a small force-aware residual in simulation with a reward that is the same for every task. Peg insertion on a real robot: 96.7% vs 23.3%.",
+    "excerpt_vi": "VLA xuất chunk chạy mở vòng nên không phản ứng kịp với tiếp xúc; RL thì phản ứng được nhưng cần reward dày mới cho từng tác vụ. FIRe giữ VLA đóng băng và huấn luyện một residual nhỏ nhận biết lực trong mô phỏng, với reward giống nhau cho mọi tác vụ. Cắm chốt trên robot thật: 96,7% so với 23,3%.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Residual",
+      "Paper Notes",
+      "GR00T",
+      "π0.5"
+    ],
+    "read_min": 7
+  },
+  {
     "slug": "gelsight",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",

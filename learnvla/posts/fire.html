@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A chunked VLA runs open-loop and cannot react to contact; RL can, but needs a new dense reward per task. FIRe keeps the VLA frozen and trains a small force-aware residual in simulation with a reward that is the same for every task. Peg insertion on a real robot: 96.7% vs 23.3%.">
+<title>FIRe: A Force-Informed Residual on Top of a Frozen VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="FIRe: A Force-Informed Residual on Top of a Frozen VLA">
+<meta property="og:description" content="A chunked VLA runs open-loop and cannot react to contact; RL can, but needs a new dense reward per task. FIRe keeps the VLA frozen and trains a small force-aware residual in simulation with a reward that is the same for every task. Peg insertion on a real robot: 96.7% vs 23.3%.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">7 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>FIRe: A Force-Informed Residual on Top of a Frozen VLA</h1>
+    <h1 data-vi>FIRe: Một residual nhận biết lực đặt trên VLA đóng băng</h1>
+
+    <p class="post-excerpt-lead" data-en>A chunked VLA runs open-loop and cannot react to contact; RL can, but needs a new dense reward per task. FIRe keeps the VLA frozen and trains a small force-aware residual in simulation with a reward that is the same for every task. Peg insertion on a real robot: 96.7% vs 23.3%.</p>
+    <p class="post-excerpt-lead" data-vi>VLA xuất chunk chạy mở vòng nên không phản ứng kịp với tiếp xúc; RL thì phản ứng được nhưng cần reward dày mới cho từng tác vụ. FIRe giữ VLA đóng băng và huấn luyện một residual nhỏ nhận biết lực trong mô phỏng, với reward giống nhau cho mọi tác vụ. Cắm chốt trên robot thật: 96,7% so với 23,3%.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Residual</span><span class="pill">Paper Notes</span><span class="pill">GR00T</span><span class="pill">π0.5</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>SOURCE</strong> <a href="https://rcilab.github.io/FIRe/">Project page</a> · <a href="https://github.com/RCILab/FIRe">code</a> · 2026 · submitted to IEEE RA-L. The page says "Paper (Coming Soon)": no arXiv paper yet, so every number below is from the project page and has not been checked against a full text.</p>
+<p><strong>PROBLEM</strong> Assembly (peg, gear, nut) needs the robot to react to contact many times per second. A VLA gives one action chunk and then executes it open-loop.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The VLA alone: 23.3%, 10.0% and 3.3% on the three tasks. RL from scratch can use force, but the dense reward (FORGE style) is written anew for each task, three different rewards for three tasks.</p>
+<p><strong>IDEA</strong> Freeze the VLA. Train a small residual policy in simulation that sees force at every step and adds a bounded correction to each VLA action. The reward is a sparse success term plus one force term that is identical for all tasks.</p>
+<p><strong>RESULT</strong> Real robot, 30 trials each: +73.4, +90.0 and +30.0 points over the VLA (average +64.5). Peg Insert 96.7% against 86.7% for RL with a task-specific reward.</p>
+</div>
+<h2>1. The problem: a chunk is blind between two inferences</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The VLA also warms up RL: the reward no longer has to say where the goal is, because the VLA action already points there." class="dg-natural" width="708" height="304" viewBox="0 0 708 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">VLA alone</text><rect class="dg-box" x="134" y="22" width="125" height="38"/><text class="dg-t" x="196" y="45" text-anchor="middle">Images + text</text><path class="dg-a" d="M259 41 H291"/><rect class="dg-badbox" x="293" y="14" width="148" height="54"/><text class="dg-t" x="367" y="37" text-anchor="middle">Action chunk</text><text class="dg-s" x="367" y="53" text-anchor="middle">16 steps, open-loop</text><path class="dg-a" d="M440 41 H472"/><rect class="dg-box" x="474" y="22" width="96" height="38"/><text class="dg-t" x="522" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="86">✗ no force, no reaction inside the chunk: 23.3% on Peg Insert</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">RL from scratch</text><rect class="dg-box" x="134" y="120" width="117" height="38"/><text class="dg-t" x="193" y="143" text-anchor="middle">Force + pose</text><path class="dg-a" d="M251 139 H283"/><rect class="dg-badbox" x="285" y="112" width="141" height="54"/><text class="dg-t" x="356" y="135" text-anchor="middle">Dense reward</text><text class="dg-s" x="356" y="151" text-anchor="middle">new for every task</text><path class="dg-a" d="M426 139 H458"/><rect class="dg-box" x="460" y="120" width="96" height="38"/><text class="dg-t" x="508" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="184">✗ reacts to force, but reward engineering per task: 86.7%</text><text class="dg-lab dg-green" x="14" y="241">FIRe</text><rect class="dg-box" x="134" y="218" width="125" height="38"/><text class="dg-t" x="196" y="241" text-anchor="middle">Images + text</text><path class="dg-a" d="M259 237 H291"/><rect class="dg-key" x="293" y="210" width="102" height="54"/><text class="dg-t" x="344" y="233" text-anchor="middle">Frozen VLA</text><text class="dg-s" x="344" y="249" text-anchor="middle">chunk</text><path class="dg-a" d="M395 237 H427"/><rect class="dg-key" x="429" y="210" width="135" height="54"/><text class="dg-t" x="496" y="233" text-anchor="middle">Residual</text><text class="dg-s" x="496" y="249" text-anchor="middle">force, every step</text><path class="dg-a" d="M564 237 H596"/><rect class="dg-box" x="598" y="218" width="96" height="38"/><text class="dg-t" x="646" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="134.0" y="282">✓ VLA decides where to go, residual decides how contact goes: 96.7%</text></svg><figcaption>The VLA also warms up RL: the reward no longer has to say where the goal is, because the VLA action already points there.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The final command is the VLA action plus a bounded residual, run through a 1 kHz impedance controller. The VLA never waits: the next chunk is fetched at the midpoint of the current one." viewBox="0 0 980 444" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">ONE CONTROL STEP: THE VLA PLANS, THE RESIDUAL NEGOTIATES THE CONTACT</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="64"/><text class="dg-t" x="120" y="70" text-anchor="middle">3 cameras + abs. pose + text</text><text class="dg-s" x="120" y="90" text-anchor="middle">no force; read once per chunk</text>
+<rect class="dg-key" x="260" y="46" width="170" height="64"/><text class="dg-t" x="345" y="70" text-anchor="middle">Frozen VLA</text><text class="dg-s" x="345" y="90" text-anchor="middle">only its action head tuned</text>
+<rect class="dg-box" x="470" y="46" width="150" height="64"/><text class="dg-t" x="545" y="70" text-anchor="middle">Chunk a_VLA</text><text class="dg-s" x="545" y="90" text-anchor="middle">T = 16 steps (GR00T)</text>
+<path class="dg-a" d="M220 78 H260"/><path class="dg-a" d="M430 78 H470"/>
+<rect class="dg-ext" x="20" y="170" width="200" height="70"/><text class="dg-t" x="120" y="194" text-anchor="middle">rel. pose, velocity,</text><text class="dg-t" x="120" y="210" text-anchor="middle">force F (3), last a</text><text class="dg-s" x="120" y="228" text-anchor="middle">every step, 15 Hz</text>
+<rect class="dg-key" x="260" y="170" width="170" height="70"/><text class="dg-t" x="345" y="196" text-anchor="middle">Residual policy</text><text class="dg-s" x="345" y="214" text-anchor="middle">PPO, trained in sim</text>
+<rect class="dg-box" x="470" y="170" width="150" height="70"/><text class="dg-t" x="545" y="196" text-anchor="middle">a_res</text><text class="dg-s" x="545" y="214" text-anchor="middle">bounded, 6-D</text>
+<path class="dg-a" d="M220 205 H260"/><path class="dg-a" d="M430 205 H470"/>
+<circle class="dg-key" cx="700" cy="141" r="22"/><text class="dg-t" x="700" y="148" text-anchor="middle">+</text>
+<path class="dg-a" d="M620 78 H700 V119"/><path class="dg-a" d="M620 205 H700 V163"/>
+<rect class="dg-box" x="770" y="116" width="190" height="50"/><text class="dg-t" x="865" y="138" text-anchor="middle">Impedance controller</text><text class="dg-s" x="865" y="154" text-anchor="middle">1 kHz, interpolates</text>
+<path class="dg-a" d="M722 141 H770"/>
+<rect class="dg-ext" x="770" y="200" width="190" height="50"/><text class="dg-t" x="865" y="222" text-anchor="middle">Franka FR3</text><text class="dg-s" x="865" y="238" text-anchor="middle">wrist 3-axis force sensor</text>
+<path class="dg-a" d="M865 166 V200"/>
+<path class="dg-ad" d="M865 250 V275 H120 V240"/><text class="dg-l" x="400" y="270">force, pose and velocity feed back at every step</text>
+<text class="dg-h" x="20" y="318">SLOW-FAST LOOP: THE NEXT CHUNK IS FETCHED WHILE THE CURRENT ONE RUNS</text>
+<rect class="dg-box" x="20" y="334" width="440" height="30"/><text class="dg-t" x="240" y="354" text-anchor="middle">chunk i is executing</text>
+<rect class="dg-grp" x="460" y="334" width="440" height="30"/><text class="dg-t" x="680" y="354" text-anchor="middle">chunk i+1 (swapped in when i ends)</text>
+<path class="dg-ad" d="M240 364 V382"/><text class="dg-s" x="250" y="394">midpoint: prefetch next chunk</text>
+<path class="dg-ad" d="M460 364 V404"/><text class="dg-s" x="470" y="416">end of chunk: swap in the prefetched one</text>
+<text class="dg-l" x="20" y="430">the residual keeps correcting every step, so the loop never waits for the VLA</text>
+</svg><figcaption>The final command is the VLA action plus a bounded residual, run through a 1 kHz impedance controller. The VLA never waits: the next chunk is fetched at the midpoint of the current one.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frozen VLA</td>
+<td>2 external + 1 wrist image, absolute pose $p_{ee}^{abs}$ (7), text $\ell$</td>
+<td>action chunk of length $T$</td>
+<td>where to move, once per chunk</td>
+</tr>
+<tr>
+<td>Residual policy $\pi_{res}$</td>
+<td>relative pose (7), velocity (6), force $F_t$ (3), previous command</td>
+<td>$a_t^{res}$ (6, bounded)</td>
+<td>how to negotiate contact, every step at 15 Hz</td>
+</tr>
+<tr>
+<td>Sum</td>
+<td>$a_t^{VLA}$ and $a_t^{res}$</td>
+<td>$a_t$</td>
+<td>both in the same relative-pose representation</td>
+</tr>
+<tr>
+<td>Impedance controller</td>
+<td>$a_t$</td>
+<td>joint torques</td>
+<td>1 kHz, interpolates between 15 Hz commands</td>
+</tr>
+</tbody>
+</table>
+<p>The only requirement on the VLA: it must output 6-D end-effector relative-pose action chunks, so the residual can be added in the same form. The same residual worked on GR00T, π0.5 and OpenVLA.</p>
+<h2>3. Work it by hand: the FIRe reward</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The reward tells the residual to avoid pushing harder than a reference force $F_{ref}$, without saying anything about the task. Computing it once shows what each term does.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\lVert F_t\rVert,\ \lVert F_{t+1}\rVert$</td>
+<td>force magnitude before and after a step</td>
+<td>input</td>
+<td>30 N, 20 N</td>
+</tr>
+<tr>
+<td>$F_{ref}$</td>
+<td>reference force</td>
+<td>constant</td>
+<td>10 N (evaluation; randomised in training)</td>
+</tr>
+<tr>
+<td>$\alpha,\ \lambda_f,\ c_f,\ \gamma$</td>
+<td>penalty scale, shaping scale, potential coefficient, discount</td>
+<td>constant</td>
+<td>$10^{-5}$, $10^{-5}$, 1.0, 0.995</td>
+</tr>
+<tr>
+<td>$r_p,\ r_{sh}$</td>
+<td>direct penalty and shaping term</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$r_p = -\alpha\max(0,\ \lVert F_{t+1}\rVert - F_{ref}),\qquad r_{sh} = \lambda_f\big(\gamma\,\phi_f(s_{t+1}) - \phi_f(s_t)\big)$$</p>
+<p>$$\phi_f(s) = -\log\!\big(c_f\max(0,\ \lVert F(s)\rVert - F_{ref}) + 1\big)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Excess over $F_{ref}$: before $30 - 10 = 20$ N, after $20 - 10 = 10$ N.</li>
+<li>$\phi_f(s_t) = -\log 21 = -3.0445$ and $\phi_f(s_{t+1}) = -\log 11 = -2.3979$.</li>
+<li>$r_p = -10^{-5}\times 10 = -1.0\times 10^{-4}$.</li>
+<li>$r_{sh} = 10^{-5}\,(0.995\times(-2.3979) + 3.0445) = 10^{-5}\times 0.6586 = 6.6\times 10^{-6}$.</li>
+</ol>
+<p><strong>Result.</strong> $r_f = r_p + r_{sh} \approx -9.3\times 10^{-5}$. Easing from 30 N to 20 N is rewarded by the shaping term, but the step is still penalised because 20 N is above 10 N.</p>
+<p><strong>Why it matters.</strong> Both terms are exactly zero at or below $F_{ref}$, so the reward never pays the robot for touching or avoiding contact; contact comes from the success reward and the VLA action. The numbers are tiny next to the success reward of 1. The page does not say how forces are scaled, so I show the arithmetic and do not claim how the terms balance.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Peg Insert on the real robot, 30 trials each. Each use of force adds about 27 points." class="dg-natural" width="661" height="162" viewBox="0 0 661 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="201" y="23" text-anchor="end">VLA alone</text><rect class="dg-bar" x="211" y="10" width="84" height="18"/><text class="dg-barval" x="303" y="23">23.3%</text><text class="dg-barlabel" x="201" y="53" text-anchor="end">FIRe without force</text><rect class="dg-bar" x="211" y="40" width="156" height="18"/><text class="dg-barval" x="375" y="53">43.3%</text><text class="dg-barlabel" x="201" y="83" text-anchor="end">FIRe force observation only</text><rect class="dg-bar" x="211" y="70" width="252" height="18"/><text class="dg-barval" x="471" y="83">70%</text><text class="dg-barlabel" x="201" y="113" text-anchor="end">RL with task-specific reward</text><rect class="dg-bar" x="211" y="100" width="312" height="18"/><text class="dg-barval" x="531" y="113">86.7%</text><text class="dg-barlabel" x="201" y="143" text-anchor="end">FIRe</text><rect class="dg-key" x="211" y="130" width="348" height="18"/><text class="dg-barval" x="567" y="143">96.7%</text></svg><figcaption>Peg Insert on the real robot, 30 trials each. Each use of force adds about 27 points.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Real robot, 30 trials</th>
+<th>Peg Insert</th>
+<th>Gear Mesh</th>
+<th>Nut Thread</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLA</td>
+<td>23.3%</td>
+<td>10.0%</td>
+<td>3.3%</td>
+</tr>
+<tr>
+<td>RL, task-specific reward</td>
+<td>86.7%</td>
+<td>100.0%</td>
+<td>33.3%</td>
+</tr>
+<tr>
+<td>FIRe without force</td>
+<td>43.3%</td>
+<td>93.3%</td>
+<td>6.7%</td>
+</tr>
+<tr>
+<td>FIRe, force in observation only</td>
+<td>70.0%</td>
+<td>100.0%</td>
+<td>16.7%</td>
+</tr>
+<tr>
+<td><strong>FIRe</strong></td>
+<td><strong>96.7%</strong></td>
+<td><strong>100.0%</strong></td>
+<td><strong>33.3%</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Same residual, three backbones (Peg / Gear / Nut): GR00T 23.3→96.7, 10.0→100, 3.3→33.3; π0.5 20.0→96.7, 66.7→100, 0.0→13.3; OpenVLA 56.7→90.0, 93.3→100, 3.3→16.7.</li>
+<li>Simulation, peak success: FIRe 100%, 100%, 97%; RL with task-specific reward 94%, 100%, 100%. From scratch with the same FIRe reward and no VLA: about 40% on Peg Insert and 0% on Nut Thread, so the VLA warm start matters.</li>
+<li>Nut Thread stays low: about 60% of the failures end with the nut aligned on the bolt but not threaded. The page says thread engagement is not observable from the end-effector pose.</li>
+</ul>
+<h2>5. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> The idea transfers to any arm with a force reading and a compliant controller, but the recipe is built around a simulator model of your task and a VLA that outputs relative-pose chunks. "Not stated" means the project page does not say it.</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot and sensor</td>
+<td>Franka FR3, wrist-mounted 3-axis force sensor, three cameras (two external, one wrist)</td>
+<td>Only the 3 force components are used, so a 6-axis wrist sensor (such as the one built into a UR10e) gives more than needed. Other arms: not tested</td>
+</tr>
+<tr>
+<td>Low-level control</td>
+<td>Task-space impedance controller at 1 kHz, torque control through a ROS 2 controller</td>
+<td>You need an equivalent compliant controller; the page does not say how to port it</td>
+</tr>
+<tr>
+<td>VLA</td>
+<td>GR00T (chunk 16), π0.5 and OpenVLA (chunk 8 in the repo) with the action head fine-tuned, then frozen</td>
+<td>The VLA must output 6-D relative end-effector pose chunks</td>
+</tr>
+<tr>
+<td>Simulation</td>
+<td>Isaac Sim 5.1 and Isaac Lab on Linux, Python 3.11, CUDA 12.8, 64 parallel environments, 200 epochs of PPO</td>
+<td>Your task must exist as a simulated contact task. The tasks here are rigid 3D-printed parts from FORGE. A press-fit cap needs its own model; FORGE approximated snap-fit clips with a spring</td>
+</tr>
+<tr>
+<td>Sim-to-real</td>
+<td>Domain randomisation and noise on pose and force, zero-shot, no real-world fine-tuning</td>
+<td>Contact that the simulator models poorly can break zero-shot transfer</td>
+</tr>
+<tr>
+<td>Demonstrations for the VLA</td>
+<td>The repo has a script that rolls out a trained baseline in simulation to save GR00T demos; a pick-and-place check used 128 teleoperated episodes</td>
+<td>How many demos the contact tasks used, and whether they were real or simulated, is not stated</td>
+</tr>
+<tr>
+<td>Training time and GPU</td>
+<td>Not stated</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code</td>
+<td><a href="https://github.com/RCILab/FIRe">github.com/RCILab/FIRe</a>: <code>fire_lab</code> (training) and <code>fire_deploy</code> (real robot). No licence file. The page still says "Code (Coming Soon)"</td>
+<td>Check the repo before relying on it</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Caveats</h2>
+<ul>
+<li>No arXiv paper or full text is available, so the numbers are the authors' project-page claims, not peer-reviewed results.</li>
+<li>Every real-robot result is on three rigid peg, gear and nut tasks with 30 trials per method. At 30 trials, 96.7% (29/30) still means roughly 83% to 99% (Wilson, my arithmetic).</li>
+<li>Success on Nut Thread (33.3%) only matches RL with a task-specific reward; the gain there is over the VLA, not over RL.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="forcevla.html">ForceVLA</a> and <a href="ta-vla.html">TA-VLA</a> put force <em>inside</em> the VLA and retrain it. FIRe leaves the VLA alone and corrects it from outside, which is the same idea as the residual in <a href="ter-dagger.html">TER-DAgger</a>, here trained with RL in simulation.</p>
+<p><strong>Check question:</strong> $F_{ref} = 10$ N, $\alpha = 10^{-5}$, $\lVert F_{t+1}\rVert = 15$ N. What is $r_p$?</p>
+<details>
+<summary>Answer</summary>
+<p>Excess $= 15 - 10 = 5$ N, so $r_p = -10^{-5}\times 5 = -5\times 10^{-5}$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>NGUỒN</strong> <a href="https://rcilab.github.io/FIRe/">Trang dự án</a> · <a href="https://github.com/RCILab/FIRe">code</a> · 2026 · nộp IEEE RA-L. Trang ghi "Paper (Coming Soon)": chưa có paper trên arXiv, nên mọi con số dưới đây lấy từ trang dự án và chưa được đối chiếu với toàn văn.</p>
+<p><strong>VẤN ĐỀ</strong> Lắp ráp (chốt, bánh răng, đai ốc) cần robot phản ứng với tiếp xúc nhiều lần mỗi giây. VLA chỉ cho một chunk hành động rồi chạy mở vòng.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> VLA đứng một mình chỉ đạt 23,3%, 10,0% và 3,3% trên ba tác vụ. RL từ đầu dùng được lực, nhưng reward dày (kiểu FORGE) phải viết lại cho từng tác vụ, ba reward khác nhau cho ba tác vụ.</p>
+<p><strong>Ý TƯỞNG</strong> Đóng băng VLA. Huấn luyện trong mô phỏng một chính sách residual nhỏ, nhìn thấy lực ở mỗi bước và cộng một hiệu chỉnh có giới hạn vào mỗi hành động của VLA. Reward gồm một số hạng thành công thưa cộng một số hạng lực giống hệt nhau cho mọi tác vụ.</p>
+<p><strong>KẾT QUẢ</strong> Robot thật, 30 lượt mỗi cấu hình: +73,4, +90,0 và +30,0 điểm so với VLA (trung bình +64,5). Cắm chốt đạt 96,7%, so với 86,7% của RL có reward riêng cho tác vụ.</p>
+</div>
+<h2>1. Vấn đề: giữa hai lần suy luận, một chunk là "mù"</h2>
+<figure class="diagram flow"><svg role="img" aria-label="VLA còn &quot;khởi động nóng&quot; cho RL: reward không cần nói đích ở đâu nữa, vì hành động của VLA đã chỉ về đó." class="dg-natural" width="725" height="304" viewBox="0 0 725 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">VLA đứng một mình</text><rect class="dg-box" x="147" y="22" width="132" height="38"/><text class="dg-t" x="213" y="45" text-anchor="middle">Ảnh + câu lệnh</text><path class="dg-a" d="M279 41 H311"/><rect class="dg-badbox" x="313" y="14" width="140" height="54"/><text class="dg-t" x="383" y="37" text-anchor="middle">Chunk hành động</text><text class="dg-s" x="383" y="53" text-anchor="middle">16 bước, mở vòng</text><path class="dg-a" d="M453 41 H485"/><rect class="dg-box" x="487" y="22" width="96" height="38"/><text class="dg-t" x="535" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="146.8" y="86">✗ không có lực, không phản ứng trong chunk: 23,3% ở cắm chốt</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">RL từ đầu</text><rect class="dg-box" x="147" y="120" width="102" height="38"/><text class="dg-t" x="198" y="143" text-anchor="middle">Lực + pose</text><path class="dg-a" d="M249 139 H281"/><rect class="dg-badbox" x="283" y="112" width="141" height="54"/><text class="dg-t" x="353" y="135" text-anchor="middle">Reward dày</text><text class="dg-s" x="353" y="151" text-anchor="middle">mới cho mỗi tác vụ</text><path class="dg-a" d="M424 139 H456"/><rect class="dg-box" x="458" y="120" width="96" height="38"/><text class="dg-t" x="506" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="146.8" y="184">✗ phản ứng với lực, nhưng phải thiết kế reward riêng: 86,7%</text><text class="dg-lab dg-green" x="14" y="241">FIRe</text><rect class="dg-box" x="147" y="218" width="132" height="38"/><text class="dg-t" x="213" y="241" text-anchor="middle">Ảnh + câu lệnh</text><path class="dg-a" d="M279 237 H311"/><rect class="dg-key" x="313" y="210" width="125" height="54"/><text class="dg-t" x="376" y="233" text-anchor="middle">VLA đóng băng</text><text class="dg-s" x="376" y="249" text-anchor="middle">chunk</text><path class="dg-a" d="M438 237 H470"/><rect class="dg-key" x="472" y="210" width="109" height="54"/><text class="dg-t" x="527" y="233" text-anchor="middle">Residual</text><text class="dg-s" x="527" y="249" text-anchor="middle">lực, mỗi bước</text><path class="dg-a" d="M581 237 H613"/><rect class="dg-box" x="615" y="218" width="96" height="38"/><text class="dg-t" x="663" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="146.8" y="282">✓ VLA quyết định đi đâu, residual quyết định tiếp xúc diễn ra thế nào: 96,7%</text></svg><figcaption>VLA còn "khởi động nóng" cho RL: reward không cần nói đích ở đâu nữa, vì hành động của VLA đã chỉ về đó.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Lệnh cuối cùng là hành động VLA cộng một residual có giới hạn, rồi qua bộ điều khiển trở kháng 1 kHz. VLA không bao giờ bắt vòng điều khiển chờ: chunk kế tiếp được lấy trước tại điểm giữa chunk hiện tại." viewBox="0 0 980 444" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">ONE CONTROL STEP: THE VLA PLANS, THE RESIDUAL NEGOTIATES THE CONTACT</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="64"/><text class="dg-t" x="120" y="70" text-anchor="middle">3 cameras + abs. pose + text</text><text class="dg-s" x="120" y="90" text-anchor="middle">no force; read once per chunk</text>
+<rect class="dg-key" x="260" y="46" width="170" height="64"/><text class="dg-t" x="345" y="70" text-anchor="middle">Frozen VLA</text><text class="dg-s" x="345" y="90" text-anchor="middle">only its action head tuned</text>
+<rect class="dg-box" x="470" y="46" width="150" height="64"/><text class="dg-t" x="545" y="70" text-anchor="middle">Chunk a_VLA</text><text class="dg-s" x="545" y="90" text-anchor="middle">T = 16 steps (GR00T)</text>
+<path class="dg-a" d="M220 78 H260"/><path class="dg-a" d="M430 78 H470"/>
+<rect class="dg-ext" x="20" y="170" width="200" height="70"/><text class="dg-t" x="120" y="194" text-anchor="middle">rel. pose, velocity,</text><text class="dg-t" x="120" y="210" text-anchor="middle">force F (3), last a</text><text class="dg-s" x="120" y="228" text-anchor="middle">every step, 15 Hz</text>
+<rect class="dg-key" x="260" y="170" width="170" height="70"/><text class="dg-t" x="345" y="196" text-anchor="middle">Residual policy</text><text class="dg-s" x="345" y="214" text-anchor="middle">PPO, trained in sim</text>
+<rect class="dg-box" x="470" y="170" width="150" height="70"/><text class="dg-t" x="545" y="196" text-anchor="middle">a_res</text><text class="dg-s" x="545" y="214" text-anchor="middle">bounded, 6-D</text>
+<path class="dg-a" d="M220 205 H260"/><path class="dg-a" d="M430 205 H470"/>
+<circle class="dg-key" cx="700" cy="141" r="22"/><text class="dg-t" x="700" y="148" text-anchor="middle">+</text>
+<path class="dg-a" d="M620 78 H700 V119"/><path class="dg-a" d="M620 205 H700 V163"/>
+<rect class="dg-box" x="770" y="116" width="190" height="50"/><text class="dg-t" x="865" y="138" text-anchor="middle">Impedance controller</text><text class="dg-s" x="865" y="154" text-anchor="middle">1 kHz, interpolates</text>
+<path class="dg-a" d="M722 141 H770"/>
+<rect class="dg-ext" x="770" y="200" width="190" height="50"/><text class="dg-t" x="865" y="222" text-anchor="middle">Franka FR3</text><text class="dg-s" x="865" y="238" text-anchor="middle">wrist 3-axis force sensor</text>
+<path class="dg-a" d="M865 166 V200"/>
+<path class="dg-ad" d="M865 250 V275 H120 V240"/><text class="dg-l" x="400" y="270">force, pose and velocity feed back at every step</text>
+<text class="dg-h" x="20" y="318">SLOW-FAST LOOP: THE NEXT CHUNK IS FETCHED WHILE THE CURRENT ONE RUNS</text>
+<rect class="dg-box" x="20" y="334" width="440" height="30"/><text class="dg-t" x="240" y="354" text-anchor="middle">chunk i is executing</text>
+<rect class="dg-grp" x="460" y="334" width="440" height="30"/><text class="dg-t" x="680" y="354" text-anchor="middle">chunk i+1 (swapped in when i ends)</text>
+<path class="dg-ad" d="M240 364 V382"/><text class="dg-s" x="250" y="394">midpoint: prefetch next chunk</text>
+<path class="dg-ad" d="M460 364 V404"/><text class="dg-s" x="470" y="416">end of chunk: swap in the prefetched one</text>
+<text class="dg-l" x="20" y="430">the residual keeps correcting every step, so the loop never waits for the VLA</text>
+</svg><figcaption>Lệnh cuối cùng là hành động VLA cộng một residual có giới hạn, rồi qua bộ điều khiển trở kháng 1 kHz. VLA không bao giờ bắt vòng điều khiển chờ: chunk kế tiếp được lấy trước tại điểm giữa chunk hiện tại.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLA đóng băng</td>
+<td>2 ảnh ngoài + 1 ảnh cổ tay, pose tuyệt đối $p_{ee}^{abs}$ (7), câu lệnh $\ell$</td>
+<td>chunk hành động độ dài $T$</td>
+<td>đi đâu, một lần mỗi chunk</td>
+</tr>
+<tr>
+<td>Residual $\pi_{res}$</td>
+<td>pose tương đối (7), vận tốc (6), lực $F_t$ (3), lệnh trước đó</td>
+<td>$a_t^{res}$ (6, có giới hạn)</td>
+<td>tiếp xúc diễn ra thế nào, mỗi bước ở 15 Hz</td>
+</tr>
+<tr>
+<td>Phép cộng</td>
+<td>$a_t^{VLA}$ và $a_t^{res}$</td>
+<td>$a_t$</td>
+<td>cả hai cùng biểu diễn pose tương đối</td>
+</tr>
+<tr>
+<td>Bộ điều khiển trở kháng</td>
+<td>$a_t$</td>
+<td>mô-men khớp</td>
+<td>1 kHz, nội suy giữa các lệnh 15 Hz</td>
+</tr>
+</tbody>
+</table>
+<p>Điều kiện duy nhất với VLA: phải xuất chunk pose tương đối 6 chiều của end-effector để residual cộng vào cùng dạng. Cùng một residual chạy được trên GR00T, π0.5 và OpenVLA.</p>
+<h2>3. Tính tay: reward của FIRe</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Reward bảo residual đừng ấn mạnh hơn một lực tham chiếu $F_{ref}$, mà không nói gì về tác vụ. Tính một lần để thấy mỗi số hạng làm gì.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\lVert F_t\rVert,\ \lVert F_{t+1}\rVert$</td>
+<td>độ lớn lực trước và sau một bước</td>
+<td>input</td>
+<td>30 N, 20 N</td>
+</tr>
+<tr>
+<td>$F_{ref}$</td>
+<td>lực tham chiếu</td>
+<td>hằng số</td>
+<td>10 N (lúc đánh giá; ngẫu nhiên hóa khi huấn luyện)</td>
+</tr>
+<tr>
+<td>$\alpha,\ \lambda_f,\ c_f,\ \gamma$</td>
+<td>hệ số phạt, hệ số shaping, hệ số thế năng, chiết khấu</td>
+<td>hằng số</td>
+<td>$10^{-5}$, $10^{-5}$, 1,0, 0,995</td>
+</tr>
+<tr>
+<td>$r_p,\ r_{sh}$</td>
+<td>phạt trực tiếp và số hạng shaping</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$r_p = -\alpha\max(0,\ \lVert F_{t+1}\rVert - F_{ref}),\qquad r_{sh} = \lambda_f\big(\gamma\,\phi_f(s_{t+1}) - \phi_f(s_t)\big)$$</p>
+<p>$$\phi_f(s) = -\log\!\big(c_f\max(0,\ \lVert F(s)\rVert - F_{ref}) + 1\big)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Phần vượt $F_{ref}$: trước $30 - 10 = 20$ N, sau $20 - 10 = 10$ N.</li>
+<li>$\phi_f(s_t) = -\log 21 = -3,0445$ và $\phi_f(s_{t+1}) = -\log 11 = -2,3979$.</li>
+<li>$r_p = -10^{-5}\times 10 = -1,0\times 10^{-4}$.</li>
+<li>$r_{sh} = 10^{-5}\,(0,995\times(-2,3979) + 3,0445) = 10^{-5}\times 0,6586 = 6,6\times 10^{-6}$.</li>
+</ol>
+<p><strong>Kết quả.</strong> $r_f = r_p + r_{sh} \approx -9,3\times 10^{-5}$. Giảm lực từ 30 N xuống 20 N được số hạng shaping thưởng, nhưng bước đó vẫn bị phạt vì 20 N còn cao hơn 10 N.</p>
+<p><strong>Ý nghĩa.</strong> Cả hai số hạng đều bằng đúng 0 khi lực không vượt $F_{ref}$, nên reward không thưởng cho việc chạm hay tránh chạm; việc đi tới tiếp xúc đến từ reward thành công và hành động của VLA. Các con số rất nhỏ so với reward thành công là 1. Trang không nói lực được chia thang thế nào, nên mình chỉ trình bày phép tính và không khẳng định các số hạng cân bằng ra sao.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Cắm chốt trên robot thật, 30 lượt mỗi cấu hình. Mỗi cách dùng lực thêm khoảng 27 điểm." class="dg-natural" width="696" height="162" viewBox="0 0 696 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="236" y="23" text-anchor="end">VLA đứng một mình</text><rect class="dg-bar" x="246" y="10" width="84" height="18"/><text class="dg-barval" x="338" y="23">23,3%</text><text class="dg-barlabel" x="236" y="53" text-anchor="end">FIRe không có lực</text><rect class="dg-bar" x="246" y="40" width="156" height="18"/><text class="dg-barval" x="410" y="53">43,3%</text><text class="dg-barlabel" x="236" y="83" text-anchor="end">FIRe chỉ có lực trong observation</text><rect class="dg-bar" x="246" y="70" width="252" height="18"/><text class="dg-barval" x="506" y="83">70%</text><text class="dg-barlabel" x="236" y="113" text-anchor="end">RL có reward riêng</text><rect class="dg-bar" x="246" y="100" width="312" height="18"/><text class="dg-barval" x="566" y="113">86,7%</text><text class="dg-barlabel" x="236" y="143" text-anchor="end">FIRe</text><rect class="dg-key" x="246" y="130" width="348" height="18"/><text class="dg-barval" x="602" y="143">96,7%</text></svg><figcaption>Cắm chốt trên robot thật, 30 lượt mỗi cấu hình. Mỗi cách dùng lực thêm khoảng 27 điểm.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Robot thật, 30 lượt</th>
+<th>Cắm chốt</th>
+<th>Ăn khớp bánh răng</th>
+<th>Vặn đai ốc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLA</td>
+<td>23,3%</td>
+<td>10,0%</td>
+<td>3,3%</td>
+</tr>
+<tr>
+<td>RL, reward riêng cho tác vụ</td>
+<td>86,7%</td>
+<td>100,0%</td>
+<td>33,3%</td>
+</tr>
+<tr>
+<td>FIRe không có lực</td>
+<td>43,3%</td>
+<td>93,3%</td>
+<td>6,7%</td>
+</tr>
+<tr>
+<td>FIRe, lực chỉ trong observation</td>
+<td>70,0%</td>
+<td>100,0%</td>
+<td>16,7%</td>
+</tr>
+<tr>
+<td><strong>FIRe</strong></td>
+<td><strong>96,7%</strong></td>
+<td><strong>100,0%</strong></td>
+<td><strong>33,3%</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Cùng một residual, ba backbone (chốt / bánh răng / đai ốc): GR00T 23,3→96,7, 10,0→100, 3,3→33,3; π0.5 20,0→96,7, 66,7→100, 0,0→13,3; OpenVLA 56,7→90,0, 93,3→100, 3,3→16,7.</li>
+<li>Mô phỏng, thành công đỉnh: FIRe 100%, 100%, 97%; RL có reward riêng 94%, 100%, 100%. RL từ đầu với cùng reward FIRe và không có VLA: khoảng 40% ở cắm chốt và 0% ở vặn đai ốc, nên khởi động từ VLA quan trọng.</li>
+<li>Vặn đai ốc vẫn thấp: khoảng 60% lỗi kết thúc khi đai ốc đã thẳng hàng trên bu-lông nhưng chưa vào ren. Trang cho rằng việc ăn ren không quan sát được từ pose của end-effector.</li>
+</ul>
+<h2>5. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Ý tưởng chuyển được sang bất kỳ cánh tay nào có đọc lực và bộ điều khiển mềm, nhưng công thức được xây quanh một mô hình mô phỏng của tác vụ và một VLA xuất chunk pose tương đối. "Không nêu" nghĩa là trang dự án không nói.</p>
+<table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot và cảm biến</td>
+<td>Franka FR3, cảm biến lực 3 trục gắn cổ tay, ba camera (hai ngoài, một cổ tay)</td>
+<td>Chỉ dùng 3 thành phần lực, nên cảm biến 6 trục ở cổ tay (như cái tích hợp trong UR10e) là dư. Cánh tay khác: chưa thử</td>
+</tr>
+<tr>
+<td>Điều khiển mức thấp</td>
+<td>Bộ điều khiển trở kháng không gian tác vụ 1 kHz, điều khiển mô-men qua bộ điều khiển ROS 2</td>
+<td>Bạn cần một bộ điều khiển mềm tương đương; trang không nói cách chuyển</td>
+</tr>
+<tr>
+<td>VLA</td>
+<td>GR00T (chunk 16), π0.5 và OpenVLA (chunk 8 trong repo), action head đã fine-tune rồi đóng băng</td>
+<td>VLA phải xuất chunk pose tương đối 6 chiều của end-effector</td>
+</tr>
+<tr>
+<td>Mô phỏng</td>
+<td>Isaac Sim 5.1 và Isaac Lab trên Linux, Python 3.11, CUDA 12.8, 64 môi trường song song, 200 epoch PPO</td>
+<td>Tác vụ của bạn phải tồn tại dưới dạng tác vụ tiếp xúc mô phỏng. Ở đây là chi tiết in 3D cứng lấy từ FORGE. Nắp ấn khít cần mô hình riêng; FORGE xấp xỉ kẹp snap-fit bằng một lò xo</td>
+</tr>
+<tr>
+<td>Từ mô phỏng sang thật</td>
+<td>Ngẫu nhiên hóa miền và nhiễu trên pose và lực, zero-shot, không fine-tune ngoài thực tế</td>
+<td>Tiếp xúc mà mô phỏng mô hình hóa kém có thể làm hỏng việc chuyển zero-shot</td>
+</tr>
+<tr>
+<td>Demo cho VLA</td>
+<td>Repo có script chạy một baseline đã huấn luyện trong mô phỏng để lưu demo GR00T; phép thử pick-and-place dùng 128 episode teleoperation</td>
+<td>Các tác vụ tiếp xúc dùng bao nhiêu demo, và là demo thật hay mô phỏng, không được nêu</td>
+</tr>
+<tr>
+<td>Thời gian huấn luyện và GPU</td>
+<td>Không nêu</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code</td>
+<td><a href="https://github.com/RCILab/FIRe">github.com/RCILab/FIRe</a>: <code>fire_lab</code> (huấn luyện) và <code>fire_deploy</code> (robot thật). Không có file giấy phép. Trang vẫn ghi "Code (Coming Soon)"</td>
+<td>Hãy kiểm tra repo trước khi dựa vào nó</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Chưa có paper trên arXiv hay toàn văn, nên các số liệu là lời của tác giả trên trang dự án, chưa qua bình duyệt.</li>
+<li>Mọi kết quả robot thật đều trên ba tác vụ cứng (chốt, bánh răng, đai ốc) với 30 lượt mỗi cấu hình. Với 30 lượt, 96,7% (29/30) vẫn chỉ cho khoảng 83% đến 99% (Wilson, phép tính của mình).</li>
+<li>Thành công ở vặn đai ốc (33,3%) chỉ bằng RL có reward riêng; mức tăng ở đó là so với VLA, không phải so với RL.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> <a href="forcevla.html">ForceVLA</a> và <a href="ta-vla.html">TA-VLA</a> đưa lực <em>vào bên trong</em> VLA và huấn luyện lại nó. FIRe để nguyên VLA và hiệu chỉnh từ bên ngoài, cùng ý với residual trong <a href="ter-dagger.html">TER-DAgger</a>, nhưng ở đây được huấn luyện bằng RL trong mô phỏng.</p>
+<p><strong>Câu kiểm tra:</strong> $F_{ref} = 10$ N, $\alpha = 10^{-5}$, $\lVert F_{t+1}\rVert = 15$ N. $r_p$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Phần vượt $= 15 - 10 = 5$ N, nên $r_p = -10^{-5}\times 5 = -5\times 10^{-5}$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

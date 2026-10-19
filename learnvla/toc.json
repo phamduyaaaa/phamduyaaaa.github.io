@@ -78,7 +78,8 @@
       { "title": "HapticVLA", "slug": "hapticvla", "date": "03/2026" },
       { "title": "FWBC-VLA", "slug": "fwbc-vla", "date": "09/2026" },
       { "title": "TORL-VLA", "slug": "torl-vla", "fit": "adapt", "date": "06/2026" },
-      { "title": "TER-Dagger", "slug": "ter-dagger", "fit": "adapt", "date": "03/2026" }
+      { "title": "TER-Dagger", "slug": "ter-dagger", "fit": "adapt", "date": "03/2026" },
+      { "title": "FIRe", "slug": "fire", "fit": "adapt", "date": "2026", "venue": "RA-L (submitted)" }
     ]
   }
 ]
