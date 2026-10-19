@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Most force-aware policies need an external F/T sensor, and VLAs such as π0 know nothing about contact. TA-VLA reads torque from the motor currents and studies where and how to feed it to π0: one history token in the decoder, plus a future-torque prediction task.">
+<title>TA-VLA: Joint Torque as a Force Sensor for a VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="TA-VLA: Joint Torque as a Force Sensor for a VLA">
+<meta property="og:description" content="Most force-aware policies need an external F/T sensor, and VLAs such as π0 know nothing about contact. TA-VLA reads torque from the motor currents and studies where and how to feed it to π0: one history token in the decoder, plus a future-torque prediction task.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>TA-VLA: Joint Torque as a Force Sensor for a VLA</h1>
+    <h1 data-vi>TA-VLA: Dùng mô-men khớp thay cảm biến lực cho VLA</h1>
+
+    <p class="post-excerpt-lead" data-en>Most force-aware policies need an external F/T sensor, and VLAs such as π0 know nothing about contact. TA-VLA reads torque from the motor currents and studies where and how to feed it to π0: one history token in the decoder, plus a future-torque prediction task.</p>
+    <p class="post-excerpt-lead" data-vi>Đa số chính sách có nhận biết lực cần cảm biến F/T gắn ngoài, còn các VLA như π0 không biết gì về tiếp xúc. TA-VLA đọc mô-men từ dòng điện động cơ và khảo sát nên đưa nó vào π0 ở đâu và bằng cách nào: một token lịch sử ở decoder, cộng thêm nhiệm vụ dự đoán mô-men tương lai.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Torque</span><span class="pill">Paper Notes</span><span class="pill">π0</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2509.07962">arXiv 2509.07962</a> · 09/2025 · built on π0 (also tested on RDT)</p>
+<p><strong>PROBLEM</strong> A robot needs to feel contact to push a button, plug a charger or turn a door handle. Camera images cannot tell a failed insertion from a successful one, but joint torques can.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper names two gaps. Many force-aware imitation methods rely on extra 6D force sensors, which cost money and fail in harsh conditions. And methods that fuse force with vision and language "typically train policies from scratch and fail to leverage the advantages of pretrained VLA models"; FACTR is cited as needing a complex training pipeline. Plain π0 gets 0/20 on charger plugging.</p>
+<p><strong>IDEA</strong> Estimate torque from motor current, then answer three questions systematically: <em>where</em> to put it (decoder, not encoder), <em>how</em> (the whole 2-second history in one token), and <em>as what</em> (also predict future torque as a second training target).</p>
+<p><strong>RESULT</strong> On five contact-rich tasks, the average success rate of π0 goes from 23% to 86% (my average of the paper's Table 5; 20 trials per task).</p>
+</div>
+<h2>1. The problem: π0 cannot feel the difference between a miss and a hit</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is where and how the torque enters, not a bigger model." class="dg-natural" width="958" height="206" viewBox="0 0 958 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0 / external F/T methods</text><rect class="dg-box" x="198" y="22" width="269" height="38"/><text class="dg-t" x="333" y="45" text-anchor="middle">Images + language + joint angles</text><path class="dg-a" d="M467 41 H499"/><rect class="dg-badbox" x="501" y="14" width="186" height="54"/><text class="dg-t" x="594" y="37" text-anchor="middle">No contact signal</text><text class="dg-s" x="594" y="53" text-anchor="middle">or an extra sensor to buy</text><path class="dg-a" d="M687 41 H719"/><rect class="dg-box" x="721" y="22" width="96" height="38"/><text class="dg-t" x="769" y="45" text-anchor="middle">Action</text><text class="dg-note dg-red" x="198.0" y="86">✗ charger plugging: 0/20</text><text class="dg-lab dg-green" x="14" y="143">TA-VLA</text><rect class="dg-box" x="198" y="120" width="231" height="38"/><text class="dg-t" x="314" y="143" text-anchor="middle">Same + motor-current torque</text><path class="dg-a" d="M429 139 H461"/><rect class="dg-key" x="463" y="112" width="254" height="54"/><text class="dg-t" x="590" y="135" text-anchor="middle">1 history token in the decoder</text><text class="dg-s" x="590" y="151" text-anchor="middle">+ future-torque target</text><path class="dg-a" d="M717 139 H749"/><rect class="dg-box" x="751" y="120" width="193" height="38"/><text class="dg-t" x="848" y="143" text-anchor="middle">Action + future torque</text><text class="dg-note dg-green" x="198.0" y="184">✓ charger plugging: 17/20</text></svg><figcaption>The change is where and how the torque enters, not a bigger model.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Torque history becomes one token for the action expert; the output layer predicts actions and future torques together." viewBox="0 0 980 412" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="30" width="150" height="48"/><text class="dg-t" x="95" y="52" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="68" text-anchor="middle">3 cameras</text>
+<rect class="dg-box" x="230" y="26" width="180" height="56"/><text class="dg-t" x="320" y="50" text-anchor="middle">VLM (PaliGemma)</text><text class="dg-s" x="320" y="66" text-anchor="middle">encoder: left untouched</text>
+<path class="dg-a" d="M170 54 H230"/>
+<text class="dg-note dg-red" x="440" y="58">✗ torque in the encoder: worse</text>
+<rect class="dg-grp" x="200" y="116" width="770" height="270"/><text class="dg-h" x="212" y="134">ACTION EXPERT (decoder)</text>
+<rect class="dg-ext" x="20" y="150" width="150" height="56"/><text class="dg-t" x="95" y="172" text-anchor="middle">Joint torques</text><text class="dg-s" x="95" y="188" text-anchor="middle">from motor current</text>
+<rect class="dg-box" x="20" y="230" width="150" height="56"/><text class="dg-t" x="95" y="252" text-anchor="middle">History: 10 frames</text><text class="dg-s" x="95" y="268" text-anchor="middle">past 2 s × 14 = 140</text>
+<path class="dg-a" d="M95 206 V230"/>
+<rect class="dg-key" x="230" y="230" width="150" height="56"/><text class="dg-t" x="305" y="252" text-anchor="middle">MLP → 1 token</text><text class="dg-s" x="305" y="268" text-anchor="middle">torque token</text>
+<path class="dg-a" d="M170 258 H230"/>
+<rect class="dg-ext" x="230" y="316" width="150" height="48"/><text class="dg-t" x="305" y="338" text-anchor="middle">State token q_t</text><text class="dg-s" x="305" y="354" text-anchor="middle">joint angles</text>
+<rect class="dg-ext" x="430" y="316" width="170" height="48"/><text class="dg-t" x="515" y="338" text-anchor="middle">Noisy chunk</text><text class="dg-s" x="515" y="354" text-anchor="middle">actions + future torques</text>
+<rect class="dg-key" x="440" y="196" width="190" height="90"/><text class="dg-t" x="535" y="226" text-anchor="middle">Transformer</text><text class="dg-s" x="535" y="244" text-anchor="middle">tokens: torque, state,</text><text class="dg-s" x="535" y="260" text-anchor="middle">noisy chunk</text>
+<path class="dg-a" d="M380 258 H440"/><path class="dg-a" d="M380 340 H410 V275 H440"/><path class="dg-a" d="M515 316 V286"/>
+<path class="dg-ad" d="M320 82 V108 H535 V196"/><text class="dg-l" x="430" y="104">attend to images + text</text>
+<rect class="dg-box" x="690" y="196" width="130" height="90"/><text class="dg-t" x="755" y="226" text-anchor="middle">One linear</text><text class="dg-t" x="755" y="242" text-anchor="middle">output layer</text><text class="dg-s" x="755" y="262" text-anchor="middle">action + torque</text>
+<path class="dg-a" d="M630 241 H690"/>
+<rect class="dg-box" x="860" y="166" width="100" height="44"/><text class="dg-t" x="910" y="186" text-anchor="middle">Action</text><text class="dg-s" x="910" y="201" text-anchor="middle">loss ×1</text>
+<rect class="dg-box" x="860" y="256" width="100" height="44"/><text class="dg-t" x="910" y="276" text-anchor="middle">Torque (H=5)</text><text class="dg-s" x="910" y="291" text-anchor="middle">loss × β</text>
+<path class="dg-a" d="M820 225 H840 V188 H860"/><path class="dg-a" d="M820 257 H840 V278 H860"/>
+<text class="dg-note dg-red" x="440" y="402">✗ H separate tokens (one per frame): disturb the decoder's input pattern</text>
+</svg><figcaption>Torque history becomes one token for the action expert; the output layer predicts actions and future torques together.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Torque from current</td>
+<td>motor current $i$</td>
+<td>torque $\tau = k_t\, i$</td>
+<td>no force sensor; $k_t$ is the motor constant</td>
+</tr>
+<tr>
+<td>History token</td>
+<td>10 frames from the past 2 s, 14 values each (140 numbers)</td>
+<td>1 token, via an MLP</td>
+<td>what happened recently, in one token</td>
+</tr>
+<tr>
+<td>Action expert (decoder)</td>
+<td>torque token, state token, noisy chunk, plus the VLM's tokens</td>
+<td>velocity for actions and torques</td>
+<td>torque is placed next to the joint-angle state</td>
+</tr>
+<tr>
+<td>Output layer</td>
+<td>decoder features</td>
+<td>action part + torque part</td>
+<td>one widened linear layer, new weights start small</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why torque carries contact.</strong> The arm's dynamics give $\tau_{measured} = \tau_{model} + J^\top F_{ext}$: what is left after the arm's own motion is explained is the external force mapped through the Jacobian. The paper's Section 3 states this; <a href="survey-force-sensing.html">Survey 2</a> works it by hand.</p>
+<figure class="diagram compact"><svg role="img" aria-label="Average success over the five contact-rich tasks, 20 trials each (my average of the paper's Table 5)." class="dg-natural" width="654" height="132" viewBox="0 0 654 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="194" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="204" y="10" width="50" height="18"/><text class="dg-barval" x="263" y="23">14%</text><text class="dg-barlabel" x="194" y="53" text-anchor="end">RDT</text><rect class="dg-bar" x="204" y="40" width="54" height="18"/><text class="dg-barval" x="266" y="53">15%</text><text class="dg-barlabel" x="194" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="204" y="70" width="83" height="18"/><text class="dg-barval" x="295" y="83">23%</text><text class="dg-barlabel" x="194" y="113" text-anchor="end">π0 + torque obs + objective</text><rect class="dg-key" x="204" y="100" width="310" height="18"/><text class="dg-barval" x="522" y="113">86%</text></svg><figcaption>Average success over the five contact-rich tasks, 20 trials each (my average of the paper's Table 5).</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> What does "one token for the whole history" change inside the decoder? Count the tokens the decoder sees. The paper argues that extra history tokens "disturb the decoder's input pattern", and its results agree.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_f$</td>
+<td>frames in the history (uniform over the past 2 s)</td>
+<td>input</td>
+<td>10</td>
+</tr>
+<tr>
+<td>$d_\tau$</td>
+<td>torque values per frame (14 joints)</td>
+<td>input</td>
+<td>14</td>
+</tr>
+<tr>
+<td>$w$</td>
+<td>decoder width</td>
+<td>constant</td>
+<td>1024</td>
+</tr>
+<tr>
+<td>$L_0$</td>
+<td>decoder tokens in π0: 1 state + 50 action</td>
+<td>input</td>
+<td>51</td>
+</tr>
+<tr>
+<td>$N_1$, $N_H$</td>
+<td>decoder tokens with one history token / one token per frame</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$d_{in} = n_f\, d_\tau \ (\text{one token}), \qquad N_1 = L_0 + 1, \qquad N_H = L_0 + n_f$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>One-token input size: $d_{in} = 10 \times 14 = 140$, fed to an MLP $140 \to 2w \to w$.</li>
+<li>$N_1 = 51 + 1 = 52$ tokens (+2% over π0).</li>
+<li>$N_H = 51 + 10 = 61$ tokens (+20%).</li>
+</ol>
+<p><strong>Result.</strong> Single history token: 52 tokens. One token per frame: 61 tokens.</p>
+<p><strong>Why it matters.</strong> The decoder was pre-trained on 51 tokens; the one-token design barely changes what it sees. In the paper's Table 3 the one-token decoder scores 15/20 and 16/20 on button pushing and charger plugging; the one-token-per-frame decoder scores 9/20 and 7/20.</p>
+</div>
+<h2>3. Three design questions, three answers</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Options tried</th>
+<th>Winner</th>
+<th>Evidence (paper's tables, 20 trials)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where?</td>
+<td>encoder token; decoder, merged into the state token; decoder, own token</td>
+<td>decoder, own token</td>
+<td>button pushing 7, 8, 10 of 20 (π0: 5); charger plugging 8, 11, 12 (π0: 0)</td>
+</tr>
+<tr>
+<td>How much history?</td>
+<td>single frame; history as H tokens; history as 1 token</td>
+<td>history as 1 token, in the decoder</td>
+<td>15/20 and 16/20 (single frame in the decoder: 10 and 12)</td>
+</tr>
+<tr>
+<td>As what?</td>
+<td>observation only; also predict torque</td>
+<td>both together</td>
+<td>average 86% against 78% (observation only) and 64% (objective only)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Why the decoder:</strong> the paper measures (HSIC) that torque is more aligned with joint-angle features, and that the decoder reacts more to small input changes than the encoder: adding noise hurts the decoder more.</li>
+<li><strong>The training objective:</strong> $L = L_{action} + \beta L_{torque}$, with $\beta = 1$ for the objective-only variant and $\beta = 0.1$ when combined with the observation token. The future torque has length $H = 5$.</li>
+</ul>
+<h2>4. Training and data</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base</td>
+<td>public π0 checkpoint, LoRA on encoder and decoder; also RDT (1B), full-parameter</td>
+</tr>
+<tr>
+<td>Steps</td>
+<td>π0: 30k on 4 × L20 GPUs; RDT: 40k</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>400 demonstrations per task; Cobot Magic ALOHA, 7-DoF dual arm, three cameras</td>
+</tr>
+<tr>
+<td>Inference</td>
+<td>π0 action horizon 50, RDT 64, on an RTX 4090</td>
+</tr>
+<tr>
+<td>Cross-embodiment</td>
+<td>ROKAE SR arm: 200 demonstrations, 50k steps, charger insertion with a retry after a failed attempt</td>
+</tr>
+</tbody>
+</table>
+<h2>5. What the paper reports</h2>
+<ul>
+<li><strong>Contact-rich tasks (successes of 20):</strong> π0 gets 5, 0, 0, 16, 2 on button pushing, charger plugging, USB plugging, socket unplugging, door handle turning; π0 + torque observation + objective gets 18, 17, 17, 19, 15.</li>
+<li><strong>Regular tasks:</strong> torque also helps slightly or leaves things unchanged (π0 average 85%, with torque 89%, my averages).</li>
+<li><strong>Cross model:</strong> on RDT the same additions raise button pushing from 4/20 to 16/20 and charger plugging from 1/20 to 15/20.</li>
+<li><strong>Behaviour:</strong> after a failed attempt the torque profile changes, and the robot retries.</li>
+</ul>
+<h2>6. Caveats</h2>
+<ul>
+<li>The averages (14%, 15%, 23%, 86%) are mine, computed from the paper's Table 5; the paper reports per-task counts.</li>
+<li>Torque comes from motor currents, so calibration, noise and heat can degrade it; the paper says this is its main limitation, and that scaling to other modalities under a shared token budget is unclear.</li>
+<li>With 20 trials per task, small differences between rows are within noise; the large gaps (for example 0/20 to 17/20) are not (see <a href="danh-gia-vla.html">how to evaluate a VLA</a>).</li>
+</ul>
+<p><strong>Carry forward:</strong> TA-VLA keeps force as a number stream. <a href="taf-vla.html">TaF-VLA</a> instead aligns touch images with force before they reach the VLA.</p>
+<p><strong>Check question:</strong> with 5 history frames of 14 torque values and the π0 decoder of 51 tokens, what is the one-token input size and how many decoder tokens $N_1$ result?</p>
+<details>
+<summary>Answer</summary>
+<p>Input size $5 \times 14 = 70$. $N_1 = 51 + 1 = 52$ tokens, the same as with 10 frames: the number of frames only changes the size of the MLP input, not the token count.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2509.07962">arXiv 2509.07962</a> · 09/2025 · xây trên π0 (có thử thêm trên RDT)</p>
+<p><strong>VẤN ĐỀ</strong> Robot cần "cảm" được tiếp xúc để bấm nút, cắm sạc hay xoay tay nắm cửa. Ảnh camera không phân biệt được một lần cắm hỏng với một lần cắm đúng, nhưng mô-men khớp thì phân biệt được.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper chỉ ra hai khoảng trống. Nhiều phương pháp imitation có nhận biết lực dựa vào cảm biến lực 6D gắn thêm, vừa tốn tiền vừa hỏng trong điều kiện khắc nghiệt. Còn các phương pháp trộn lực với ảnh và ngôn ngữ thì "thường huấn luyện chính sách từ đầu và bỏ phí lợi thế của VLA đã tiền huấn luyện"; FACTR được nêu là cần một quy trình huấn luyện phức tạp. π0 thường chỉ đạt 0/20 ở tác vụ cắm sạc.</p>
+<p><strong>Ý TƯỞNG</strong> Ước lượng mô-men từ dòng điện động cơ, rồi trả lời có hệ thống ba câu hỏi: đưa vào <em>ở đâu</em> (decoder, không phải encoder), <em>bằng cách nào</em> (cả lịch sử 2 giây trong một token), và <em>làm gì</em> (còn dự đoán mô-men tương lai như một mục tiêu huấn luyện thứ hai).</p>
+<p><strong>KẾT QUẢ</strong> Trên năm tác vụ giàu tiếp xúc, tỉ lệ thành công trung bình của π0 tăng từ 23% lên 86% (trung bình mình tính từ Bảng 5 của paper; 20 lượt mỗi tác vụ).</p>
+</div>
+<h2>1. Vấn đề: π0 không phân biệt được trượt và trúng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở chỗ và cách đưa mô-men vào, không phải mô hình to hơn." class="dg-natural" width="1021" height="206" viewBox="0 0 1021 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0 / phương pháp F/T gắn ngoài</text><rect class="dg-box" x="230" y="22" width="216" height="38"/><text class="dg-t" x="338" y="45" text-anchor="middle">Ảnh + ngôn ngữ + góc khớp</text><path class="dg-a" d="M446 41 H478"/><rect class="dg-badbox" x="480" y="14" width="224" height="54"/><text class="dg-t" x="592" y="37" text-anchor="middle">Không có tín hiệu tiếp xúc</text><text class="dg-s" x="592" y="53" text-anchor="middle">hoặc phải mua thêm cảm biến</text><path class="dg-a" d="M704 41 H736"/><rect class="dg-box" x="738" y="22" width="96" height="38"/><text class="dg-t" x="786" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="230.0" y="86">✗ cắm sạc: 0/20</text><text class="dg-lab dg-green" x="14" y="143">TA-VLA</text><rect class="dg-box" x="230" y="120" width="254" height="38"/><text class="dg-t" x="357" y="143" text-anchor="middle">Như trên + mô-men từ dòng điện</text><path class="dg-a" d="M484 139 H516"/><rect class="dg-key" x="518" y="112" width="216" height="54"/><text class="dg-t" x="626" y="135" text-anchor="middle">1 token lịch sử ở decoder</text><text class="dg-s" x="626" y="151" text-anchor="middle">+ mục tiêu mô-men tương lai</text><path class="dg-a" d="M734 139 H766"/><rect class="dg-box" x="768" y="120" width="239" height="38"/><text class="dg-t" x="887" y="143" text-anchor="middle">Hành động + mô-men tương lai</text><text class="dg-note dg-green" x="230.0" y="184">✓ cắm sạc: 17/20</text></svg><figcaption>Thay đổi nằm ở chỗ và cách đưa mô-men vào, không phải mô hình to hơn.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Lịch sử mô-men thành một token cho action expert; lớp đầu ra dự đoán đồng thời hành động và mô-men tương lai." viewBox="0 0 980 412" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="30" width="150" height="48"/><text class="dg-t" x="95" y="52" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="68" text-anchor="middle">3 cameras</text>
+<rect class="dg-box" x="230" y="26" width="180" height="56"/><text class="dg-t" x="320" y="50" text-anchor="middle">VLM (PaliGemma)</text><text class="dg-s" x="320" y="66" text-anchor="middle">encoder: left untouched</text>
+<path class="dg-a" d="M170 54 H230"/>
+<text class="dg-note dg-red" x="440" y="58">✗ torque in the encoder: worse</text>
+<rect class="dg-grp" x="200" y="116" width="770" height="270"/><text class="dg-h" x="212" y="134">ACTION EXPERT (decoder)</text>
+<rect class="dg-ext" x="20" y="150" width="150" height="56"/><text class="dg-t" x="95" y="172" text-anchor="middle">Joint torques</text><text class="dg-s" x="95" y="188" text-anchor="middle">from motor current</text>
+<rect class="dg-box" x="20" y="230" width="150" height="56"/><text class="dg-t" x="95" y="252" text-anchor="middle">History: 10 frames</text><text class="dg-s" x="95" y="268" text-anchor="middle">past 2 s × 14 = 140</text>
+<path class="dg-a" d="M95 206 V230"/>
+<rect class="dg-key" x="230" y="230" width="150" height="56"/><text class="dg-t" x="305" y="252" text-anchor="middle">MLP → 1 token</text><text class="dg-s" x="305" y="268" text-anchor="middle">torque token</text>
+<path class="dg-a" d="M170 258 H230"/>
+<rect class="dg-ext" x="230" y="316" width="150" height="48"/><text class="dg-t" x="305" y="338" text-anchor="middle">State token q_t</text><text class="dg-s" x="305" y="354" text-anchor="middle">joint angles</text>
+<rect class="dg-ext" x="430" y="316" width="170" height="48"/><text class="dg-t" x="515" y="338" text-anchor="middle">Noisy chunk</text><text class="dg-s" x="515" y="354" text-anchor="middle">actions + future torques</text>
+<rect class="dg-key" x="440" y="196" width="190" height="90"/><text class="dg-t" x="535" y="226" text-anchor="middle">Transformer</text><text class="dg-s" x="535" y="244" text-anchor="middle">tokens: torque, state,</text><text class="dg-s" x="535" y="260" text-anchor="middle">noisy chunk</text>
+<path class="dg-a" d="M380 258 H440"/><path class="dg-a" d="M380 340 H410 V275 H440"/><path class="dg-a" d="M515 316 V286"/>
+<path class="dg-ad" d="M320 82 V108 H535 V196"/><text class="dg-l" x="430" y="104">attend to images + text</text>
+<rect class="dg-box" x="690" y="196" width="130" height="90"/><text class="dg-t" x="755" y="226" text-anchor="middle">One linear</text><text class="dg-t" x="755" y="242" text-anchor="middle">output layer</text><text class="dg-s" x="755" y="262" text-anchor="middle">action + torque</text>
+<path class="dg-a" d="M630 241 H690"/>
+<rect class="dg-box" x="860" y="166" width="100" height="44"/><text class="dg-t" x="910" y="186" text-anchor="middle">Action</text><text class="dg-s" x="910" y="201" text-anchor="middle">loss ×1</text>
+<rect class="dg-box" x="860" y="256" width="100" height="44"/><text class="dg-t" x="910" y="276" text-anchor="middle">Torque (H=5)</text><text class="dg-s" x="910" y="291" text-anchor="middle">loss × β</text>
+<path class="dg-a" d="M820 225 H840 V188 H860"/><path class="dg-a" d="M820 257 H840 V278 H860"/>
+<text class="dg-note dg-red" x="440" y="402">✗ H separate tokens (one per frame): disturb the decoder's input pattern</text>
+</svg><figcaption>Lịch sử mô-men thành một token cho action expert; lớp đầu ra dự đoán đồng thời hành động và mô-men tương lai.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mô-men từ dòng điện</td>
+<td>dòng điện động cơ $i$</td>
+<td>mô-men $\tau = k_t\, i$</td>
+<td>không cần cảm biến lực; $k_t$ là hằng số động cơ</td>
+</tr>
+<tr>
+<td>Token lịch sử</td>
+<td>10 khung trong 2 giây qua, mỗi khung 14 giá trị (140 số)</td>
+<td>1 token, qua một MLP</td>
+<td>chuyện vừa xảy ra, gói trong một token</td>
+</tr>
+<tr>
+<td>Action expert (decoder)</td>
+<td>token mô-men, token trạng thái, đoạn nhiễu, cùng token của VLM</td>
+<td>vận tốc cho hành động và mô-men</td>
+<td>mô-men đặt cạnh trạng thái góc khớp</td>
+</tr>
+<tr>
+<td>Lớp đầu ra</td>
+<td>đặc trưng decoder</td>
+<td>phần hành động + phần mô-men</td>
+<td>một lớp tuyến tính được mở rộng, trọng số mới khởi tạo nhỏ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao mô-men chứa thông tin tiếp xúc.</strong> Động lực học của cánh tay cho $\tau_{measured} = \tau_{model} + J^\top F_{ext}$: phần còn lại sau khi trừ chuyển động của chính cánh tay là lực ngoài được chiếu qua Jacobian. Mục 3 của paper nêu điều này; <a href="survey-force-sensing.html">Survey 2</a> tính tay ví dụ.</p>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên năm tác vụ giàu tiếp xúc, 20 lượt mỗi tác vụ (trung bình mình tính từ Bảng 5 của paper)." class="dg-natural" width="696" height="132" viewBox="0 0 696 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="236" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="246" y="10" width="50" height="18"/><text class="dg-barval" x="304" y="23">14%</text><text class="dg-barlabel" x="236" y="53" text-anchor="end">RDT</text><rect class="dg-bar" x="246" y="40" width="54" height="18"/><text class="dg-barval" x="308" y="53">15%</text><text class="dg-barlabel" x="236" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="246" y="70" width="83" height="18"/><text class="dg-barval" x="336" y="83">23%</text><text class="dg-barlabel" x="236" y="113" text-anchor="end">π0 + mô-men (quan sát + mục tiêu)</text><rect class="dg-key" x="246" y="100" width="310" height="18"/><text class="dg-barval" x="563" y="113">86%</text></svg><figcaption>Thành công trung bình trên năm tác vụ giàu tiếp xúc, 20 lượt mỗi tác vụ (trung bình mình tính từ Bảng 5 của paper).</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> "Một token cho cả lịch sử" thay đổi gì bên trong decoder? Hãy đếm số token mà decoder thấy. Paper lập luận rằng thêm token lịch sử "làm rối khuôn đầu vào của decoder", và kết quả khớp.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_f$</td>
+<td>số khung trong lịch sử (đều trong 2 giây qua)</td>
+<td>input</td>
+<td>10</td>
+</tr>
+<tr>
+<td>$d_\tau$</td>
+<td>số giá trị mô-men mỗi khung (14 khớp)</td>
+<td>input</td>
+<td>14</td>
+</tr>
+<tr>
+<td>$w$</td>
+<td>độ rộng decoder</td>
+<td>hằng số</td>
+<td>1024</td>
+</tr>
+<tr>
+<td>$L_0$</td>
+<td>số token decoder của π0: 1 trạng thái + 50 hành động</td>
+<td>input</td>
+<td>51</td>
+</tr>
+<tr>
+<td>$N_1$, $N_H$</td>
+<td>số token decoder khi dùng một token lịch sử / một token mỗi khung</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$d_{in} = n_f\, d_\tau \ (\text{một token}), \qquad N_1 = L_0 + 1, \qquad N_H = L_0 + n_f$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Kích thước đầu vào của một token: $d_{in} = 10 \times 14 = 140$, đưa vào MLP $140 \to 2w \to w$.</li>
+<li>$N_1 = 51 + 1 = 52$ token (+2% so với π0).</li>
+<li>$N_H = 51 + 10 = 61$ token (+20%).</li>
+</ol>
+<p><strong>Kết quả.</strong> Một token lịch sử: 52 token. Một token mỗi khung: 61 token.</p>
+<p><strong>Ý nghĩa.</strong> Decoder được tiền huấn luyện với 51 token; thiết kế một token gần như không đổi những gì nó thấy. Ở Bảng 3 của paper, decoder dùng một token đạt 15/20 và 16/20 ở bấm nút và cắm sạc; decoder dùng một token mỗi khung đạt 9/20 và 7/20.</p>
+</div>
+<h2>3. Ba câu hỏi thiết kế, ba câu trả lời</h2>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Các phương án đã thử</th>
+<th>Thắng</th>
+<th>Bằng chứng (bảng của paper, 20 lượt)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đặt ở đâu?</td>
+<td>token ở encoder; ở decoder gộp vào token trạng thái; ở decoder thành token riêng</td>
+<td>decoder, token riêng</td>
+<td>bấm nút 7, 8, 10 trên 20 (π0: 5); cắm sạc 8, 11, 12 (π0: 0)</td>
+</tr>
+<tr>
+<td>Lịch sử bao nhiêu?</td>
+<td>một khung; lịch sử H token; lịch sử 1 token</td>
+<td>lịch sử 1 token, ở decoder</td>
+<td>15/20 và 16/20 (một khung ở decoder: 10 và 12)</td>
+</tr>
+<tr>
+<td>Dùng làm gì?</td>
+<td>chỉ làm quan sát; thêm dự đoán mô-men</td>
+<td>cả hai cùng lúc</td>
+<td>trung bình 86% so với 78% (chỉ quan sát) và 64% (chỉ mục tiêu)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Vì sao decoder:</strong> paper đo (HSIC) thấy mô-men căn chỉnh với đặc trưng góc khớp hơn, và decoder nhạy với thay đổi nhỏ của đầu vào hơn encoder: thêm nhiễu làm decoder hỏng nhiều hơn.</li>
+<li><strong>Hàm mục tiêu huấn luyện:</strong> $L = L_{action} + \beta L_{torque}$, với $\beta = 1$ ở biến thể chỉ có mục tiêu và $\beta = 0{,}1$ khi kết hợp với token quan sát. Chuỗi mô-men tương lai dài $H = 5$.</li>
+</ul>
+<h2>4. Huấn luyện và dữ liệu</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nền</td>
+<td>checkpoint π0 công khai, LoRA cho cả encoder và decoder; thử thêm RDT (1B), huấn luyện toàn tham số</td>
+</tr>
+<tr>
+<td>Số bước</td>
+<td>π0: 30k trên 4 GPU L20; RDT: 40k</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>400 bản demo mỗi tác vụ; Cobot Magic ALOHA, hai tay 7 bậc tự do, ba camera</td>
+</tr>
+<tr>
+<td>Suy luận</td>
+<td>horizon hành động π0 là 50, RDT là 64, trên RTX 4090</td>
+</tr>
+<tr>
+<td>Khác robot</td>
+<td>cánh tay ROKAE SR: 200 bản demo, 50k bước, cắm sạc có thử lại sau lần hỏng</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Paper báo cáo gì</h2>
+<ul>
+<li><strong>Tác vụ giàu tiếp xúc (số lần thành công trên 20):</strong> π0 đạt 5, 0, 0, 16, 2 ở bấm nút, cắm sạc, cắm USB, rút ổ cắm, xoay tay nắm cửa; π0 + token mô-men + mục tiêu đạt 18, 17, 17, 19, 15.</li>
+<li><strong>Tác vụ thường:</strong> mô-men cũng giúp nhẹ hoặc giữ nguyên (π0 trung bình 85%, có mô-men 89%, trung bình mình tính).</li>
+<li><strong>Đổi mô hình:</strong> trên RDT, cùng các bổ sung nâng bấm nút từ 4/20 lên 16/20 và cắm sạc từ 1/20 lên 15/20.</li>
+<li><strong>Hành vi:</strong> sau một lần hỏng, hình dạng mô-men đổi và robot thử lại.</li>
+</ul>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Các số trung bình (14%, 15%, 23%, 86%) là mình tính từ Bảng 5 của paper; paper báo cáo số lần thành công từng tác vụ.</li>
+<li>Mô-men lấy từ dòng điện động cơ nên hiệu chỉnh, nhiễu và nhiệt có thể làm xấu đi; paper nêu đây là hạn chế chính, và chưa rõ mở rộng sang các phương thức khác dưới ngân sách token chung có được không.</li>
+<li>Với 20 lượt mỗi tác vụ, chênh lệch nhỏ giữa các hàng nằm trong vùng nhiễu; các khoảng cách lớn (ví dụ 0/20 lên 17/20) thì không (xem <a href="danh-gia-vla.html">cách đánh giá VLA</a>).</li>
+</ul>
+<p><strong>Mang theo:</strong> TA-VLA giữ lực ở dạng một dòng số. <a href="taf-vla.html">TaF-VLA</a> thì căn ảnh xúc giác với lực trước khi chúng vào VLA.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> với 5 khung lịch sử, mỗi khung 14 giá trị mô-men, và decoder π0 có 51 token, kích thước đầu vào của một token là bao nhiêu và số token decoder $N_1$ là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Kích thước đầu vào $5 \times 14 = 70$. $N_1 = 51 + 1 = 52$ token, bằng với trường hợp 10 khung: số khung chỉ đổi kích thước đầu vào của MLP, không đổi số token.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,22 @@
 [
   {
+    "slug": "ta-vla",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "TA-VLA: Joint Torque as a Force Sensor for a VLA",
+    "title_vi": "TA-VLA: Dùng mô-men khớp thay cảm biến lực cho VLA",
+    "excerpt_en": "Most force-aware policies need an external F/T sensor, and VLAs such as π0 know nothing about contact. TA-VLA reads torque from the motor currents and studies where and how to feed it to π0: one history token in the decoder, plus a future-torque prediction task.",
+    "excerpt_vi": "Đa số chính sách có nhận biết lực cần cảm biến F/T gắn ngoài, còn các VLA như π0 không biết gì về tiếp xúc. TA-VLA đọc mô-men từ dòng điện động cơ và khảo sát nên đưa nó vào π0 ở đâu và bằng cách nào: một token lịch sử ở decoder, cộng thêm nhiệm vụ dự đoán mô-men tương lai.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Torque",
+      "Paper Notes",
+      "π0"
+    ],
+    "read_min": 6
+  },
+  {
     "slug": "action-chunking",
     "date": "2026-10-18",
     "date_display": "18 Oct 2026",

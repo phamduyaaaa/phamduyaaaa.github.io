@@ -15,7 +15,7 @@ ENTRY = {
  "UniTacVLA": "46", "H-Tac": "56", "LIFT": "3", "FM-VLA": "3", "ForceU-VLA": "2", "FWBC-VLA": "34", "TacPAC": "46",
  "CR-VLA-Force": "24", "DeCAL": "26", "ForceDelta-VLA": "4", "ForceRFT": "4", "CompVLA": "4", "Opt2VLA": "4", "DexTacWAM": "6",
 }
-FULL = {"ForceVLA", "VLA-Touch", "ForceVLA2", "MoDE-VLA", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger"}
+FULL = {"ForceVLA", "VLA-Touch", "ForceVLA2", "MoDE-VLA", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA"}
 HEAD = ["① VLM input", "② After VLM", "③ Action expert", "④ Outside VLA", "⑤ Training only", "⑥ Predicted"]
 
 def esc(s): return s.replace("&", "&amp;").replace("<", "&lt;")

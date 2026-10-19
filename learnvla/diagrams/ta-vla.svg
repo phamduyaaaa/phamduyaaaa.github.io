@@ -1,0 +1,23 @@
+<svg viewBox="0 0 980 412" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="30" width="150" height="48"/><text class="dg-t" x="95" y="52" text-anchor="middle">Images + language</text><text class="dg-s" x="95" y="68" text-anchor="middle">3 cameras</text>
+<rect class="dg-box" x="230" y="26" width="180" height="56"/><text class="dg-t" x="320" y="50" text-anchor="middle">VLM (PaliGemma)</text><text class="dg-s" x="320" y="66" text-anchor="middle">encoder: left untouched</text>
+<path class="dg-a" d="M170 54 H230"/>
+<text class="dg-note dg-red" x="440" y="58">✗ torque in the encoder: worse</text>
+<rect class="dg-grp" x="200" y="116" width="770" height="270"/><text class="dg-h" x="212" y="134">ACTION EXPERT (decoder)</text>
+<rect class="dg-ext" x="20" y="150" width="150" height="56"/><text class="dg-t" x="95" y="172" text-anchor="middle">Joint torques</text><text class="dg-s" x="95" y="188" text-anchor="middle">from motor current</text>
+<rect class="dg-box" x="20" y="230" width="150" height="56"/><text class="dg-t" x="95" y="252" text-anchor="middle">History: 10 frames</text><text class="dg-s" x="95" y="268" text-anchor="middle">past 2 s × 14 = 140</text>
+<path class="dg-a" d="M95 206 V230"/>
+<rect class="dg-key" x="230" y="230" width="150" height="56"/><text class="dg-t" x="305" y="252" text-anchor="middle">MLP → 1 token</text><text class="dg-s" x="305" y="268" text-anchor="middle">torque token</text>
+<path class="dg-a" d="M170 258 H230"/>
+<rect class="dg-ext" x="230" y="316" width="150" height="48"/><text class="dg-t" x="305" y="338" text-anchor="middle">State token q_t</text><text class="dg-s" x="305" y="354" text-anchor="middle">joint angles</text>
+<rect class="dg-ext" x="430" y="316" width="170" height="48"/><text class="dg-t" x="515" y="338" text-anchor="middle">Noisy chunk</text><text class="dg-s" x="515" y="354" text-anchor="middle">actions + future torques</text>
+<rect class="dg-key" x="440" y="196" width="190" height="90"/><text class="dg-t" x="535" y="226" text-anchor="middle">Transformer</text><text class="dg-s" x="535" y="244" text-anchor="middle">tokens: torque, state,</text><text class="dg-s" x="535" y="260" text-anchor="middle">noisy chunk</text>
+<path class="dg-a" d="M380 258 H440"/><path class="dg-a" d="M380 340 H410 V275 H440"/><path class="dg-a" d="M515 316 V286"/>
+<path class="dg-ad" d="M320 82 V108 H535 V196"/><text class="dg-l" x="430" y="104">attend to images + text</text>
+<rect class="dg-box" x="690" y="196" width="130" height="90"/><text class="dg-t" x="755" y="226" text-anchor="middle">One linear</text><text class="dg-t" x="755" y="242" text-anchor="middle">output layer</text><text class="dg-s" x="755" y="262" text-anchor="middle">action + torque</text>
+<path class="dg-a" d="M630 241 H690"/>
+<rect class="dg-box" x="860" y="166" width="100" height="44"/><text class="dg-t" x="910" y="186" text-anchor="middle">Action</text><text class="dg-s" x="910" y="201" text-anchor="middle">loss ×1</text>
+<rect class="dg-box" x="860" y="256" width="100" height="44"/><text class="dg-t" x="910" y="276" text-anchor="middle">Torque (H=5)</text><text class="dg-s" x="910" y="291" text-anchor="middle">loss × β</text>
+<path class="dg-a" d="M820 225 H840 V188 H860"/><path class="dg-a" d="M820 257 H840 V278 H860"/>
+<text class="dg-note dg-red" x="440" y="402">✗ H separate tokens (one per frame): disturb the decoder's input pattern</text>
+</svg>

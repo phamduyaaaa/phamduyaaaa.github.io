@@ -93,7 +93,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 | Pattern | What it means | Evidence | Methods |
 |---|---|---|---|
-| Fuse after the VLM, not before | give force its own module once the VLM has understood the scene | MoE before the VLM scored 0%, after it 80% (ForceVLA); decoder adapters beat encoder ones (TA-VLA) | ForceVLA [2], TA-VLA [7] |
+| Fuse after the VLM, not before | give force its own module once the VLM has understood the scene | MoE before the VLM scored 0%, after it 80% (ForceVLA); decoder adapters beat encoder ones (TA-VLA) | ForceVLA [2], [TA-VLA](ta-vla.html) [7] |
 | Do not disturb the pretrained model | new paths start at "add nothing" and grow | residuals, zero-initialised paths, gated cross-attention | MoDE-VLA [14], TORL-VLA [18], LIFT [22], DAM-VLA [19] |
 | Fast next to slow | force changes in milliseconds, a VLA replans a few times per second | a fast part runs beside the VLA | FAVLA [12], LIFT [22], ForceDelta-VLA [29], DAM-VLA [19], TacPAC [26], TER-DAgger [13] |
 | Remove the sensor | use force only to train, or infer it from joint torque | no sensor to break or buy | FD-VLA [10], HapticVLA [16], FWBC-VLA [25] |
@@ -122,7 +122,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 4 | [VLA-Touch](vla-touch.html) | 07/2025 | GelSight | ① planner text, ④ refiner | refined chunk | refiner only, RDT | full |
 | 5 | [VLH](https://arxiv.org/abs/2508.01361) | 08/2025 | none (haptics is an output to a human) | – | motion + haptic commands | LoRA, OpenVLA | abstract |
 | 6 | [OmniVTLA](https://arxiv.org/abs/2508.08706) | 08/2025 | vision- and force-based tactile | ① | actions | semantic-aligned encoder | abstract |
-| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | torque | ③ ⑥ | actions + torque | action-torque diffusion objective on a pretrained VLA | abstract+ |
+| 7 | [TA-VLA](ta-vla.html) | 09/2025 | joint torque from motor current | ③ ⑥ | actions + torque | LoRA imitation on π0 (also RDT), action-torque diffusion | full |
 | 8 | [CompliantVLA-adaptor](https://arxiv.org/abs/2601.15541) | 01/2026 | F/T at the controller | ④ | stiffness + damping | VLM-guided | abstract |
 | 9 | [TaF-VLA](taf-vla.html) | 01/2026 | vision tactile aligned to F/T | ③ ⑤ | actions | contrastive pretraining, π0.5 | full |
 | 10 | [FD-VLA](fd-vla.html) | 02/2026 | F/T (training only) | ① ⑤ | actions | distillation, SmolVLA | full |
@@ -152,7 +152,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 ## 7. Caveats
 
-- 14 of the 33 rows come from abstracts only and 8 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.
+- 14 of the 33 rows come from abstracts only and 7 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.
 - The set reflects one search in October 2026. It is a snapshot, not a complete census.
 - Dates are the first arXiv submission (v1).
 - Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.
@@ -298,7 +298,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 | Khuôn mẫu | Nghĩa là gì | Bằng chứng | Phương pháp |
 |---|---|---|---|
-| Trộn lực sau VLM, đừng trước | để VLM hiểu cảnh xong rồi mới cho lực một khối riêng | MoE đặt trước VLM đạt 0%, đặt sau đạt 80% (ForceVLA); adapter ở decoder tốt hơn ở encoder (TA-VLA) | ForceVLA [2], TA-VLA [7] |
+| Trộn lực sau VLM, đừng trước | để VLM hiểu cảnh xong rồi mới cho lực một khối riêng | MoE đặt trước VLM đạt 0%, đặt sau đạt 80% (ForceVLA); adapter ở decoder tốt hơn ở encoder (TA-VLA) | ForceVLA [2], [TA-VLA](ta-vla.html) [7] |
 | Đừng làm xáo trộn mô hình đã huấn luyện | đường mới khởi đầu ở mức "không thêm gì" rồi lớn dần | residual, đường khởi tạo bằng không, cross-attention có cổng | MoDE-VLA [14], TORL-VLA [18], LIFT [22], DAM-VLA [19] |
 | Nhanh đặt cạnh chậm | lực đổi trong vài mili giây, còn VLA chỉ lập lại kế hoạch vài lần mỗi giây | có một phần nhanh chạy cạnh VLA | FAVLA [12], LIFT [22], ForceDelta-VLA [29], DAM-VLA [19], TacPAC [26], TER-DAgger [13] |
 | Bỏ cảm biến | chỉ dùng lực để huấn luyện, hoặc suy ra từ mô-men khớp | không có cảm biến để hỏng hay phải mua | FD-VLA [10], HapticVLA [16], FWBC-VLA [25] |
@@ -327,7 +327,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | 4 | [VLA-Touch](vla-touch.html) | 07/2025 | GelSight | ① văn bản cho planner, ④ bộ tinh chỉnh | đoạn hành động đã tinh chỉnh | chỉ huấn luyện bộ tinh chỉnh, RDT | full |
 | 5 | [VLH](https://arxiv.org/abs/2508.01361) | 08/2025 | không có (haptics là đầu ra cho người) | – | chuyển động + lệnh haptic | LoRA, OpenVLA | abstract |
 | 6 | [OmniVTLA](https://arxiv.org/abs/2508.08706) | 08/2025 | xúc giác dựa ảnh và dựa lực | ① | hành động | encoder căn theo ngữ nghĩa | abstract |
-| 7 | [TA-VLA](https://arxiv.org/abs/2509.07962) | 09/2025 | mô-men | ③ ⑥ | hành động + mô-men | mục tiêu diffusion hành động-mô-men trên VLA đã tiền huấn luyện | abstract+ |
+| 7 | [TA-VLA](ta-vla.html) | 09/2025 | mô-men khớp từ dòng điện động cơ | ③ ⑥ | hành động + mô-men | LoRA imitation trên π0 (thử cả RDT), diffusion hành động-mô-men | full |
 | 8 | [CompliantVLA-adaptor](https://arxiv.org/abs/2601.15541) | 01/2026 | F/T tại bộ điều khiển | ④ | độ cứng + giảm chấn | VLM dẫn đường | abstract |
 | 9 | [TaF-VLA](taf-vla.html) | 01/2026 | xúc giác ảnh căn với F/T | ③ ⑤ | hành động | tiền huấn luyện contrastive, π0.5 | full |
 | 10 | [FD-VLA](fd-vla.html) | 02/2026 | F/T (chỉ khi huấn luyện) | ① ⑤ | hành động | chưng cất, SmolVLA | full |
@@ -357,7 +357,7 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 
 ## 7. Lưu ý
 
-- 14 trên 33 hàng chỉ dựa vào abstract và 8 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.
+- 14 trên 33 hàng chỉ dựa vào abstract và 7 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.
 - Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.
 - Ngày là ngày đăng arXiv lần đầu (v1).
 - Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.

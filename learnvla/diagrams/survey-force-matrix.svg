@@ -48,10 +48,10 @@
 <circle cx="330" cy="201" r="6.5" class="dg-box"/>
 <rect x="10" y="212" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
 <text class="dg-s" x="24" y="227"> 7</text>
-<text class="dg-s" x="54" y="227">TA-VLA</text>
+<text class="dg-t" x="54" y="227">TA-VLA</text>
 <text class="dg-mute dg-s" x="250" y="227">2025-09</text>
-<circle cx="530" cy="223" r="6.5" class="dg-box"/>
-<circle cx="830" cy="223" r="6.5" class="dg-box"/>
+<circle cx="530" cy="223" r="6.5" class="dg-key"/>
+<circle cx="830" cy="223" r="6.5" class="dg-key"/>
 <text class="dg-s" x="24" y="249"> 8</text>
 <text class="dg-s" x="54" y="249">CompliantVLA-adaptor</text>
 <text class="dg-mute dg-s" x="250" y="249">2026-01</text>

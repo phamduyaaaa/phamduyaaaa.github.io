@@ -321,10 +321,10 @@
 <circle cx="330" cy="201" r="6.5" class="dg-box"/>
 <rect x="10" y="212" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
 <text class="dg-s" x="24" y="227"> 7</text>
-<text class="dg-s" x="54" y="227">TA-VLA</text>
+<text class="dg-t" x="54" y="227">TA-VLA</text>
 <text class="dg-mute dg-s" x="250" y="227">2025-09</text>
-<circle cx="530" cy="223" r="6.5" class="dg-box"/>
-<circle cx="830" cy="223" r="6.5" class="dg-box"/>
+<circle cx="530" cy="223" r="6.5" class="dg-key"/>
+<circle cx="830" cy="223" r="6.5" class="dg-key"/>
 <text class="dg-s" x="24" y="249"> 8</text>
 <text class="dg-s" x="54" y="249">CompliantVLA-adaptor</text>
 <text class="dg-mute dg-s" x="250" y="249">2026-01</text>
@@ -473,7 +473,7 @@
 <td>Fuse after the VLM, not before</td>
 <td>give force its own module once the VLM has understood the scene</td>
 <td>MoE before the VLM scored 0%, after it 80% (ForceVLA); decoder adapters beat encoder ones (TA-VLA)</td>
-<td>ForceVLA [2], TA-VLA [7]</td>
+<td>ForceVLA [2], <a href="ta-vla.html">TA-VLA</a> [7]</td>
 </tr>
 <tr>
 <td>Do not disturb the pretrained model</td>
@@ -614,13 +614,13 @@
 </tr>
 <tr>
 <td>7</td>
-<td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
+<td><a href="ta-vla.html">TA-VLA</a></td>
 <td>09/2025</td>
-<td>torque</td>
+<td>joint torque from motor current</td>
 <td>③ ⑥</td>
 <td>actions + torque</td>
-<td>action-torque diffusion objective on a pretrained VLA</td>
-<td>abstract+</td>
+<td>LoRA imitation on π0 (also RDT), action-torque diffusion</td>
+<td>full</td>
 </tr>
 <tr>
 <td>8</td>
@@ -886,7 +886,7 @@
 </table>
 <h2>7. Caveats</h2>
 <ul>
-<li>14 of the 33 rows come from abstracts only and 8 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.</li>
+<li>14 of the 33 rows come from abstracts only and 7 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.</li>
 <li>The set reflects one search in October 2026. It is a snapshot, not a complete census.</li>
 <li>Dates are the first arXiv submission (v1).</li>
 <li>Some details in the full notes come from summaries of long papers; each note lists what was not read word for word.</li>
@@ -1189,10 +1189,10 @@
 <circle cx="330" cy="201" r="6.5" class="dg-box"/>
 <rect x="10" y="212" width="960" height="22" fill="currentColor" fill-opacity=".05"/>
 <text class="dg-s" x="24" y="227"> 7</text>
-<text class="dg-s" x="54" y="227">TA-VLA</text>
+<text class="dg-t" x="54" y="227">TA-VLA</text>
 <text class="dg-mute dg-s" x="250" y="227">2025-09</text>
-<circle cx="530" cy="223" r="6.5" class="dg-box"/>
-<circle cx="830" cy="223" r="6.5" class="dg-box"/>
+<circle cx="530" cy="223" r="6.5" class="dg-key"/>
+<circle cx="830" cy="223" r="6.5" class="dg-key"/>
 <text class="dg-s" x="24" y="249"> 8</text>
 <text class="dg-s" x="54" y="249">CompliantVLA-adaptor</text>
 <text class="dg-mute dg-s" x="250" y="249">2026-01</text>
@@ -1341,7 +1341,7 @@
 <td>Trộn lực sau VLM, đừng trước</td>
 <td>để VLM hiểu cảnh xong rồi mới cho lực một khối riêng</td>
 <td>MoE đặt trước VLM đạt 0%, đặt sau đạt 80% (ForceVLA); adapter ở decoder tốt hơn ở encoder (TA-VLA)</td>
-<td>ForceVLA [2], TA-VLA [7]</td>
+<td>ForceVLA [2], <a href="ta-vla.html">TA-VLA</a> [7]</td>
 </tr>
 <tr>
 <td>Đừng làm xáo trộn mô hình đã huấn luyện</td>
@@ -1482,13 +1482,13 @@
 </tr>
 <tr>
 <td>7</td>
-<td><a href="https://arxiv.org/abs/2509.07962">TA-VLA</a></td>
+<td><a href="ta-vla.html">TA-VLA</a></td>
 <td>09/2025</td>
-<td>mô-men</td>
+<td>mô-men khớp từ dòng điện động cơ</td>
 <td>③ ⑥</td>
 <td>hành động + mô-men</td>
-<td>mục tiêu diffusion hành động-mô-men trên VLA đã tiền huấn luyện</td>
-<td>abstract+</td>
+<td>LoRA imitation trên π0 (thử cả RDT), diffusion hành động-mô-men</td>
+<td>full</td>
 </tr>
 <tr>
 <td>8</td>
@@ -1754,7 +1754,7 @@
 </table>
 <h2>7. Lưu ý</h2>
 <ul>
-<li>14 trên 33 hàng chỉ dựa vào abstract và 8 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>
+<li>14 trên 33 hàng chỉ dựa vào abstract và 7 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>
 <li>Danh sách phản ánh một lần tìm kiếm vào tháng 10/2026. Đây là ảnh chụp tại một thời điểm, không phải điều tra đầy đủ.</li>
 <li>Ngày là ngày đăng arXiv lần đầu (v1).</li>
 <li>Một số chi tiết trong các bài chi tiết đến từ bản tóm tắt của paper dài; mỗi bài đều ghi rõ phần nào chưa đọc nguyên văn.</li>
