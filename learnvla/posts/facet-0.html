@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Feeding the wrist force to a VLA as an input barely helps (9–14%), because the force only records contact that already happened. Facet-0 makes the policy predict the wrench its actions will cause, scores that pair with a critic and adapts on the robot: 82% vs 15% on five sub-millimetre assembly tasks.">
+<title>Facet-0: Predict the Wrench, Then Value It · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Facet-0: Predict the Wrench, Then Value It">
+<meta property="og:description" content="Feeding the wrist force to a VLA as an input barely helps (9–14%), because the force only records contact that already happened. Facet-0 makes the policy predict the wrench its actions will cause, scores that pair with a critic and adapts on the robot: 82% vs 15% on five sub-millimetre assembly tasks.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">9 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Facet-0: Predict the Wrench, Then Value It</h1>
+    <h1 data-vi>Facet-0: Dự đoán wrench, rồi định giá nó</h1>
+
+    <p class="post-excerpt-lead" data-en>Feeding the wrist force to a VLA as an input barely helps (9–14%), because the force only records contact that already happened. Facet-0 makes the policy predict the wrench its actions will cause, scores that pair with a critic and adapts on the robot: 82% vs 15% on five sub-millimetre assembly tasks.</p>
+    <p class="post-excerpt-lead" data-vi>Đưa lực cổ tay vào VLA như một input gần như không giúp (9–14%), vì lực chỉ ghi lại tiếp xúc đã xảy ra. Facet-0 bắt chính sách dự đoán wrench mà hành động sẽ gây ra, chấm điểm cặp đó bằng một critic và thích nghi trên robot: 82% so với 15% trên năm tác vụ lắp ráp dưới milimét.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Reinforcement Learning</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2609.01596">arXiv 2609.01596</a> · 09/2026 · PaliGemma + flow matching, on openpi · <a href="https://github.com/PINE-Lab-NTU/FACET">code</a> · <a href="https://huggingface.co/Pinelab/Facet-0">weights</a> · <a href="https://huggingface.co/datasets/Pinelab/ManuFacet-1K">data</a></p>
+<p><strong>PROBLEM</strong> The last millimetre of an assembly decides success: a small pose error becomes lateral force, friction or a jam, and two visually similar motions can end in opposite outcomes.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Force-aware VLAs such as TA-VLA, or π0.5 with the wrench as an extra input token, score 14% and 9%. They read contact as a record of what already happened. A RECAP-style value method without the wrench scores 15%. All were trained on the same data with matched budgets.</p>
+<p><strong>IDEA</strong> The policy generates the action chunk together with the future wrench it expects, a critic scores that pair from deployment rollouts, and a small bounded actor adapts a new part on the robot.</p>
+<p><strong>RESULT</strong> 82% mean success on five computer-assembly tasks (20 trials per cell) against 15% for the best baseline, with 0.5 mm placement accuracy and 50 ms command latency.</p>
+</div>
+<h2>1. The problem: force as an input arrives too late</h2>
+<figure class="diagram flow"><svg role="img" aria-label="A single wrench sample is ambiguous. Contact onset is a step, a jam is force rising while motion stalls, a skew is an off-axis moment that persists, so the paper keeps a window of the last 10 samples." class="dg-natural" width="1078" height="374" viewBox="0 0 1078 374" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0.5</text><rect class="dg-box" x="128" y="22" width="125" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Images + text</text><path class="dg-a" d="M252 41 H284"/><rect class="dg-badbox" x="286" y="14" width="135" height="54"/><text class="dg-t" x="354" y="37" text-anchor="middle">Actions only</text><text class="dg-s" x="354" y="53" text-anchor="middle">no contact signal</text><path class="dg-a" d="M421 41 H453"/><rect class="dg-box" x="455" y="22" width="96" height="38"/><text class="dg-t" x="503" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ 10% mean</text><text class="dg-lab dg-red" x="14" y="130">Before</text><text class="dg-lab dg-red" x="14" y="144">force as input</text><rect class="dg-box" x="128" y="113" width="117" height="38"/><text class="dg-t" x="186" y="136" text-anchor="middle">Wrench token</text><path class="dg-a" d="M245 132 H277"/><rect class="dg-badbox" x="279" y="113" width="262" height="38"/><text class="dg-t" x="410" y="136" text-anchor="middle">Reads contact after it happened</text><path class="dg-a" d="M540 132 H572"/><rect class="dg-box" x="574" y="113" width="96" height="38"/><text class="dg-t" x="622" y="136" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="127.60000000000001" y="170">✗ π0.5+F 9%, TA-VLA 14%</text><text class="dg-lab dg-red" x="14" y="221">Before</text><text class="dg-lab dg-red" x="14" y="235">RECAP-style</text><rect class="dg-box" x="128" y="204" width="96" height="38"/><text class="dg-t" x="176" y="227" text-anchor="middle">Images</text><path class="dg-a" d="M224 223 H256"/><rect class="dg-badbox" x="258" y="196" width="263" height="54"/><text class="dg-t" x="389" y="219" text-anchor="middle">Value without the wrench</text><text class="dg-s" x="389" y="235" text-anchor="middle">cannot tell a jam from a clean insert</text><path class="dg-a" d="M520 223 H552"/><rect class="dg-box" x="554" y="204" width="96" height="38"/><text class="dg-t" x="602" y="227" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="127.60000000000001" y="268">✗ 15%</text><text class="dg-lab dg-green" x="14" y="318">Facet-0</text><rect class="dg-box" x="128" y="295" width="132" height="38"/><text class="dg-t" x="194" y="318" text-anchor="middle">Wrench history</text><path class="dg-a" d="M260 314 H292"/><rect class="dg-key" x="294" y="295" width="208" height="38"/><text class="dg-t" x="398" y="318" text-anchor="middle">Predict actions + wrench</text><path class="dg-a" d="M502 314 H534"/><rect class="dg-key" x="536" y="295" width="193" height="38"/><text class="dg-t" x="633" y="318" text-anchor="middle">Critic values the pair</text><path class="dg-a" d="M730 314 H762"/><rect class="dg-key" x="764" y="295" width="170" height="38"/><text class="dg-t" x="849" y="318" text-anchor="middle">Bounded local actor</text><path class="dg-a" d="M934 314 H966"/><rect class="dg-box" x="968" y="295" width="96" height="38"/><text class="dg-t" x="1016" y="318" text-anchor="middle">Actions</text><text class="dg-note dg-green" x="127.60000000000001" y="352">✓ 82%</text></svg><figcaption>A single wrench sample is ambiguous. Contact onset is a step, a jam is force rising while motion stalls, a skew is an off-axis moment that persists, so the paper keeps a window of the last 10 samples.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Wrench history joins vision, language and pose in one representation. The action expert outputs actions and the wrench they should cause; only the actions are sent to a compliant controller." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">AT RUN TIME: ONE PROPOSAL = ACTIONS + THE WRENCH THEY ARE EXPECTED TO CAUSE</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="60"/><text class="dg-t" x="115" y="72" text-anchor="middle">3 RGB views + text</text><text class="dg-s" x="115" y="90" text-anchor="middle">sub-task instruction</text>
+<rect class="dg-ext" x="20" y="126" width="190" height="60"/><text class="dg-t" x="115" y="152" text-anchor="middle">pose + gripper (7)</text><text class="dg-s" x="115" y="170" text-anchor="middle">kinematic state</text>
+<rect class="dg-key" x="20" y="206" width="190" height="60"/><text class="dg-t" x="115" y="232" text-anchor="middle">wrench history 10x6</text><text class="dg-s" x="115" y="250" text-anchor="middle">last 10 wrist F/T readings</text>
+<rect class="dg-key" x="260" y="100" width="170" height="110"/><text class="dg-t" x="345" y="144" text-anchor="middle">Semantic-contact</text><text class="dg-t" x="345" y="162" text-anchor="middle">representation</text><text class="dg-s" x="345" y="184" text-anchor="middle">PaliGemma + fusion</text>
+<rect class="dg-box" x="480" y="100" width="170" height="110"/><text class="dg-t" x="565" y="140" text-anchor="middle">Flow-matching</text><text class="dg-t" x="565" y="158" text-anchor="middle">action expert</text><text class="dg-s" x="565" y="180" text-anchor="middle">coarse 5-10 Hz</text><text class="dg-s" x="565" y="194" text-anchor="middle">refine 20 Hz</text>
+<path class="dg-a" d="M210 76 H235 V130 H260"/><path class="dg-a" d="M210 156 H260"/><path class="dg-a" d="M210 236 H235 V180 H260"/><path class="dg-a" d="M430 155 H480"/>
+<rect class="dg-box" x="700" y="46" width="250" height="60"/><text class="dg-t" x="825" y="72" text-anchor="middle">actions 50x7</text><text class="dg-s" x="825" y="90" text-anchor="middle">the only part that is executed</text>
+<rect class="dg-ext" x="700" y="126" width="250" height="60"/><text class="dg-t" x="825" y="152" text-anchor="middle">wrench 50x6</text><text class="dg-s" x="825" y="170" text-anchor="middle">predicted, never commanded</text>
+<rect class="dg-box" x="700" y="206" width="250" height="60"/><text class="dg-t" x="825" y="232" text-anchor="middle">safety clip + compliant control</text><text class="dg-s" x="825" y="250" text-anchor="middle">200 Hz, force loop on measured F/T</text>
+<path class="dg-a" d="M650 130 H675 V76 H700"/><path class="dg-a" d="M650 160 H700"/>
+<path class="dg-a" d="M950 76 H966 V236 H950"/>
+<path class="dg-ad" d="M825 266 V292 H115 V266"/><text class="dg-l" x="300" y="286">measured wrist F/T goes back into the history</text>
+<text class="dg-h" x="20" y="332">THREE TRAINING STAGES</text>
+<rect class="dg-box" x="20" y="348" width="290" height="70"/><text class="dg-t" x="165" y="372" text-anchor="middle">01 Align</text><text class="dg-s" x="165" y="390" text-anchor="middle">joint action-wrench flow matching</text><text class="dg-s" x="165" y="406" text-anchor="middle">on ManuFacet-1K demonstrations</text>
+<rect class="dg-key" x="345" y="348" width="290" height="70"/><text class="dg-t" x="490" y="372" text-anchor="middle">02 Refine</text><text class="dg-s" x="490" y="390" text-anchor="middle">Action-Wrench Critic scores each proposal;</text><text class="dg-s" x="490" y="406" text-anchor="middle">contact-selective credit picks frames</text>
+<rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Adapt</text><text class="dg-s" x="815" y="390" text-anchor="middle">small bounded actor on frozen tokens,</text><text class="dg-s" x="815" y="406" text-anchor="middle">learns on the robot from 10 demos</text>
+<path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
+</svg><figcaption>Wrench history joins vision, language and pose in one representation. The action expert outputs actions and the wrench they should cause; only the actions are sent to a compliant controller.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision-language encoder</td>
+<td>3 RGB views, instruction $\ell$</td>
+<td>$h^{VL}_t$</td>
+<td>scene and task meaning (PaliGemma)</td>
+</tr>
+<tr>
+<td>State and wrench encoders</td>
+<td>pose + gripper (7), wrench window $W_{t-K+1:t}$, $K = 10$</td>
+<td>embeddings</td>
+<td>kinematics and contact history</td>
+</tr>
+<tr>
+<td>Fusion</td>
+<td>the three embeddings</td>
+<td>$h^c_t$</td>
+<td>semantic–contact representation</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>$h^c_t$ plus noise</td>
+<td>$Y_t = [A, \hat W] \in \mathbb{R}^{50 \times 13}$</td>
+<td>50 steps of action (7) and predicted wrench (6)</td>
+</tr>
+<tr>
+<td>Controller</td>
+<td>$A$ only</td>
+<td>joint commands</td>
+<td>200 Hz, regulates force along the directions the sub-goal marks</td>
+</tr>
+</tbody>
+</table>
+<p>The coarse chunk comes at 5–10 Hz at about 5 mm resolution; a refinement expert updates it at 20 Hz at about 0.5 mm. Training loss: flow matching on the action columns plus $\lambda_{pre} = 0.1$ times flow matching on the wrench columns, so lowering the wrench error forces the policy to encode how its motion changes contact.</p>
+<h2>3. Work it by hand: the reward that charges for forcing</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The critic learns from one per-step signal: credit for finishing a sub-goal, more if it is quick, less if the wrench exceeded its limit. Computing two cases shows why forcing through is worse than a gentle insert.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\Omega_t$</td>
+<td>1 if the sub-goal is completed (VLM judge), else 0</td>
+<td>input</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$\Delta t,\ T_{max}$</td>
+<td>time spent in the sub-goal, its budget</td>
+<td>input</td>
+<td>225 s, 450 s</td>
+</tr>
+<tr>
+<td>$\lVert w_t\rVert_\phi$</td>
+<td>wrench normalised by the limit of the current phase (above 1 = violation)</td>
+<td>input</td>
+<td>1.4 (forced) or 0.8 (gentle)</td>
+</tr>
+<tr>
+<td>$\alpha,\ \beta$</td>
+<td>exchange rates for force and speed</td>
+<td>constants</td>
+<td>0.5, 0.2 (example values from the repo's reward script, not from the paper)</td>
+</tr>
+<tr>
+<td>$r_t$</td>
+<td>per-step reward</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$r_t = \Omega_t\Big(1 + \beta\big[1 - \tfrac{\Delta t}{T_{max}}\big]_+\Big) - \alpha\big[\lVert w_t\rVert_\phi - 1\big]_+,\qquad [x]_+ = \max(x, 0)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Speed bonus: $1 + 0.2\times(1 - 225/450) = 1 + 0.2\times 0.5 = 1.1$.</li>
+<li>Forced case: force penalty $0.5\times(1.4 - 1) = 0.2$, so $r_t = 1.1 - 0.2 = 0.9$.</li>
+<li>Gentle case: $0.8 &lt; 1$, so the penalty is 0 and $r_t = 1.1$.</li>
+</ol>
+<p><strong>Result.</strong> The forced insert earns 0.9, the gentle one 1.1, with the same completion time.</p>
+<p><strong>Why it matters.</strong> Two inserts that reach the same depth look alike to vision and to geometric progress. Because the critic also sees the predicted wrench, it can rank them apart before they happen.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Mean success over five tasks, 20 trials per cell. Each stage adds: representation 16, value-guided refinement 38, local adaptation 82." class="dg-natural" width="634" height="252" viewBox="0 0 634 252" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="174" y="23" text-anchor="end">GR00T N1.7</text><rect class="dg-bar" x="184" y="10" width="14" height="18"/><text class="dg-barval" x="206" y="23">4%</text><text class="dg-barlabel" x="174" y="53" text-anchor="end">π0.5+F (wrench as input)</text><rect class="dg-bar" x="184" y="40" width="32" height="18"/><text class="dg-barval" x="224" y="53">9%</text><text class="dg-barlabel" x="174" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="184" y="70" width="36" height="18"/><text class="dg-barval" x="228" y="83">10%</text><text class="dg-barlabel" x="174" y="113" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="184" y="100" width="50" height="18"/><text class="dg-barval" x="242" y="113">14%</text><text class="dg-barlabel" x="174" y="143" text-anchor="end">π0.5+RECAP-style</text><rect class="dg-bar" x="184" y="130" width="54" height="18"/><text class="dg-barval" x="246" y="143">15%</text><text class="dg-barlabel" x="174" y="173" text-anchor="end">Facet-0 Align only</text><rect class="dg-bar" x="184" y="160" width="58" height="18"/><text class="dg-barval" x="249" y="173">16%</text><text class="dg-barlabel" x="174" y="203" text-anchor="end">Facet-0 +RL</text><rect class="dg-bar" x="184" y="190" width="137" height="18"/><text class="dg-barval" x="328" y="203">38%</text><text class="dg-barlabel" x="174" y="233" text-anchor="end">Facet-0 Full</text><rect class="dg-key" x="184" y="220" width="295" height="18"/><text class="dg-barval" x="487" y="233">82%</text></svg><figcaption>Mean success over five tasks, 20 trials per cell. Each stage adds: representation 16, value-guided refinement 38, local adaptation 82.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Success (%), 20 trials</th>
+<th>RAM</th>
+<th>CPU</th>
+<th>Disk</th>
+<th>GPU</th>
+<th>LEVER</th>
+<th>Mean</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0.5</td>
+<td>10</td>
+<td>5</td>
+<td>25</td>
+<td>10</td>
+<td>0</td>
+<td>10</td>
+</tr>
+<tr>
+<td>π0.5+RECAP-style (best baseline)</td>
+<td>35</td>
+<td>15</td>
+<td>20</td>
+<td>5</td>
+<td>0</td>
+<td>15</td>
+</tr>
+<tr>
+<td>TA-VLA</td>
+<td>10</td>
+<td>20</td>
+<td>30</td>
+<td>5</td>
+<td>5</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Facet-0 +RL</td>
+<td>45</td>
+<td>45</td>
+<td>65</td>
+<td>35</td>
+<td>0</td>
+<td>38</td>
+</tr>
+<tr>
+<td><strong>Facet-0 Full</strong></td>
+<td><strong>95</strong></td>
+<td><strong>85</strong></td>
+<td><strong>95</strong></td>
+<td><strong>85</strong></td>
+<td><strong>50</strong></td>
+<td><strong>82</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Post-training against matched advantage-weighted BC on the Disk task: success 20% → 65%, recovery 44% → 81%, human intervention 47% → 24%.</li>
+<li>Unseen RAM module with a different mass and latch, 10 demonstrations and 3 hours: Facet-0 45% (updating 6.6% of the parameters) against 5% for the best baseline.</li>
+<li>Contact-role ablation on RAM: removing the wrench from prediction, valuation and adaptation together drops success from 95% to 45% and raises peak off-axis force from 0.2× to 1.0×. Removing one role changes success by only one to two trials of 20, so their order is not resolved.</li>
+<li>Deployment: 50 ms per command against 150 ms for π0.5, 0.5 mm against about 5 mm placement accuracy, and 40% faster than an expert teleoperator.</li>
+</ul>
+<h2>5. Data and tasks</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ManuFacet-1K</td>
+<td>about 1,000 hours of demonstrations and closed-loop rollouts, three robot embodiments, two chassis families, several sites</td>
+</tr>
+<tr>
+<td>Per cell</td>
+<td>torque-controlled arm, parallel gripper, wrist 6-axis F/T, three RGB cameras; kinesthetic teleoperation with force feedback</td>
+</tr>
+<tr>
+<td>Action resolution</td>
+<td>0.5 mm</td>
+</tr>
+<tr>
+<td>Phases</td>
+<td>approach, align, insert, press, seat, fasten, retreat; the five from align to fasten are "critical"</td>
+</tr>
+<tr>
+<td>Test suite</td>
+<td>RAM, CPU, Disk, GPU installs and a CPU-socket lever: 23 sub-goals, 14 contact-critical, clearances 0.10–0.30 mm, force limits 8–70 N</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> This is the closest match so far to a precision push-in task with a wrist F/T sensor: code, weights and data are public and the stack builds on openpi. But the released weights were trained on their computer-assembly cells, and the paper does not say how to port the controller. "Not stated" means I looked in the paper, project page and repo and did not find it.</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sensing</td>
+<td>Wrist 6-axis F/T, three RGB cameras (two third-person, one wrist), joint state</td>
+<td>A UR10e's built-in 6-axis wrist sensor gives the same kind of signal. The wrench is expected in physical units (N, N·m)</td>
+</tr>
+<tr>
+<td>Arm and gripper</td>
+<td>A torque-controlled arm with a parallel gripper in every cell; arm models not named in the text I read</td>
+<td>Whether a position-controlled arm works is not stated</td>
+</tr>
+<tr>
+<td>Low-level control</td>
+<td>A 200 Hz compliant controller that regulates force along the directions each sub-goal marks, plus a safety layer that clips targets and limits motion per step</td>
+<td>The repo says the compliant controller, judge models and hardware evaluation are "supplied independently", so you build this part</td>
+</tr>
+<tr>
+<td>Software</td>
+<td>Python 3.11, openpi at a pinned commit, LeRobot-format data, Apache-2.0 licence</td>
+<td>The repo includes a CPU example that trains tiny networks on synthetic data</td>
+</tr>
+<tr>
+<td>Weights and data</td>
+<td><a href="https://huggingface.co/Pinelab/Facet-0">Facet-0 post-training checkpoint</a> (Apache-2.0); ManuFacet-1K, about 417 GB as listed on the hub (CC-BY-4.0)</td>
+<td>Using the checkpoint on a new robot means fine-tuning. The repo documents pretraining from base weights; fine-tuning from the released checkpoint is not spelled out</td>
+</tr>
+<tr>
+<td>Your own demonstrations</td>
+<td>Each frame stores a 13-D state (pose, gripper, wrench), three views and a sub-task instruction; episodes are tagged base, precision or recovery</td>
+<td>Number of demos needed for a new task: not stated (only 10 demonstrations for adapting to a new part on top of the full system)</td>
+</tr>
+<tr>
+<td>Reward and judge</td>
+<td>A VLM judge marks sub-goal completion and contact phase; per-phase wrench limits are configured</td>
+<td>You need limits for your task; the repo's example limits are explicitly "not a calibrated hardware limit"</td>
+</tr>
+<tr>
+<td>Training compute</td>
+<td>Pretraining counted as 32K action-branch and 8K language-branch updates on one run; adaptation takes hours on one robot</td>
+<td>GPU type and pretraining time: not stated</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Which part to expect from.</strong> In their ablation, the representation alone gave 16% and the value-guided stage 38%. Most of the 82% came from the last stage, the on-robot adaptation (+44 points on average). So for a new task such as pressing a cap, the full gain needs rollouts, interventions and a working compliant controller, not just the released weights.</p>
+<h2>7. Caveats</h2>
+<ul>
+<li>All baselines, including TA-VLA and the RECAP-style method (the authors' own implementation), were trained by the authors on their corpus with matched budgets. They are not the original release of each method.</li>
+<li>Each cell is 20 trials. The overall 82 of 100 trials gives about 73% to 88% (Wilson, my arithmetic), and the best baseline's 15 of 100 gives about 9% to 23%.</li>
+<li>The evaluation covers wrist-sensed, parallel-gripper electronics assembly on one chassis fixture. The authors say broader end effectors and contact geometries are future work.</li>
+<li>The paper states no certified hard force bound: the reward and the controller discourage excessive force, nothing more.</li>
+<li>LEVER, two sequential presses with no free-space step, stays at 50%.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="forcevla.html">ForceVLA</a> and <a href="ta-vla.html">TA-VLA</a> read force as an input; Facet-0 also predicts it and values it. <a href="fire.html">FIRe</a> also uses RL on top of a force-aware policy, but trains it in simulation. The evaluation protocol here (20 trials per cell, success, violation, intervention, recovery, peak off-axis force, cycle time, latency) is a good template for <a href="danh-gia-vla.html">your own benchmark</a>.</p>
+<p><strong>Check question:</strong> $\alpha = 0.5$, $\beta = 0.2$, $\Omega_t = 1$, $\Delta t = T_{max}/3$ and $\lVert w_t\rVert_\phi = 1$. What is $r_t$?</p>
+<details>
+<summary>Answer</summary>
+<p>Speed bonus $= 1 + 0.2\times(1 - 1/3) = 1.133$. The wrench is exactly at its limit, so $[1 - 1]_+ = 0$ and the penalty is 0. $r_t \approx 1.13$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2609.01596">arXiv 2609.01596</a> · 09/2026 · PaliGemma + flow matching, trên openpi · <a href="https://github.com/PINE-Lab-NTU/FACET">code</a> · <a href="https://huggingface.co/Pinelab/Facet-0">trọng số</a> · <a href="https://huggingface.co/datasets/Pinelab/ManuFacet-1K">dữ liệu</a></p>
+<p><strong>VẤN ĐỀ</strong> Milimét cuối cùng của một mối lắp quyết định thành bại: lệch pose nhỏ trở thành lực ngang, ma sát hoặc kẹt, và hai chuyển động trông giống nhau có thể cho kết quả trái ngược.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các VLA có lực như TA-VLA, hoặc π0.5 với wrench là một token đầu vào thêm, chỉ đạt 14% và 9%. Chúng đọc tiếp xúc như một bản ghi những gì đã xảy ra. Phương pháp giá trị kiểu RECAP không có wrench đạt 15%. Tất cả đều được huấn luyện trên cùng dữ liệu với ngân sách như nhau.</p>
+<p><strong>Ý TƯỞNG</strong> Chính sách sinh chunk hành động cùng với wrench tương lai mà nó dự kiến, một critic chấm điểm cặp đó từ các lượt triển khai, và một actor nhỏ có giới hạn thích nghi với chi tiết mới ngay trên robot.</p>
+<p><strong>KẾT QUẢ</strong> Thành công trung bình 82% trên năm tác vụ lắp máy tính (20 lượt mỗi ô), so với 15% của baseline tốt nhất, với độ chính xác đặt 0,5 mm và độ trễ lệnh 50 ms.</p>
+</div>
+<h2>1. Vấn đề: lực như một input đến quá muộn</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Một mẫu wrench đơn lẻ là mơ hồ. Lúc bắt đầu chạm là một bước nhảy, kẹt là lực tăng trong khi chuyển động dừng, lệch là một mô-men ngoài trục kéo dài, nên bài giữ một cửa sổ 10 mẫu gần nhất." class="dg-natural" width="1097" height="374" viewBox="0 0 1097 374" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0.5</text><rect class="dg-box" x="124" y="22" width="132" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Ảnh + câu lệnh</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="192" height="54"/><text class="dg-t" x="387" y="37" text-anchor="middle">Chỉ có hành động</text><text class="dg-s" x="387" y="53" text-anchor="middle">không có tín hiệu tiếp xúc</text><path class="dg-a" d="M483 41 H515"/><rect class="dg-box" x="517" y="22" width="96" height="38"/><text class="dg-t" x="565" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ trung bình 10%</text><text class="dg-lab dg-red" x="14" y="130">Trước</text><text class="dg-lab dg-red" x="14" y="144">lực làm input</text><rect class="dg-box" x="124" y="113" width="117" height="38"/><text class="dg-t" x="183" y="136" text-anchor="middle">Token wrench</text><path class="dg-a" d="M241 132 H273"/><rect class="dg-badbox" x="275" y="113" width="254" height="38"/><text class="dg-t" x="402" y="136" text-anchor="middle">Đọc tiếp xúc sau khi nó xảy ra</text><path class="dg-a" d="M529 132 H561"/><rect class="dg-box" x="563" y="113" width="96" height="38"/><text class="dg-t" x="611" y="136" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="124" y="170">✗ π0.5+F 9%, TA-VLA 14%</text><text class="dg-lab dg-red" x="14" y="221">Trước</text><text class="dg-lab dg-red" x="14" y="235">kiểu RECAP</text><rect class="dg-box" x="124" y="204" width="96" height="38"/><text class="dg-t" x="172" y="227" text-anchor="middle">Ảnh</text><path class="dg-a" d="M220 223 H252"/><rect class="dg-badbox" x="254" y="196" width="231" height="54"/><text class="dg-t" x="369" y="219" text-anchor="middle">Giá trị không có wrench</text><text class="dg-s" x="369" y="235" text-anchor="middle">không phân biệt kẹt với vào sạch</text><path class="dg-a" d="M485 223 H517"/><rect class="dg-box" x="519" y="204" width="96" height="38"/><text class="dg-t" x="567" y="227" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="124" y="268">✗ 15%</text><text class="dg-lab dg-green" x="14" y="318">Facet-0</text><rect class="dg-box" x="124" y="295" width="132" height="38"/><text class="dg-t" x="190" y="318" text-anchor="middle">Lịch sử wrench</text><path class="dg-a" d="M256 314 H288"/><rect class="dg-key" x="290" y="295" width="224" height="38"/><text class="dg-t" x="402" y="318" text-anchor="middle">Dự đoán hành động + wrench</text><path class="dg-a" d="M514 314 H546"/><rect class="dg-key" x="548" y="295" width="163" height="38"/><text class="dg-t" x="629" y="318" text-anchor="middle">Critic chấm cặp đó</text><path class="dg-a" d="M711 314 H743"/><rect class="dg-key" x="745" y="295" width="208" height="38"/><text class="dg-t" x="849" y="318" text-anchor="middle">Actor cục bộ có giới hạn</text><path class="dg-a" d="M953 314 H985"/><rect class="dg-box" x="987" y="295" width="96" height="38"/><text class="dg-t" x="1035" y="318" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="124" y="352">✓ 82%</text></svg><figcaption>Một mẫu wrench đơn lẻ là mơ hồ. Lúc bắt đầu chạm là một bước nhảy, kẹt là lực tăng trong khi chuyển động dừng, lệch là một mô-men ngoài trục kéo dài, nên bài giữ một cửa sổ 10 mẫu gần nhất.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Lịch sử wrench nhập với thị giác, ngôn ngữ và pose vào một biểu diễn. Action expert xuất hành động và wrench mà chúng sẽ gây ra; chỉ hành động được gửi tới bộ điều khiển mềm." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">AT RUN TIME: ONE PROPOSAL = ACTIONS + THE WRENCH THEY ARE EXPECTED TO CAUSE</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="60"/><text class="dg-t" x="115" y="72" text-anchor="middle">3 RGB views + text</text><text class="dg-s" x="115" y="90" text-anchor="middle">sub-task instruction</text>
+<rect class="dg-ext" x="20" y="126" width="190" height="60"/><text class="dg-t" x="115" y="152" text-anchor="middle">pose + gripper (7)</text><text class="dg-s" x="115" y="170" text-anchor="middle">kinematic state</text>
+<rect class="dg-key" x="20" y="206" width="190" height="60"/><text class="dg-t" x="115" y="232" text-anchor="middle">wrench history 10x6</text><text class="dg-s" x="115" y="250" text-anchor="middle">last 10 wrist F/T readings</text>
+<rect class="dg-key" x="260" y="100" width="170" height="110"/><text class="dg-t" x="345" y="144" text-anchor="middle">Semantic-contact</text><text class="dg-t" x="345" y="162" text-anchor="middle">representation</text><text class="dg-s" x="345" y="184" text-anchor="middle">PaliGemma + fusion</text>
+<rect class="dg-box" x="480" y="100" width="170" height="110"/><text class="dg-t" x="565" y="140" text-anchor="middle">Flow-matching</text><text class="dg-t" x="565" y="158" text-anchor="middle">action expert</text><text class="dg-s" x="565" y="180" text-anchor="middle">coarse 5-10 Hz</text><text class="dg-s" x="565" y="194" text-anchor="middle">refine 20 Hz</text>
+<path class="dg-a" d="M210 76 H235 V130 H260"/><path class="dg-a" d="M210 156 H260"/><path class="dg-a" d="M210 236 H235 V180 H260"/><path class="dg-a" d="M430 155 H480"/>
+<rect class="dg-box" x="700" y="46" width="250" height="60"/><text class="dg-t" x="825" y="72" text-anchor="middle">actions 50x7</text><text class="dg-s" x="825" y="90" text-anchor="middle">the only part that is executed</text>
+<rect class="dg-ext" x="700" y="126" width="250" height="60"/><text class="dg-t" x="825" y="152" text-anchor="middle">wrench 50x6</text><text class="dg-s" x="825" y="170" text-anchor="middle">predicted, never commanded</text>
+<rect class="dg-box" x="700" y="206" width="250" height="60"/><text class="dg-t" x="825" y="232" text-anchor="middle">safety clip + compliant control</text><text class="dg-s" x="825" y="250" text-anchor="middle">200 Hz, force loop on measured F/T</text>
+<path class="dg-a" d="M650 130 H675 V76 H700"/><path class="dg-a" d="M650 160 H700"/>
+<path class="dg-a" d="M950 76 H966 V236 H950"/>
+<path class="dg-ad" d="M825 266 V292 H115 V266"/><text class="dg-l" x="300" y="286">measured wrist F/T goes back into the history</text>
+<text class="dg-h" x="20" y="332">THREE TRAINING STAGES</text>
+<rect class="dg-box" x="20" y="348" width="290" height="70"/><text class="dg-t" x="165" y="372" text-anchor="middle">01 Align</text><text class="dg-s" x="165" y="390" text-anchor="middle">joint action-wrench flow matching</text><text class="dg-s" x="165" y="406" text-anchor="middle">on ManuFacet-1K demonstrations</text>
+<rect class="dg-key" x="345" y="348" width="290" height="70"/><text class="dg-t" x="490" y="372" text-anchor="middle">02 Refine</text><text class="dg-s" x="490" y="390" text-anchor="middle">Action-Wrench Critic scores each proposal;</text><text class="dg-s" x="490" y="406" text-anchor="middle">contact-selective credit picks frames</text>
+<rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Adapt</text><text class="dg-s" x="815" y="390" text-anchor="middle">small bounded actor on frozen tokens,</text><text class="dg-s" x="815" y="406" text-anchor="middle">learns on the robot from 10 demos</text>
+<path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
+</svg><figcaption>Lịch sử wrench nhập với thị giác, ngôn ngữ và pose vào một biểu diễn. Action expert xuất hành động và wrench mà chúng sẽ gây ra; chỉ hành động được gửi tới bộ điều khiển mềm.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ mã hóa thị giác-ngôn ngữ</td>
+<td>3 ảnh RGB, câu lệnh $\ell$</td>
+<td>$h^{VL}_t$</td>
+<td>nghĩa của cảnh và nhiệm vụ (PaliGemma)</td>
+</tr>
+<tr>
+<td>Bộ mã hóa trạng thái và wrench</td>
+<td>pose + tay kẹp (7), cửa sổ wrench $W_{t-K+1:t}$, $K = 10$</td>
+<td>embedding</td>
+<td>động học và lịch sử tiếp xúc</td>
+</tr>
+<tr>
+<td>Fusion</td>
+<td>ba embedding trên</td>
+<td>$h^c_t$</td>
+<td>biểu diễn ngữ nghĩa–tiếp xúc</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>$h^c_t$ cộng nhiễu</td>
+<td>$Y_t = [A, \hat W] \in \mathbb{R}^{50 \times 13}$</td>
+<td>50 bước hành động (7) và wrench dự đoán (6)</td>
+</tr>
+<tr>
+<td>Bộ điều khiển</td>
+<td>chỉ $A$</td>
+<td>lệnh khớp</td>
+<td>200 Hz, điều chỉnh lực theo các hướng mà sub-goal chỉ định</td>
+</tr>
+</tbody>
+</table>
+<p>Chunk thô ra ở 5–10 Hz với độ phân giải khoảng 5 mm; một refinement expert cập nhật nó ở 20 Hz với khoảng 0,5 mm. Hàm loss huấn luyện: flow matching trên các cột hành động cộng $\lambda_{pre} = 0{,}1$ lần flow matching trên các cột wrench, nên muốn giảm sai số wrench thì chính sách buộc phải mã hóa cách chuyển động của nó làm đổi tiếp xúc.</p>
+<h2>3. Tính tay: reward tính phí việc ép mạnh</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Critic học từ một tín hiệu mỗi bước: thưởng khi xong một sub-goal, thưởng nhiều hơn nếu nhanh, bị giảm nếu wrench vượt giới hạn. Tính hai trường hợp để thấy vì sao ép qua tệ hơn một lần cắm nhẹ.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\Omega_t$</td>
+<td>1 nếu sub-goal hoàn thành (VLM làm giám khảo), ngược lại 0</td>
+<td>input</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$\Delta t,\ T_{max}$</td>
+<td>thời gian đã ở trong sub-goal, ngân sách của nó</td>
+<td>input</td>
+<td>225 s, 450 s</td>
+</tr>
+<tr>
+<td>$\lVert w_t\rVert_\phi$</td>
+<td>wrench chuẩn hóa theo giới hạn của pha hiện tại (trên 1 là vi phạm)</td>
+<td>input</td>
+<td>1,4 (ép) hoặc 0,8 (nhẹ)</td>
+</tr>
+<tr>
+<td>$\alpha,\ \beta$</td>
+<td>tỉ lệ đổi giữa lực và tốc độ</td>
+<td>hằng số</td>
+<td>0,5; 0,2 (ví dụ từ script reward của repo, không phải của bài báo)</td>
+</tr>
+<tr>
+<td>$r_t$</td>
+<td>reward mỗi bước</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$r_t = \Omega_t\Big(1 + \beta\big[1 - \tfrac{\Delta t}{T_{max}}\big]_+\Big) - \alpha\big[\lVert w_t\rVert_\phi - 1\big]_+,\qquad [x]_+ = \max(x, 0)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Thưởng tốc độ: $1 + 0{,}2\times(1 - 225/450) = 1 + 0{,}2\times 0{,}5 = 1{,}1$.</li>
+<li>Trường hợp ép: phạt lực $0{,}5\times(1{,}4 - 1) = 0{,}2$, nên $r_t = 1{,}1 - 0{,}2 = 0{,}9$.</li>
+<li>Trường hợp nhẹ: $0{,}8 &lt; 1$ nên phạt bằng 0 và $r_t = 1{,}1$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Cắm ép nhận 0,9, cắm nhẹ nhận 1,1, với cùng thời gian hoàn thành.</p>
+<p><strong>Ý nghĩa.</strong> Hai lần cắm cùng đạt một độ sâu thì nhìn giống nhau với thị giác và với tiến độ hình học. Vì critic còn thấy wrench dự đoán, nó xếp hạng được chúng trước khi chúng xảy ra.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên năm tác vụ, 20 lượt mỗi ô. Mỗi giai đoạn cộng thêm: biểu diễn 16, tinh chỉnh theo giá trị 38, thích nghi cục bộ 82." class="dg-natural" width="640" height="252" viewBox="0 0 640 252" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="180" y="23" text-anchor="end">GR00T N1.7</text><rect class="dg-bar" x="190" y="10" width="14" height="18"/><text class="dg-barval" x="213" y="23">4%</text><text class="dg-barlabel" x="180" y="53" text-anchor="end">π0.5+F (wrench làm input)</text><rect class="dg-bar" x="190" y="40" width="32" height="18"/><text class="dg-barval" x="231" y="53">9%</text><text class="dg-barlabel" x="180" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="190" y="70" width="36" height="18"/><text class="dg-barval" x="234" y="83">10%</text><text class="dg-barlabel" x="180" y="113" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="190" y="100" width="50" height="18"/><text class="dg-barval" x="249" y="113">14%</text><text class="dg-barlabel" x="180" y="143" text-anchor="end">π0.5+kiểu RECAP</text><rect class="dg-bar" x="190" y="130" width="54" height="18"/><text class="dg-barval" x="252" y="143">15%</text><text class="dg-barlabel" x="180" y="173" text-anchor="end">Facet-0 chỉ Align</text><rect class="dg-bar" x="190" y="160" width="58" height="18"/><text class="dg-barval" x="256" y="173">16%</text><text class="dg-barlabel" x="180" y="203" text-anchor="end">Facet-0 +RL</text><rect class="dg-bar" x="190" y="190" width="137" height="18"/><text class="dg-barval" x="335" y="203">38%</text><text class="dg-barlabel" x="180" y="233" text-anchor="end">Facet-0 đầy đủ</text><rect class="dg-key" x="190" y="220" width="295" height="18"/><text class="dg-barval" x="494" y="233">82%</text></svg><figcaption>Thành công trung bình trên năm tác vụ, 20 lượt mỗi ô. Mỗi giai đoạn cộng thêm: biểu diễn 16, tinh chỉnh theo giá trị 38, thích nghi cục bộ 82.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thành công (%), 20 lượt</th>
+<th>RAM</th>
+<th>CPU</th>
+<th>Disk</th>
+<th>GPU</th>
+<th>LEVER</th>
+<th>Trung bình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π0.5</td>
+<td>10</td>
+<td>5</td>
+<td>25</td>
+<td>10</td>
+<td>0</td>
+<td>10</td>
+</tr>
+<tr>
+<td>π0.5+kiểu RECAP (baseline tốt nhất)</td>
+<td>35</td>
+<td>15</td>
+<td>20</td>
+<td>5</td>
+<td>0</td>
+<td>15</td>
+</tr>
+<tr>
+<td>TA-VLA</td>
+<td>10</td>
+<td>20</td>
+<td>30</td>
+<td>5</td>
+<td>5</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Facet-0 +RL</td>
+<td>45</td>
+<td>45</td>
+<td>65</td>
+<td>35</td>
+<td>0</td>
+<td>38</td>
+</tr>
+<tr>
+<td><strong>Facet-0 đầy đủ</strong></td>
+<td><strong>95</strong></td>
+<td><strong>85</strong></td>
+<td><strong>95</strong></td>
+<td><strong>85</strong></td>
+<td><strong>50</strong></td>
+<td><strong>82</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Hậu huấn luyện so với BC có trọng số lợi thế (AWR) cùng ngân sách, trên tác vụ Disk: thành công 20% → 65%, phục hồi 44% → 81%, can thiệp của người 47% → 24%.</li>
+<li>Mô-đun RAM chưa từng thấy với khối lượng và chốt khác, 10 demo và 3 giờ: Facet-0 45% (chỉ cập nhật 6,6% tham số) so với 5% của baseline tốt nhất.</li>
+<li>Ablation vai trò của wrench trên RAM: bỏ wrench khỏi cả dự đoán, định giá và thích nghi làm thành công giảm từ 95% xuống 45% và đẩy lực ngoài trục đỉnh từ 0,2× lên 1,0×. Bỏ riêng từng vai trò chỉ đổi thành công một đến hai lượt trong 20, nên thứ tự của chúng chưa phân định được.</li>
+<li>Triển khai: 50 ms mỗi lệnh so với 150 ms của π0.5, độ chính xác đặt 0,5 mm so với khoảng 5 mm, và nhanh hơn 40% so với một chuyên gia teleoperation.</li>
+</ul>
+<h2>5. Dữ liệu và tác vụ</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ManuFacet-1K</td>
+<td>khoảng 1.000 giờ demo và các lượt chạy vòng kín, ba loại robot, hai họ khung máy, nhiều địa điểm</td>
+</tr>
+<tr>
+<td>Mỗi trạm</td>
+<td>cánh tay điều khiển mô-men, tay kẹp song song, F/T 6 trục ở cổ tay, ba camera RGB; teleoperation kinesthetic có phản hồi lực</td>
+</tr>
+<tr>
+<td>Độ phân giải hành động</td>
+<td>0,5 mm</td>
+</tr>
+<tr>
+<td>Các pha</td>
+<td>tiếp cận, căn chỉnh, cắm, ấn, vào khít, siết, rút lui; năm pha từ căn chỉnh đến siết là "quan trọng"</td>
+</tr>
+<tr>
+<td>Bộ kiểm tra</td>
+<td>lắp RAM, CPU, Disk, GPU và một cần gạt ổ CPU: 23 sub-goal, 14 sub-goal tiếp xúc quan trọng, khe hở 0,10–0,30 mm, giới hạn lực 8–70 N</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Đây là bài gần nhất cho tới giờ với việc ấn chính xác có cảm biến F/T ở cổ tay: code, trọng số và dữ liệu đều công khai và toàn bộ xây trên openpi. Nhưng trọng số công bố được huấn luyện trên các trạm lắp máy tính của họ, và bài không nói cách chuyển bộ điều khiển sang robot khác. "Không nêu" nghĩa là mình đã tìm trong paper, trang dự án và repo mà không thấy.</p>
+<table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cảm biến</td>
+<td>F/T 6 trục ở cổ tay, ba camera RGB (hai ngoài, một cổ tay), trạng thái khớp</td>
+<td>Cảm biến 6 trục tích hợp ở cổ tay của UR10e cho cùng loại tín hiệu. Wrench được mong đợi theo đơn vị vật lý (N, N·m)</td>
+</tr>
+<tr>
+<td>Cánh tay và tay kẹp</td>
+<td>Cánh tay điều khiển mô-men với tay kẹp song song ở mọi trạm; văn bản mình đọc không nêu tên mẫu cánh tay</td>
+<td>Cánh tay điều khiển vị trí có chạy được không: không nêu</td>
+</tr>
+<tr>
+<td>Điều khiển mức thấp</td>
+<td>Bộ điều khiển mềm 200 Hz điều chỉnh lực theo các hướng mà mỗi sub-goal chỉ định, cùng lớp an toàn cắt mục tiêu và giới hạn chuyển động mỗi bước</td>
+<td>Repo ghi bộ điều khiển mềm, các mô hình giám khảo và đánh giá phần cứng là "do bạn tự cung cấp", nên phần này bạn tự xây</td>
+</tr>
+<tr>
+<td>Phần mềm</td>
+<td>Python 3.11, openpi ở một commit cố định, dữ liệu định dạng LeRobot, giấy phép Apache-2.0</td>
+<td>Repo có ví dụ chạy trên CPU, huấn luyện mạng nhỏ trên dữ liệu tổng hợp</td>
+</tr>
+<tr>
+<td>Trọng số và dữ liệu</td>
+<td><a href="https://huggingface.co/Pinelab/Facet-0">Checkpoint hậu huấn luyện Facet-0</a> (Apache-2.0); ManuFacet-1K, khoảng 417 GB theo số liệu trên hub (CC-BY-4.0)</td>
+<td>Dùng checkpoint cho robot mới nghĩa là phải fine-tune. Repo mô tả huấn luyện từ trọng số nền; fine-tune từ checkpoint đã công bố không được nói rõ</td>
+</tr>
+<tr>
+<td>Demo của riêng bạn</td>
+<td>Mỗi khung lưu trạng thái 13 chiều (pose, tay kẹp, wrench), ba góc nhìn và một câu lệnh sub-task; episode được gắn nhãn base, precision hoặc recovery</td>
+<td>Số demo cần cho tác vụ mới: không nêu (chỉ có 10 demo để thích nghi với chi tiết mới trên nền hệ thống đầy đủ)</td>
+</tr>
+<tr>
+<td>Reward và giám khảo</td>
+<td>Một VLM làm giám khảo đánh dấu hoàn thành sub-goal và pha tiếp xúc; giới hạn wrench theo từng pha được cấu hình</td>
+<td>Bạn cần giới hạn cho tác vụ của mình; giới hạn ví dụ trong repo được ghi rõ là "không phải giới hạn phần cứng đã hiệu chuẩn"</td>
+</tr>
+<tr>
+<td>Tính toán huấn luyện</td>
+<td>Pretraining là 32K lần cập nhật nhánh hành động và 8K lần nhánh ngôn ngữ trong một lần chạy; thích nghi mất vài giờ trên một robot</td>
+<td>Loại GPU và thời gian pretraining: không nêu</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nên kỳ vọng phần nào.</strong> Theo ablation của họ, riêng biểu diễn cho 16% và giai đoạn tinh chỉnh theo giá trị cho 38%. Phần lớn trong 82% đến từ giai đoạn cuối, thích nghi trên robot (thêm 44 điểm trung bình). Vì vậy với tác vụ mới như ấn nắp, lợi ích đầy đủ cần các lượt chạy thật, can thiệp của người và một bộ điều khiển mềm hoạt động, chứ không chỉ trọng số công bố.</p>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>Mọi baseline, kể cả TA-VLA và phương pháp kiểu RECAP (do chính tác giả cài đặt), đều do các tác giả huấn luyện trên kho dữ liệu của họ với ngân sách như nhau. Chúng không phải bản gốc của từng phương pháp.</li>
+<li>Mỗi ô là 20 lượt. Tổng cộng 82 trên 100 lượt cho khoảng 73% đến 88% (Wilson, phép tính của mình), còn 15 trên 100 của baseline tốt nhất cho khoảng 9% đến 23%.</li>
+<li>Đánh giá giới hạn ở lắp ráp điện tử có cảm biến cổ tay, tay kẹp song song, trên một khung máy cố định. Các tác giả nói mở rộng sang end effector và hình học tiếp xúc khác là việc sau này.</li>
+<li>Bài không khẳng định giới hạn lực cứng được chứng nhận: reward và bộ điều khiển chỉ làm nản lòng việc dùng lực quá mức, không hơn.</li>
+<li>LEVER, hai lần ấn liên tiếp không có bước chuyển động tự do, vẫn dừng ở 50%.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> <a href="forcevla.html">ForceVLA</a> và <a href="ta-vla.html">TA-VLA</a> đọc lực như một input; Facet-0 còn dự đoán và định giá nó. <a href="fire.html">FIRe</a> cũng dùng RL trên một chính sách có lực, nhưng huấn luyện trong mô phỏng. Giao thức đánh giá ở đây (20 lượt mỗi ô, thành công, vi phạm, can thiệp, phục hồi, lực ngoài trục đỉnh, thời gian chu kỳ, độ trễ) là một khuôn mẫu tốt cho <a href="danh-gia-vla.html">benchmark riêng của bạn</a>.</p>
+<p><strong>Câu kiểm tra:</strong> $\alpha = 0{,}5$, $\beta = 0{,}2$, $\Omega_t = 1$, $\Delta t = T_{max}/3$ và $\lVert w_t\rVert_\phi = 1$. $r_t$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Thưởng tốc độ $= 1 + 0{,}2\times(1 - 1/3) = 1{,}133$. Wrench đúng bằng giới hạn nên $[1 - 1]_+ = 0$ và phạt bằng 0. $r_t \approx 1{,}13$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

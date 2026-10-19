@@ -1,5 +1,22 @@
 [
   {
+    "slug": "facet-0",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "Facet-0: Predict the Wrench, Then Value It",
+    "title_vi": "Facet-0: Dự đoán wrench, rồi định giá nó",
+    "excerpt_en": "Feeding the wrist force to a VLA as an input barely helps (9–14%), because the force only records contact that already happened. Facet-0 makes the policy predict the wrench its actions will cause, scores that pair with a critic and adapts on the robot: 82% vs 15% on five sub-millimetre assembly tasks.",
+    "excerpt_vi": "Đưa lực cổ tay vào VLA như một input gần như không giúp (9–14%), vì lực chỉ ghi lại tiếp xúc đã xảy ra. Facet-0 bắt chính sách dự đoán wrench mà hành động sẽ gây ra, chấm điểm cặp đó bằng một critic và thích nghi trên robot: 82% so với 15% trên năm tác vụ lắp ráp dưới milimét.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Reinforcement Learning",
+      "Paper Notes",
+      "π0.5"
+    ],
+    "read_min": 9
+  },
+  {
     "slug": "fire",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",

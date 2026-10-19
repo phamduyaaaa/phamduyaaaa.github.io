@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">AT RUN TIME: ONE PROPOSAL = ACTIONS + THE WRENCH THEY ARE EXPECTED TO CAUSE</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="60"/><text class="dg-t" x="115" y="72" text-anchor="middle">3 RGB views + text</text><text class="dg-s" x="115" y="90" text-anchor="middle">sub-task instruction</text>
+<rect class="dg-ext" x="20" y="126" width="190" height="60"/><text class="dg-t" x="115" y="152" text-anchor="middle">pose + gripper (7)</text><text class="dg-s" x="115" y="170" text-anchor="middle">kinematic state</text>
+<rect class="dg-key" x="20" y="206" width="190" height="60"/><text class="dg-t" x="115" y="232" text-anchor="middle">wrench history 10x6</text><text class="dg-s" x="115" y="250" text-anchor="middle">last 10 wrist F/T readings</text>
+<rect class="dg-key" x="260" y="100" width="170" height="110"/><text class="dg-t" x="345" y="144" text-anchor="middle">Semantic-contact</text><text class="dg-t" x="345" y="162" text-anchor="middle">representation</text><text class="dg-s" x="345" y="184" text-anchor="middle">PaliGemma + fusion</text>
+<rect class="dg-box" x="480" y="100" width="170" height="110"/><text class="dg-t" x="565" y="140" text-anchor="middle">Flow-matching</text><text class="dg-t" x="565" y="158" text-anchor="middle">action expert</text><text class="dg-s" x="565" y="180" text-anchor="middle">coarse 5-10 Hz</text><text class="dg-s" x="565" y="194" text-anchor="middle">refine 20 Hz</text>
+<path class="dg-a" d="M210 76 H235 V130 H260"/><path class="dg-a" d="M210 156 H260"/><path class="dg-a" d="M210 236 H235 V180 H260"/><path class="dg-a" d="M430 155 H480"/>
+<rect class="dg-box" x="700" y="46" width="250" height="60"/><text class="dg-t" x="825" y="72" text-anchor="middle">actions 50x7</text><text class="dg-s" x="825" y="90" text-anchor="middle">the only part that is executed</text>
+<rect class="dg-ext" x="700" y="126" width="250" height="60"/><text class="dg-t" x="825" y="152" text-anchor="middle">wrench 50x6</text><text class="dg-s" x="825" y="170" text-anchor="middle">predicted, never commanded</text>
+<rect class="dg-box" x="700" y="206" width="250" height="60"/><text class="dg-t" x="825" y="232" text-anchor="middle">safety clip + compliant control</text><text class="dg-s" x="825" y="250" text-anchor="middle">200 Hz, force loop on measured F/T</text>
+<path class="dg-a" d="M650 130 H675 V76 H700"/><path class="dg-a" d="M650 160 H700"/>
+<path class="dg-a" d="M950 76 H966 V236 H950"/>
+<path class="dg-ad" d="M825 266 V292 H115 V266"/><text class="dg-l" x="300" y="286">measured wrist F/T goes back into the history</text>
+<text class="dg-h" x="20" y="332">THREE TRAINING STAGES</text>
+<rect class="dg-box" x="20" y="348" width="290" height="70"/><text class="dg-t" x="165" y="372" text-anchor="middle">01 Align</text><text class="dg-s" x="165" y="390" text-anchor="middle">joint action-wrench flow matching</text><text class="dg-s" x="165" y="406" text-anchor="middle">on ManuFacet-1K demonstrations</text>
+<rect class="dg-key" x="345" y="348" width="290" height="70"/><text class="dg-t" x="490" y="372" text-anchor="middle">02 Refine</text><text class="dg-s" x="490" y="390" text-anchor="middle">Action-Wrench Critic scores each proposal;</text><text class="dg-s" x="490" y="406" text-anchor="middle">contact-selective credit picks frames</text>
+<rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Adapt</text><text class="dg-s" x="815" y="390" text-anchor="middle">small bounded actor on frozen tokens,</text><text class="dg-s" x="815" y="406" text-anchor="middle">learns on the robot from 10 demos</text>
+<path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
+</svg>

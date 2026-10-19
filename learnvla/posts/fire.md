@@ -179,11 +179,11 @@ $$\phi_f(s) = -\log\!\big(c_f\max(0,\ \lVert F(s)\rVert - F_{ref}) + 1\big)$$
 **Từng bước**
 
 1. Phần vượt $F_{ref}$: trước $30 - 10 = 20$ N, sau $20 - 10 = 10$ N.
-2. $\phi_f(s_t) = -\log 21 = -3,0445$ và $\phi_f(s_{t+1}) = -\log 11 = -2,3979$.
-3. $r_p = -10^{-5}\times 10 = -1,0\times 10^{-4}$.
-4. $r_{sh} = 10^{-5}\,(0,995\times(-2,3979) + 3,0445) = 10^{-5}\times 0,6586 = 6,6\times 10^{-6}$.
+2. $\phi_f(s_t) = -\log 21 = -3{,}0445$ và $\phi_f(s_{t+1}) = -\log 11 = -2{,}3979$.
+3. $r_p = -10^{-5}\times 10 = -1{,}0\times 10^{-4}$.
+4. $r_{sh} = 10^{-5}\,(0{,}995\times(-2{,}3979) + 3{,}0445) = 10^{-5}\times 0{,}6586 = 6{,}6\times 10^{-6}$.
 
-**Kết quả.** $r_f = r_p + r_{sh} \approx -9,3\times 10^{-5}$. Giảm lực từ 30 N xuống 20 N được số hạng shaping thưởng, nhưng bước đó vẫn bị phạt vì 20 N còn cao hơn 10 N.
+**Kết quả.** $r_f = r_p + r_{sh} \approx -9{,}3\times 10^{-5}$. Giảm lực từ 30 N xuống 20 N được số hạng shaping thưởng, nhưng bước đó vẫn bị phạt vì 20 N còn cao hơn 10 N.
 
 **Ý nghĩa.** Cả hai số hạng đều bằng đúng 0 khi lực không vượt $F_{ref}$, nên reward không thưởng cho việc chạm hay tránh chạm; việc đi tới tiếp xúc đến từ reward thành công và hành động của VLA. Các con số rất nhỏ so với reward thành công là 1. Trang không nói lực được chia thang thế nào, nên mình chỉ trình bày phép tính và không khẳng định các số hạng cân bằng ra sao.
 </div>
