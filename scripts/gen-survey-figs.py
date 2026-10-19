@@ -58,3 +58,41 @@ for r in surv:
     lines.append(f"- {r[2]}. [arXiv:{r[0]}](https://arxiv.org/abs/{r[0]}), {r[3]}.")
 (ROOT / "scripts/data/force-refs.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 print(len(meth), "methods;", H, "px tall")
+
+
+# ---- Sơ đồ "bản đồ chọn bài" (Survey 1, mục 5): tình huống x bài đọc ----
+POSTS = ["ForceVLA", "ForceVLA2", "MoDE-VLA", "VLA-Touch", "TaF-VLA", "Tabero", "FD-VLA", "HapticVLA", "FWBC-VLA", "TORL-VLA", "TER-DAgger", "TA-VLA", "GelSight"]
+SCEN = [  # (nhãn, [bài chính], [bài đọc tiếp])
+    ("A  Wrist F/T sensor, insert / wipe / peel", ["ForceVLA"], ["ForceVLA2", "TORL-VLA"]),
+    ("B  Must press softly: \"pick up the egg gently\"", ["Tabero", "ForceVLA2"], ["HapticVLA"]),
+    ("C  Only a gel touch sensor on the gripper", ["TaF-VLA"], ["VLA-Touch", "GelSight"]),
+    ("D  Planner should judge hard / soft from touch", ["VLA-Touch"], ["GelSight"]),
+    ("E  No force sensor on the deployed robot", ["FD-VLA", "HapticVLA"], ["TA-VLA", "FWBC-VLA"]),
+    ("F  Only joint torque: button, charger, door handle", ["TA-VLA"], ["FWBC-VLA", "MoDE-VLA"]),
+    ("G  Precise insertion, a human can step in", ["TER-DAgger"], ["TORL-VLA"]),
+    ("H  Mobile robot pushes a door, wipes a board", ["FWBC-VLA"], ["ForceVLA"]),
+    ("I  Dexterous hand: peel an apple, assemble", ["MoDE-VLA"], ["ForceVLA"]),
+    ("J  Same contact keeps failing, learn online", ["TORL-VLA"], ["TER-DAgger"]),
+]
+x0, dx, top, rh = 400, 44, 120, 30
+H = top + rh * len(SCEN) + 44
+o = [f'<svg viewBox="0 0 980 {H}" xmlns="http://www.w3.org/2000/svg">']
+for j, name in enumerate(POSTS):
+    cx = x0 + j * dx
+    o.append(f'<text class="dg-t" x="{cx}" y="{top - 14}" transform="rotate(-50 {cx} {top - 14})">{esc(name)}</text>')
+    o.append(f'<path class="dg-grp" d="M{cx} {top - 8} V{top + rh * len(SCEN)}"/>')
+for i, (lab, prim, sec) in enumerate(SCEN):
+    y = top + i * rh
+    if i % 2 == 0:
+        o.append(f'<rect x="10" y="{y - 6}" width="960" height="{rh}" fill="currentColor" fill-opacity=".05"/>')
+    o.append(f'<text class="dg-t" x="22" y="{y + 12}">{esc(lab)}</text>')
+    for nm in prim:
+        o.append(f'<circle cx="{x0 + POSTS.index(nm) * dx}" cy="{y + 8}" r="8" class="dg-key"/>')
+    for nm in sec:
+        o.append(f'<circle cx="{x0 + POSTS.index(nm) * dx}" cy="{y + 8}" r="7" class="dg-box"/>')
+yb = top + rh * len(SCEN) + 24
+o.append(f'<circle cx="30" cy="{yb}" r="8" class="dg-key"/><text class="dg-s" x="46" y="{yb + 4}">start here</text>')
+o.append(f'<circle cx="170" cy="{yb}" r="7" class="dg-box"/><text class="dg-s" x="186" y="{yb + 4}">read next</text>')
+o.append("</svg>")
+(ROOT / "learnvla/diagrams/survey-force-readmap.svg").write_text("\n".join(o), encoding="utf-8")
+print("readmap", H)

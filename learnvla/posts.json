@@ -262,7 +262,7 @@
       "Tactile",
       "Survey"
     ],
-    "read_min": 14
+    "read_min": 17
   },
   {
     "slug": "survey-force-output",

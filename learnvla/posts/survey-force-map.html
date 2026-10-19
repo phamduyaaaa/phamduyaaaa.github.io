@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">14 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">17 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Survey 1: Where Does Force Enter a VLA?</h1>
@@ -501,41 +501,152 @@
 </tr>
 </tbody>
 </table>
-<h2>5. Which note should I read?</h2>
+<h2>5. Which note should I read? A scenario map</h2>
+<p>Pick the row that looks most like your robot and your task. ● means start there, ○ means read it next.</p>
+<figure class="diagram"><svg role="img" aria-label="Ten concrete situations against the posts on this site. Each situation is explained in the table below." viewBox="0 0 980 464" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-t" x="400" y="106" transform="rotate(-50 400 106)">ForceVLA</text>
+<path class="dg-grp" d="M400 112 V420"/>
+<text class="dg-t" x="444" y="106" transform="rotate(-50 444 106)">ForceVLA2</text>
+<path class="dg-grp" d="M444 112 V420"/>
+<text class="dg-t" x="488" y="106" transform="rotate(-50 488 106)">MoDE-VLA</text>
+<path class="dg-grp" d="M488 112 V420"/>
+<text class="dg-t" x="532" y="106" transform="rotate(-50 532 106)">VLA-Touch</text>
+<path class="dg-grp" d="M532 112 V420"/>
+<text class="dg-t" x="576" y="106" transform="rotate(-50 576 106)">TaF-VLA</text>
+<path class="dg-grp" d="M576 112 V420"/>
+<text class="dg-t" x="620" y="106" transform="rotate(-50 620 106)">Tabero</text>
+<path class="dg-grp" d="M620 112 V420"/>
+<text class="dg-t" x="664" y="106" transform="rotate(-50 664 106)">FD-VLA</text>
+<path class="dg-grp" d="M664 112 V420"/>
+<text class="dg-t" x="708" y="106" transform="rotate(-50 708 106)">HapticVLA</text>
+<path class="dg-grp" d="M708 112 V420"/>
+<text class="dg-t" x="752" y="106" transform="rotate(-50 752 106)">FWBC-VLA</text>
+<path class="dg-grp" d="M752 112 V420"/>
+<text class="dg-t" x="796" y="106" transform="rotate(-50 796 106)">TORL-VLA</text>
+<path class="dg-grp" d="M796 112 V420"/>
+<text class="dg-t" x="840" y="106" transform="rotate(-50 840 106)">TER-DAgger</text>
+<path class="dg-grp" d="M840 112 V420"/>
+<text class="dg-t" x="884" y="106" transform="rotate(-50 884 106)">TA-VLA</text>
+<path class="dg-grp" d="M884 112 V420"/>
+<text class="dg-t" x="928" y="106" transform="rotate(-50 928 106)">GelSight</text>
+<path class="dg-grp" d="M928 112 V420"/>
+<rect x="10" y="114" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="132">A  Wrist F/T sensor, insert / wipe / peel</text>
+<circle cx="400" cy="128" r="8" class="dg-key"/>
+<circle cx="444" cy="128" r="7" class="dg-box"/>
+<circle cx="796" cy="128" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="162">B  Must press softly: "pick up the egg gently"</text>
+<circle cx="620" cy="158" r="8" class="dg-key"/>
+<circle cx="444" cy="158" r="8" class="dg-key"/>
+<circle cx="708" cy="158" r="7" class="dg-box"/>
+<rect x="10" y="174" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="192">C  Only a gel touch sensor on the gripper</text>
+<circle cx="576" cy="188" r="8" class="dg-key"/>
+<circle cx="532" cy="188" r="7" class="dg-box"/>
+<circle cx="928" cy="188" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="222">D  Planner should judge hard / soft from touch</text>
+<circle cx="532" cy="218" r="8" class="dg-key"/>
+<circle cx="928" cy="218" r="7" class="dg-box"/>
+<rect x="10" y="234" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="252">E  No force sensor on the deployed robot</text>
+<circle cx="664" cy="248" r="8" class="dg-key"/>
+<circle cx="708" cy="248" r="8" class="dg-key"/>
+<circle cx="884" cy="248" r="7" class="dg-box"/>
+<circle cx="752" cy="248" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="282">F  Only joint torque: button, charger, door handle</text>
+<circle cx="884" cy="278" r="8" class="dg-key"/>
+<circle cx="752" cy="278" r="7" class="dg-box"/>
+<circle cx="488" cy="278" r="7" class="dg-box"/>
+<rect x="10" y="294" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="312">G  Precise insertion, a human can step in</text>
+<circle cx="840" cy="308" r="8" class="dg-key"/>
+<circle cx="796" cy="308" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="342">H  Mobile robot pushes a door, wipes a board</text>
+<circle cx="752" cy="338" r="8" class="dg-key"/>
+<circle cx="400" cy="338" r="7" class="dg-box"/>
+<rect x="10" y="354" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="372">I  Dexterous hand: peel an apple, assemble</text>
+<circle cx="488" cy="368" r="8" class="dg-key"/>
+<circle cx="400" cy="368" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="402">J  Same contact keeps failing, learn online</text>
+<circle cx="796" cy="398" r="8" class="dg-key"/>
+<circle cx="840" cy="398" r="7" class="dg-box"/>
+<circle cx="30" cy="444" r="8" class="dg-key"/><text class="dg-s" x="46" y="448">start here</text>
+<circle cx="170" cy="444" r="7" class="dg-box"/><text class="dg-s" x="186" y="448">read next</text>
+</svg><figcaption>Ten concrete situations against the posts on this site. Each situation is explained in the table below.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>If your situation is...</th>
-<th>Read</th>
+<th>Scenario: a concrete picture</th>
+<th>What goes wrong with a plain VLA</th>
+<th>Start with, and why</th>
+<th>Then</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>a wrist force/torque sensor and you want a quick gain</td>
-<td><a href="forcevla.html">ForceVLA</a>, <a href="torl-vla.html">TORL-VLA</a></td>
+<td><strong>A.</strong> A robot arm has a force/torque sensor at the wrist and must push a plug into a socket, wipe a whiteboard or peel a cucumber</td>
+<td>It sees the plug but not how hard it pushes. Simply appending force to the state barely helps (+2.9 points for π0-base)</td>
+<td><a href="forcevla.html">ForceVLA</a>: gives force its own module after the VLM. 60.5% against 37.3% for π0-base on five tasks</td>
+<td><a href="forcevla2.html">ForceVLA2</a> if you also want to ask for a force; <a href="torl-vla.html">TORL-VLA</a> to keep improving online</td>
 </tr>
 <tr>
-<td>the task is about <em>how hard</em> to press</td>
-<td><a href="forcevla2.html">ForceVLA2</a>, <a href="tabero.html">Tabero</a></td>
+<td><strong>B.</strong> The instruction says "pick up the egg gently", or the object is a thin waffle</td>
+<td>A pose-only policy cannot squeeze less; the force comes from the controller's stiffness</td>
+<td><a href="tabero.html">Tabero</a>: policy that outputs force targets; 89% less grip force when told "gently". <a href="forcevla2.html">ForceVLA2</a>: outputs pose and force; 66% against 48% for π0 on its five tasks (wiping, pressing, assembling)</td>
+<td><a href="hapticvla.html">HapticVLA</a> if the deployed gripper has no touch sensor</td>
 </tr>
 <tr>
-<td>only a gel-type touch sensor</td>
-<td><a href="taf-vla.html">TaF-VLA</a>, <a href="vla-touch.html">VLA-Touch</a></td>
+<td><strong>C.</strong> A parallel gripper carries a gel touch sensor; tasks involve a tool or a deformable object</td>
+<td>Touch images are read like extra camera views: texture is captured, how hard the press is is not</td>
+<td><a href="taf-vla.html">TaF-VLA</a>: aligns touch with force first. 64.8% against 42.8% for FreeTacMan and 37.1% for π0.5 without touch</td>
+<td><a href="vla-touch.html">VLA-Touch</a> (touch without retraining the VLA); <a href="gelsight.html">GelSight</a> (how the sensor works)</td>
 </tr>
 <tr>
-<td>no sensor on the deployed robot</td>
-<td><a href="fd-vla.html">FD-VLA</a>, <a href="hapticvla.html">HapticVLA</a>, <a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td><strong>D.</strong> You use a VLA such as RDT and do not want to change it, but a planner should tell hard from soft by touch</td>
+<td>A language model cannot read raw touch images; it answers that it cannot determine</td>
+<td><a href="vla-touch.html">VLA-Touch</a>: turns touch into words for the planner and adds a small refiner. Out of 20: cup placing 10 against 7, wiping 12 against 5, peeling 10 against 6</td>
+<td><a href="gelsight.html">GelSight</a></td>
 </tr>
 <tr>
-<td>contact changes fast, as in insertion</td>
+<td><strong>E.</strong> A force sensor is available in the lab but not on the deployed robot (cost, breakage)</td>
+<td>Anything that reads force at run time stops working</td>
+<td><a href="fd-vla.html">FD-VLA</a>: train with force, deploy without; 61.1% against 46.7% for π0 on whiteboard cleaning, pressing an emergency button and plug insertion. <a href="hapticvla.html">HapticVLA</a>: jar, waffles, egg; 86.7%</td>
+<td><a href="ta-vla.html">TA-VLA</a> (torque from the motors), <a href="fwbc-vla.html">FWBC-VLA</a></td>
+</tr>
+<tr>
+<td><strong>F.</strong> A 7-joint arm has only motor currents; it must push a button, plug a charger, turn a door handle</td>
+<td>Plain π0 got 0 of 20 on the charger</td>
+<td><a href="ta-vla.html">TA-VLA</a>: one torque-history token in the decoder. 86% against 23% (my averages over five tasks)</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a> (force from torque for the whole body), <a href="mode-vla.html">MoDE-VLA</a></td>
+</tr>
+<tr>
+<td><strong>G.</strong> Insert a USB or a two- or three-pin plug with tight tolerance; a person can help but should not have to watch all day</td>
+<td>A cloned policy drifts and fails exactly at contact (see <a href="imitation-learning.html">imitation learning</a>)</td>
+<td><a href="ter-dagger.html">TER-DAgger</a>: a force-error alarm calls the human; a fast residual corrects. 77.2% against 40.0% for the best baseline</td>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+</tr>
+<tr>
+<td><strong>H.</strong> A wheel-legged mobile robot wipes a whiteboard or pushes a spring-closed door</td>
+<td>Arm-only force policies adapt the arm, but the pushed body is not corrected</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a>: door 52% against 12% for ForceVLA, whiteboard 64% against 24%</td>
+<td><a href="forcevla.html">ForceVLA</a></td>
+</tr>
+<tr>
+<td><strong>I.</strong> A multi-fingered hand and a second arm peel an apple, rearrange tubes or assemble gears</td>
+<td>New force and touch signals overwrite what the pretrained model knows</td>
+<td><a href="mode-vla.html">MoDE-VLA</a>: separate sparse-MoE path with residuals. 34% against 15% for π0 on average</td>
+<td><a href="forcevla.html">ForceVLA</a> as the simpler baseline</td>
+</tr>
+<tr>
+<td><strong>J.</strong> The robot keeps failing the same contact (cup into a narrow holder, a latch, a fragile egg) even after fine-tuning</td>
+<td>Offline demonstrations stop improving the policy</td>
+<td><a href="torl-vla.html">TORL-VLA</a>: online reinforcement learning on top of a force-aware VLA</td>
 <td><a href="ter-dagger.html">TER-DAgger</a></td>
-</tr>
-<tr>
-<td>a dexterous hand</td>
-<td><a href="mode-vla.html">MoDE-VLA</a>, <a href="hapticvla.html">HapticVLA</a></td>
 </tr>
 </tbody>
 </table>
+<p>Two cautions. The numbers in the "start with" column come from different papers, with different tasks and robots, so they show the size of a gain <em>inside</em> each paper, not which method is best (<a href="survey-force-output.html">Survey 3</a> shows ForceVLA alone scoring 12% to 60.5% depending on who ran it). And if no row fits, go to <a href="survey-force-sensing.html">Survey 2</a> to find your sensor, then <a href="survey-force-output.html">Survey 3</a> to choose what the policy should output.</p>
 <h2>6. The full table</h2>
 <p>"Read": <strong>full</strong> = detailed note on this site, checked against the full text; <strong>abstract+</strong> = abstract plus a targeted look at the full text for the fields marked n/s; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.</p>
 <table>
@@ -1369,41 +1480,152 @@
 </tr>
 </tbody>
 </table>
-<h2>5. Mình nên đọc bài nào?</h2>
+<h2>5. Mình nên đọc bài nào? Bản đồ theo tình huống</h2>
+<p>Hãy chọn hàng giống nhất với robot và tác vụ của bạn. ● nghĩa là bắt đầu từ đó, ○ nghĩa là đọc tiếp sau đó.</p>
+<figure class="diagram"><svg role="img" aria-label="Mười tình huống cụ thể đặt cạnh các bài trên site này. Từng tình huống được giải thích trong bảng bên dưới." viewBox="0 0 980 464" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-t" x="400" y="106" transform="rotate(-50 400 106)">ForceVLA</text>
+<path class="dg-grp" d="M400 112 V420"/>
+<text class="dg-t" x="444" y="106" transform="rotate(-50 444 106)">ForceVLA2</text>
+<path class="dg-grp" d="M444 112 V420"/>
+<text class="dg-t" x="488" y="106" transform="rotate(-50 488 106)">MoDE-VLA</text>
+<path class="dg-grp" d="M488 112 V420"/>
+<text class="dg-t" x="532" y="106" transform="rotate(-50 532 106)">VLA-Touch</text>
+<path class="dg-grp" d="M532 112 V420"/>
+<text class="dg-t" x="576" y="106" transform="rotate(-50 576 106)">TaF-VLA</text>
+<path class="dg-grp" d="M576 112 V420"/>
+<text class="dg-t" x="620" y="106" transform="rotate(-50 620 106)">Tabero</text>
+<path class="dg-grp" d="M620 112 V420"/>
+<text class="dg-t" x="664" y="106" transform="rotate(-50 664 106)">FD-VLA</text>
+<path class="dg-grp" d="M664 112 V420"/>
+<text class="dg-t" x="708" y="106" transform="rotate(-50 708 106)">HapticVLA</text>
+<path class="dg-grp" d="M708 112 V420"/>
+<text class="dg-t" x="752" y="106" transform="rotate(-50 752 106)">FWBC-VLA</text>
+<path class="dg-grp" d="M752 112 V420"/>
+<text class="dg-t" x="796" y="106" transform="rotate(-50 796 106)">TORL-VLA</text>
+<path class="dg-grp" d="M796 112 V420"/>
+<text class="dg-t" x="840" y="106" transform="rotate(-50 840 106)">TER-DAgger</text>
+<path class="dg-grp" d="M840 112 V420"/>
+<text class="dg-t" x="884" y="106" transform="rotate(-50 884 106)">TA-VLA</text>
+<path class="dg-grp" d="M884 112 V420"/>
+<text class="dg-t" x="928" y="106" transform="rotate(-50 928 106)">GelSight</text>
+<path class="dg-grp" d="M928 112 V420"/>
+<rect x="10" y="114" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="132">A  Wrist F/T sensor, insert / wipe / peel</text>
+<circle cx="400" cy="128" r="8" class="dg-key"/>
+<circle cx="444" cy="128" r="7" class="dg-box"/>
+<circle cx="796" cy="128" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="162">B  Must press softly: "pick up the egg gently"</text>
+<circle cx="620" cy="158" r="8" class="dg-key"/>
+<circle cx="444" cy="158" r="8" class="dg-key"/>
+<circle cx="708" cy="158" r="7" class="dg-box"/>
+<rect x="10" y="174" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="192">C  Only a gel touch sensor on the gripper</text>
+<circle cx="576" cy="188" r="8" class="dg-key"/>
+<circle cx="532" cy="188" r="7" class="dg-box"/>
+<circle cx="928" cy="188" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="222">D  Planner should judge hard / soft from touch</text>
+<circle cx="532" cy="218" r="8" class="dg-key"/>
+<circle cx="928" cy="218" r="7" class="dg-box"/>
+<rect x="10" y="234" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="252">E  No force sensor on the deployed robot</text>
+<circle cx="664" cy="248" r="8" class="dg-key"/>
+<circle cx="708" cy="248" r="8" class="dg-key"/>
+<circle cx="884" cy="248" r="7" class="dg-box"/>
+<circle cx="752" cy="248" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="282">F  Only joint torque: button, charger, door handle</text>
+<circle cx="884" cy="278" r="8" class="dg-key"/>
+<circle cx="752" cy="278" r="7" class="dg-box"/>
+<circle cx="488" cy="278" r="7" class="dg-box"/>
+<rect x="10" y="294" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="312">G  Precise insertion, a human can step in</text>
+<circle cx="840" cy="308" r="8" class="dg-key"/>
+<circle cx="796" cy="308" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="342">H  Mobile robot pushes a door, wipes a board</text>
+<circle cx="752" cy="338" r="8" class="dg-key"/>
+<circle cx="400" cy="338" r="7" class="dg-box"/>
+<rect x="10" y="354" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="372">I  Dexterous hand: peel an apple, assemble</text>
+<circle cx="488" cy="368" r="8" class="dg-key"/>
+<circle cx="400" cy="368" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="402">J  Same contact keeps failing, learn online</text>
+<circle cx="796" cy="398" r="8" class="dg-key"/>
+<circle cx="840" cy="398" r="7" class="dg-box"/>
+<circle cx="30" cy="444" r="8" class="dg-key"/><text class="dg-s" x="46" y="448">start here</text>
+<circle cx="170" cy="444" r="7" class="dg-box"/><text class="dg-s" x="186" y="448">read next</text>
+</svg><figcaption>Mười tình huống cụ thể đặt cạnh các bài trên site này. Từng tình huống được giải thích trong bảng bên dưới.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Nếu tình huống của bạn là...</th>
-<th>Đọc</th>
+<th>Tình huống: một hình dung cụ thể</th>
+<th>Với VLA thường, chuyện gì hỏng</th>
+<th>Bắt đầu từ đâu, và vì sao</th>
+<th>Đọc tiếp</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>có cảm biến lực/mô-men ở cổ tay và muốn cải thiện nhanh</td>
-<td><a href="forcevla.html">ForceVLA</a>, <a href="torl-vla.html">TORL-VLA</a></td>
+<td><strong>A.</strong> Cánh tay robot có cảm biến lực/mô-men ở cổ tay, cần ấn đầu cắm vào ổ, lau bảng trắng hoặc gọt dưa chuột</td>
+<td>Nó thấy đầu cắm nhưng không biết đang ấn mạnh thế nào. Chỉ nối lực vào trạng thái thì gần như không giúp (+2,9 điểm với π0-base)</td>
+<td><a href="forcevla.html">ForceVLA</a>: cho lực một khối riêng sau VLM. 60,5% so với 37,3% của π0-base trên năm tác vụ</td>
+<td><a href="forcevla2.html">ForceVLA2</a> nếu bạn còn muốn yêu cầu một lực; <a href="torl-vla.html">TORL-VLA</a> để tiếp tục cải thiện online</td>
 </tr>
 <tr>
-<td>tác vụ xoay quanh việc <em>ấn mạnh đến đâu</em></td>
-<td><a href="forcevla2.html">ForceVLA2</a>, <a href="tabero.html">Tabero</a></td>
+<td><strong>B.</strong> Câu lệnh là "nhặt quả trứng nhẹ nhàng", hoặc vật là chiếc bánh waffle mỏng</td>
+<td>Chính sách chỉ xuất pose thì không bóp nhẹ hơn được; lực do độ cứng bộ điều khiển quyết định</td>
+<td><a href="tabero.html">Tabero</a>: chính sách xuất lực mục tiêu; lực kẹp giảm 89% khi được dặn "nhẹ nhàng". <a href="forcevla2.html">ForceVLA2</a>: xuất pose và lực; 66% so với 48% của π0 trên năm tác vụ của nó (lau, ấn, lắp ráp)</td>
+<td><a href="hapticvla.html">HapticVLA</a> nếu tay kẹp khi triển khai không có cảm biến chạm</td>
 </tr>
 <tr>
-<td>chỉ có cảm biến chạm kiểu gel</td>
-<td><a href="taf-vla.html">TaF-VLA</a>, <a href="vla-touch.html">VLA-Touch</a></td>
+<td><strong>C.</strong> Tay kẹp song song gắn cảm biến chạm kiểu gel; tác vụ có dùng dụng cụ hoặc vật biến dạng</td>
+<td>Ảnh xúc giác bị đọc như thêm một góc camera: nắm được kết cấu, không nắm được ấn mạnh đến đâu</td>
+<td><a href="taf-vla.html">TaF-VLA</a>: căn xúc giác với lực trước. 64,8% so với 42,8% của FreeTacMan và 37,1% của π0.5 không có xúc giác</td>
+<td><a href="vla-touch.html">VLA-Touch</a> (thêm xúc giác mà không huấn luyện lại VLA); <a href="gelsight.html">GelSight</a> (cảm biến hoạt động ra sao)</td>
 </tr>
 <tr>
-<td>robot triển khai không có cảm biến</td>
-<td><a href="fd-vla.html">FD-VLA</a>, <a href="hapticvla.html">HapticVLA</a>, <a href="fwbc-vla.html">FWBC-VLA</a></td>
+<td><strong>D.</strong> Bạn dùng VLA như RDT và không muốn đổi nó, nhưng một planner cần phân biệt cứng và mềm bằng xúc giác</td>
+<td>Mô hình ngôn ngữ không đọc được ảnh xúc giác thô; nó trả lời là không xác định được</td>
+<td><a href="vla-touch.html">VLA-Touch</a>: đổi xúc giác thành lời cho planner và thêm một bộ tinh chỉnh nhỏ. Trên 20 lượt: đặt cốc 10 so với 7, lau 12 so với 5, gọt 10 so với 6</td>
+<td><a href="gelsight.html">GelSight</a></td>
 </tr>
 <tr>
-<td>tiếp xúc đổi nhanh, như khi lắp ghép</td>
+<td><strong>E.</strong> Trong phòng thí nghiệm có cảm biến lực nhưng robot triển khai thì không (tốn tiền, dễ hỏng)</td>
+<td>Mọi thứ đọc lực lúc chạy thật đều ngừng hoạt động</td>
+<td><a href="fd-vla.html">FD-VLA</a>: huấn luyện có lực, triển khai không có; 61,1% so với 46,7% của π0 trên lau bảng, bấm nút khẩn cấp và cắm phích. <a href="hapticvla.html">HapticVLA</a>: hũ, bánh waffle, trứng; 86,7%</td>
+<td><a href="ta-vla.html">TA-VLA</a> (mô-men từ động cơ), <a href="fwbc-vla.html">FWBC-VLA</a></td>
+</tr>
+<tr>
+<td><strong>F.</strong> Cánh tay 7 khớp chỉ có dòng điện động cơ; cần bấm nút, cắm sạc, xoay tay nắm cửa</td>
+<td>π0 thường đạt 0 trên 20 ở cắm sạc</td>
+<td><a href="ta-vla.html">TA-VLA</a>: một token lịch sử mô-men ở decoder. 86% so với 23% (trung bình mình tính trên năm tác vụ)</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a> (lực từ mô-men cho cả thân), <a href="mode-vla.html">MoDE-VLA</a></td>
+</tr>
+<tr>
+<td><strong>G.</strong> Lắp USB hoặc phích hai, ba chân với dung sai chặt; người có thể giúp nhưng không nên phải ngồi canh cả ngày</td>
+<td>Chính sách sao chép bị trôi và hỏng đúng lúc tiếp xúc (xem <a href="imitation-learning.html">imitation learning</a>)</td>
+<td><a href="ter-dagger.html">TER-DAgger</a>: chuông báo sai số lực gọi người; residual nhanh hiệu chỉnh. 77,2% so với 40,0% của baseline mạnh nhất</td>
+<td><a href="torl-vla.html">TORL-VLA</a></td>
+</tr>
+<tr>
+<td><strong>H.</strong> Robot di động chân-bánh lau bảng trắng hoặc đẩy cánh cửa có lò xo tự đóng</td>
+<td>Chính sách lực chỉ cho cánh tay thì cánh tay thích nghi, nhưng thân bị đẩy đi thì không ai chỉnh</td>
+<td><a href="fwbc-vla.html">FWBC-VLA</a>: cửa 52% so với 12% của ForceVLA, bảng trắng 64% so với 24%</td>
+<td><a href="forcevla.html">ForceVLA</a></td>
+</tr>
+<tr>
+<td><strong>I.</strong> Một bàn tay nhiều ngón và cánh tay thứ hai gọt táo, sắp xếp ống hoặc lắp bánh răng</td>
+<td>Tín hiệu lực và xúc giác mới ghi đè lên những gì mô hình đã tiền huấn luyện biết</td>
+<td><a href="mode-vla.html">MoDE-VLA</a>: đường MoE thưa riêng cùng residual. Trung bình 34% so với 15% của π0</td>
+<td><a href="forcevla.html">ForceVLA</a> làm baseline đơn giản hơn</td>
+</tr>
+<tr>
+<td><strong>J.</strong> Robot cứ hỏng cùng một tiếp xúc (đặt cốc vào khe hẹp, một chốt cài, quả trứng dễ vỡ) dù đã tinh chỉnh</td>
+<td>Demo offline không cải thiện chính sách thêm được nữa</td>
+<td><a href="torl-vla.html">TORL-VLA</a>: học tăng cường online trên nền một VLA nhận biết lực</td>
 <td><a href="ter-dagger.html">TER-DAgger</a></td>
-</tr>
-<tr>
-<td>bàn tay khéo léo nhiều ngón</td>
-<td><a href="mode-vla.html">MoDE-VLA</a>, <a href="hapticvla.html">HapticVLA</a></td>
 </tr>
 </tbody>
 </table>
+<p>Hai điều cần lưu ý. Các con số ở cột "bắt đầu từ đâu" đến từ những paper khác nhau, với tác vụ và robot khác nhau, nên chúng cho thấy mức cải thiện <em>trong</em> từng paper chứ không cho biết phương pháp nào tốt nhất (<a href="survey-force-output.html">Survey 3</a> cho thấy riêng ForceVLA đạt từ 12% đến 60,5% tùy ai chạy). Và nếu không hàng nào khớp, hãy sang <a href="survey-force-sensing.html">Survey 2</a> để xác định cảm biến của bạn, rồi <a href="survey-force-output.html">Survey 3</a> để chọn chính sách nên xuất ra gì.</p>
 <h2>6. Bảng đầy đủ</h2>
 <p>"Đã đọc": <strong>full</strong> = có bài ghi chú chi tiết trên site, đã đối chiếu toàn văn; <strong>abstract+</strong> = abstract cộng với việc xem có chủ đích toàn văn cho các ô ghi n/s; <strong>abstract</strong> = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.</p>
 <table>

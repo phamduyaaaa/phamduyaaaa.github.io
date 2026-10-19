@@ -99,16 +99,26 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | Remove the sensor | use force only to train, or infer it from joint torque | no sensor to break or buy | FD-VLA [10], HapticVLA [16], FWBC-VLA [25] |
 | Output more than a pose | the policy asks for a force or a stiffness ([Survey 3](survey-force-output.html)) | force target or stiffness in the action | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31] |
 
-## 5. Which note should I read?
+## 5. Which note should I read? A scenario map
 
-| If your situation is... | Read |
-|---|---|
-| a wrist force/torque sensor and you want a quick gain | [ForceVLA](forcevla.html), [TORL-VLA](torl-vla.html) |
-| the task is about *how hard* to press | [ForceVLA2](forcevla2.html), [Tabero](tabero.html) |
-| only a gel-type touch sensor | [TaF-VLA](taf-vla.html), [VLA-Touch](vla-touch.html) |
-| no sensor on the deployed robot | [FD-VLA](fd-vla.html), [HapticVLA](hapticvla.html), [FWBC-VLA](fwbc-vla.html) |
-| contact changes fast, as in insertion | [TER-DAgger](ter-dagger.html) |
-| a dexterous hand | [MoDE-VLA](mode-vla.html), [HapticVLA](hapticvla.html) |
+Pick the row that looks most like your robot and your task. ● means start there, ○ means read it next.
+
+[[fig:survey-force-readmap]] Ten concrete situations against the posts on this site. Each situation is explained in the table below.
+
+| Scenario: a concrete picture | What goes wrong with a plain VLA | Start with, and why | Then |
+|---|---|---|---|
+| **A.** A robot arm has a force/torque sensor at the wrist and must push a plug into a socket, wipe a whiteboard or peel a cucumber | It sees the plug but not how hard it pushes. Simply appending force to the state barely helps (+2.9 points for π0-base) | [ForceVLA](forcevla.html): gives force its own module after the VLM. 60.5% against 37.3% for π0-base on five tasks | [ForceVLA2](forcevla2.html) if you also want to ask for a force; [TORL-VLA](torl-vla.html) to keep improving online |
+| **B.** The instruction says "pick up the egg gently", or the object is a thin waffle | A pose-only policy cannot squeeze less; the force comes from the controller's stiffness | [Tabero](tabero.html): policy that outputs force targets; 89% less grip force when told "gently". [ForceVLA2](forcevla2.html): outputs pose and force; 66% against 48% for π0 on its five tasks (wiping, pressing, assembling) | [HapticVLA](hapticvla.html) if the deployed gripper has no touch sensor |
+| **C.** A parallel gripper carries a gel touch sensor; tasks involve a tool or a deformable object | Touch images are read like extra camera views: texture is captured, how hard the press is is not | [TaF-VLA](taf-vla.html): aligns touch with force first. 64.8% against 42.8% for FreeTacMan and 37.1% for π0.5 without touch | [VLA-Touch](vla-touch.html) (touch without retraining the VLA); [GelSight](gelsight.html) (how the sensor works) |
+| **D.** You use a VLA such as RDT and do not want to change it, but a planner should tell hard from soft by touch | A language model cannot read raw touch images; it answers that it cannot determine | [VLA-Touch](vla-touch.html): turns touch into words for the planner and adds a small refiner. Out of 20: cup placing 10 against 7, wiping 12 against 5, peeling 10 against 6 | [GelSight](gelsight.html) |
+| **E.** A force sensor is available in the lab but not on the deployed robot (cost, breakage) | Anything that reads force at run time stops working | [FD-VLA](fd-vla.html): train with force, deploy without; 61.1% against 46.7% for π0 on whiteboard cleaning, pressing an emergency button and plug insertion. [HapticVLA](hapticvla.html): jar, waffles, egg; 86.7% | [TA-VLA](ta-vla.html) (torque from the motors), [FWBC-VLA](fwbc-vla.html) |
+| **F.** A 7-joint arm has only motor currents; it must push a button, plug a charger, turn a door handle | Plain π0 got 0 of 20 on the charger | [TA-VLA](ta-vla.html): one torque-history token in the decoder. 86% against 23% (my averages over five tasks) | [FWBC-VLA](fwbc-vla.html) (force from torque for the whole body), [MoDE-VLA](mode-vla.html) |
+| **G.** Insert a USB or a two- or three-pin plug with tight tolerance; a person can help but should not have to watch all day | A cloned policy drifts and fails exactly at contact (see [imitation learning](imitation-learning.html)) | [TER-DAgger](ter-dagger.html): a force-error alarm calls the human; a fast residual corrects. 77.2% against 40.0% for the best baseline | [TORL-VLA](torl-vla.html) |
+| **H.** A wheel-legged mobile robot wipes a whiteboard or pushes a spring-closed door | Arm-only force policies adapt the arm, but the pushed body is not corrected | [FWBC-VLA](fwbc-vla.html): door 52% against 12% for ForceVLA, whiteboard 64% against 24% | [ForceVLA](forcevla.html) |
+| **I.** A multi-fingered hand and a second arm peel an apple, rearrange tubes or assemble gears | New force and touch signals overwrite what the pretrained model knows | [MoDE-VLA](mode-vla.html): separate sparse-MoE path with residuals. 34% against 15% for π0 on average | [ForceVLA](forcevla.html) as the simpler baseline |
+| **J.** The robot keeps failing the same contact (cup into a narrow holder, a latch, a fragile egg) even after fine-tuning | Offline demonstrations stop improving the policy | [TORL-VLA](torl-vla.html): online reinforcement learning on top of a force-aware VLA | [TER-DAgger](ter-dagger.html) |
+
+Two cautions. The numbers in the "start with" column come from different papers, with different tasks and robots, so they show the size of a gain *inside* each paper, not which method is best ([Survey 3](survey-force-output.html) shows ForceVLA alone scoring 12% to 60.5% depending on who ran it). And if no row fits, go to [Survey 2](survey-force-sensing.html) to find your sensor, then [Survey 3](survey-force-output.html) to choose what the policy should output.
 
 ## 6. The full table
 
@@ -304,16 +314,26 @@ $$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$
 | Bỏ cảm biến | chỉ dùng lực để huấn luyện, hoặc suy ra từ mô-men khớp | không có cảm biến để hỏng hay phải mua | FD-VLA [10], HapticVLA [16], FWBC-VLA [25] |
 | Xuất ra nhiều hơn một pose | chính sách yêu cầu một lực hoặc một độ cứng ([Survey 3](survey-force-output.html)) | mục tiêu lực hoặc độ cứng nằm trong hành động | ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31] |
 
-## 5. Mình nên đọc bài nào?
+## 5. Mình nên đọc bài nào? Bản đồ theo tình huống
 
-| Nếu tình huống của bạn là... | Đọc |
-|---|---|
-| có cảm biến lực/mô-men ở cổ tay và muốn cải thiện nhanh | [ForceVLA](forcevla.html), [TORL-VLA](torl-vla.html) |
-| tác vụ xoay quanh việc *ấn mạnh đến đâu* | [ForceVLA2](forcevla2.html), [Tabero](tabero.html) |
-| chỉ có cảm biến chạm kiểu gel | [TaF-VLA](taf-vla.html), [VLA-Touch](vla-touch.html) |
-| robot triển khai không có cảm biến | [FD-VLA](fd-vla.html), [HapticVLA](hapticvla.html), [FWBC-VLA](fwbc-vla.html) |
-| tiếp xúc đổi nhanh, như khi lắp ghép | [TER-DAgger](ter-dagger.html) |
-| bàn tay khéo léo nhiều ngón | [MoDE-VLA](mode-vla.html), [HapticVLA](hapticvla.html) |
+Hãy chọn hàng giống nhất với robot và tác vụ của bạn. ● nghĩa là bắt đầu từ đó, ○ nghĩa là đọc tiếp sau đó.
+
+[[fig:survey-force-readmap]] Mười tình huống cụ thể đặt cạnh các bài trên site này. Từng tình huống được giải thích trong bảng bên dưới.
+
+| Tình huống: một hình dung cụ thể | Với VLA thường, chuyện gì hỏng | Bắt đầu từ đâu, và vì sao | Đọc tiếp |
+|---|---|---|---|
+| **A.** Cánh tay robot có cảm biến lực/mô-men ở cổ tay, cần ấn đầu cắm vào ổ, lau bảng trắng hoặc gọt dưa chuột | Nó thấy đầu cắm nhưng không biết đang ấn mạnh thế nào. Chỉ nối lực vào trạng thái thì gần như không giúp (+2,9 điểm với π0-base) | [ForceVLA](forcevla.html): cho lực một khối riêng sau VLM. 60,5% so với 37,3% của π0-base trên năm tác vụ | [ForceVLA2](forcevla2.html) nếu bạn còn muốn yêu cầu một lực; [TORL-VLA](torl-vla.html) để tiếp tục cải thiện online |
+| **B.** Câu lệnh là "nhặt quả trứng nhẹ nhàng", hoặc vật là chiếc bánh waffle mỏng | Chính sách chỉ xuất pose thì không bóp nhẹ hơn được; lực do độ cứng bộ điều khiển quyết định | [Tabero](tabero.html): chính sách xuất lực mục tiêu; lực kẹp giảm 89% khi được dặn "nhẹ nhàng". [ForceVLA2](forcevla2.html): xuất pose và lực; 66% so với 48% của π0 trên năm tác vụ của nó (lau, ấn, lắp ráp) | [HapticVLA](hapticvla.html) nếu tay kẹp khi triển khai không có cảm biến chạm |
+| **C.** Tay kẹp song song gắn cảm biến chạm kiểu gel; tác vụ có dùng dụng cụ hoặc vật biến dạng | Ảnh xúc giác bị đọc như thêm một góc camera: nắm được kết cấu, không nắm được ấn mạnh đến đâu | [TaF-VLA](taf-vla.html): căn xúc giác với lực trước. 64,8% so với 42,8% của FreeTacMan và 37,1% của π0.5 không có xúc giác | [VLA-Touch](vla-touch.html) (thêm xúc giác mà không huấn luyện lại VLA); [GelSight](gelsight.html) (cảm biến hoạt động ra sao) |
+| **D.** Bạn dùng VLA như RDT và không muốn đổi nó, nhưng một planner cần phân biệt cứng và mềm bằng xúc giác | Mô hình ngôn ngữ không đọc được ảnh xúc giác thô; nó trả lời là không xác định được | [VLA-Touch](vla-touch.html): đổi xúc giác thành lời cho planner và thêm một bộ tinh chỉnh nhỏ. Trên 20 lượt: đặt cốc 10 so với 7, lau 12 so với 5, gọt 10 so với 6 | [GelSight](gelsight.html) |
+| **E.** Trong phòng thí nghiệm có cảm biến lực nhưng robot triển khai thì không (tốn tiền, dễ hỏng) | Mọi thứ đọc lực lúc chạy thật đều ngừng hoạt động | [FD-VLA](fd-vla.html): huấn luyện có lực, triển khai không có; 61,1% so với 46,7% của π0 trên lau bảng, bấm nút khẩn cấp và cắm phích. [HapticVLA](hapticvla.html): hũ, bánh waffle, trứng; 86,7% | [TA-VLA](ta-vla.html) (mô-men từ động cơ), [FWBC-VLA](fwbc-vla.html) |
+| **F.** Cánh tay 7 khớp chỉ có dòng điện động cơ; cần bấm nút, cắm sạc, xoay tay nắm cửa | π0 thường đạt 0 trên 20 ở cắm sạc | [TA-VLA](ta-vla.html): một token lịch sử mô-men ở decoder. 86% so với 23% (trung bình mình tính trên năm tác vụ) | [FWBC-VLA](fwbc-vla.html) (lực từ mô-men cho cả thân), [MoDE-VLA](mode-vla.html) |
+| **G.** Lắp USB hoặc phích hai, ba chân với dung sai chặt; người có thể giúp nhưng không nên phải ngồi canh cả ngày | Chính sách sao chép bị trôi và hỏng đúng lúc tiếp xúc (xem [imitation learning](imitation-learning.html)) | [TER-DAgger](ter-dagger.html): chuông báo sai số lực gọi người; residual nhanh hiệu chỉnh. 77,2% so với 40,0% của baseline mạnh nhất | [TORL-VLA](torl-vla.html) |
+| **H.** Robot di động chân-bánh lau bảng trắng hoặc đẩy cánh cửa có lò xo tự đóng | Chính sách lực chỉ cho cánh tay thì cánh tay thích nghi, nhưng thân bị đẩy đi thì không ai chỉnh | [FWBC-VLA](fwbc-vla.html): cửa 52% so với 12% của ForceVLA, bảng trắng 64% so với 24% | [ForceVLA](forcevla.html) |
+| **I.** Một bàn tay nhiều ngón và cánh tay thứ hai gọt táo, sắp xếp ống hoặc lắp bánh răng | Tín hiệu lực và xúc giác mới ghi đè lên những gì mô hình đã tiền huấn luyện biết | [MoDE-VLA](mode-vla.html): đường MoE thưa riêng cùng residual. Trung bình 34% so với 15% của π0 | [ForceVLA](forcevla.html) làm baseline đơn giản hơn |
+| **J.** Robot cứ hỏng cùng một tiếp xúc (đặt cốc vào khe hẹp, một chốt cài, quả trứng dễ vỡ) dù đã tinh chỉnh | Demo offline không cải thiện chính sách thêm được nữa | [TORL-VLA](torl-vla.html): học tăng cường online trên nền một VLA nhận biết lực | [TER-DAgger](ter-dagger.html) |
+
+Hai điều cần lưu ý. Các con số ở cột "bắt đầu từ đâu" đến từ những paper khác nhau, với tác vụ và robot khác nhau, nên chúng cho thấy mức cải thiện *trong* từng paper chứ không cho biết phương pháp nào tốt nhất ([Survey 3](survey-force-output.html) cho thấy riêng ForceVLA đạt từ 12% đến 60,5% tùy ai chạy). Và nếu không hàng nào khớp, hãy sang [Survey 2](survey-force-sensing.html) để xác định cảm biến của bạn, rồi [Survey 3](survey-force-output.html) để chọn chính sách nên xuất ra gì.
 
 ## 6. Bảng đầy đủ
 
