@@ -17,6 +17,23 @@
     "read_min": 9
   },
   {
+    "slug": "fact",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "FACT: Learning Dexterous Force from Human Gloves",
+    "title_vi": "FACT: Học lực khéo léo từ găng tay của con người",
+    "excerpt_en": "Robot data for dexterous hands is scarce and human video has no force. FACT pretrains on 2,000 hours of humans wearing tactile gloves, plans with video and tracks, then refines the action together with the fingertip force it predicts: 41% vs 9% for T-Rex on seven binary tasks.",
+    "excerpt_vi": "Dữ liệu robot cho bàn tay khéo léo rất khan và video của người không có lực. FACT huấn luyện trước trên 2.000 giờ người đeo găng xúc giác, lập kế hoạch bằng video và track, rồi tinh chỉnh hành động cùng với lực đầu ngón tay nó dự đoán: 41% so với 9% của T-Rex trên bảy tác vụ nhị phân.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Human Data",
+      "Paper Notes"
+    ],
+    "read_min": 7
+  },
+  {
     "slug": "fire",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",

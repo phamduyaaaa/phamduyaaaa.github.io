@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Robot data for dexterous hands is scarce and human video has no force. FACT pretrains on 2,000 hours of humans wearing tactile gloves, plans with video and tracks, then refines the action together with the fingertip force it predicts: 41% vs 9% for T-Rex on seven binary tasks.">
+<title>FACT: Learning Dexterous Force from Human Gloves · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="FACT: Learning Dexterous Force from Human Gloves">
+<meta property="og:description" content="Robot data for dexterous hands is scarce and human video has no force. FACT pretrains on 2,000 hours of humans wearing tactile gloves, plans with video and tracks, then refines the action together with the fingertip force it predicts: 41% vs 9% for T-Rex on seven binary tasks.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">7 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>FACT: Learning Dexterous Force from Human Gloves</h1>
+    <h1 data-vi>FACT: Học lực khéo léo từ găng tay của con người</h1>
+
+    <p class="post-excerpt-lead" data-en>Robot data for dexterous hands is scarce and human video has no force. FACT pretrains on 2,000 hours of humans wearing tactile gloves, plans with video and tracks, then refines the action together with the fingertip force it predicts: 41% vs 9% for T-Rex on seven binary tasks.</p>
+    <p class="post-excerpt-lead" data-vi>Dữ liệu robot cho bàn tay khéo léo rất khan và video của người không có lực. FACT huấn luyện trước trên 2.000 giờ người đeo găng xúc giác, lập kế hoạch bằng video và track, rồi tinh chỉnh hành động cùng với lực đầu ngón tay nó dự đoán: 41% so với 9% của T-Rex trên bảy tác vụ nhị phân.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Human Data</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2610.19155">arXiv 2610.19155</a> · v1 13 Oct 2026 · University of Michigan, Stanford and Microsoft Research · <a href="https://fact-1-0.github.io/">project page</a> (code and data "Coming Soon")</p>
+<p><strong>PROBLEM</strong> Dexterous hands need force to finish a motion, but robot data is expensive and the large human datasets record vision and hand motion without any contact force.</p>
+<p><strong>WHAT FAILED BEFORE</strong> T-Rex feeds vector-quantised force history into a refiner as an observation; force is never predicted, so how an action changes contact stays implicit. T-Rex scores 8.6% and π0.5 scores 1.4% on the seven binary tasks. Models trained without glove force scored 0% on some tasks.</p>
+<p><strong>IDEA</strong> Collect EgoForce, 2,000 hours of humans with calibrated tactile gloves, and train a two-stage model: a video planner draws the coarse motion, then a refiner denoises the rest of the action and the future fingertip force together.</p>
+<p><strong>RESULT</strong> 41.4% mean on seven binary tasks against 8.6% for T-Rex, from 10 robot and 90 human demonstrations per task.</p>
+</div>
+<h2>1. The problem: force is an observation, not a consequence</h2>
+<figure class="diagram flow"><svg role="img" aria-label="In FACT the future force and the remaining action are denoised together, so each shapes the other at every step." class="dg-natural" width="900" height="290" viewBox="0 0 900 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0.5</text><rect class="dg-box" x="124" y="22" width="125" height="38"/><text class="dg-t" x="186" y="45" text-anchor="middle">Images + text</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="135" height="54"/><text class="dg-t" x="350" y="37" text-anchor="middle">Actions only</text><text class="dg-s" x="350" y="53" text-anchor="middle">no contact signal</text><path class="dg-a" d="M418 41 H450"/><rect class="dg-box" x="452" y="22" width="96" height="38"/><text class="dg-t" x="500" y="45" text-anchor="middle">Hand</text><text class="dg-note dg-red" x="124" y="86">✗ 1.4% on seven binary tasks</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">T-Rex</text><rect class="dg-box" x="124" y="120" width="140" height="38"/><text class="dg-t" x="194" y="143" text-anchor="middle">Tactile history</text><path class="dg-a" d="M264 139 H296"/><rect class="dg-badbox" x="298" y="112" width="208" height="54"/><text class="dg-t" x="402" y="135" text-anchor="middle">Quantised force as input</text><text class="dg-s" x="402" y="151" text-anchor="middle">never predicted</text><path class="dg-a" d="M506 139 H538"/><rect class="dg-box" x="540" y="120" width="96" height="38"/><text class="dg-t" x="588" y="143" text-anchor="middle">Refiner</text><path class="dg-a" d="M636 139 H668"/><rect class="dg-box" x="670" y="120" width="96" height="38"/><text class="dg-t" x="718" y="143" text-anchor="middle">Hand</text><text class="dg-note dg-red" x="124" y="184">✗ 8.6%</text><text class="dg-lab dg-green" x="14" y="234">FACT</text><rect class="dg-box" x="124" y="211" width="132" height="38"/><text class="dg-t" x="190" y="234" text-anchor="middle">Video + tracks</text><path class="dg-a" d="M256 230 H288"/><rect class="dg-key" x="290" y="211" width="110" height="38"/><text class="dg-t" x="345" y="234" text-anchor="middle">Coarse plan</text><path class="dg-a" d="M400 230 H432"/><rect class="dg-key" x="434" y="211" width="322" height="38"/><text class="dg-t" x="595" y="234" text-anchor="middle">Refiner: action + future force, jointly</text><path class="dg-a" d="M756 230 H788"/><rect class="dg-box" x="790" y="211" width="96" height="38"/><text class="dg-t" x="838" y="234" text-anchor="middle">Hand</text><text class="dg-note dg-green" x="124" y="268">✓ 41.4%</text></svg><figcaption>In FACT the future force and the remaining action are denoised together, so each shapes the other at every step.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The planner stops denoising at a handoff point; the refiner finishes the action and predicts the force, and re-runs at every tactile refresh." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">ONE CHUNK: PLAN WITH VIDEO AND TRACKS, THEN REFINE ACTION TOGETHER WITH FORCE</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="54"/><text class="dg-t" x="115" y="68" text-anchor="middle">views + instruction</text><text class="dg-s" x="115" y="86" text-anchor="middle">ego and wrist cameras</text>
+<rect class="dg-ext" x="20" y="112" width="190" height="54"/><text class="dg-t" x="115" y="134" text-anchor="middle">robot state + past tracks</text><text class="dg-s" x="115" y="152" text-anchor="middle">visual track history</text>
+<rect class="dg-key" x="20" y="178" width="190" height="54"/><text class="dg-t" x="115" y="200" text-anchor="middle">tactile history</text><text class="dg-s" x="115" y="218" text-anchor="middle">fingertip force, 5 Hz</text>
+<rect class="dg-box" x="250" y="46" width="220" height="140"/><text class="dg-t" x="360" y="78" text-anchor="middle">Track-Guided</text><text class="dg-t" x="360" y="96" text-anchor="middle">Coarse Planner</text><text class="dg-s" x="360" y="120" text-anchor="middle">5B video DiT</text><text class="dg-s" x="360" y="138" text-anchor="middle">denoises future video,</text><text class="dg-s" x="360" y="154" text-anchor="middle">visual tracks, coarse action</text>
+<rect class="dg-key" x="580" y="46" width="200" height="140"/><text class="dg-t" x="680" y="78" text-anchor="middle">Force-Action</text><text class="dg-t" x="680" y="96" text-anchor="middle">Joint Refiner</text><text class="dg-s" x="680" y="120" text-anchor="middle">6-block transformer, 65M</text><text class="dg-s" x="680" y="138" text-anchor="middle">co-denoises action suffix</text><text class="dg-s" x="680" y="154" text-anchor="middle">and future fingertip force</text>
+<path class="dg-a" d="M210 73 H250"/><path class="dg-a" d="M210 139 H250"/>
+<path class="dg-a" d="M470 90 H580"/><text class="dg-s" x="476" y="82">handoff, tau 0.4</text>
+<path class="dg-ad" d="M470 150 H580"/><text class="dg-s" x="476" y="142">cached states</text>
+<path class="dg-a" d="M210 205 H680 V186"/>
+<rect class="dg-box" x="830" y="46" width="130" height="54"/><text class="dg-t" x="895" y="68" text-anchor="middle">action chunk</text><text class="dg-s" x="895" y="86" text-anchor="middle">16 steps, 20 Hz</text>
+<rect class="dg-ext" x="830" y="112" width="130" height="54"/><text class="dg-t" x="895" y="134" text-anchor="middle">future force</text><text class="dg-s" x="895" y="152" text-anchor="middle">predicted only</text>
+<rect class="dg-grp" x="830" y="178" width="130" height="54"/><text class="dg-t" x="895" y="200" text-anchor="middle">video + tracks</text><text class="dg-s" x="895" y="218" text-anchor="middle">decoded, not run</text>
+<path class="dg-a" d="M780 73 H830"/><path class="dg-a" d="M780 139 H830"/><path class="dg-a" d="M795 139 V205 H830"/>
+<text class="dg-l" x="250" y="258">every 5 Hz tactile refresh, only the refiner re-runs on the unexecuted part of the chunk</text>
+<text class="dg-h" x="20" y="300">PRETRAINING</text>
+<rect class="dg-ext" x="20" y="316" width="300" height="56"/><text class="dg-t" x="170" y="340" text-anchor="middle">EgoForce: 2,000 h of humans</text><text class="dg-s" x="170" y="358" text-anchor="middle">tactile gloves + 3 egocentric cameras</text>
+<rect class="dg-ext" x="350" y="316" width="260" height="56"/><text class="dg-t" x="480" y="340" text-anchor="middle">+ 100 h robot teleoperation</text><text class="dg-s" x="480" y="358" text-anchor="middle">from the T-Rex data</text>
+<rect class="dg-key" x="640" y="316" width="320" height="56"/><text class="dg-t" x="800" y="340" text-anchor="middle">trained end to end, from the video DiT</text><text class="dg-s" x="800" y="358" text-anchor="middle">240 accelerators</text>
+<path class="dg-a" d="M320 344 H350"/><path class="dg-a" d="M610 344 H640"/>
+<rect class="dg-box" x="20" y="394" width="940" height="34"/><text class="dg-t" x="490" y="416" text-anchor="middle">fine-tune per task: 10 robot + 90 human trajectories, 8 GPUs</text>
+</svg><figcaption>The planner stops denoising at a handoff point; the refiner finishes the action and predicts the force, and re-runs at every tactile refresh.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Track-Guided Coarse Planner</td>
+<td>instruction, anchor frame, robot state, past tracks</td>
+<td>future video, visual tracks, a partly denoised action</td>
+<td>coarse plan; 5.05B parameters, built from Wan2.2-TI2V-5B</td>
+</tr>
+<tr>
+<td>Force–Action Joint Refiner</td>
+<td>the partly denoised action, observed tactile history, cached planner states</td>
+<td>the rest of the action and future fingertip force</td>
+<td>6-block transformer, 65M parameters</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>–</td>
+<td>a 16-step, 20 Hz action chunk of 62 values (delta base pose, absolute hand joints, per arm)</td>
+<td>only the action is executed</td>
+</tr>
+</tbody>
+</table>
+<p>The force prediction has the shape $4 \times 10 \times 6$: four 5 Hz slots, ten fingertips, six components each. The paper records it for analysis and does not use it as a control reference.</p>
+<h2>3. Work it by hand: what the refiner re-decides at each refresh</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The chunk is 16 steps at 20 Hz, and touch is read at 5 Hz. Computing the timeline shows how much of the chunk is still open when the refiner re-runs, and how its noise schedules step.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N$, $f$</td>
+<td>chunk length (steps) and action rate (Hz)</td>
+<td>constants</td>
+<td>16, 20</td>
+</tr>
+<tr>
+<td>$o$</td>
+<td>refresh offset: steps already executed</td>
+<td>input</td>
+<td>0, 4, 8, 12</td>
+</tr>
+<tr>
+<td>$\tau_a$</td>
+<td>action noise level, linear from 0.4 to 0 in 4 Euler steps</td>
+<td>schedule</td>
+<td>step 0.1</td>
+</tr>
+<tr>
+<td>$\tau_f$</td>
+<td>force noise level, linear from 1 to 0 in 4 Euler steps</td>
+<td>schedule</td>
+<td>step 0.25</td>
+</tr>
+<tr>
+<td>$n_{suffix}$</td>
+<td>action steps still open</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$n_{suffix} = N - o,\qquad \text{time still open} = \frac{N - o}{f}\ \text{s},\qquad \Delta\tau = \frac{\tau_{start} - \tau_{end}}{4}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Refresh spacing: $4/20 = 0.2$ s, which is the 5 Hz tactile rate.</li>
+<li>At $o = 8$: $n_{suffix} = 16 - 8 = 8$ steps, executed prefix $= 8/20 = 0.4$ s (fixed), time still open $= 8/20 = 0.4$ s.</li>
+<li>$\tau_a$ grid: $0.4,\ 0.3,\ 0.2,\ 0.1,\ 0$ (step $0.4/4 = 0.1$).</li>
+<li>$\tau_f$ grid: $1,\ 0.75,\ 0.5,\ 0.25,\ 0$ (step $1/4 = 0.25$).</li>
+</ol>
+<p><strong>Result.</strong> The refresh offsets 0, 4, 8, 12 leave 16, 12, 8 and 4 steps open, that is 0.8, 0.6, 0.4 and 0.2 s.</p>
+<p><strong>Why it matters.</strong> Force starts from pure noise ($\tau_f = 1$) while the action arrives at noise level 0.4, already mostly formed, so a force imagined from scratch shapes an action that is nearly finished.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Mean success over seven binary tasks, 10 rollouts per task. Force prediction matters most on contact-sensitive tasks." class="dg-natural" width="668" height="162" viewBox="0 0 668 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="208" y="23" text-anchor="end">π0.5</text><rect class="dg-bar" x="218" y="10" width="5" height="18"/><text class="dg-barval" x="231" y="23">1.4%</text><text class="dg-barlabel" x="208" y="53" text-anchor="end">T-Rex</text><rect class="dg-bar" x="218" y="40" width="31" height="18"/><text class="dg-barval" x="257" y="53">8.6%</text><text class="dg-barlabel" x="208" y="83" text-anchor="end">FACT without force prediction</text><rect class="dg-bar" x="218" y="70" width="51" height="18"/><text class="dg-barval" x="278" y="83">14.3%</text><text class="dg-barlabel" x="208" y="113" text-anchor="end">FACT without track prediction</text><rect class="dg-bar" x="218" y="100" width="129" height="18"/><text class="dg-barval" x="355" y="113">35.7%</text><text class="dg-barlabel" x="208" y="143" text-anchor="end">FACT full</text><rect class="dg-key" x="218" y="130" width="149" height="18"/><text class="dg-barval" x="375" y="143">41.4%</text></svg><figcaption>Mean success over seven binary tasks, 10 rollouts per task. Force prediction matters most on contact-sensitive tasks.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Success (%), 10 rollouts</th>
+<th>π0.5</th>
+<th>T-Rex</th>
+<th>FACT w/o force pred</th>
+<th>FACT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lab pipetting</td>
+<td>0</td>
+<td>0</td>
+<td>30</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Open test-tube cap</td>
+<td>10</td>
+<td>20</td>
+<td>40</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Open microcentrifuge flip cap</td>
+<td>0</td>
+<td>20</td>
+<td>20</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Tie shoelaces</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Shuffle cards</td>
+<td>0</td>
+<td>10</td>
+<td>0</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Multi-object grasp</td>
+<td>0</td>
+<td>0</td>
+<td>10</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Use screwdriver</td>
+<td>0</td>
+<td>10</td>
+<td>0</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Notes cleanly played out of 10: harp 6.7 against 2.1 for T-Rex and 0.5 for π0.5; xylophone 5.4 against 3.2 and 0.</li>
+<li>Pipette dial: FACT engages it in 5 of 10 trials with 6.4 µL mean error; T-Rex engages in 2 with 14 µL.</li>
+<li>Pretraining recipe on the same tasks: glove force removed from the human data drops the test-tube cap from 80% to 0% and pipetting from 40% to 20%; robot data only gives 20% and 0%. Multi-object grasping stays 40% without force.</li>
+<li>Human data in fine-tuning: ten robot trajectories alone vs the 10:90 mixture lifts shoelaces from 10% to 20% and card shuffling from 10% to 30%.</li>
+</ul>
+<h2>5. Data</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EgoForce</td>
+<td>about 2,000 hours, 40k episodes, 1,000 tasks, 120 scenes, 1,000 demonstrators</td>
+</tr>
+<tr>
+<td>Capture</td>
+<td>bimanual tactile gloves and three egocentric RGB cameras (head and both wrists), synchronised</td>
+</tr>
+<tr>
+<td>Calibration</td>
+<td>a pneumatic bladder sweeps 0–50 psi against a reference sensor; force of each element $F_i = P_i A_i$</td>
+</tr>
+<tr>
+<td>Task mix</td>
+<td>deformable 21.0%, assembly 17.3%, storage 14.8%; over two thirds is fine manipulation</td>
+</tr>
+<tr>
+<td>Robot side</td>
+<td>100 hours of teleoperation from T-Rex for pretraining; 10 robot demonstrations per task for fine-tuning</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> Not directly. FACT is built for a dexterous hand with force at every fingertip and for human glove data. A parallel gripper with a wrist F/T sensor would need a redesign, and the model is too large to be a light experiment. "Not stated" means I did not find it in the paper or project page.</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>A bimanual YAM station with two Sharpa Wave hands (22 joints, five-fingertip 6-axis force sensing)</td>
+<td>A UR10e with a gripper has one wrist wrench, not ten fingertip forces. The force head expects fingertip force</td>
+</tr>
+<tr>
+<td>Cameras</td>
+<td>One RealSense D435 ego-view and two ZED Mini wrist cameras</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>Manus glove and wrist tracker for the robot; Wuji tactile glove and wrist tracker for humans</td>
+<td>You need a way to collect human demonstrations with force</td>
+</tr>
+<tr>
+<td>Pretraining compute</td>
+<td>240 Alibaba T-Head PPU accelerators (96 GB each), end to end</td>
+<td>Not a single-workstation job</td>
+</tr>
+<tr>
+<td>Fine-tuning</td>
+<td>100 trajectories (10 robot, 90 human) per task, on 8 GPUs</td>
+<td>Time per task: not stated</td>
+</tr>
+<tr>
+<td>Model size</td>
+<td>5.05B parameters for the planner plus a 65M refiner</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code, weights, data</td>
+<td>Project page: Code "Coming Soon", Data "Coming Soon" (checked on 2026-10-19)</td>
+<td>Not usable yet</td>
+</tr>
+</tbody>
+</table>
+<h2>7. Caveats</h2>
+<ul>
+<li>Each task is 10 rollouts, so one rollout is 10 points. 80% on test-tube cap (8 of 10) is about 49% to 94% (Wilson, my arithmetic). The seven-task mean rests on 70 rollouts.</li>
+<li>The baselines were fine-tuned by the authors from public checkpoints on the same 100 trajectories. T-Rex is cited as a 2026 work with no arXiv entry in the reference list.</li>
+<li>Tasks are hard: FACT still fails most of the time on shoelaces (20%), pipetting (40%) and screwdriver use (30%).</li>
+<li>Individual ablations that differ by one or two rollouts are not conclusive; the clear signals are the large drops (cap opening 80% to 0% without glove force).</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="facet-0.html">Facet-0</a> also predicts the future wrench and values it, with a wrist F/T sensor and a parallel gripper; FACT does the same with fingertip force and human glove data. <a href="ta-vla.html">TA-VLA</a> also predicts torque as a training target.</p>
+<p><strong>Check question:</strong> At refresh offset $o = 12$ with $N = 16$ steps at 20 Hz, how many steps and how many seconds of the chunk are still open?</p>
+<details>
+<summary>Answer</summary>
+<p>$16 - 12 = 4$ steps, and $4/20 = 0.2$ s.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> <a href="https://arxiv.org/abs/2610.19155">arXiv 2610.19155</a> · v1 13/10/2026 · University of Michigan, Stanford và Microsoft Research · <a href="https://fact-1-0.github.io/">trang dự án</a> (code và dữ liệu "Coming Soon")</p>
+<p><strong>VẤN ĐỀ</strong> Bàn tay khéo léo cần lực để hoàn tất một chuyển động, nhưng dữ liệu robot đắt đỏ, còn các bộ dữ liệu người lớn thì chỉ ghi thị giác và chuyển động tay, không có lực tiếp xúc.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> T-Rex đưa lịch sử lực đã lượng tử hóa vào một refiner như một quan sát; lực không bao giờ được dự đoán, nên việc hành động đổi tiếp xúc thế nào vẫn ngầm định. T-Rex đạt 8,6% và π0.5 đạt 1,4% trên bảy tác vụ nhị phân. Mô hình huấn luyện không có lực từ găng tay có tác vụ đạt 0%.</p>
+<p><strong>Ý TƯỞNG</strong> Thu EgoForce, 2.000 giờ người đeo găng xúc giác đã hiệu chuẩn, và huấn luyện một mô hình hai giai đoạn: bộ lập kế hoạch video vẽ chuyển động thô, rồi một refiner khử nhiễu phần hành động còn lại cùng với lực đầu ngón tay tương lai.</p>
+<p><strong>KẾT QUẢ</strong> Trung bình 41,4% trên bảy tác vụ nhị phân so với 8,6% của T-Rex, từ 10 demo robot và 90 demo người cho mỗi tác vụ.</p>
+</div>
+<h2>1. Vấn đề: lực là một quan sát, không phải một hệ quả</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Trong FACT, lực tương lai và phần hành động còn lại được khử nhiễu cùng nhau, nên mỗi thứ định hình thứ kia ở mọi bước." class="dg-natural" width="938" height="290" viewBox="0 0 938 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0.5</text><rect class="dg-box" x="124" y="22" width="132" height="38"/><text class="dg-t" x="190" y="45" text-anchor="middle">Ảnh + câu lệnh</text><path class="dg-a" d="M256 41 H288"/><rect class="dg-badbox" x="290" y="14" width="192" height="54"/><text class="dg-t" x="387" y="37" text-anchor="middle">Chỉ có hành động</text><text class="dg-s" x="387" y="53" text-anchor="middle">không có tín hiệu tiếp xúc</text><path class="dg-a" d="M483 41 H515"/><rect class="dg-box" x="517" y="22" width="96" height="38"/><text class="dg-t" x="565" y="45" text-anchor="middle">Bàn tay</text><text class="dg-note dg-red" x="124" y="86">✗ 1,4% trên bảy tác vụ nhị phân</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">T-Rex</text><rect class="dg-box" x="124" y="120" width="148" height="38"/><text class="dg-t" x="198" y="143" text-anchor="middle">Lịch sử xúc giác</text><path class="dg-a" d="M272 139 H304"/><rect class="dg-badbox" x="306" y="112" width="246" height="54"/><text class="dg-t" x="429" y="135" text-anchor="middle">Lực đã lượng tử hóa làm input</text><text class="dg-s" x="429" y="151" text-anchor="middle">không bao giờ được dự đoán</text><path class="dg-a" d="M552 139 H584"/><rect class="dg-box" x="586" y="120" width="96" height="38"/><text class="dg-t" x="634" y="143" text-anchor="middle">Refiner</text><path class="dg-a" d="M682 139 H714"/><rect class="dg-box" x="716" y="120" width="96" height="38"/><text class="dg-t" x="764" y="143" text-anchor="middle">Bàn tay</text><text class="dg-note dg-red" x="124" y="184">✗ 8,6%</text><text class="dg-lab dg-green" x="14" y="234">FACT</text><rect class="dg-box" x="124" y="211" width="125" height="38"/><text class="dg-t" x="186" y="234" text-anchor="middle">Video + track</text><path class="dg-a" d="M249 230 H281"/><rect class="dg-key" x="283" y="211" width="117" height="38"/><text class="dg-t" x="341" y="234" text-anchor="middle">Kế hoạch thô</text><path class="dg-a" d="M400 230 H432"/><rect class="dg-key" x="434" y="211" width="360" height="38"/><text class="dg-t" x="614" y="234" text-anchor="middle">Refiner: hành động + lực tương lai, cùng lúc</text><path class="dg-a" d="M794 230 H826"/><rect class="dg-box" x="828" y="211" width="96" height="38"/><text class="dg-t" x="876" y="234" text-anchor="middle">Bàn tay</text><text class="dg-note dg-green" x="124" y="268">✓ 41,4%</text></svg><figcaption>Trong FACT, lực tương lai và phần hành động còn lại được khử nhiễu cùng nhau, nên mỗi thứ định hình thứ kia ở mọi bước.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Bộ lập kế hoạch dừng khử nhiễu ở một điểm bàn giao; refiner hoàn tất hành động và dự đoán lực, rồi chạy lại ở mỗi lần làm mới xúc giác." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">ONE CHUNK: PLAN WITH VIDEO AND TRACKS, THEN REFINE ACTION TOGETHER WITH FORCE</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="54"/><text class="dg-t" x="115" y="68" text-anchor="middle">views + instruction</text><text class="dg-s" x="115" y="86" text-anchor="middle">ego and wrist cameras</text>
+<rect class="dg-ext" x="20" y="112" width="190" height="54"/><text class="dg-t" x="115" y="134" text-anchor="middle">robot state + past tracks</text><text class="dg-s" x="115" y="152" text-anchor="middle">visual track history</text>
+<rect class="dg-key" x="20" y="178" width="190" height="54"/><text class="dg-t" x="115" y="200" text-anchor="middle">tactile history</text><text class="dg-s" x="115" y="218" text-anchor="middle">fingertip force, 5 Hz</text>
+<rect class="dg-box" x="250" y="46" width="220" height="140"/><text class="dg-t" x="360" y="78" text-anchor="middle">Track-Guided</text><text class="dg-t" x="360" y="96" text-anchor="middle">Coarse Planner</text><text class="dg-s" x="360" y="120" text-anchor="middle">5B video DiT</text><text class="dg-s" x="360" y="138" text-anchor="middle">denoises future video,</text><text class="dg-s" x="360" y="154" text-anchor="middle">visual tracks, coarse action</text>
+<rect class="dg-key" x="580" y="46" width="200" height="140"/><text class="dg-t" x="680" y="78" text-anchor="middle">Force-Action</text><text class="dg-t" x="680" y="96" text-anchor="middle">Joint Refiner</text><text class="dg-s" x="680" y="120" text-anchor="middle">6-block transformer, 65M</text><text class="dg-s" x="680" y="138" text-anchor="middle">co-denoises action suffix</text><text class="dg-s" x="680" y="154" text-anchor="middle">and future fingertip force</text>
+<path class="dg-a" d="M210 73 H250"/><path class="dg-a" d="M210 139 H250"/>
+<path class="dg-a" d="M470 90 H580"/><text class="dg-s" x="476" y="82">handoff, tau 0.4</text>
+<path class="dg-ad" d="M470 150 H580"/><text class="dg-s" x="476" y="142">cached states</text>
+<path class="dg-a" d="M210 205 H680 V186"/>
+<rect class="dg-box" x="830" y="46" width="130" height="54"/><text class="dg-t" x="895" y="68" text-anchor="middle">action chunk</text><text class="dg-s" x="895" y="86" text-anchor="middle">16 steps, 20 Hz</text>
+<rect class="dg-ext" x="830" y="112" width="130" height="54"/><text class="dg-t" x="895" y="134" text-anchor="middle">future force</text><text class="dg-s" x="895" y="152" text-anchor="middle">predicted only</text>
+<rect class="dg-grp" x="830" y="178" width="130" height="54"/><text class="dg-t" x="895" y="200" text-anchor="middle">video + tracks</text><text class="dg-s" x="895" y="218" text-anchor="middle">decoded, not run</text>
+<path class="dg-a" d="M780 73 H830"/><path class="dg-a" d="M780 139 H830"/><path class="dg-a" d="M795 139 V205 H830"/>
+<text class="dg-l" x="250" y="258">every 5 Hz tactile refresh, only the refiner re-runs on the unexecuted part of the chunk</text>
+<text class="dg-h" x="20" y="300">PRETRAINING</text>
+<rect class="dg-ext" x="20" y="316" width="300" height="56"/><text class="dg-t" x="170" y="340" text-anchor="middle">EgoForce: 2,000 h of humans</text><text class="dg-s" x="170" y="358" text-anchor="middle">tactile gloves + 3 egocentric cameras</text>
+<rect class="dg-ext" x="350" y="316" width="260" height="56"/><text class="dg-t" x="480" y="340" text-anchor="middle">+ 100 h robot teleoperation</text><text class="dg-s" x="480" y="358" text-anchor="middle">from the T-Rex data</text>
+<rect class="dg-key" x="640" y="316" width="320" height="56"/><text class="dg-t" x="800" y="340" text-anchor="middle">trained end to end, from the video DiT</text><text class="dg-s" x="800" y="358" text-anchor="middle">240 accelerators</text>
+<path class="dg-a" d="M320 344 H350"/><path class="dg-a" d="M610 344 H640"/>
+<rect class="dg-box" x="20" y="394" width="940" height="34"/><text class="dg-t" x="490" y="416" text-anchor="middle">fine-tune per task: 10 robot + 90 human trajectories, 8 GPUs</text>
+</svg><figcaption>Bộ lập kế hoạch dừng khử nhiễu ở một điểm bàn giao; refiner hoàn tất hành động và dự đoán lực, rồi chạy lại ở mỗi lần làm mới xúc giác.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Track-Guided Coarse Planner</td>
+<td>câu lệnh, khung neo, trạng thái robot, track quá khứ</td>
+<td>video tương lai, track thị giác, một hành động mới khử nhiễu một phần</td>
+<td>kế hoạch thô; 5,05 tỉ tham số, xây từ Wan2.2-TI2V-5B</td>
+</tr>
+<tr>
+<td>Force–Action Joint Refiner</td>
+<td>hành động đang khử nhiễu dở, lịch sử xúc giác quan sát được, trạng thái planner đã lưu đệm</td>
+<td>phần hành động còn lại và lực đầu ngón tay tương lai</td>
+<td>Transformer 6 khối, 65 triệu tham số</td>
+</tr>
+<tr>
+<td>Đầu ra</td>
+<td>–</td>
+<td>chunk hành động 16 bước, 20 Hz, 62 giá trị (delta pose đế, khớp bàn tay tuyệt đối, mỗi tay)</td>
+<td>chỉ hành động được thực thi</td>
+</tr>
+</tbody>
+</table>
+<p>Dự đoán lực có dạng $4 \times 10 \times 6$: bốn khe 5 Hz, mười đầu ngón tay, sáu thành phần mỗi ngón. Bài chỉ ghi lại nó để phân tích và không dùng làm tham chiếu điều khiển.</p>
+<h2>3. Tính tay: refiner quyết định lại phần nào ở mỗi lần làm mới</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Chunk dài 16 bước ở 20 Hz, còn xúc giác được đọc ở 5 Hz. Tính dòng thời gian để thấy khi refiner chạy lại thì còn bao nhiêu phần chunk đang mở, và lịch nhiễu của nó bước ra sao.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N$, $f$</td>
+<td>độ dài chunk (bước) và tần số hành động (Hz)</td>
+<td>hằng số</td>
+<td>16, 20</td>
+</tr>
+<tr>
+<td>$o$</td>
+<td>độ lệch làm mới: số bước đã thực thi</td>
+<td>input</td>
+<td>0, 4, 8, 12</td>
+</tr>
+<tr>
+<td>$\tau_a$</td>
+<td>mức nhiễu của hành động, tuyến tính từ 0,4 về 0 trong 4 bước Euler</td>
+<td>lịch</td>
+<td>bước 0,1</td>
+</tr>
+<tr>
+<td>$\tau_f$</td>
+<td>mức nhiễu của lực, tuyến tính từ 1 về 0 trong 4 bước Euler</td>
+<td>lịch</td>
+<td>bước 0,25</td>
+</tr>
+<tr>
+<td>$n_{suffix}$</td>
+<td>số bước hành động còn mở</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$n_{suffix} = N - o,\qquad \text{thời gian còn mở} = \frac{N - o}{f}\ \text{s},\qquad \Delta\tau = \frac{\tau_{start} - \tau_{end}}{4}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Khoảng cách giữa hai lần làm mới: $4/20 = 0{,}2$ s, đúng bằng tần số xúc giác 5 Hz.</li>
+<li>Tại $o = 8$: $n_{suffix} = 16 - 8 = 8$ bước, phần đã thực thi $= 8/20 = 0{,}4$ s (cố định), thời gian còn mở $= 8/20 = 0{,}4$ s.</li>
+<li>Lưới $\tau_a$: $0{,}4,\ 0{,}3,\ 0{,}2,\ 0{,}1,\ 0$ (bước $0{,}4/4 = 0{,}1$).</li>
+<li>Lưới $\tau_f$: $1,\ 0{,}75,\ 0{,}5,\ 0{,}25,\ 0$ (bước $1/4 = 0{,}25$).</li>
+</ol>
+<p><strong>Kết quả.</strong> Các độ lệch làm mới 0, 4, 8, 12 để lại 16, 12, 8 và 4 bước còn mở, tức là 0,8; 0,6; 0,4 và 0,2 giây.</p>
+<p><strong>Ý nghĩa.</strong> Lực bắt đầu từ nhiễu thuần ($\tau_f = 1$), còn hành động đến với mức nhiễu 0,4, tức là đã gần thành hình, nên một lực được tưởng tượng từ đầu sẽ định hình một hành động sắp hoàn thiện.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên bảy tác vụ nhị phân, 10 lượt mỗi tác vụ. Dự đoán lực quan trọng nhất ở các tác vụ nhạy với tiếp xúc." class="dg-natural" width="634" height="162" viewBox="0 0 634 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="174" y="23" text-anchor="end">π0.5</text><rect class="dg-bar" x="184" y="10" width="5" height="18"/><text class="dg-barval" x="197" y="23">1,4%</text><text class="dg-barlabel" x="174" y="53" text-anchor="end">T-Rex</text><rect class="dg-bar" x="184" y="40" width="31" height="18"/><text class="dg-barval" x="223" y="53">8,6%</text><text class="dg-barlabel" x="174" y="83" text-anchor="end">FACT không dự đoán lực</text><rect class="dg-bar" x="184" y="70" width="51" height="18"/><text class="dg-barval" x="243" y="83">14,3%</text><text class="dg-barlabel" x="174" y="113" text-anchor="end">FACT không dự đoán track</text><rect class="dg-bar" x="184" y="100" width="129" height="18"/><text class="dg-barval" x="320" y="113">35,7%</text><text class="dg-barlabel" x="174" y="143" text-anchor="end">FACT đầy đủ</text><rect class="dg-key" x="184" y="130" width="149" height="18"/><text class="dg-barval" x="341" y="143">41,4%</text></svg><figcaption>Thành công trung bình trên bảy tác vụ nhị phân, 10 lượt mỗi tác vụ. Dự đoán lực quan trọng nhất ở các tác vụ nhạy với tiếp xúc.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thành công (%), 10 lượt</th>
+<th>π0.5</th>
+<th>T-Rex</th>
+<th>FACT không dự đoán lực</th>
+<th>FACT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipet phòng thí nghiệm</td>
+<td>0</td>
+<td>0</td>
+<td>30</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Mở nắp ống nghiệm</td>
+<td>10</td>
+<td>20</td>
+<td>40</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Mở nắp gập ống ly tâm nhỏ</td>
+<td>0</td>
+<td>20</td>
+<td>20</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Buộc dây giày</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Xào bài</td>
+<td>0</td>
+<td>10</td>
+<td>0</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Nắm nhiều vật</td>
+<td>0</td>
+<td>0</td>
+<td>10</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Dùng tua vít</td>
+<td>0</td>
+<td>10</td>
+<td>0</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Số nốt vang rõ trên 10: đàn hạc 6,7 so với 2,1 của T-Rex và 0,5 của π0.5; xylophone 5,4 so với 3,2 và 0.</li>
+<li>Núm chỉnh pipet: FACT vào khớp được núm ở 5 trên 10 lượt với sai số trung bình 6,4 µL; T-Rex vào khớp 2 lượt với 14 µL.</li>
+<li>Công thức pretraining trên cùng các tác vụ: bỏ lực từ găng khỏi dữ liệu người làm mở nắp ống nghiệm giảm từ 80% xuống 0% và pipet từ 40% xuống 20%; chỉ dùng dữ liệu robot cho 20% và 0%. Nắm nhiều vật vẫn là 40% khi không có lực.</li>
+<li>Dữ liệu người khi fine-tune: chỉ mười quỹ đạo robot so với hỗn hợp 10:90 nâng buộc dây giày từ 10% lên 20% và xào bài từ 10% lên 30%.</li>
+</ul>
+<h2>5. Dữ liệu</h2>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EgoForce</td>
+<td>khoảng 2.000 giờ, 40 nghìn episode, 1.000 tác vụ, 120 cảnh, 1.000 người thực hiện</td>
+</tr>
+<tr>
+<td>Thu thập</td>
+<td>găng tay xúc giác hai tay và ba camera RGB góc nhìn thứ nhất (đầu và hai cổ tay), đồng bộ</td>
+</tr>
+<tr>
+<td>Hiệu chuẩn</td>
+<td>một túi khí nén quét 0–50 psi so với cảm biến tham chiếu; lực của từng phần tử $F_i = P_i A_i$</td>
+</tr>
+<tr>
+<td>Cơ cấu tác vụ</td>
+<td>vật biến dạng 21,0%, lắp ráp 17,3%, sắp xếp 14,8%; hơn hai phần ba là thao tác tinh</td>
+</tr>
+<tr>
+<td>Phía robot</td>
+<td>100 giờ teleoperation từ T-Rex để pretrain; 10 demo robot mỗi tác vụ để fine-tune</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Không dùng thẳng được. FACT được xây cho bàn tay khéo léo có lực ở từng đầu ngón và cho dữ liệu găng tay của người. Tay kẹp song song với cảm biến F/T cổ tay sẽ cần thiết kế lại, và mô hình quá lớn để làm một thí nghiệm nhẹ. "Không nêu" nghĩa là mình không tìm thấy trong paper hay trang dự án.</p>
+<table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>Trạm YAM hai tay với hai bàn tay Sharpa Wave (22 khớp, cảm biến lực 6 trục ở cả năm đầu ngón)</td>
+<td>UR10e với tay kẹp chỉ có một wrench ở cổ tay, không có mười lực đầu ngón. Đầu ra lực của mô hình là lực đầu ngón</td>
+</tr>
+<tr>
+<td>Camera</td>
+<td>Một RealSense D435 góc nhìn thứ nhất và hai ZED Mini ở cổ tay</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>Găng Manus và bộ theo dõi cổ tay cho robot; găng xúc giác Wuji và bộ theo dõi cổ tay cho người</td>
+<td>Bạn cần một cách thu demo của người có kèm lực</td>
+</tr>
+<tr>
+<td>Tính toán pretraining</td>
+<td>240 bộ tăng tốc Alibaba T-Head PPU (96 GB mỗi bộ), end to end</td>
+<td>Không phải việc của một máy trạm</td>
+</tr>
+<tr>
+<td>Fine-tune</td>
+<td>100 quỹ đạo (10 robot, 90 người) mỗi tác vụ, trên 8 GPU</td>
+<td>Thời gian mỗi tác vụ: không nêu</td>
+</tr>
+<tr>
+<td>Kích thước mô hình</td>
+<td>5,05 tỉ tham số cho planner cộng refiner 65 triệu</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code, trọng số, dữ liệu</td>
+<td>Trang dự án: Code "Coming Soon", Data "Coming Soon" (kiểm tra ngày 19/10/2026)</td>
+<td>Chưa dùng được</td>
+</tr>
+</tbody>
+</table>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>Mỗi tác vụ chỉ 10 lượt, nên một lượt là 10 điểm. 80% ở mở nắp ống nghiệm (8 trên 10) là khoảng 49% đến 94% (Wilson, phép tính của mình). Trung bình bảy tác vụ dựa trên 70 lượt.</li>
+<li>Các baseline do tác giả fine-tune từ checkpoint công khai trên cùng 100 quỹ đạo. T-Rex được dẫn là công trình 2026 và không có mục arXiv trong danh sách tham khảo.</li>
+<li>Các tác vụ khó: FACT vẫn thất bại phần lớn ở buộc dây giày (20%), pipet (40%) và dùng tua vít (30%).</li>
+<li>Các ablation chênh nhau một hai lượt thì chưa kết luận được; tín hiệu rõ là các mức giảm lớn (mở nắp ống nghiệm từ 80% xuống 0% khi không có lực găng tay).</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> <a href="facet-0.html">Facet-0</a> cũng dự đoán wrench tương lai và định giá nó, với cảm biến F/T cổ tay và tay kẹp song song; FACT làm tương tự với lực đầu ngón và dữ liệu găng tay của người. <a href="ta-vla.html">TA-VLA</a> cũng dự đoán mô-men như một mục tiêu huấn luyện.</p>
+<p><strong>Câu kiểm tra:</strong> Ở độ lệch làm mới $o = 12$ với $N = 16$ bước ở 20 Hz, còn bao nhiêu bước và bao nhiêu giây của chunk đang mở?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$16 - 12 = 4$ bước, và $4/20 = 0{,}2$ s.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
