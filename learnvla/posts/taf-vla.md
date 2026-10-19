@@ -86,7 +86,48 @@ Badly aligned case, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_1 = \lo
 | Rig | automated press-and-perturb device, > 60 indenters, 30 Hz |
 | Policy data | > 10,000 force-aware episodes, > 20 scenarios |
 
-## 6. Caveats
+## 6. Can I use this on my robot?
+
+**Short answer.** You can reuse the idea with a modest setup, but not the result. The 64.8% came from a gel touch sensor on the robot, a pretrained adapter that needs a custom rig and about 10 million frames to reproduce, and a fine-tuned π0.5. "Stated" means the paper says it; "not stated" means I looked in the full text and it is not there, so I do not guess.
+
+**Hardware at run time**
+
+| Need | What the paper used | If yours differs | Source |
+|---|---|---|---|
+| Touch sensor | Gel-type camera sensors, 30 Hz: 4 custom-built (marker-free, 4×4, 7×7, 9×9 markers) and 2 GelSight Mini. All gels have the same hardness | Different gel hardness is untested. Capacitive, magnetic or piezoresistive sensors: "inconclusive" in the paper | Stated |
+| Force sensor on the robot | **None needed.** The paper's own words: it removes the need for a costly F/T sensor at deployment | The F/T sensor and pressure array are only used to build the adapter, not to run it | Stated |
+| Cameras | One third-person camera, one wrist camera, plus language | Fewer views is untested | Stated |
+| Arm and gripper | Demonstrations were collected on a Franka Research 3 with a joint-space exoskeleton (master-puppet) | Other arms are untested. The gripper model and how the sensor is mounted on it are not given | Partly stated |
+| Proprioception | Joint state $q_t$ goes into the action expert | Any arm that reports joint state | Stated |
+| Computer | One workstation with an NVIDIA RTX 4090 ran inference for all models | See the next table for training | Stated |
+
+**Data and training**
+
+| Need | Paper | What it means for you | Source |
+|---|---|---|---|
+| Pretrained TaF-Adapter | Trained on the TaF-Dataset: more than 10 million tactile, force and pressure frames from 6 sensors | Paper text does not say whether the adapter weights or the dataset are public, and the project page linked in the paper returned a GitHub 404 when I opened it (2026-10-19). **Check before planning around it** | Not stated |
+| Rebuilding the adapter data | Custom rig: 5 Dynamixel XM540 servos, ATI Axia80 6-axis F/T sensor, 12×12 piezoresistive pressure array, a 3D-printed frame (25×20×45 cm, assembled in under 4 hours), 60+ indenters (40 rigid, 20 soft). Over 100K frames per hour | My arithmetic: 10,000,000 frames ÷ 100,000 frames per hour ≈ 100 hours of continuous running, if the rate holds. Plus building and swapping indenters by hand | Stated, arithmetic mine |
+| Policy demonstrations | More than 10,000 force-aware episodes over 20+ scenarios, each with a language instruction describing force ("gently", "use minimal force") written by an LLM from a fixed template | You need your own demonstrations for your own task. The paper gives no per-task count for the main results, only subsets of 100, 150 and 200 for three tasks | Partly stated |
+| How many demonstrations | At 100 demonstrations TaF-VLA matched or beat π0.5 trained on 200 (three tasks) | If your tasks are like those, expect about half the data of a vision-only baseline. Not a promise for other tasks | Stated |
+| Fine-tuning recipe | π0.5 with the adapter frozen, fine-tuned on the demonstrations | Learning rate, steps, whether the VLM is trained in full or with LoRA, and training time are **not stated**. The text also mentions task-specific tuning of the encoder, so "frozen" may not be strict | Not stated |
+| Training GPU | Not stated | Estimate, not from the paper: the openpi README lists more than 22.5 GB of GPU memory for LoRA fine-tuning and more than 70 GB for full fine-tuning of π0.5 (an 80 GB A100 or H100). The adapter adds a ViT and a small causal Transformer on top. Low confidence | Estimate |
+
+**What the sensor and the task must allow**
+
+- **Does the task need force at all?** The paper says it depends: for light objects such as chocolate, vision-only π0.5 did about as well. Gains were largest where force must be actively controlled (heavy part lifting, power bank extraction, where vision-only degraded a lot, and tweezer weights, where it failed completely).
+- **Speed.** The policy outputs a chunk of actions and re-plans after it. The authors say this is too slow for fast force spikes, such as the moment a blade goes through jelly and meets the balloon.
+- **Where it fails.** Most failures came *before* contact: the hand stopped millimetres short, so the touch loop never started.
+- **A new sensor of the same family.** On sensors unseen in pretraining the adapter scored 60.3% and 53.3%, against 75.0% and 65.0% on seen ones. A new sensor loses some, but far less than the force-regression baseline (30.0% and 23.3%).
+
+**Which route fits you**
+
+[[flow]]
+- A~Weights public + gel sensor like theirs | Download adapter > *Fine-tune π0.5 on your demos* > Deploy with touch only | least work: you still need demos and a GPU
+- B~Weights not public, you have an F/T sensor and a gel sensor | Build the rig or your own pairing > Pretrain adapter > Fine-tune π0.5 | most work: about 100 h of collection at the paper's rate
+- C~No gel sensor, or no time for the rig | Pick another post | VLA-Touch adds touch without retraining the VLA; FD-VLA and TA-VLA need no extra sensor; Survey 1 section 5 lists more
+[[/flow]]
+
+## 7. Caveats
 
 - The task count (8 in text, 7 in Table I) and the number of baselines are inconsistent in the paper.
 - The adapter is called frozen, yet the text also mentions task-specific fine-tuning.
@@ -180,7 +221,48 @@ Trường hợp căn kém, $s_+ = 0.5$, $s_- = 0.4$: $(0.4 - 0.5)/0.1 = -1$, $L_
 | Thiết bị | máy ấn-và-nhiễu tự động, > 60 vật ấn, 30 Hz |
 | Dữ liệu chính sách | > 10.000 episode có lực, > 20 kịch bản |
 
-## 6. Lưu ý
+## 6. Mình có dùng được cho robot của bạn không?
+
+**Trả lời ngắn.** Ý tưởng dùng lại được với một bộ thiết bị khiêm tốn, nhưng kết quả thì chưa chắc. Con số 64,8% đến từ một cảm biến chạm kiểu gel gắn trên robot, một adapter đã pretrain mà muốn tự làm lại phải có thiết bị riêng và khoảng 10 triệu khung, cùng một π0.5 đã fine-tune. "Có nêu" nghĩa là bài báo viết rõ; "không nêu" nghĩa là mình đã tìm trong toàn văn mà không thấy, nên không đoán.
+
+**Phần cứng khi chạy thật**
+
+| Cần | Bài báo dùng | Nếu bạn khác | Nguồn |
+|---|---|---|---|
+| Cảm biến chạm | Cảm biến gel dùng camera, 30 Hz: 4 loại tự chế (không marker, marker 4×4, 7×7, 9×9) và 2 chiếc GelSight Mini. Mọi lớp gel cùng độ cứng | Gel có độ cứng khác thì chưa thử. Cảm biến điện dung, từ hoặc điện trở áp: bài viết "chưa kết luận được" | Có nêu |
+| Cảm biến lực trên robot | **Không cần.** Lời bài báo: bỏ được nhu cầu một cảm biến F/T đắt tiền lúc triển khai | Cảm biến F/T và mảng áp suất chỉ dùng để tạo adapter, không dùng khi chạy | Có nêu |
+| Camera | Một camera góc ngoài, một camera cổ tay, cộng câu lệnh | Ít góc nhìn hơn thì chưa thử | Có nêu |
+| Cánh tay và tay kẹp | Demo thu trên Franka Research 3 bằng bộ exoskeleton khớp (master-puppet) | Cánh tay khác chưa thử. Không nêu mẫu tay kẹp, cũng không nêu cách gắn cảm biến lên nó | Nêu một phần |
+| Proprioception | Trạng thái khớp $q_t$ vào action expert | Cánh tay nào báo được trạng thái khớp | Có nêu |
+| Máy tính | Một máy trạm RTX 4090 chạy suy luận cho mọi mô hình | Phần huấn luyện xem bảng sau | Có nêu |
+
+**Dữ liệu và huấn luyện**
+
+| Cần | Bài báo | Với bạn nghĩa là | Nguồn |
+|---|---|---|---|
+| TaF-Adapter đã pretrain | Huấn luyện trên TaF-Dataset: hơn 10 triệu khung xúc giác, lực và áp suất từ 6 cảm biến | Văn bản bài báo không nói trọng số adapter hay bộ dữ liệu có công khai không, và trang dự án mà bài dẫn link trả về lỗi 404 của GitHub khi mình mở (19/10/2026). **Hãy kiểm tra trước khi lên kế hoạch dựa vào nó** | Không nêu |
+| Tự làm lại dữ liệu adapter | Thiết bị tự chế: 5 servo Dynamixel XM540, cảm biến F/T 6 trục ATI Axia80, mảng áp suất điện trở áp 12×12, khung in 3D (25×20×45 cm, lắp dưới 4 giờ), hơn 60 vật ấn (40 cứng, 20 mềm). Trên 100K khung mỗi giờ | Mình tính: 10.000.000 khung ÷ 100.000 khung/giờ ≈ 100 giờ chạy liên tục, nếu giữ được tốc độ đó. Chưa kể công làm và đổi vật ấn bằng tay | Có nêu, phép tính của mình |
+| Demo cho chính sách | Hơn 10.000 episode có lực, hơn 20 kịch bản, mỗi episode kèm một câu lệnh mô tả lực ("nhẹ nhàng", "dùng lực tối thiểu") do LLM viết theo một khuôn cố định | Bạn cần demo cho đúng tác vụ của mình. Bài không cho số demo theo từng tác vụ ở kết quả chính, chỉ có các tập con 100, 150, 200 cho ba tác vụ | Nêu một phần |
+| Cần bao nhiêu demo | Với 100 demo, TaF-VLA bằng hoặc hơn π0.5 huấn luyện bằng 200 (ba tác vụ) | Nếu tác vụ của bạn giống vậy, kỳ vọng khoảng một nửa số demo của baseline chỉ thị giác. Không phải lời hứa cho tác vụ khác | Có nêu |
+| Công thức fine-tune | π0.5 với adapter đóng băng, fine-tune trên demo | Tốc độ học, số bước, VLM được huấn luyện đầy đủ hay bằng LoRA, và thời gian huấn luyện đều **không nêu**. Văn bản còn nhắc tinh chỉnh encoder theo tác vụ, nên "đóng băng" có thể không tuyệt đối | Không nêu |
+| GPU huấn luyện | Không nêu | Ước lượng, không từ bài báo: README của openpi ghi cần hơn 22,5 GB bộ nhớ GPU để fine-tune π0.5 bằng LoRA và hơn 70 GB để fine-tune đầy đủ (A100 80 GB hoặc H100). Adapter thêm một ViT và một Transformer nhân quả nhỏ. Độ tin cậy thấp | Ước lượng |
+
+**Cảm biến và tác vụ phải cho phép**
+
+- **Tác vụ của bạn có cần lực không?** Bài nói là tùy: với vật nhẹ như sô-cô-la, π0.5 chỉ thị giác làm gần bằng. Mức tăng lớn nhất ở tác vụ phải chủ động điều khiển lực (nhấc chi tiết nặng, lấy pin dự phòng, nơi chỉ thị giác kém đi nhiều, và gắp quả cân bằng nhíp, nơi nó thất bại hoàn toàn).
+- **Tốc độ.** Chính sách xuất một chunk hành động rồi mới lập kế hoạch lại. Các tác giả nói điều này quá chậm cho những xung lực nhanh, như lúc lưỡi dao xuyên qua thạch và chạm vào quả bóng bay.
+- **Hỏng ở đâu.** Phần lớn lỗi xảy ra *trước* khi chạm: tay dừng cách bề mặt vài milimét nên vòng phản hồi xúc giác không bao giờ bắt đầu.
+- **Cảm biến mới cùng họ.** Với cảm biến chưa thấy lúc pretrain, adapter đạt 60,3% và 53,3%, so với 75,0% và 65,0% ở cảm biến đã thấy. Cảm biến mới mất một phần, nhưng ít hơn nhiều so với baseline hồi quy lực (30,0% và 23,3%).
+
+**Con đường nào hợp với bạn**
+
+[[flow]]
+- A~Trọng số công khai + cảm biến gel giống họ | Tải adapter > *Fine-tune π0.5 trên demo của bạn* > Chạy chỉ với xúc giác | ít việc nhất: vẫn cần demo và GPU
+- B~Trọng số không công khai, bạn có F/T và cảm biến gel | Dựng thiết bị hoặc cách ghép cặp riêng > Pretrain adapter > Fine-tune π0.5 | nhiều việc nhất: khoảng 100 giờ thu dữ liệu theo tốc độ của bài
+- C~Không có cảm biến gel, hoặc không có thời gian dựng thiết bị | Chọn bài khác | VLA-Touch thêm xúc giác mà không huấn luyện lại VLA; FD-VLA và TA-VLA không cần cảm biến thêm; Survey 1 mục 5 liệt kê thêm
+[[/flow]]
+
+## 7. Lưu ý
 
 - Số task (8 trong văn bản, 7 ở Bảng I) và số baseline không nhất quán trong bài.
 - Adapter được gọi là đóng băng, nhưng văn bản cũng nhắc fine-tune theo task.
