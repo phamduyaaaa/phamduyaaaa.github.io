@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../blog/styles/blog.css">
 <link rel="stylesheet" href="../blog/styles/cubism.css?v=cubism-2">
-<link rel="stylesheet" href="toc.css?v=2">
+<link rel="stylesheet" href="toc.css?v=3">
 </head>
 <body>
 
@@ -61,6 +61,12 @@
       <span data-vi>Ghi chú về Vision-Language-Action: bài báo, khái niệm, thử nghiệm và những câu hỏi còn bỏ ngỏ trong quá trình học.</span>
     </p>
   </section>
+
+  <aside class="toc-legend" aria-label="UR10e">
+    <strong><span data-en>My robot: UR10e with its built-in wrist force/torque sensor</span><span data-vi>Robot của tôi: UR10e với cảm biến lực/mô-men tích hợp ở cổ tay</span></strong>
+    <span class="lg lg-direct"><i></i><span data-en>Fits directly: reads a wrist F/T (or needs it only in training)</span><span data-vi>Dùng thẳng: đọc F/T ở cổ tay (hoặc chỉ cần nó lúc huấn luyện)</span></span>
+    <span class="lg lg-adapt"><i></i><span data-en>Needs adapting: a different signal or robot (joint torque, wrench from other sensors)</span><span data-vi>Cần chỉnh: tín hiệu hoặc robot khác (mô-men khớp, wrench từ cảm biến khác)</span></span>
+  </aside>
 
   <section id="postList" class="toc" aria-live="polite">
     <!-- Mục lục render từ learnvla/toc.json; bài có trong posts.json sẽ thành link -->
@@ -139,10 +145,12 @@ function toggleMenu(force) {
       var items = g.items.map(function (it) {
         var t = '<span class="toc-label">' + escapeHtml(it.title) +
           (it.date ? '<small class="toc-date">' + escapeHtml(it.venue || 'arXiv') + ' · ' + escapeHtml(it.date) + '</small>' : '') + '</span>';
+        var fitCls = it.fit ? ' fit-' + it.fit : '';
+        var fitTag = it.fit ? '<span class="toc-fit" aria-hidden="true">UR10e</span>' : '';
         if (done[it.slug]) {
           ready++;
-          return '<li><a class="toc-item" href="posts/' + encodeURIComponent(it.slug) + '.html">' +
-            '<span class="toc-mark" aria-hidden="true">●</span>' + t +
+          return '<li><a class="toc-item' + fitCls + '" href="posts/' + encodeURIComponent(it.slug) + '.html">' +
+            '<span class="toc-mark" aria-hidden="true">●</span>' + t + fitTag +
             '<span class="toc-status" aria-hidden="true">→</span></a></li>';
         }
         return '<li><div class="toc-item is-draft">' +

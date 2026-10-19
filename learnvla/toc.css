@@ -106,6 +106,31 @@ a.toc-item:focus-visible {
 .toc-item.is-draft .toc-mark,
 .toc-item.is-draft .toc-status { color: var(--ink-4); }
 
+/* Đánh dấu độ hợp với UR10e (F/T tích hợp) */
+.toc-item.fit-direct { background: #d7ead2; border-left-width: 8px; border-left-color: #2f7d32; }
+.toc-item.fit-adapt  { background: #f6e6b4; border-left-width: 8px; border-left-color: #c78a00; }
+.toc-fit {
+  flex: none;
+  margin-left: auto;
+  padding: 3px 6px;
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+.fit-direct .toc-fit { background: #2f7d32; }
+.fit-adapt .toc-fit { background: #8a5d00; }
+.toc-fit + .toc-status { margin-left: 0; }
+.toc-legend {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); align-items: center;
+  margin-top: var(--sp-8, 32px); padding: var(--sp-3) var(--sp-4);
+  border: 2px solid var(--ink); background: var(--cream-2);
+  font: 500 13px/1.4 var(--font-mono); color: var(--ink);
+}
+.toc-legend strong { flex-basis: 100%; font-weight: 700; }
+.toc-legend .lg { display: inline-flex; align-items: center; gap: 8px; }
+.toc-legend .lg i { width: 14px; height: 14px; border: 2px solid var(--ink); display: inline-block; }
+.lg-direct i { background: #d7ead2; border-left: 6px solid #2f7d32; }
+.lg-adapt i { background: #f6e6b4; border-left: 6px solid #c78a00; }
 @media (max-width: 720px) {
   .toc-list { grid-template-columns: 1fr; }
   .toc-group-head { flex-wrap: wrap; row-gap: var(--sp-2); }
