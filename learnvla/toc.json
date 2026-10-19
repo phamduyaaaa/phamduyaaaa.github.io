@@ -65,6 +65,7 @@
     "title_en": "Force Papers",
     "items": [
       { "title": "Cảm biến lực & xúc giác (F/T, GelSight)", "slug": "force-tactile-sensing" },
+      { "title": "GelSight", "slug": "gelsight", "date": "11/2017", "venue": "Sensors" },
       { "title": "Contact-rich Manipulation & Impedance/Admittance Control", "slug": "contact-rich-control" },
       { "title": "ForceVLA", "slug": "forcevla", "date": "05/2025" },
       { "title": "ForceVLA2", "slug": "forcevla2", "date": "03/2026" },

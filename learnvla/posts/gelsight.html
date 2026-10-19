@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Pressure-array tactile sensors tell a robot where it is pressed and how hard, in cells about 5 mm wide. GelSight puts a camera behind a soft gel and reads the gel's deformation instead: shape at 20-30 micrometres, plus shear, torque and slip.">
+<title>GelSight: A Camera Under a Gel Skin That Sees Shape and Force · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="GelSight: A Camera Under a Gel Skin That Sees Shape and Force">
+<meta property="og:description" content="Pressure-array tactile sensors tell a robot where it is pressed and how hard, in cells about 5 mm wide. GelSight puts a camera behind a soft gel and reads the gel's deformation instead: shape at 20-30 micrometres, plus shear, torque and slip.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">19 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">8 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>GelSight: A Camera Under a Gel Skin That Sees Shape and Force</h1>
+    <h1 data-vi>GelSight: Camera dưới lớp da gel nhìn ra hình dạng và lực</h1>
+
+    <p class="post-excerpt-lead" data-en>Pressure-array tactile sensors tell a robot where it is pressed and how hard, in cells about 5 mm wide. GelSight puts a camera behind a soft gel and reads the gel's deformation instead: shape at 20-30 micrometres, plus shear, torque and slip.</p>
+    <p class="post-excerpt-lead" data-vi>Cảm biến xúc giác dạng lưới áp suất cho robot biết chỗ bị ấn và ấn mạnh bao nhiêu, theo ô rộng khoảng 5 mm. GelSight đặt camera sau một lớp gel mềm và đọc sự biến dạng của gel: hình dạng ở mức 20-30 micromet, cộng với lực cắt, mô-men và trượt.</p>
+
+    <div class="post-tags-row"><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">GelSight</span><span class="pill">Sensors</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Yuan, Dong, Adelson, <em>GelSight: High-Resolution Robot Tactile Sensors for Estimating Geometry and Force</em>, Sensors 2017, 17, 2762 · 11/2017 (journal paper, a review of the sensor's development; the first prototype dates from 2009)</p>
+<p><strong>PROBLEM</strong> What kind of touch signal does a robot actually need? A person can feel shape, texture, softness and slip, yet cannot measure force precisely.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Most robot tactile sensors "detect the contact and contact force, or force distribution over the fingertip area". The commercial array from Pressure Profile Systems measures normal pressure at 5 mm resolution. Other designs fall short in other ways: Tar and Cserey's dome gives three-axis force but no spatial measurement; TacTip tracks markers but does not measure force; Ito et al.'s sensor is too large for a robot hand. The paper names four open challenges: shear force, contact area, compact hardware, and fabrication others can copy.</p>
+<p><strong>IDEA</strong> Treat geometry as equally important as force. Put a soft elastomer with a thin reflective skin over a camera and coloured lights; the camera sees the gel's deformation as a coloured image. Recover shape from shading, and force and slip from the motion of printed dots.</p>
+<p><strong>RESULT</strong> On the fingertip version: 30 Hz images, 18 × 14 mm sensing area, 20-30 µm resolution, minimum detectable force below 0.05 N, and force readings with $R^2 &gt; 0.9$ on unseen simple objects.</p>
+</div>
+<h2>1. The problem: touch sensors that only report "how hard"</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is what the sensor measures: the deformation of a soft surface, as an image, instead of a force per cell." class="dg-natural" width="714" height="222" viewBox="0 0 714 222" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="47">Before</text><text class="dg-lab dg-red" x="14" y="61">Pressure arrays</text><rect class="dg-box" x="134" y="30" width="96" height="38"/><text class="dg-t" x="182" y="53" text-anchor="middle">Contact</text><path class="dg-a" d="M230 49 H262"/><rect class="dg-badbox" x="264" y="14" width="218" height="70"/><text class="dg-t" x="373" y="37" text-anchor="middle">Pressure per</text><text class="dg-s" x="373" y="53" text-anchor="middle">5 mm cell</text><text class="dg-s" x="373" y="69" text-anchor="middle">force and place, no fine shape</text><path class="dg-a" d="M482 49 H514"/><rect class="dg-box" x="516" y="30" width="96" height="38"/><text class="dg-t" x="564" y="53" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="102">✗ knows "touched", not what it touched</text><text class="dg-lab dg-green" x="14" y="159">GelSight</text><rect class="dg-box" x="134" y="136" width="96" height="38"/><text class="dg-t" x="182" y="159" text-anchor="middle">Contact</text><path class="dg-a" d="M230 155 H262"/><rect class="dg-key" x="264" y="128" width="224" height="54"/><text class="dg-t" x="376" y="151" text-anchor="middle">Camera sees the gel deform</text><text class="dg-s" x="376" y="167" text-anchor="middle">colour image</text><path class="dg-a" d="M488 155 H520"/><rect class="dg-box" x="522" y="136" width="178" height="38"/><text class="dg-t" x="611" y="159" text-anchor="middle">Shape + shear + slip</text><text class="dg-note dg-green" x="134.0" y="200">✓ 20-30 µm fingertip detail</text></svg><figcaption>The change is what the sensor measures: the deformation of a soft surface, as an image, instead of a force per cell.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Spatial resolution in micrometres, smaller is finer. The paper gives 5 mm for the pressure array, 20-30 µm for the fingertip version and 1-2 µm for the best case." class="dg-natural" width="820" height="102" viewBox="0 0 820 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="360" y="23" text-anchor="end">Pressure array (Pressure Profile Systems)</text><rect class="dg-bar" x="370" y="10" width="313" height="18"/><text class="dg-barval" x="691" y="23">5000 µm</text><text class="dg-barlabel" x="360" y="53" text-anchor="end">GelSight fingertip (20-30, shown at 30)</text><rect class="dg-bar" x="370" y="40" width="2" height="18"/><text class="dg-barval" x="380" y="53">30 µm</text><text class="dg-barlabel" x="360" y="83" text-anchor="end">GelSight optimised for resolution (1-2, shown at 2)</text><rect class="dg-key" x="370" y="70" width="2" height="18"/><text class="dg-barval" x="380" y="83">2 µm</text></svg><figcaption>Spatial resolution in micrometres, smaller is finer. The paper gives 5 mm for the pressure array, 20-30 µm for the fingertip version and 1-2 µm for the best case.</figcaption></figure>
+<h2>2. How it works</h2>
+<figure class="diagram"><svg role="img" aria-label="Left: an object presses the gel; coloured lights from different sides make the deformed skin look different in each colour channel; a camera below records it. Right: the same image is used twice, once for shape and once for force." viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">INSIDE THE SENSOR (cross-section)</text>
+<rect class="dg-ext" x="60" y="40" width="240" height="46"/><text class="dg-t" x="180" y="60" text-anchor="middle">Object pressed on the gel</text><text class="dg-s" x="180" y="76" text-anchor="middle">any material</text>
+<rect class="dg-key" x="40" y="96" width="280" height="14"/><text class="dg-s" x="326" y="103">membrane</text><text class="dg-s" x="326" y="116">+ markers</text>
+<rect class="dg-box" x="40" y="110" width="280" height="64"/><text class="dg-t" x="180" y="138" text-anchor="middle">Clear soft elastomer</text><text class="dg-s" x="180" y="156" text-anchor="middle">deforms to the object's shape</text>
+<rect class="dg-grp" x="40" y="174" width="280" height="30"/><text class="dg-s" x="180" y="193" text-anchor="middle">support plate</text>
+<rect class="dg-box" x="40" y="236" width="70" height="40"/><text class="dg-t" x="75" y="260" text-anchor="middle">R LED</text>
+<rect class="dg-box" x="145" y="236" width="70" height="40"/><text class="dg-t" x="180" y="260" text-anchor="middle">G LED</text>
+<rect class="dg-box" x="250" y="236" width="70" height="40"/><text class="dg-t" x="285" y="260" text-anchor="middle">B LED</text>
+<path class="dg-ad" d="M75 236 L110 206"/><path class="dg-ad" d="M285 236 L250 206"/><path class="dg-ad" d="M180 236 V206"/>
+<text class="dg-l" x="330" y="250">3 colours,</text><text class="dg-l" x="330" y="264">3 directions</text>
+<rect class="dg-key" x="90" y="320" width="180" height="56"/><text class="dg-t" x="180" y="344" text-anchor="middle">Camera</text><text class="dg-s" x="180" y="362" text-anchor="middle">30 Hz, sees the gel from below</text>
+<path class="dg-a" d="M180 276 V320"/>
+<text class="dg-h" x="430" y="22">WHAT THE IMAGE GIVES YOU</text>
+<rect class="dg-box" x="430" y="60" width="170" height="64"/><text class="dg-t" x="515" y="86" text-anchor="middle">Colour shading</text><text class="dg-s" x="515" y="104" text-anchor="middle">per pixel, 3 channels</text>
+<rect class="dg-key" x="650" y="60" width="150" height="64"/><text class="dg-t" x="725" y="86" text-anchor="middle">Lookup table</text><text class="dg-s" x="725" y="104" text-anchor="middle">colour to surface normal</text>
+<rect class="dg-key" x="840" y="60" width="120" height="64"/><text class="dg-t" x="900" y="86" text-anchor="middle">Height map</text><text class="dg-s" x="900" y="104" text-anchor="middle">Poisson solver</text>
+<path class="dg-a" d="M600 92 H650"/><path class="dg-a" d="M800 92 H840"/>
+<text class="dg-l" x="430" y="150">1. SHAPE and texture: 20-30 µm on the fingertip version</text>
+<rect class="dg-box" x="430" y="200" width="170" height="64"/><text class="dg-t" x="515" y="226" text-anchor="middle">Marker positions</text><text class="dg-s" x="515" y="244" text-anchor="middle">centroids, frame by frame</text>
+<rect class="dg-key" x="650" y="200" width="150" height="64"/><text class="dg-t" x="725" y="226" text-anchor="middle">Motion field</text><text class="dg-s" x="725" y="244" text-anchor="middle">du = u - u0</text>
+<rect class="dg-key" x="840" y="200" width="120" height="64"/><text class="dg-t" x="900" y="226" text-anchor="middle">Force, slip</text><text class="dg-s" x="900" y="244" text-anchor="middle">pattern + size</text>
+<path class="dg-a" d="M600 232 H650"/><path class="dg-a" d="M800 232 H840"/>
+<text class="dg-l" x="430" y="290">2. FORCE, TORQUE and SLIP: spread = normal, shift = shear, rotation = torque</text>
+<rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">For a force that does not depend on the object's shape:</text><text class="dg-s" x="695" y="366" text-anchor="middle">a CNN reads the difference image (now minus untouched) and outputs Fx, Fy, Fz, Tz</text>
+<path class="dg-ad" d="M900 264 V320"/>
+</svg><figcaption>Left: an object presses the gel; coloured lights from different sides make the deformed skin look different in each colour channel; a camera below records it. Right: the same image is used twice, once for shape and once for force.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clear elastomer</td>
+<td>contact</td>
+<td>a deformed surface</td>
+<td>the sensing medium; typically Shore A 5-20 (fingertip: neo-Hookean, 0.145 MPa)</td>
+</tr>
+<tr>
+<td>Reflective membrane</td>
+<td>light</td>
+<td>the same reflectance everywhere</td>
+<td>so shading depends only on the surface slope</td>
+</tr>
+<tr>
+<td>Coloured LEDs</td>
+<td>power</td>
+<td>light from 3+ directions</td>
+<td>each direction in its own colour channel</td>
+</tr>
+<tr>
+<td>Camera</td>
+<td>gel image</td>
+<td>colour image</td>
+<td>cheap USB webcam, 30 Hz, mostly 640 × 480</td>
+</tr>
+<tr>
+<td>Lookup table</td>
+<td>pixel colours</td>
+<td>surface normal</td>
+<td>built once per sensor by pressing a ball</td>
+</tr>
+<tr>
+<td>Poisson solver</td>
+<td>normals</td>
+<td>height map</td>
+<td>integrates slopes into a shape</td>
+</tr>
+<tr>
+<td>Black markers</td>
+<td>their motion</td>
+<td>normal / shear / torque pattern</td>
+<td>spread = normal force, common shift = shear, rotation = torque</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Photometric stereo in one sentence.</strong> If you know how a surface of a given slope looks under each light, then the three colour values at a pixel tell you the slope; integrate the slopes and you get the shape.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Calibration presses a ball of known size on the sensor, so the true surface normal at every pixel is known; this pairs each colour with a normal in the lookup table. Compute the normal the ball gives at a chosen pixel.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d$, $R$</td>
+<td>calibration ball diameter, radius</td>
+<td>input</td>
+<td>3.96 mm, 1.98 mm (the ball used in the paper's shape test)</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>distance of the pixel from the ball's centre line</td>
+<td>input</td>
+<td>1.0 mm</td>
+</tr>
+<tr>
+<td>$f(r)$</td>
+<td>height of the surface, $\sqrt{R^2 - r^2}$</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$g$</td>
+<td>slope (gradient magnitude) $\lvert\nabla f\rvert$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\theta$</td>
+<td>pitch angle $\arctan g$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$g = \frac{r}{\sqrt{R^2 - r^2}}, \qquad \theta = \arctan g, \qquad \text{normal} \propto \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, -1\right)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\sqrt{R^2 - r^2} = \sqrt{1.98^2 - 1^2} = \sqrt{3.920 - 1} = \sqrt{2.920} = 1.709$ mm.</li>
+<li>$g = 1 / 1.709 = 0.585$.</li>
+<li>$\theta = \arctan 0.585 = 30.3°$. The gradient points back toward the ball's centre; that direction is the yaw angle.</li>
+<li>At $r = 1.5$ mm the same steps give $g = 1.5 / 1.292 = 1.16$ and $\theta = 49.2°$.</li>
+</ol>
+<p><strong>Result.</strong> At $r = 1$ mm the surface is tilted 30.3°; at $r = 1.5$ mm it is tilted 49.2°. A small ball therefore covers many slopes in one press.</p>
+<p><strong>Why it matters.</strong> The paper stores the answer in an 80 × 80 × 80 table (8-bit, 3 colour channels; 512,000 entries) and averages many ball presses. The table is why GelSight needs per-sensor calibration, and why a hemispherical ball is a good choice: it contains surface normals in all directions.</p>
+</div>
+<h2>3. From the image to force and slip</h2>
+<ul>
+<li><strong>Markers:</strong> the black dots move with the gel's surface. The pattern says what kind of force it is; the size is "roughly proportional" to the force.</li>
+<li><strong>Why a network:</strong> that proportionality only holds for a fixed contact shape. For unknown shapes the paper trains a CNN (VGG-16 pre-trained on ImageNet, last layer replaced by four outputs: $F_x$, $F_y$, $F_z$, torque $T_z$) on the difference between the current image and the untouched one, with mean squared error.</li>
+<li><strong>Slip alarm:</strong> slip starts at the edge of the contact patch, so markers there move less than markers in the middle. The paper measures how uneven the marker motion is with entropy, $H(X) = -\int p(x)\log p(x)\,dx$, and says a warning threshold on $H$ can prevent slip.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Marker motion in the contact patch</th>
+<th>Histogram of marker displacement</th>
+<th>Entropy (discrete, natural log)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>all markers move the same (stuck)</td>
+<td>one bin holds everything</td>
+<td>$H = 0$</td>
+</tr>
+<tr>
+<td>edge markers lag, four equally common displacement levels</td>
+<td>four equal bins</td>
+<td>$H = \ln 4 = 1.39$</td>
+</tr>
+</tbody>
+</table>
+<p>(Illustrative numbers; the paper reports that entropy keeps increasing as partial slip grows.)</p>
+<h2>4. Versions of the sensor</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Size and resolution</th>
+<th>Light and coating</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desktop (Johnson &amp; Adelson 2009)</td>
+<td>30 cm cube; sensing range about 60 × 40 mm</td>
+<td>3 LED arrays at 60°, semi-specular bronze-flake coating</td>
+<td>the first GelSight</td>
+</tr>
+<tr>
+<td>Side-lit (Johnson et al. 2011)</td>
+<td>higher resolution (best case 1-2 µm when optimised)</td>
+<td>6 white LEDs lit in turn, matte 1 µm silver powder</td>
+<td>too slow for real-time touch</td>
+</tr>
+<tr>
+<td>Fingertip v1 (Li et al.)</td>
+<td>35 × 35 × 60 mm, for a Baxter gripper</td>
+<td>4 colours, acrylic light guides</td>
+<td>normals not precise; hard to build by hand</td>
+</tr>
+<tr>
+<td>Fingertip v2 (Dong et al. 2017)</td>
+<td>similar size, hexagonal; 18 × 14 mm field, 20-30 µm</td>
+<td>RGB LEDs tilted 71°, matte coating</td>
+<td>3D-printable, drawings open-sourced</td>
+</tr>
+</tbody>
+</table>
+<h2>5. What the paper reports</h2>
+<ul>
+<li><strong>Force sensitivity:</strong> mostly below 0.05 N (one case, a soft flat contact read from shape, needs 0.08 N), calibrated with an ATI Nano-17 F/T sensor, which itself limits the test to 0.05 N.</li>
+<li><strong>Force from images:</strong> about 28,815 training images from six balls (12-87 mm), five cylinders (10-70 mm) and two flat plates; tested on 6,705 images of a 25 mm ball, a 22 mm cylinder and a flat plane. $R^2 &gt; 0.9$ for the force readings.</li>
+<li><strong>Uses:</strong> recognising fabrics by texture, estimating hardness, locating a USB plug in the hand before inserting it, and adding a fine point cloud to a gripper's view.</li>
+</ul>
+<h2>6. Caveats</h2>
+<ul>
+<li>The paper calls its force results "preliminary", on basic shapes only. The network depends on its training data and is biased by contact geometry; the authors suggest more complete data (possibly from simulation) or other methods.</li>
+<li>Viscoelasticity: loading and unloading curves differ, so only loading data were used for training.</li>
+<li>Camera latency: a USB webcam with H.264 encoding adds noticeable delay.</li>
+<li>This note is based on the paper's text; I did not check the numeric values printed inside Figure 14 (per-object RMSE).</li>
+</ul>
+<p><strong>Carry forward:</strong> GelSight-type sensors are what <a href="vla-touch.html">VLA-Touch</a>, <a href="taf-vla.html">TaF-VLA</a> and others turn into tokens. <a href="survey-force-sensing.html">Survey 2</a> compares them with wrist F/T and taxel arrays.</p>
+<p><strong>Check question:</strong> the same 3.96 mm ball, a pixel at $r = 0.5$ mm. What are the slope $g$ and the pitch angle $\theta$?</p>
+<details>
+<summary>Answer</summary>
+<p>$\sqrt{1.98^2 - 0.5^2} = \sqrt{3.920 - 0.25} = 1.916$ mm; $g = 0.5 / 1.916 = 0.261$; $\theta = \arctan 0.261 = 14.6°$. Near the ball's centre line the surface is almost flat.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Yuan, Dong, Adelson, <em>GelSight: High-Resolution Robot Tactile Sensors for Estimating Geometry and Force</em>, Sensors 2017, 17, 2762 · 11/2017 (bài báo tạp chí, tổng quan quá trình phát triển cảm biến; nguyên mẫu đầu tiên có từ 2009)</p>
+<p><strong>VẤN ĐỀ</strong> Robot thực sự cần loại tín hiệu xúc giác nào? Con người cảm nhận được hình dạng, kết cấu, độ mềm và sự trượt, dù không đo lực chính xác.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Phần lớn cảm biến xúc giác cho robot "phát hiện tiếp xúc và lực tiếp xúc, hoặc phân bố lực trên vùng đầu ngón". Mảng cảm biến thương mại của Pressure Profile Systems đo áp suất pháp tuyến với độ phân giải 5 mm. Các thiết kế khác thiếu ở chỗ khác: vòm cao su của Tar và Cserey cho lực ba trục nhưng không có phép đo không gian; TacTip theo dõi các điểm đánh dấu nhưng không đo lực; cảm biến của Ito và cộng sự quá lớn cho bàn tay robot. Paper nêu bốn thách thức mở: lực cắt, vùng tiếp xúc, phần cứng gọn, và quy trình chế tạo mà người khác sao chép được.</p>
+<p><strong>Ý TƯỞNG</strong> Coi hình học quan trọng ngang lực. Đặt một lớp đàn hồi mềm có da phản xạ mỏng lên trên camera và đèn nhiều màu; camera thấy sự biến dạng của gel thành một ảnh màu. Dựng hình dạng từ độ sáng tối, còn lực và sự trượt từ chuyển động của các chấm in sẵn.</p>
+<p><strong>KẾT QUẢ</strong> Với bản đầu ngón: ảnh 30 Hz, vùng cảm biến 18 × 14 mm, độ phân giải 20-30 µm, lực nhỏ nhất phát hiện được dưới 0,05 N, và số đo lực có $R^2 &gt; 0{,}9$ trên các vật đơn giản chưa từng thấy.</p>
+</div>
+<h2>1. Vấn đề: cảm biến chạm chỉ nói "mạnh bao nhiêu"</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở thứ cảm biến đo: sự biến dạng của một bề mặt mềm dưới dạng ảnh, thay cho một giá trị lực mỗi ô." class="dg-natural" width="749" height="222" viewBox="0 0 749 222" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="47">Trước</text><text class="dg-lab dg-red" x="14" y="61">Mảng áp suất</text><rect class="dg-box" x="124" y="30" width="96" height="38"/><text class="dg-t" x="172" y="53" text-anchor="middle">Tiếp xúc</text><path class="dg-a" d="M220 49 H252"/><rect class="dg-badbox" x="254" y="14" width="276" height="70"/><text class="dg-t" x="392" y="37" text-anchor="middle">Áp suất mỗi ô</text><text class="dg-s" x="392" y="53" text-anchor="middle">5 mm</text><text class="dg-s" x="392" y="69" text-anchor="middle">biết lực và chỗ, không có hình dạng mịn</text><path class="dg-a" d="M530 49 H562"/><rect class="dg-box" x="564" y="30" width="96" height="38"/><text class="dg-t" x="612" y="53" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="102">✗ biết "đã chạm", không biết chạm vào gì</text><text class="dg-lab dg-green" x="14" y="159">GelSight</text><rect class="dg-box" x="124" y="136" width="96" height="38"/><text class="dg-t" x="172" y="159" text-anchor="middle">Tiếp xúc</text><path class="dg-a" d="M220 155 H252"/><rect class="dg-key" x="254" y="128" width="216" height="54"/><text class="dg-t" x="362" y="151" text-anchor="middle">Camera thấy gel biến dạng</text><text class="dg-s" x="362" y="167" text-anchor="middle">ảnh màu</text><path class="dg-a" d="M470 155 H502"/><rect class="dg-box" x="504" y="136" width="231" height="38"/><text class="dg-t" x="620" y="159" text-anchor="middle">Hình dạng + lực cắt + trượt</text><text class="dg-note dg-green" x="124" y="200">✓ chi tiết 20-30 µm ở đầu ngón</text></svg><figcaption>Thay đổi nằm ở thứ cảm biến đo: sự biến dạng của một bề mặt mềm dưới dạng ảnh, thay cho một giá trị lực mỗi ô.</figcaption></figure>
+<figure class="diagram compact"><svg role="img" aria-label="Độ phân giải không gian tính bằng micromet, càng nhỏ càng mịn. Paper nêu 5 mm cho mảng áp suất, 20-30 µm cho bản đầu ngón và 1-2 µm cho trường hợp tốt nhất." class="dg-natural" width="785" height="102" viewBox="0 0 785 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="325" y="23" text-anchor="end">Mảng áp suất (Pressure Profile Systems)</text><rect class="dg-bar" x="335" y="10" width="313" height="18"/><text class="dg-barval" x="656" y="23">5000 µm</text><text class="dg-barlabel" x="325" y="53" text-anchor="end">GelSight đầu ngón (20-30, hiển thị 30)</text><rect class="dg-bar" x="335" y="40" width="2" height="18"/><text class="dg-barval" x="345" y="53">30 µm</text><text class="dg-barlabel" x="325" y="83" text-anchor="end">GelSight tối ưu độ phân giải (1-2, hiển thị 2)</text><rect class="dg-key" x="335" y="70" width="2" height="18"/><text class="dg-barval" x="345" y="83">2 µm</text></svg><figcaption>Độ phân giải không gian tính bằng micromet, càng nhỏ càng mịn. Paper nêu 5 mm cho mảng áp suất, 20-30 µm cho bản đầu ngón và 1-2 µm cho trường hợp tốt nhất.</figcaption></figure>
+<h2>2. Cách hoạt động</h2>
+<figure class="diagram"><svg role="img" aria-label="Trái: một vật ấn vào gel; đèn nhiều màu từ các phía làm lớp da biến dạng hiện khác nhau ở từng kênh màu; camera bên dưới ghi lại. Phải: cùng một ảnh được dùng hai lần, một lần cho hình dạng và một lần cho lực." viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">INSIDE THE SENSOR (cross-section)</text>
+<rect class="dg-ext" x="60" y="40" width="240" height="46"/><text class="dg-t" x="180" y="60" text-anchor="middle">Object pressed on the gel</text><text class="dg-s" x="180" y="76" text-anchor="middle">any material</text>
+<rect class="dg-key" x="40" y="96" width="280" height="14"/><text class="dg-s" x="326" y="103">membrane</text><text class="dg-s" x="326" y="116">+ markers</text>
+<rect class="dg-box" x="40" y="110" width="280" height="64"/><text class="dg-t" x="180" y="138" text-anchor="middle">Clear soft elastomer</text><text class="dg-s" x="180" y="156" text-anchor="middle">deforms to the object's shape</text>
+<rect class="dg-grp" x="40" y="174" width="280" height="30"/><text class="dg-s" x="180" y="193" text-anchor="middle">support plate</text>
+<rect class="dg-box" x="40" y="236" width="70" height="40"/><text class="dg-t" x="75" y="260" text-anchor="middle">R LED</text>
+<rect class="dg-box" x="145" y="236" width="70" height="40"/><text class="dg-t" x="180" y="260" text-anchor="middle">G LED</text>
+<rect class="dg-box" x="250" y="236" width="70" height="40"/><text class="dg-t" x="285" y="260" text-anchor="middle">B LED</text>
+<path class="dg-ad" d="M75 236 L110 206"/><path class="dg-ad" d="M285 236 L250 206"/><path class="dg-ad" d="M180 236 V206"/>
+<text class="dg-l" x="330" y="250">3 colours,</text><text class="dg-l" x="330" y="264">3 directions</text>
+<rect class="dg-key" x="90" y="320" width="180" height="56"/><text class="dg-t" x="180" y="344" text-anchor="middle">Camera</text><text class="dg-s" x="180" y="362" text-anchor="middle">30 Hz, sees the gel from below</text>
+<path class="dg-a" d="M180 276 V320"/>
+<text class="dg-h" x="430" y="22">WHAT THE IMAGE GIVES YOU</text>
+<rect class="dg-box" x="430" y="60" width="170" height="64"/><text class="dg-t" x="515" y="86" text-anchor="middle">Colour shading</text><text class="dg-s" x="515" y="104" text-anchor="middle">per pixel, 3 channels</text>
+<rect class="dg-key" x="650" y="60" width="150" height="64"/><text class="dg-t" x="725" y="86" text-anchor="middle">Lookup table</text><text class="dg-s" x="725" y="104" text-anchor="middle">colour to surface normal</text>
+<rect class="dg-key" x="840" y="60" width="120" height="64"/><text class="dg-t" x="900" y="86" text-anchor="middle">Height map</text><text class="dg-s" x="900" y="104" text-anchor="middle">Poisson solver</text>
+<path class="dg-a" d="M600 92 H650"/><path class="dg-a" d="M800 92 H840"/>
+<text class="dg-l" x="430" y="150">1. SHAPE and texture: 20-30 µm on the fingertip version</text>
+<rect class="dg-box" x="430" y="200" width="170" height="64"/><text class="dg-t" x="515" y="226" text-anchor="middle">Marker positions</text><text class="dg-s" x="515" y="244" text-anchor="middle">centroids, frame by frame</text>
+<rect class="dg-key" x="650" y="200" width="150" height="64"/><text class="dg-t" x="725" y="226" text-anchor="middle">Motion field</text><text class="dg-s" x="725" y="244" text-anchor="middle">du = u - u0</text>
+<rect class="dg-key" x="840" y="200" width="120" height="64"/><text class="dg-t" x="900" y="226" text-anchor="middle">Force, slip</text><text class="dg-s" x="900" y="244" text-anchor="middle">pattern + size</text>
+<path class="dg-a" d="M600 232 H650"/><path class="dg-a" d="M800 232 H840"/>
+<text class="dg-l" x="430" y="290">2. FORCE, TORQUE and SLIP: spread = normal, shift = shear, rotation = torque</text>
+<rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">For a force that does not depend on the object's shape:</text><text class="dg-s" x="695" y="366" text-anchor="middle">a CNN reads the difference image (now minus untouched) and outputs Fx, Fy, Fz, Tz</text>
+<path class="dg-ad" d="M900 264 V320"/>
+</svg><figcaption>Trái: một vật ấn vào gel; đèn nhiều màu từ các phía làm lớp da biến dạng hiện khác nhau ở từng kênh màu; camera bên dưới ghi lại. Phải: cùng một ảnh được dùng hai lần, một lần cho hình dạng và một lần cho lực.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ phận</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lớp đàn hồi trong suốt</td>
+<td>tiếp xúc</td>
+<td>một bề mặt biến dạng</td>
+<td>môi trường cảm nhận; thường Shore A 5-20 (đầu ngón: neo-Hookean, 0,145 MPa)</td>
+</tr>
+<tr>
+<td>Màng phản xạ</td>
+<td>ánh sáng</td>
+<td>cùng một độ phản xạ ở mọi nơi</td>
+<td>để độ sáng tối chỉ phụ thuộc độ dốc bề mặt</td>
+</tr>
+<tr>
+<td>Đèn LED nhiều màu</td>
+<td>điện</td>
+<td>ánh sáng từ 3 hướng trở lên</td>
+<td>mỗi hướng một kênh màu</td>
+</tr>
+<tr>
+<td>Camera</td>
+<td>ảnh gel</td>
+<td>ảnh màu</td>
+<td>webcam USB rẻ tiền, 30 Hz, phần lớn 640 × 480</td>
+</tr>
+<tr>
+<td>Bảng tra</td>
+<td>màu của pixel</td>
+<td>pháp tuyến bề mặt</td>
+<td>dựng một lần cho mỗi cảm biến bằng cách ấn một quả bóng</td>
+</tr>
+<tr>
+<td>Bộ giải Poisson</td>
+<td>pháp tuyến</td>
+<td>bản đồ độ cao</td>
+<td>tích phân các độ dốc thành hình dạng</td>
+</tr>
+<tr>
+<td>Chấm đen đánh dấu</td>
+<td>chuyển động của chúng</td>
+<td>mẫu lực pháp / lực cắt / mô-men</td>
+<td>tỏa ra = lực pháp tuyến, cùng dịch = lực cắt, xoay = mô-men</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Photometric stereo trong một câu.</strong> Nếu biết một bề mặt có độ dốc nhất định trông thế nào dưới từng đèn, thì ba giá trị màu tại một pixel cho biết độ dốc; tích phân các độ dốc là ra hình dạng.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hiệu chuẩn ấn một quả bóng có kích thước đã biết lên cảm biến, nên pháp tuyến thật tại mọi pixel là biết trước; điều này ghép mỗi màu với một pháp tuyến trong bảng tra. Hãy tính pháp tuyến mà quả bóng cho ở một pixel chọn trước.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d$, $R$</td>
+<td>đường kính, bán kính quả bóng hiệu chuẩn</td>
+<td>input</td>
+<td>3,96 mm, 1,98 mm (quả bóng dùng trong thử nghiệm hình dạng của paper)</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>khoảng cách từ pixel đến trục tâm quả bóng</td>
+<td>input</td>
+<td>1,0 mm</td>
+</tr>
+<tr>
+<td>$f(r)$</td>
+<td>độ cao bề mặt, $\sqrt{R^2 - r^2}$</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$g$</td>
+<td>độ dốc (độ lớn gradient) $\lvert\nabla f\rvert$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\theta$</td>
+<td>góc nghiêng $\arctan g$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$g = \frac{r}{\sqrt{R^2 - r^2}}, \qquad \theta = \arctan g, \qquad \text{pháp tuyến} \propto \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, -1\right)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$\sqrt{R^2 - r^2} = \sqrt{1{,}98^2 - 1^2} = \sqrt{3{,}920 - 1} = \sqrt{2{,}920} = 1{,}709$ mm.</li>
+<li>$g = 1 / 1{,}709 = 0{,}585$.</li>
+<li>$\theta = \arctan 0{,}585 = 30{,}3°$. Gradient hướng về tâm quả bóng; hướng đó là góc yaw.</li>
+<li>Tại $r = 1{,}5$ mm, các bước tương tự cho $g = 1{,}5 / 1{,}292 = 1{,}16$ và $\theta = 49{,}2°$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Tại $r = 1$ mm bề mặt nghiêng 30,3°; tại $r = 1{,}5$ mm nghiêng 49,2°. Vì vậy một quả bóng nhỏ bao quát nhiều độ dốc chỉ trong một lần ấn.</p>
+<p><strong>Ý nghĩa.</strong> Paper lưu kết quả trong một bảng 80 × 80 × 80 (8 bit, 3 kênh màu; 512.000 ô) và lấy trung bình nhiều lần ấn bóng. Bảng này là lý do GelSight cần hiệu chuẩn riêng cho từng cảm biến, và vì sao quả bóng bán cầu là lựa chọn tốt: nó chứa pháp tuyến bề mặt theo mọi hướng.</p>
+</div>
+<h2>3. Từ ảnh đến lực và sự trượt</h2>
+<ul>
+<li><strong>Chấm đánh dấu:</strong> các chấm đen di chuyển theo bề mặt gel. Mẫu chuyển động cho biết loại lực; độ lớn "xấp xỉ tỉ lệ" với lực.</li>
+<li><strong>Vì sao cần mạng nơ-ron:</strong> sự tỉ lệ đó chỉ đúng khi hình dạng tiếp xúc cố định. Với hình dạng chưa biết, paper huấn luyện một CNN (VGG-16 tiền huấn luyện trên ImageNet, lớp cuối thay bằng bốn đầu ra: $F_x$, $F_y$, $F_z$, mô-men $T_z$) trên hiệu của ảnh hiện tại và ảnh lúc chưa chạm, với sai số bình phương trung bình.</li>
+<li><strong>Chuông báo trượt:</strong> sự trượt bắt đầu từ rìa vùng tiếp xúc, nên các chấm ở rìa dịch chuyển ít hơn các chấm ở giữa. Paper đo độ không đồng đều của chuyển động chấm bằng entropy, $H(X) = -\int p(x)\log p(x)\,dx$, và nói có thể đặt ngưỡng cảnh báo trên $H$ để ngăn trượt.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Chuyển động chấm trong vùng tiếp xúc</th>
+<th>Histogram độ dịch chuyển của chấm</th>
+<th>Entropy (rời rạc, log tự nhiên)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mọi chấm dịch như nhau (dính)</td>
+<td>một bin chứa tất cả</td>
+<td>$H = 0$</td>
+</tr>
+<tr>
+<td>chấm ở rìa tụt lại, bốn mức dịch chuyển phổ biến như nhau</td>
+<td>bốn bin bằng nhau</td>
+<td>$H = \ln 4 = 1{,}39$</td>
+</tr>
+</tbody>
+</table>
+<p>(Số minh họa; paper báo cáo entropy tăng liên tục khi trượt từng phần tăng.)</p>
+<h2>4. Các phiên bản của cảm biến</h2>
+<table>
+<thead>
+<tr>
+<th>Phiên bản</th>
+<th>Kích thước và độ phân giải</th>
+<th>Ánh sáng và lớp phủ</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Để bàn (Johnson &amp; Adelson 2009)</td>
+<td>khối lập phương 30 cm; vùng cảm biến khoảng 60 × 40 mm</td>
+<td>3 dãy LED ở 60°, lớp phủ bán phản xạ từ vảy đồng</td>
+<td>GelSight đầu tiên</td>
+</tr>
+<tr>
+<td>Chiếu bên (Johnson và cộng sự 2011)</td>
+<td>độ phân giải cao hơn (tốt nhất 1-2 µm khi tối ưu)</td>
+<td>6 LED trắng bật lần lượt, bột bạc 1 µm mờ</td>
+<td>quá chậm cho xúc giác thời gian thực</td>
+</tr>
+<tr>
+<td>Đầu ngón v1 (Li và cộng sự)</td>
+<td>35 × 35 × 60 mm, cho tay kẹp Baxter</td>
+<td>4 màu, tấm dẫn sáng acrylic</td>
+<td>pháp tuyến chưa chính xác; chế tạo tay rất cầu kỳ</td>
+</tr>
+<tr>
+<td>Đầu ngón v2 (Dong và cộng sự 2017)</td>
+<td>cỡ tương tự, hình lục giác; vùng 18 × 14 mm, 20-30 µm</td>
+<td>LED RGB nghiêng 71°, lớp phủ mờ</td>
+<td>in 3D được, bản vẽ mở nguồn</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Paper báo cáo gì</h2>
+<ul>
+<li><strong>Độ nhạy lực:</strong> phần lớn dưới 0,05 N (một trường hợp, tiếp xúc phẳng mềm đọc từ hình dạng, cần 0,08 N), hiệu chuẩn bằng cảm biến F/T ATI Nano-17, chính cảm biến này cũng giới hạn phép thử ở 0,05 N.</li>
+<li><strong>Lực từ ảnh:</strong> khoảng 28.815 ảnh huấn luyện từ sáu quả bóng (12-87 mm), năm hình trụ (10-70 mm) và hai tấm phẳng; kiểm tra trên 6.705 ảnh của một quả bóng 25 mm, một hình trụ 22 mm và một mặt phẳng. $R^2 &gt; 0{,}9$ cho các số đo lực.</li>
+<li><strong>Ứng dụng:</strong> nhận diện vải qua kết cấu, ước lượng độ cứng, định vị đầu cắm USB trong tay trước khi cắm, và bổ sung đám mây điểm mịn cho góc nhìn của tay kẹp.</li>
+</ul>
+<h2>6. Lưu ý</h2>
+<ul>
+<li>Paper gọi kết quả về lực là "sơ bộ", chỉ trên các hình cơ bản. Mạng phụ thuộc dữ liệu huấn luyện và bị lệch theo hình học tiếp xúc; các tác giả đề xuất bộ dữ liệu đầy đủ hơn (có thể từ mô phỏng) hoặc phương pháp khác.</li>
+<li>Tính nhớt-đàn hồi: đường tải và dỡ tải khác nhau, nên chỉ dùng dữ liệu lúc tải để huấn luyện.</li>
+<li>Độ trễ camera: webcam USB với mã hóa H.264 gây trễ đáng kể.</li>
+<li>Bài này dựa trên văn bản của paper; mình chưa kiểm tra các giá trị số in trong Hình 14 (RMSE từng vật).</li>
+</ul>
+<p><strong>Mang theo:</strong> các cảm biến kiểu GelSight là thứ mà <a href="vla-touch.html">VLA-Touch</a>, <a href="taf-vla.html">TaF-VLA</a> và các phương pháp khác biến thành token. <a href="survey-force-sensing.html">Survey 2</a> so sánh chúng với F/T ở cổ tay và lưới taxel.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> cùng quả bóng 3,96 mm, một pixel ở $r = 0{,}5$ mm. Độ dốc $g$ và góc nghiêng $\theta$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\sqrt{1{,}98^2 - 0{,}5^2} = \sqrt{3{,}920 - 0{,}25} = 1{,}916$ mm; $g = 0{,}5 / 1{,}916 = 0{,}261$; $\theta = \arctan 0{,}261 = 14{,}6°$. Gần trục tâm quả bóng, bề mặt gần như phẳng.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

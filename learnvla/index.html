@@ -138,7 +138,7 @@ function toggleMenu(force) {
       var ready = 0;
       var items = g.items.map(function (it) {
         var t = '<span class="toc-label">' + escapeHtml(it.title) +
-          (it.date ? '<small class="toc-date">arXiv · ' + escapeHtml(it.date) + '</small>' : '') + '</span>';
+          (it.date ? '<small class="toc-date">' + escapeHtml(it.venue || 'arXiv') + ' · ' + escapeHtml(it.date) + '</small>' : '') + '</span>';
         if (done[it.slug]) {
           ready++;
           return '<li><a class="toc-item" href="posts/' + encodeURIComponent(it.slug) + '.html">' +

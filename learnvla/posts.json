@@ -1,5 +1,22 @@
 [
   {
+    "slug": "gelsight",
+    "date": "2026-10-19",
+    "date_display": "19 Oct 2026",
+    "title_en": "GelSight: A Camera Under a Gel Skin That Sees Shape and Force",
+    "title_vi": "GelSight: Camera dưới lớp da gel nhìn ra hình dạng và lực",
+    "excerpt_en": "Pressure-array tactile sensors tell a robot where it is pressed and how hard, in cells about 5 mm wide. GelSight puts a camera behind a soft gel and reads the gel's deformation instead: shape at 20-30 micrometres, plus shear, torque and slip.",
+    "excerpt_vi": "Cảm biến xúc giác dạng lưới áp suất cho robot biết chỗ bị ấn và ấn mạnh bao nhiêu, theo ô rộng khoảng 5 mm. GelSight đặt camera sau một lớp gel mềm và đọc sự biến dạng của gel: hình dạng ở mức 20-30 micromet, cộng với lực cắt, mô-men và trượt.",
+    "tags": [
+      "Force",
+      "Tactile",
+      "GelSight",
+      "Sensors",
+      "Paper Notes"
+    ],
+    "read_min": 8
+  },
+  {
     "slug": "ta-vla",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",

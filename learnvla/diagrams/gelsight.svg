@@ -1,0 +1,27 @@
+<svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">INSIDE THE SENSOR (cross-section)</text>
+<rect class="dg-ext" x="60" y="40" width="240" height="46"/><text class="dg-t" x="180" y="60" text-anchor="middle">Object pressed on the gel</text><text class="dg-s" x="180" y="76" text-anchor="middle">any material</text>
+<rect class="dg-key" x="40" y="96" width="280" height="14"/><text class="dg-s" x="326" y="103">membrane</text><text class="dg-s" x="326" y="116">+ markers</text>
+<rect class="dg-box" x="40" y="110" width="280" height="64"/><text class="dg-t" x="180" y="138" text-anchor="middle">Clear soft elastomer</text><text class="dg-s" x="180" y="156" text-anchor="middle">deforms to the object's shape</text>
+<rect class="dg-grp" x="40" y="174" width="280" height="30"/><text class="dg-s" x="180" y="193" text-anchor="middle">support plate</text>
+<rect class="dg-box" x="40" y="236" width="70" height="40"/><text class="dg-t" x="75" y="260" text-anchor="middle">R LED</text>
+<rect class="dg-box" x="145" y="236" width="70" height="40"/><text class="dg-t" x="180" y="260" text-anchor="middle">G LED</text>
+<rect class="dg-box" x="250" y="236" width="70" height="40"/><text class="dg-t" x="285" y="260" text-anchor="middle">B LED</text>
+<path class="dg-ad" d="M75 236 L110 206"/><path class="dg-ad" d="M285 236 L250 206"/><path class="dg-ad" d="M180 236 V206"/>
+<text class="dg-l" x="330" y="250">3 colours,</text><text class="dg-l" x="330" y="264">3 directions</text>
+<rect class="dg-key" x="90" y="320" width="180" height="56"/><text class="dg-t" x="180" y="344" text-anchor="middle">Camera</text><text class="dg-s" x="180" y="362" text-anchor="middle">30 Hz, sees the gel from below</text>
+<path class="dg-a" d="M180 276 V320"/>
+<text class="dg-h" x="430" y="22">WHAT THE IMAGE GIVES YOU</text>
+<rect class="dg-box" x="430" y="60" width="170" height="64"/><text class="dg-t" x="515" y="86" text-anchor="middle">Colour shading</text><text class="dg-s" x="515" y="104" text-anchor="middle">per pixel, 3 channels</text>
+<rect class="dg-key" x="650" y="60" width="150" height="64"/><text class="dg-t" x="725" y="86" text-anchor="middle">Lookup table</text><text class="dg-s" x="725" y="104" text-anchor="middle">colour to surface normal</text>
+<rect class="dg-key" x="840" y="60" width="120" height="64"/><text class="dg-t" x="900" y="86" text-anchor="middle">Height map</text><text class="dg-s" x="900" y="104" text-anchor="middle">Poisson solver</text>
+<path class="dg-a" d="M600 92 H650"/><path class="dg-a" d="M800 92 H840"/>
+<text class="dg-l" x="430" y="150">1. SHAPE and texture: 20-30 µm on the fingertip version</text>
+<rect class="dg-box" x="430" y="200" width="170" height="64"/><text class="dg-t" x="515" y="226" text-anchor="middle">Marker positions</text><text class="dg-s" x="515" y="244" text-anchor="middle">centroids, frame by frame</text>
+<rect class="dg-key" x="650" y="200" width="150" height="64"/><text class="dg-t" x="725" y="226" text-anchor="middle">Motion field</text><text class="dg-s" x="725" y="244" text-anchor="middle">du = u - u0</text>
+<rect class="dg-key" x="840" y="200" width="120" height="64"/><text class="dg-t" x="900" y="226" text-anchor="middle">Force, slip</text><text class="dg-s" x="900" y="244" text-anchor="middle">pattern + size</text>
+<path class="dg-a" d="M600 232 H650"/><path class="dg-a" d="M800 232 H840"/>
+<text class="dg-l" x="430" y="290">2. FORCE, TORQUE and SLIP: spread = normal, shift = shear, rotation = torque</text>
+<rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">For a force that does not depend on the object's shape:</text><text class="dg-s" x="695" y="366" text-anchor="middle">a CNN reads the difference image (now minus untouched) and outputs Fx, Fy, Fz, Tz</text>
+<path class="dg-ad" d="M900 264 V320"/>
+</svg>
