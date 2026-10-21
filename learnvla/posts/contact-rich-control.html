@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A position controller told to be 2 mm inside a rigid part will push until something gives. Impedance control makes the robot act like a spring instead, admittance turns measured force into motion, and hybrid control splits axes into force and position. Worked: the force from a stiff versus a soft setting, and critical damping.">
+<title>Contact-Rich Control: Impedance, Admittance and Hybrid Force–Position · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Contact-Rich Control: Impedance, Admittance and Hybrid Force–Position">
+<meta property="og:description" content="A position controller told to be 2 mm inside a rigid part will push until something gives. Impedance control makes the robot act like a spring instead, admittance turns measured force into motion, and hybrid control splits axes into force and position. Worked: the force from a stiff versus a soft setting, and critical damping.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Contact-Rich Control: Impedance, Admittance and Hybrid Force–Position</h1>
+    <h1 data-vi>Điều khiển giàu tiếp xúc: Impedance, admittance và lai lực–vị trí</h1>
+
+    <p class="post-excerpt-lead" data-en>A position controller told to be 2 mm inside a rigid part will push until something gives. Impedance control makes the robot act like a spring instead, admittance turns measured force into motion, and hybrid control splits axes into force and position. Worked: the force from a stiff versus a soft setting, and critical damping.</p>
+    <p class="post-excerpt-lead" data-vi>Bộ điều khiển vị trí được bảo phải nằm sâu 2 mm trong một chi tiết cứng sẽ ấn tới khi có thứ gì đó chịu thua. Điều khiển impedance khiến robot cư xử như một lò xo, admittance biến lực đo được thành chuyển động, còn điều khiển lai chia các trục thành trục lực và trục vị trí. Tính tay: lực sinh ra với độ cứng cao so với thấp, và giảm chấn tới hạn.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Force</span><span class="pill">Control</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>CONCEPT</strong> Low-level control for contact. Classic sources: N. Hogan, <em>Impedance Control: An Approach to Manipulation</em> (1985); M. Raibert and J. Craig, <em>Hybrid Position/Force Control of Manipulators</em> (1981)</p>
+<p><strong>PROBLEM</strong> A VLA outputs poses a few to 50 times per second; between them, a low-level controller decides what the motors do. Against a rigid part, a millimetre of pose error can mean a large force.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Stiff position control treats any error as something to remove at all costs, so pressing into a surface makes force climb until the part breaks or the robot's protective stop triggers. Pure force control has no notion of where to go and drifts in free space.</p>
+<p><strong>IDEA</strong> Control the <em>relationship</em> between motion and force. Impedance control makes the end-effector behave like a spring and damper around the target; admittance control measures force and moves in response; hybrid control regulates force along some axes and position along the others.</p>
+<p><strong>RESULT</strong> The force VLAs on this site all sit on top of such a controller: FIRe uses task-space impedance at 1 kHz, Facet-0 a 200 Hz compliant controller, CR-VLA-Force an adaptive impedance (400–2500 N/m) on a UR5e, ForceVLA2 and Tabero hybrid force–position control.</p>
+</div>
+<h2>1. The problem: a small error against a hard surface</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is that the controller is told *how stiff to be*, not only where to be." class="dg-natural" width="807" height="276" viewBox="0 0 807 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Before</text><text class="dg-lab dg-red" x="14" y="46">Stiff position control</text><rect class="dg-box" x="179" y="15" width="193" height="38"/><text class="dg-t" x="275" y="38" text-anchor="middle">Target inside the part</text><path class="dg-a" d="M372 34 H404"/><rect class="dg-badbox" x="406" y="15" width="239" height="38"/><text class="dg-t" x="525" y="38" text-anchor="middle">Remove the error at any cost</text><path class="dg-a" d="M645 34 H677"/><rect class="dg-box" x="679" y="15" width="96" height="38"/><text class="dg-t" x="727" y="38" text-anchor="middle">Motors</text><text class="dg-note dg-red" x="178.8" y="72">✗ force spikes, protective stop</text><text class="dg-lab dg-red" x="14" y="116">Before</text><text class="dg-lab dg-red" x="14" y="130">Pure force control</text><rect class="dg-box" x="179" y="99" width="117" height="38"/><text class="dg-t" x="237" y="122" text-anchor="middle">Force target</text><path class="dg-a" d="M296 118 H328"/><rect class="dg-badbox" x="330" y="99" width="186" height="38"/><text class="dg-t" x="423" y="122" text-anchor="middle">No position reference</text><path class="dg-a" d="M516 118 H548"/><rect class="dg-box" x="550" y="99" width="96" height="38"/><text class="dg-t" x="598" y="122" text-anchor="middle">Motors</text><text class="dg-note dg-red" x="178.8" y="156">✗ drifts when not touching</text><text class="dg-lab dg-green" x="14" y="213">Impedance / hybrid</text><rect class="dg-box" x="179" y="190" width="239" height="38"/><text class="dg-t" x="298" y="213" text-anchor="middle">Target + stiffness (+ force)</text><path class="dg-a" d="M418 209 H450"/><rect class="dg-key" x="452" y="182" width="212" height="54"/><text class="dg-t" x="557" y="205" text-anchor="middle">Spring-like behaviour</text><text class="dg-s" x="557" y="221" text-anchor="middle">force grows gently with error</text><path class="dg-a" d="M663 209 H695"/><rect class="dg-box" x="697" y="190" width="96" height="38"/><text class="dg-t" x="745" y="213" text-anchor="middle">Motors</text><text class="dg-note dg-green" x="178.8" y="254">✓ safe contact, still goes where told</text></svg><figcaption>The change is that the controller is told *how stiff to be*, not only where to be.</figcaption></figure>
+<h2>2. Three controllers</h2>
+<figure class="diagram"><svg role="img" aria-label="Top: the same target 2 mm inside a part, under three control laws. Bottom: the VLA sets targets slowly; the controller reads force and closes the loop fast." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THREE WAYS A LOW-LEVEL CONTROLLER CAN TREAT A TARGET THAT HITS A SURFACE</text>
+<rect class="dg-badbox" x="20" y="50" width="290" height="110"/><text class="dg-t" x="165" y="76" text-anchor="middle">stiff position control</text><text class="dg-s" x="165" y="98" text-anchor="middle">"be exactly there"</text><text class="dg-s" x="165" y="116" text-anchor="middle">target 2 mm inside the part:</text><text class="dg-s" x="165" y="134" text-anchor="middle">force rises until something gives</text>
+<rect class="dg-key" x="345" y="50" width="290" height="110"/><text class="dg-t" x="490" y="76" text-anchor="middle">impedance / admittance</text><text class="dg-s" x="490" y="98" text-anchor="middle">"act like a spring around there"</text><text class="dg-s" x="490" y="116" text-anchor="middle">F = K (x_d - x) - D x'</text><text class="dg-s" x="490" y="134" text-anchor="middle">2 mm inside, K 1000 N/m: about 2 N</text>
+<rect class="dg-key" x="670" y="50" width="290" height="110"/><text class="dg-t" x="815" y="76" text-anchor="middle">hybrid force / position</text><text class="dg-s" x="815" y="98" text-anchor="middle">"push 10 N down, hold x and y"</text><text class="dg-s" x="815" y="116" text-anchor="middle">force control along some axes,</text><text class="dg-s" x="815" y="134" text-anchor="middle">position control along the rest</text>
+<rect class="dg-ext" x="20" y="200" width="290" height="80"/><text class="dg-t" x="165" y="226" text-anchor="middle">VLA outputs</text><text class="dg-s" x="165" y="246" text-anchor="middle">a pose chunk, maybe a force</text><text class="dg-s" x="165" y="262" text-anchor="middle">a few to 50 times a second</text>
+<rect class="dg-box" x="345" y="200" width="290" height="80"/><text class="dg-t" x="490" y="226" text-anchor="middle">controller</text><text class="dg-s" x="490" y="246" text-anchor="middle">200 Hz to 1 kHz, reads the force,</text><text class="dg-s" x="490" y="262" text-anchor="middle">decides how hard to push</text>
+<rect class="dg-ext" x="670" y="200" width="290" height="80"/><text class="dg-t" x="815" y="226" text-anchor="middle">robot + part</text><text class="dg-s" x="815" y="246" text-anchor="middle">rigid contact: tiny error,</text><text class="dg-s" x="815" y="262" text-anchor="middle">large force</text>
+<path class="dg-a" d="M310 240 H345"/><path class="dg-a" d="M635 240 H670"/><path class="dg-ad" d="M815 280 V302 H490 V280"/>
+</svg><figcaption>Top: the same target 2 mm inside a part, under three control laws. Bottom: the VLA sets targets slowly; the controller reads force and closes the loop fast.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Controller</th>
+<th>Law</th>
+<th>What you set</th>
+<th>Good for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Impedance</td>
+<td>$F = K(x_d - x) - D\dot x$ (+ feedforward $F_d$)</td>
+<td>stiffness $K$, damping $D$</td>
+<td>torque-controlled arms; gentle contact</td>
+</tr>
+<tr>
+<td>Admittance</td>
+<td>measure $F$, move: $\dot x = (F - F_d)/D_a$</td>
+<td>admittance (how much motion per newton)</td>
+<td>position-controlled arms with a force sensor, such as UR arms</td>
+</tr>
+<tr>
+<td>Hybrid force–position</td>
+<td>force law on chosen axes, position law on the others</td>
+<td>which axes are force-controlled, force targets</td>
+<td>pressing, wiping, inserting along one axis</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> A pose target lands 2 mm inside a rigid part (a perception error). Compare the force under a stiff and a soft setting, and pick the damping that stops a soft spring from oscillating.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\Delta x$</td>
+<td>how far the target is inside the part</td>
+<td>input</td>
+<td>0.002 m</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>controller stiffness</td>
+<td>input</td>
+<td>50,000 N/m (stiff) or 1,000 N/m (soft)</td>
+</tr>
+<tr>
+<td>$m$</td>
+<td>apparent mass of the end-effector</td>
+<td>constant</td>
+<td>2 kg (illustrative)</td>
+</tr>
+<tr>
+<td>$F$</td>
+<td>steady contact force</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$D_{crit}$</td>
+<td>critical damping</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong> (part much stiffer than the controller)</p>
+<p>$$F \approx K\,\Delta x, \qquad D_{crit} = 2\sqrt{K m}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Stiff: $F = 50{,}000 \times 0.002 = 100$ N. CR-VLA-Force reports its UR5e stopping above 75 N.</li>
+<li>Soft: $F = 1{,}000 \times 0.002 = 2$ N.</li>
+<li>Damping for the soft setting: $D_{crit} = 2\sqrt{1{,}000 \times 2} = 2 \times 44.7 = 89.4$ N·s/m.</li>
+</ol>
+<p><strong>Result.</strong> The same 2 mm error gives 100 N with the stiff setting and 2 N with the soft one; about 89 N·s/m of damping lets the soft spring settle without bouncing.</p>
+<p><strong>Why it matters.</strong> Stiffness converts position error into force. A policy that is a few millimetres off is normal; with a soft controller that costs a few newtons, with a stiff one it costs the part. The price of softness is accuracy against disturbances, which is why CR-VLA-Force adapts $K$ between its bounds from the force error, and why many policies output a force or stiffness as well as a pose (<a href="survey-force-output.html">Survey 3</a>).</p>
+</div>
+<h2>3. Choosing in practice</h2>
+<ul>
+<li><strong>Your arm decides first.</strong> Torque-controlled arms (Franka, Flexiv) run impedance control directly. Position-controlled arms such as UR arms usually do admittance-style control on top of a wrist force sensor; UR arms offer a force mode in their scripting language for this. CR-VLA-Force builds its controller on a UR5e through RTDE.</li>
+<li><strong>Press, insert, wipe: hybrid.</strong> Pushing a cap onto a can is naturally force along the pressing axis and position across it: hold 10 N down, stay centred.</li>
+<li><strong>Let the policy set the controller.</strong> ForceVLA2 outputs pose and force; CR-VLA-Force outputs a desired force that the controller tracks; FIRe adds a learned residual on top of an impedance controller (<a href="residual-policy.html">residual policy</a>).</li>
+</ul>
+<p><strong>Carry forward:</strong> with sensing and control in place, the force papers differ in where they put force into the VLA. The map of all of them: <a href="survey-force-map.html">Survey 1</a>.</p>
+<p><strong>Check question:</strong> With $K = 2{,}500$ N/m (CR-VLA-Force's upper bound) and the same 2 mm error, what is the force? What damping is critical for $m = 2$ kg?</p>
+<details>
+<summary>Answer</summary>
+<p>$F = 2{,}500 \times 0.002 = 5$ N. $D_{crit} = 2\sqrt{2{,}500 \times 2} = 2 \times 70.7 = 141.4$ N·s/m.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>KHÁI NIỆM</strong> Điều khiển mức thấp cho tiếp xúc. Nguồn kinh điển: N. Hogan, <em>Impedance Control: An Approach to Manipulation</em> (1985); M. Raibert và J. Craig, <em>Hybrid Position/Force Control of Manipulators</em> (1981)</p>
+<p><strong>VẤN ĐỀ</strong> VLA xuất pose vài tới 50 lần mỗi giây; giữa các lần đó, một bộ điều khiển mức thấp quyết định động cơ làm gì. Khi ép vào một chi tiết cứng, sai một milimét pose có thể thành một lực lớn.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Điều khiển vị trí cứng coi mọi sai số là thứ phải xóa bằng mọi giá, nên ấn vào một bề mặt làm lực tăng tới khi chi tiết gãy hoặc cơ chế dừng bảo vệ của robot kích hoạt. Điều khiển lực thuần túy không biết phải đi đâu và trôi khi ở trong không khí.</p>
+<p><strong>Ý TƯỞNG</strong> Điều khiển <em>mối quan hệ</em> giữa chuyển động và lực. Điều khiển impedance khiến đầu công tác cư xử như lò xo và bộ giảm chấn quanh đích; điều khiển admittance đo lực rồi di chuyển đáp lại; điều khiển lai điều chỉnh lực theo một số trục và vị trí theo các trục còn lại.</p>
+<p><strong>KẾT QUẢ</strong> Các VLA lực trên trang này đều đặt trên một bộ điều khiển như vậy: FIRe dùng impedance không gian tác vụ ở 1 kHz, Facet-0 một bộ điều khiển mềm 200 Hz, CR-VLA-Force một impedance thích nghi (400–2500 N/m) trên UR5e, ForceVLA2 và Tabero điều khiển lai lực–vị trí.</p>
+</div>
+<h2>1. Vấn đề: một sai số nhỏ trước một bề mặt cứng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở chỗ bộ điều khiển được bảo *cứng tới mức nào*, chứ không chỉ phải ở đâu." class="dg-natural" width="758" height="276" viewBox="0 0 758 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Trước</text><text class="dg-lab dg-red" x="14" y="46">Điều khiển vị trí cứng</text><rect class="dg-box" x="179" y="15" width="201" height="38"/><text class="dg-t" x="279" y="38" text-anchor="middle">Đích nằm trong chi tiết</text><path class="dg-a" d="M380 34 H412"/><rect class="dg-badbox" x="414" y="15" width="201" height="38"/><text class="dg-t" x="514" y="38" text-anchor="middle">Xóa sai số bằng mọi giá</text><path class="dg-a" d="M614 34 H646"/><rect class="dg-box" x="648" y="15" width="96" height="38"/><text class="dg-t" x="696" y="38" text-anchor="middle">Động cơ</text><text class="dg-note dg-red" x="178.8" y="72">✗ lực vọt lên, dừng bảo vệ</text><text class="dg-lab dg-red" x="14" y="116">Trước</text><text class="dg-lab dg-red" x="14" y="130">Điều khiển lực thuần</text><rect class="dg-box" x="179" y="99" width="96" height="38"/><text class="dg-t" x="227" y="122" text-anchor="middle">Đích lực</text><path class="dg-a" d="M275 118 H307"/><rect class="dg-badbox" x="309" y="99" width="170" height="38"/><text class="dg-t" x="394" y="122" text-anchor="middle">Không có mốc vị trí</text><path class="dg-a" d="M479 118 H511"/><rect class="dg-box" x="513" y="99" width="96" height="38"/><text class="dg-t" x="561" y="122" text-anchor="middle">Động cơ</text><text class="dg-note dg-red" x="178.8" y="156">✗ trôi khi không chạm</text><text class="dg-lab dg-green" x="14" y="213">Impedance / lai</text><rect class="dg-box" x="179" y="190" width="193" height="38"/><text class="dg-t" x="275" y="213" text-anchor="middle">Đích + độ cứng (+ lực)</text><path class="dg-a" d="M372 209 H404"/><rect class="dg-key" x="406" y="182" width="199" height="54"/><text class="dg-t" x="505" y="205" text-anchor="middle">Cư xử như lò xo</text><text class="dg-s" x="505" y="221" text-anchor="middle">lực tăng từ tốn theo sai số</text><path class="dg-a" d="M605 209 H637"/><rect class="dg-box" x="639" y="190" width="96" height="38"/><text class="dg-t" x="687" y="213" text-anchor="middle">Động cơ</text><text class="dg-note dg-green" x="178.8" y="254">✓ tiếp xúc an toàn, vẫn đi đúng chỗ</text></svg><figcaption>Thay đổi nằm ở chỗ bộ điều khiển được bảo *cứng tới mức nào*, chứ không chỉ phải ở đâu.</figcaption></figure>
+<h2>2. Ba bộ điều khiển</h2>
+<figure class="diagram"><svg role="img" aria-label="Trên: cùng một đích nằm sâu 2 mm trong chi tiết, dưới ba luật điều khiển. Dưới: VLA đặt đích chậm; bộ điều khiển đọc lực và khép vòng nhanh." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THREE WAYS A LOW-LEVEL CONTROLLER CAN TREAT A TARGET THAT HITS A SURFACE</text>
+<rect class="dg-badbox" x="20" y="50" width="290" height="110"/><text class="dg-t" x="165" y="76" text-anchor="middle">stiff position control</text><text class="dg-s" x="165" y="98" text-anchor="middle">"be exactly there"</text><text class="dg-s" x="165" y="116" text-anchor="middle">target 2 mm inside the part:</text><text class="dg-s" x="165" y="134" text-anchor="middle">force rises until something gives</text>
+<rect class="dg-key" x="345" y="50" width="290" height="110"/><text class="dg-t" x="490" y="76" text-anchor="middle">impedance / admittance</text><text class="dg-s" x="490" y="98" text-anchor="middle">"act like a spring around there"</text><text class="dg-s" x="490" y="116" text-anchor="middle">F = K (x_d - x) - D x'</text><text class="dg-s" x="490" y="134" text-anchor="middle">2 mm inside, K 1000 N/m: about 2 N</text>
+<rect class="dg-key" x="670" y="50" width="290" height="110"/><text class="dg-t" x="815" y="76" text-anchor="middle">hybrid force / position</text><text class="dg-s" x="815" y="98" text-anchor="middle">"push 10 N down, hold x and y"</text><text class="dg-s" x="815" y="116" text-anchor="middle">force control along some axes,</text><text class="dg-s" x="815" y="134" text-anchor="middle">position control along the rest</text>
+<rect class="dg-ext" x="20" y="200" width="290" height="80"/><text class="dg-t" x="165" y="226" text-anchor="middle">VLA outputs</text><text class="dg-s" x="165" y="246" text-anchor="middle">a pose chunk, maybe a force</text><text class="dg-s" x="165" y="262" text-anchor="middle">a few to 50 times a second</text>
+<rect class="dg-box" x="345" y="200" width="290" height="80"/><text class="dg-t" x="490" y="226" text-anchor="middle">controller</text><text class="dg-s" x="490" y="246" text-anchor="middle">200 Hz to 1 kHz, reads the force,</text><text class="dg-s" x="490" y="262" text-anchor="middle">decides how hard to push</text>
+<rect class="dg-ext" x="670" y="200" width="290" height="80"/><text class="dg-t" x="815" y="226" text-anchor="middle">robot + part</text><text class="dg-s" x="815" y="246" text-anchor="middle">rigid contact: tiny error,</text><text class="dg-s" x="815" y="262" text-anchor="middle">large force</text>
+<path class="dg-a" d="M310 240 H345"/><path class="dg-a" d="M635 240 H670"/><path class="dg-ad" d="M815 280 V302 H490 V280"/>
+</svg><figcaption>Trên: cùng một đích nằm sâu 2 mm trong chi tiết, dưới ba luật điều khiển. Dưới: VLA đặt đích chậm; bộ điều khiển đọc lực và khép vòng nhanh.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ điều khiển</th>
+<th>Luật</th>
+<th>Bạn đặt gì</th>
+<th>Hợp với</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Impedance</td>
+<td>$F = K(x_d - x) - D\dot x$ (+ lực bù trước $F_d$)</td>
+<td>độ cứng $K$, giảm chấn $D$</td>
+<td>cánh tay điều khiển mô-men; tiếp xúc nhẹ nhàng</td>
+</tr>
+<tr>
+<td>Admittance</td>
+<td>đo $F$, rồi di chuyển: $\dot x = (F - F_d)/D_a$</td>
+<td>độ dẫn nạp (bao nhiêu chuyển động cho mỗi newton)</td>
+<td>cánh tay điều khiển vị trí có cảm biến lực, như cánh tay UR</td>
+</tr>
+<tr>
+<td>Lai lực–vị trí</td>
+<td>luật lực trên các trục được chọn, luật vị trí trên các trục còn lại</td>
+<td>trục nào điều khiển lực, đích lực</td>
+<td>ấn, lau, cắm theo một trục</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một đích pose rơi sâu 2 mm vào trong một chi tiết cứng (do sai số nhận thức). So lực sinh ra với độ cứng cao và thấp, và chọn giảm chấn để lò xo mềm không dao động.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\Delta x$</td>
+<td>đích nằm sâu trong chi tiết bao nhiêu</td>
+<td>input</td>
+<td>0,002 m</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>độ cứng bộ điều khiển</td>
+<td>input</td>
+<td>50.000 N/m (cứng) hoặc 1.000 N/m (mềm)</td>
+</tr>
+<tr>
+<td>$m$</td>
+<td>khối lượng biểu kiến của đầu công tác</td>
+<td>hằng số</td>
+<td>2 kg (minh họa)</td>
+</tr>
+<tr>
+<td>$F$</td>
+<td>lực tiếp xúc ổn định</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$D_{crit}$</td>
+<td>giảm chấn tới hạn</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (chi tiết cứng hơn nhiều so với bộ điều khiển)</p>
+<p>$$F \approx K\,\Delta x, \qquad D_{crit} = 2\sqrt{K m}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Cứng: $F = 50.000 \times 0{,}002 = 100$ N. CR-VLA-Force báo cáo UR5e của họ dừng khi vượt 75 N.</li>
+<li>Mềm: $F = 1.000 \times 0{,}002 = 2$ N.</li>
+<li>Giảm chấn cho thiết lập mềm: $D_{crit} = 2\sqrt{1.000 \times 2} = 2 \times 44{,}7 = 89{,}4$ N·s/m.</li>
+</ol>
+<p><strong>Kết quả.</strong> Cùng sai số 2 mm cho 100 N với thiết lập cứng và 2 N với thiết lập mềm; khoảng 89 N·s/m giảm chấn giúp lò xo mềm ổn định mà không nảy.</p>
+<p><strong>Ý nghĩa.</strong> Độ cứng biến sai số vị trí thành lực. Một chính sách lệch vài milimét là chuyện bình thường; với bộ điều khiển mềm, cái giá là vài newton, với bộ cứng, cái giá là chi tiết. Cái giá của sự mềm là độ chính xác khi có nhiễu, vì thế CR-VLA-Force điều chỉnh $K$ trong giới hạn của nó theo sai số lực, và vì sao nhiều chính sách xuất thêm một lực hoặc độ cứng bên cạnh pose (<a href="survey-force-output.html">Survey 3</a>).</p>
+</div>
+<h2>3. Chọn trong thực tế</h2>
+<ul>
+<li><strong>Cánh tay của bạn quyết định trước.</strong> Cánh tay điều khiển mô-men (Franka, Flexiv) chạy trực tiếp điều khiển impedance. Cánh tay điều khiển vị trí như cánh tay UR thường làm điều khiển kiểu admittance dựa trên cảm biến lực cổ tay; cánh tay UR có một chế độ lực (force mode) trong ngôn ngữ script của nó cho việc này. CR-VLA-Force xây bộ điều khiển của họ trên UR5e qua RTDE.</li>
+<li><strong>Ấn, cắm, lau: dùng điều khiển lai.</strong> Ấn một cái nắp vào bình tự nhiên là bài toán lực theo trục ấn và vị trí theo các trục ngang: giữ 10 N xuống, giữ đúng tâm.</li>
+<li><strong>Để chính sách đặt cấu hình cho bộ điều khiển.</strong> ForceVLA2 xuất pose và lực; CR-VLA-Force xuất một lực mong muốn để bộ điều khiển bám theo; FIRe cộng một residual học được lên trên một bộ điều khiển impedance (<a href="residual-policy.html">residual policy</a>).</li>
+</ul>
+<p><strong>Mang theo:</strong> khi đã có cảm biến và điều khiển, các paper lực khác nhau ở chỗ đưa lực vào VLA ở đâu. Bản đồ của tất cả: <a href="survey-force-map.html">Survey 1</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với $K = 2.500$ N/m (giới hạn trên của CR-VLA-Force) và cùng sai số 2 mm, lực là bao nhiêu? Giảm chấn tới hạn với $m = 2$ kg là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$F = 2.500 \times 0{,}002 = 5$ N. $D_{crit} = 2\sqrt{2.500 \times 2} = 2 \times 70{,}7 = 141{,}4$ N·s/m.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

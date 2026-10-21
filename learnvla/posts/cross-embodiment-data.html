@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="One lab's robot data is small; pooling data from many robots is large but messy: different arms, cameras, action sizes and rates. How Open X-Embodiment, π0 and GR00T make it one dataset, and π0's re-weighting of big and small datasets worked by hand.">
+<title>Cross-Embodiment Data: Training One Policy on Many Robots · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Cross-Embodiment Data: Training One Policy on Many Robots">
+<meta property="og:description" content="One lab's robot data is small; pooling data from many robots is large but messy: different arms, cameras, action sizes and rates. How Open X-Embodiment, π0 and GR00T make it one dataset, and π0's re-weighting of big and small datasets worked by hand.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Cross-Embodiment Data: Training One Policy on Many Robots</h1>
+    <h1 data-vi>Dữ liệu cross-embodiment: Huấn luyện một chính sách trên nhiều robot</h1>
+
+    <p class="post-excerpt-lead" data-en>One lab's robot data is small; pooling data from many robots is large but messy: different arms, cameras, action sizes and rates. How Open X-Embodiment, π0 and GR00T make it one dataset, and π0's re-weighting of big and small datasets worked by hand.</p>
+    <p class="post-excerpt-lead" data-vi>Dữ liệu robot của một phòng thí nghiệm thì ít; gộp dữ liệu từ nhiều robot thì nhiều nhưng lộn xộn: cánh tay, camera, kích thước hành động và tần số khác nhau. Cách Open X-Embodiment, π0 và GR00T biến nó thành một bộ dữ liệu, và tính tay cách π0 cân lại các bộ dữ liệu lớn nhỏ.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Data</span><span class="pill">Cross-embodiment</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> Open X-Embodiment, <a href="https://arxiv.org/abs/2310.08864">arXiv 2310.08864</a> · 10/2023. DROID, <a href="https://arxiv.org/abs/2403.12945">arXiv 2403.12945</a> · 03/2024. Mixture recipe in <a href="pi0.html">π0</a> · 10/2024</p>
+<p><strong>PROBLEM</strong> A VLA needs far more robot experience than one lab collects, but every robot has a different body: number of joints, gripper, cameras, control rate and action convention.</p>
+<p><strong>WHAT FAILED BEFORE</strong> In the Open X-Embodiment authors' words, robot learning methods "train a separate model for every application, every robot, and even every environment", so nothing learned on one robot helps another.</p>
+<p><strong>IDEA</strong> Put many robots' data into one standard format, make inputs and outputs the same size (pad, mask, or give each body its own small input and output layers), normalise each dataset, and re-weight the mixture so the largest datasets do not drown the rest.</p>
+<p><strong>RESULT</strong> Open X-Embodiment pooled 22 robots from 21 institutions, 527 skills (160,266 tasks); RT-1-X trained on the mix had a 50% higher mean success than the methods trained on each robot's own data. DROID adds 76k trajectories (350 hours) from 564 scenes. π0 pre-trains on its own 903M timesteps plus open data.</p>
+</div>
+<h2>1. The problem: everyone's data is different</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is treating different robots as different *dialects* of one task language instead of different languages." class="dg-natural" width="715" height="206" viewBox="0 0 715 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">One model per robot</text><rect class="dg-box" x="160" y="22" width="102" height="38"/><text class="dg-t" x="211" y="45" text-anchor="middle">Lab A data</text><path class="dg-a" d="M262 41 H294"/><rect class="dg-badbox" x="296" y="14" width="199" height="54"/><text class="dg-t" x="395" y="37" text-anchor="middle">Model A only</text><text class="dg-s" x="395" y="53" text-anchor="middle">knowledge does not transfer</text><path class="dg-a" d="M494 41 H526"/><rect class="dg-box" x="528" y="22" width="96" height="38"/><text class="dg-t" x="576" y="45" text-anchor="middle">Robot A</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ small data, narrow skills</text><text class="dg-lab dg-green" x="14" y="143">Cross-embodiment</text><rect class="dg-box" x="160" y="120" width="186" height="38"/><text class="dg-t" x="252" y="143" text-anchor="middle">Data from many robots</text><path class="dg-a" d="M345 139 H377"/><rect class="dg-key" x="379" y="112" width="186" height="54"/><text class="dg-t" x="472" y="135" text-anchor="middle">Standard format</text><text class="dg-s" x="472" y="151" text-anchor="middle">pad, normalise, re-weight</text><path class="dg-a" d="M565 139 H597"/><rect class="dg-box" x="599" y="120" width="102" height="38"/><text class="dg-t" x="650" y="143" text-anchor="middle">One policy</text><text class="dg-note dg-green" x="159.60000000000002" y="184">✓ positive transfer, then fine-tune</text></svg><figcaption>The change is treating different robots as different *dialects* of one task language instead of different languages.</figcaption></figure>
+<h2>2. What has to be made the same</h2>
+<figure class="diagram"><svg role="img" aria-label="Format, size, scale and weight must be unified before one model can learn from all of them." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">MANY BODIES, ONE MODEL: WHAT HAS TO BE MADE THE SAME</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="46"/><text class="dg-t" x="110" y="64" text-anchor="middle">UR5e + gripper</text><text class="dg-s" x="110" y="80" text-anchor="middle">7-D action, 2 cameras</text>
+<rect class="dg-ext" x="20" y="100" width="180" height="46"/><text class="dg-t" x="110" y="120" text-anchor="middle">two 6-DoF arms</text><text class="dg-s" x="110" y="136" text-anchor="middle">14-D action, 3 cameras</text>
+<rect class="dg-ext" x="20" y="156" width="180" height="46"/><text class="dg-t" x="110" y="176" text-anchor="middle">mobile, two arms</text><text class="dg-s" x="110" y="192" text-anchor="middle">16 or 17-D action</text>
+<rect class="dg-ext" x="20" y="212" width="180" height="46"/><text class="dg-t" x="110" y="232" text-anchor="middle">open datasets</text><text class="dg-s" x="110" y="248" text-anchor="middle">2-10 Hz, 1-2 cameras</text>
+<rect class="dg-key" x="260" y="44" width="210" height="46"/><text class="dg-t" x="365" y="64" text-anchor="middle">one data format</text><text class="dg-s" x="365" y="80" text-anchor="middle">same fields, same units</text>
+<rect class="dg-key" x="260" y="100" width="210" height="46"/><text class="dg-t" x="365" y="120" text-anchor="middle">pad to the largest body</text><text class="dg-s" x="365" y="136" text-anchor="middle">zeros + mask missing cameras</text>
+<rect class="dg-key" x="260" y="156" width="210" height="46"/><text class="dg-t" x="365" y="176" text-anchor="middle">normalise per dataset</text><text class="dg-s" x="365" y="192" text-anchor="middle">each robot's own statistics</text>
+<rect class="dg-key" x="260" y="212" width="210" height="46"/><text class="dg-t" x="365" y="232" text-anchor="middle">re-weight the mixture</text><text class="dg-s" x="365" y="248" text-anchor="middle">big datasets down-weighted</text>
+<path class="dg-a" d="M200 67 H260"/><path class="dg-a" d="M200 123 H260"/><path class="dg-a" d="M200 179 H260"/><path class="dg-a" d="M200 235 H260"/>
+<rect class="dg-box" x="540" y="100" width="190" height="102"/><text class="dg-t" x="635" y="140" text-anchor="middle">one policy</text><text class="dg-s" x="635" y="160" text-anchor="middle">shared backbone</text><text class="dg-s" x="635" y="176" text-anchor="middle">(+ per-body input/output layers)</text>
+<path class="dg-a" d="M470 67 H505 V130 H540"/><path class="dg-a" d="M470 151 H540"/><path class="dg-a" d="M470 179 H540"/><path class="dg-a" d="M470 235 H505 V190 H540"/>
+<rect class="dg-box" x="790" y="100" width="170" height="102"/><text class="dg-t" x="875" y="140" text-anchor="middle">fine-tune</text><text class="dg-s" x="875" y="160" text-anchor="middle">on your robot</text><text class="dg-s" x="875" y="176" text-anchor="middle">small dataset</text>
+<path class="dg-a" d="M730 151 H790"/>
+</svg><figcaption>Format, size, scale and weight must be unified before one model can learn from all of them.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>What π0 and others do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Different action and state sizes (7 for a UR5e arm with gripper, 14 for two arms, 17 for a mobile base with two arms)</td>
+<td>π0 makes every vector the size of its largest robot, 18, and zero-pads smaller ones. GR00T N1 instead gives each body its own small MLP into a shared space</td>
+</tr>
+<tr>
+<td>Different numbers of cameras</td>
+<td>π0 masks out the missing image slots</td>
+</tr>
+<tr>
+<td>Different units and ranges</td>
+<td>normalise each dimension with each dataset's statistics (<a href="action-spaces.html">action spaces</a>)</td>
+</tr>
+<tr>
+<td>Very different dataset sizes</td>
+<td>π0 weights each task–robot combination by $n^{0.43}$, where $n$ is its number of samples</td>
+</tr>
+<tr>
+<td>Different control rates (2–10 Hz in open datasets, up to 50 Hz in π0's own)</td>
+<td>keep the rate per dataset; chunk length in time differs</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Two task–robot combinations, one with a million samples and one with ten thousand. Compare their share of training batches when sampled in proportion to size and with π0's $n^{0.43}$ weighting.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_A,\ n_B$</td>
+<td>samples in each combination</td>
+<td>input</td>
+<td>1,000,000 and 10,000</td>
+</tr>
+<tr>
+<td>$w = n^{0.43}$</td>
+<td>π0's weight</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$s_A$</td>
+<td>share of batches from A</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$s_A = \frac{w_A}{w_A + w_B}, \qquad w = n^{0.43}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Proportional sampling: $s_A = 1{,}000{,}000 / 1{,}010{,}000 = 99.0\%$; B gets 1.0%.</li>
+<li>$w_A = (10^6)^{0.43} = 10^{2.58} = 380.2$; $w_B = (10^4)^{0.43} = 10^{1.72} = 52.5$.</li>
+<li>$s_A = 380.2 / (380.2 + 52.5) = 87.9\%$; B gets 12.1%.</li>
+</ol>
+<p><strong>Result.</strong> The small dataset goes from 1% to 12% of training batches.</p>
+<p><strong>Why it matters.</strong> With proportional sampling a model barely sees the rare robot or task. An exponent below 1 compresses the sizes: 100× more data becomes about $100^{0.43} = 7.2$× more weight. An exponent of 0 would give every combination the same share and over-repeat tiny datasets; π0's 0.43 sits in between.</p>
+</div>
+<h2>3. Where it helps, and where it does not</h2>
+<ul>
+<li><strong>Positive transfer is real but uneven.</strong> RT-1-X's 50% gain was measured on the smaller datasets of the mix; Open X-Embodiment also reports that large-data domains need high-capacity models to benefit.</li>
+<li><strong>It builds general skills, not your skill.</strong> π0's recipe pre-trains on the mixture, then post-trains on 5 to over 100 hours for a hard task. Cross-embodiment pre-training is the starting point for fine-tuning (<a href="backbone.html">backbone</a>), not a replacement.</li>
+<li><strong>Force data is still scarce.</strong> Most pooled datasets record images, state and actions but no wrench. That is why force papers on this site collect their own (Facet-0's ManuFacet-1K, about 1,000 force-synchronised hours) or work without a sensor (FD-VLA, TA-VLA).</li>
+</ul>
+<p><strong>Carry forward:</strong> a big model trained on a big mixture is slow and may need sensors your robot lacks. Transferring what it learned into a smaller or sensor-free model is <a href="distillation.html">distillation</a>.</p>
+<p><strong>Check question:</strong> With π0's weighting, what share does a combination with 100,000 samples get against one with 1,000,000?</p>
+<details>
+<summary>Answer</summary>
+<p>$w = (10^5)^{0.43} = 10^{2.15} = 141.3$ against $380.2$; share $= 141.3 / (141.3 + 380.2) = 27.1\%$ (proportional sampling would give 9.1%).</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Open X-Embodiment, <a href="https://arxiv.org/abs/2310.08864">arXiv 2310.08864</a> · 10/2023. DROID, <a href="https://arxiv.org/abs/2403.12945">arXiv 2403.12945</a> · 03/2024. Công thức trộn dữ liệu trong <a href="pi0.html">π0</a> · 10/2024</p>
+<p><strong>VẤN ĐỀ</strong> VLA cần lượng kinh nghiệm robot lớn hơn nhiều so với những gì một phòng thí nghiệm thu được, nhưng mỗi robot có một cơ thể khác: số khớp, tay kẹp, camera, tần số điều khiển và quy ước hành động.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Theo lời các tác giả Open X-Embodiment, các phương pháp học robot "huấn luyện một mô hình riêng cho mỗi ứng dụng, mỗi robot, thậm chí mỗi môi trường", nên điều học được trên robot này không giúp gì cho robot khác.</p>
+<p><strong>Ý TƯỞNG</strong> Đưa dữ liệu của nhiều robot về một định dạng chuẩn, làm đầu vào và đầu ra cùng kích thước (đệm, che, hoặc cho mỗi cơ thể lớp vào/ra nhỏ riêng), chuẩn hóa từng bộ dữ liệu, và cân lại tỉ lệ trộn để các bộ lớn nhất không nhấn chìm phần còn lại.</p>
+<p><strong>KẾT QUẢ</strong> Open X-Embodiment gộp 22 robot từ 21 cơ sở, 527 kỹ năng (160.266 tác vụ); RT-1-X huấn luyện trên hỗn hợp này có tỉ lệ thành công trung bình cao hơn 50% so với các phương pháp huấn luyện trên dữ liệu riêng của từng robot. DROID thêm 76 nghìn quỹ đạo (350 giờ) từ 564 khung cảnh. π0 pretrain trên 903 triệu bước thời gian của riêng họ cộng dữ liệu mở.</p>
+</div>
+<h2>1. Vấn đề: dữ liệu của mỗi người một khác</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở việc coi các robot khác nhau là các *phương ngữ* của cùng một ngôn ngữ tác vụ, thay vì các ngôn ngữ khác nhau." class="dg-natural" width="753" height="206" viewBox="0 0 753 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Mỗi robot một mô hình</text><rect class="dg-box" x="172" y="22" width="140" height="38"/><text class="dg-t" x="242" y="45" text-anchor="middle">Dữ liệu phòng A</text><path class="dg-a" d="M312 41 H344"/><rect class="dg-badbox" x="346" y="14" width="199" height="54"/><text class="dg-t" x="446" y="37" text-anchor="middle">Chỉ mô hình A</text><text class="dg-s" x="446" y="53" text-anchor="middle">kiến thức không chuyển được</text><path class="dg-a" d="M545 41 H577"/><rect class="dg-box" x="579" y="22" width="96" height="38"/><text class="dg-t" x="627" y="45" text-anchor="middle">Robot A</text><text class="dg-note dg-red" x="172.4" y="86">✗ ít dữ liệu, kỹ năng hẹp</text><text class="dg-lab dg-green" x="14" y="143">Cross-embodiment</text><rect class="dg-box" x="172" y="120" width="193" height="38"/><text class="dg-t" x="269" y="143" text-anchor="middle">Dữ liệu từ nhiều robot</text><path class="dg-a" d="M366 139 H398"/><rect class="dg-key" x="400" y="112" width="173" height="54"/><text class="dg-t" x="486" y="135" text-anchor="middle">Định dạng chuẩn</text><text class="dg-s" x="486" y="151" text-anchor="middle">đệm, chuẩn hóa, cân lại</text><path class="dg-a" d="M573 139 H605"/><rect class="dg-box" x="607" y="120" width="132" height="38"/><text class="dg-t" x="673" y="143" text-anchor="middle">Một chính sách</text><text class="dg-note dg-green" x="172.4" y="184">✓ chuyển giao tích cực, rồi fine-tune</text></svg><figcaption>Thay đổi nằm ở việc coi các robot khác nhau là các *phương ngữ* của cùng một ngôn ngữ tác vụ, thay vì các ngôn ngữ khác nhau.</figcaption></figure>
+<h2>2. Những gì phải làm cho giống nhau</h2>
+<figure class="diagram"><svg role="img" aria-label="Định dạng, kích thước, thang đo và trọng số phải được thống nhất trước khi một mô hình học được từ tất cả." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">MANY BODIES, ONE MODEL: WHAT HAS TO BE MADE THE SAME</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="46"/><text class="dg-t" x="110" y="64" text-anchor="middle">UR5e + gripper</text><text class="dg-s" x="110" y="80" text-anchor="middle">7-D action, 2 cameras</text>
+<rect class="dg-ext" x="20" y="100" width="180" height="46"/><text class="dg-t" x="110" y="120" text-anchor="middle">two 6-DoF arms</text><text class="dg-s" x="110" y="136" text-anchor="middle">14-D action, 3 cameras</text>
+<rect class="dg-ext" x="20" y="156" width="180" height="46"/><text class="dg-t" x="110" y="176" text-anchor="middle">mobile, two arms</text><text class="dg-s" x="110" y="192" text-anchor="middle">16 or 17-D action</text>
+<rect class="dg-ext" x="20" y="212" width="180" height="46"/><text class="dg-t" x="110" y="232" text-anchor="middle">open datasets</text><text class="dg-s" x="110" y="248" text-anchor="middle">2-10 Hz, 1-2 cameras</text>
+<rect class="dg-key" x="260" y="44" width="210" height="46"/><text class="dg-t" x="365" y="64" text-anchor="middle">one data format</text><text class="dg-s" x="365" y="80" text-anchor="middle">same fields, same units</text>
+<rect class="dg-key" x="260" y="100" width="210" height="46"/><text class="dg-t" x="365" y="120" text-anchor="middle">pad to the largest body</text><text class="dg-s" x="365" y="136" text-anchor="middle">zeros + mask missing cameras</text>
+<rect class="dg-key" x="260" y="156" width="210" height="46"/><text class="dg-t" x="365" y="176" text-anchor="middle">normalise per dataset</text><text class="dg-s" x="365" y="192" text-anchor="middle">each robot's own statistics</text>
+<rect class="dg-key" x="260" y="212" width="210" height="46"/><text class="dg-t" x="365" y="232" text-anchor="middle">re-weight the mixture</text><text class="dg-s" x="365" y="248" text-anchor="middle">big datasets down-weighted</text>
+<path class="dg-a" d="M200 67 H260"/><path class="dg-a" d="M200 123 H260"/><path class="dg-a" d="M200 179 H260"/><path class="dg-a" d="M200 235 H260"/>
+<rect class="dg-box" x="540" y="100" width="190" height="102"/><text class="dg-t" x="635" y="140" text-anchor="middle">one policy</text><text class="dg-s" x="635" y="160" text-anchor="middle">shared backbone</text><text class="dg-s" x="635" y="176" text-anchor="middle">(+ per-body input/output layers)</text>
+<path class="dg-a" d="M470 67 H505 V130 H540"/><path class="dg-a" d="M470 151 H540"/><path class="dg-a" d="M470 179 H540"/><path class="dg-a" d="M470 235 H505 V190 H540"/>
+<rect class="dg-box" x="790" y="100" width="170" height="102"/><text class="dg-t" x="875" y="140" text-anchor="middle">fine-tune</text><text class="dg-s" x="875" y="160" text-anchor="middle">on your robot</text><text class="dg-s" x="875" y="176" text-anchor="middle">small dataset</text>
+<path class="dg-a" d="M730 151 H790"/>
+</svg><figcaption>Định dạng, kích thước, thang đo và trọng số phải được thống nhất trước khi một mô hình học được từ tất cả.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Vấn đề</th>
+<th>π0 và các mô hình khác làm gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kích thước hành động và trạng thái khác nhau (7 cho một cánh tay UR5e có tay kẹp, 14 cho hai cánh tay, 17 cho đế di động có hai cánh tay)</td>
+<td>π0 cho mọi vector có kích thước của robot lớn nhất, 18, và đệm số 0 cho robot nhỏ hơn. GR00T N1 thì cho mỗi cơ thể một MLP nhỏ riêng vào một không gian chung</td>
+</tr>
+<tr>
+<td>Số camera khác nhau</td>
+<td>π0 che các ô ảnh bị thiếu</td>
+</tr>
+<tr>
+<td>Đơn vị và khoảng giá trị khác nhau</td>
+<td>chuẩn hóa từng chiều bằng thống kê của từng bộ dữ liệu (<a href="action-spaces.html">không gian hành động</a>)</td>
+</tr>
+<tr>
+<td>Kích thước bộ dữ liệu chênh lệch lớn</td>
+<td>π0 đánh trọng số mỗi tổ hợp tác vụ–robot bằng $n^{0{,}43}$, với $n$ là số mẫu của nó</td>
+</tr>
+<tr>
+<td>Tần số điều khiển khác nhau (2–10 Hz ở dữ liệu mở, tới 50 Hz ở dữ liệu riêng của π0)</td>
+<td>giữ tần số theo từng bộ dữ liệu; độ dài chunk tính theo thời gian sẽ khác nhau</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hai tổ hợp tác vụ–robot, một có một triệu mẫu và một có mười nghìn. So sánh phần batch huấn luyện của chúng khi lấy mẫu theo tỉ lệ kích thước và khi dùng trọng số $n^{0{,}43}$ của π0.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_A,\ n_B$</td>
+<td>số mẫu của mỗi tổ hợp</td>
+<td>input</td>
+<td>1.000.000 và 10.000</td>
+</tr>
+<tr>
+<td>$w = n^{0{,}43}$</td>
+<td>trọng số của π0</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$s_A$</td>
+<td>phần batch lấy từ A</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$s_A = \frac{w_A}{w_A + w_B}, \qquad w = n^{0{,}43}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Lấy mẫu theo tỉ lệ: $s_A = 1.000.000 / 1.010.000 = 99{,}0\%$; B được 1,0%.</li>
+<li>$w_A = (10^6)^{0{,}43} = 10^{2{,}58} = 380{,}2$; $w_B = (10^4)^{0{,}43} = 10^{1{,}72} = 52{,}5$.</li>
+<li>$s_A = 380{,}2 / (380{,}2 + 52{,}5) = 87{,}9\%$; B được 12,1%.</li>
+</ol>
+<p><strong>Kết quả.</strong> Bộ dữ liệu nhỏ tăng từ 1% lên 12% số batch huấn luyện.</p>
+<p><strong>Ý nghĩa.</strong> Lấy mẫu theo tỉ lệ thì mô hình gần như không thấy robot hay tác vụ hiếm. Một số mũ nhỏ hơn 1 nén khoảng cách kích thước: nhiều dữ liệu hơn 100 lần chỉ thành nặng hơn khoảng $100^{0{,}43} = 7{,}2$ lần. Số mũ 0 sẽ cho mọi tổ hợp cùng một phần và lặp lại quá nhiều các bộ dữ liệu tí hon; 0,43 của π0 nằm ở giữa.</p>
+</div>
+<h2>3. Nó giúp ở đâu, và không giúp ở đâu</h2>
+<ul>
+<li><strong>Chuyển giao tích cực có thật nhưng không đều.</strong> Mức tăng 50% của RT-1-X được đo trên các bộ dữ liệu nhỏ hơn trong hỗn hợp; Open X-Embodiment cũng báo cáo các miền nhiều dữ liệu cần mô hình dung lượng lớn mới hưởng lợi.</li>
+<li><strong>Nó xây kỹ năng chung, không phải kỹ năng của bạn.</strong> Công thức của π0 pretrain trên hỗn hợp, rồi hậu huấn luyện với từ 5 tới hơn 100 giờ cho một tác vụ khó. Pretrain cross-embodiment là điểm xuất phát để fine-tune (<a href="backbone.html">backbone</a>), không thay thế nó.</li>
+<li><strong>Dữ liệu lực vẫn khan hiếm.</strong> Phần lớn bộ dữ liệu gộp ghi ảnh, trạng thái và hành động nhưng không có wrench. Đó là lý do các bài lực trên trang này tự thu dữ liệu (ManuFacet-1K của Facet-0, khoảng 1.000 giờ đồng bộ lực) hoặc làm việc không cần cảm biến (FD-VLA, TA-VLA).</li>
+</ul>
+<p><strong>Mang theo:</strong> một mô hình lớn học trên hỗn hợp lớn thì chậm và có thể cần những cảm biến mà robot của bạn không có. Chuyển những gì nó học được sang một mô hình nhỏ hơn hoặc không cần cảm biến là <a href="distillation.html">distillation</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với trọng số của π0, một tổ hợp có 100.000 mẫu chiếm bao nhiêu phần khi so với một tổ hợp có 1.000.000 mẫu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$w = (10^5)^{0{,}43} = 10^{2{,}15} = 141{,}3$ so với $380{,}2$; phần $= 141{,}3 / (141{,}3 + 380{,}2) = 27{,}1\%$ (lấy mẫu theo tỉ lệ sẽ cho 9,1%).</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

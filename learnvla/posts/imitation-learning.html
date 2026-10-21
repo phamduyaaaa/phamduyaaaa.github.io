@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Imitation Learning: Copying an Expert, and Why the Copy Drifts</h1>
@@ -176,8 +176,8 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Formula</strong> (worst-case bounds from the DAgger analysis)</p>
-<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim T\varepsilon$$</p>
+<p><strong>Formula</strong> (worst-case bounds: the BC bound is from Ross and Bagnell, 2010; the DAgger bound from the DAgger paper, which also carries a constant $u$ for how much one mistake can cost, here taken as 1)</p>
+<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim u\,T\varepsilon$$</p>
 <p><strong>Steps</strong></p>
 <ol>
 <li>$\Delta_{BC} = 100^2 \times 0.001 = 10{,}000 \times 0.001 = 10$.</li>
@@ -185,14 +185,17 @@
 <li>Ratio: $10 / 0.1 = 100 = T$.</li>
 </ol>
 <p><strong>Result.</strong> The extra cost of BC is $T$ times larger than DAgger's: 10 against 0.1.</p>
-<p><strong>Why it matters.</strong> A mistake in BC is paid for <em>every remaining step</em> (the policy is now lost), so mistakes add up quadratically. These are worst-case bounds, so real gaps are usually smaller, but they grow with $T$.</p>
+<p><strong>Why it matters.</strong> Where does $T^2$ come from? Suppose the policy slips with probability $\varepsilon$ at each step and, once lost, never recovers. A slip at step 1 costs about $T$ lost steps, a slip at step 2 about $T-1$, and so on, so the expected loss is about $\varepsilon(T + (T-1) + \dots + 1) \approx \varepsilon T^2/2$. DAgger trains on the states the policy really reaches, so a slip is something the policy has learned to recover from and costs only that step. These are worst-case bounds, so real gaps are usually smaller, but they grow with $T$. One honest caveat: the two $\varepsilon$ are not quite the same quantity (BC's is measured on the expert's states, DAgger's on the states its own policies visited), and the calculation treats them as equal.</p>
 </div>
-<h2>3. Where it shows up in VLA</h2>
+<h2>3. The second trap: averaging two good answers</h2>
+<p>The loss $\lVert \pi(o) - a\rVert^2$ hides a second problem. Suppose that, in front of an obstacle, the expert went left ($a = -1$) in half of the demonstrations and right ($a = +1$) in the other half. The single number that minimises the squared error over both is their mean, $0.5\times(-1) + 0.5\times(+1) = 0$: straight into the obstacle. Both demonstrations were good; their average is not.</p>
+<p>This is why VLAs do not regress one action with a squared loss. They either classify over bins (<a href="action-tokenization.html">action tokenization</a>), or learn a whole distribution and sample from it (<a href="diffusion-policy.html">diffusion policy</a>, <a href="flowmatching.html">flow matching</a>), or add a latent variable for "which way" (<a href="action-chunking.html">action chunking</a>, ACT).</p>
+<h2>4. Where it shows up in VLA</h2>
 <ul>
 <li>Every VLA (π0, OpenVLA, ForceVLA…) is trained by BC on teleoperation data.</li>
 <li>Contact-rich tasks drift fast, because a few millimetres of error in an insertion changes the force completely. <a href="ter-dagger.html">TER-DAgger</a> lets a force-error detector call the human back in.</li>
 </ul>
-<p><strong>Carry forward:</strong> BC needs a model that predicts actions well, so next comes the <a href="token.html">Token</a> idea: how images, text and actions all become one sequence.</p>
+<p><strong>Carry forward:</strong> the observation $o$ has two halves: what the cameras see, and what the robot knows about its own body. The second half is <a href="proprioception.html">proprioception</a>.</p>
 <p><strong>Check question:</strong> $T = 50$, $\varepsilon = 0.002$. What are $\Delta_{BC}$ and $\Delta_{DAgger}$?</p>
 <details>
 <summary>Answer</summary>
@@ -302,8 +305,8 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Công thức</strong> (cận trường hợp xấu nhất từ phân tích DAgger)</p>
-<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim T\varepsilon$$</p>
+<p><strong>Công thức</strong> (cận trường hợp xấu nhất: cận của BC lấy từ Ross và Bagnell, 2010; cận của DAgger lấy từ paper DAgger, có thêm hằng số $u$ cho biết một lỗi có thể tốn bao nhiêu, ở đây lấy bằng 1)</p>
+<p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim u\,T\varepsilon$$</p>
 <p><strong>Các bước</strong></p>
 <ol>
 <li>$\Delta_{BC} = 100^2 \times 0{,}001 = 10\,000 \times 0{,}001 = 10$.</li>
@@ -311,14 +314,17 @@
 <li>Tỉ số: $10 / 0{,}1 = 100 = T$.</li>
 </ol>
 <p><strong>Kết quả.</strong> Chi phí dư của BC lớn gấp $T$ lần DAgger: 10 so với 0,1.</p>
-<p><strong>Ý nghĩa.</strong> Một lỗi trong BC phải trả giá ở <em>mọi bước còn lại</em> (chính sách đã lạc), nên lỗi cộng dồn theo bình phương. Đây là cận xấu nhất nên khoảng cách thật thường nhỏ hơn, nhưng nó tăng theo $T$.</p>
+<p><strong>Ý nghĩa.</strong> $T^2$ từ đâu ra? Giả sử mỗi bước chính sách trượt với xác suất $\varepsilon$ và một khi đã lạc thì không quay về được. Trượt ở bước 1 tốn khoảng $T$ bước lạc, trượt ở bước 2 tốn khoảng $T-1$, cứ thế, nên tổn thất kỳ vọng xấp xỉ $\varepsilon(T + (T-1) + \dots + 1) \approx \varepsilon T^2/2$. DAgger học trên chính các trạng thái mà chính sách đi tới, nên một lần trượt là thứ nó đã học cách gỡ lại và chỉ tốn đúng bước đó. Đây là cận xấu nhất nên khoảng cách thật thường nhỏ hơn, nhưng nó tăng theo $T$. Một lưu ý trung thực: hai $\varepsilon$ không hẳn là cùng một đại lượng (của BC đo trên trạng thái của chuyên gia, của DAgger đo trên trạng thái mà các chính sách của nó đi qua), và phép tính coi chúng bằng nhau.</p>
 </div>
-<h2>3. Trong VLA nó xuất hiện ở đâu</h2>
+<h2>3. Cái bẫy thứ hai: lấy trung bình hai câu trả lời đúng</h2>
+<p>Hàm loss $\lVert \pi(o) - a\rVert^2$ còn giấu một vấn đề nữa. Giả sử trước một vật cản, chuyên gia rẽ trái ($a = -1$) ở một nửa số demo và rẽ phải ($a = +1$) ở nửa còn lại. Con số duy nhất làm sai số bình phương nhỏ nhất trên cả hai là trung bình của chúng, $0{,}5\times(-1) + 0{,}5\times(+1) = 0$: lao thẳng vào vật cản. Cả hai demo đều tốt; trung bình của chúng thì không.</p>
+<p>Đó là lý do VLA không hồi quy một hành động bằng loss bình phương. Chúng hoặc phân loại trên các bin (<a href="action-tokenization.html">action tokenization</a>), hoặc học cả một phân phối rồi lấy mẫu (<a href="diffusion-policy.html">diffusion policy</a>, <a href="flowmatching.html">flow matching</a>), hoặc thêm một biến ẩn cho "đi lối nào" (<a href="action-chunking.html">action chunking</a>, ACT).</p>
+<h2>4. Trong VLA nó xuất hiện ở đâu</h2>
 <ul>
 <li>Mọi VLA (π0, OpenVLA, ForceVLA…) đều được huấn luyện bằng BC trên dữ liệu teleoperation.</li>
 <li>Tác vụ giàu tiếp xúc trôi rất nhanh, vì vài milimét lệch khi lắp ghép làm lực đổi hoàn toàn. <a href="ter-dagger.html">TER-DAgger</a> để bộ phát hiện sai số lực gọi con người quay lại.</li>
 </ul>
-<p><strong>Mang theo:</strong> BC cần một mô hình dự đoán hành động tốt, nên tiếp theo là ý tưởng <a href="token.html">Token</a>: ảnh, chữ và hành động cùng thành một chuỗi.</p>
+<p><strong>Mang theo:</strong> quan sát $o$ có hai nửa: thứ camera thấy, và thứ robot biết về chính cơ thể nó. Nửa thứ hai là <a href="proprioception.html">proprioception</a>.</p>
 <p><strong>Câu hỏi kiểm tra:</strong> $T = 50$, $\varepsilon = 0{,}002$. $\Delta_{BC}$ và $\Delta_{DAgger}$ bằng bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>

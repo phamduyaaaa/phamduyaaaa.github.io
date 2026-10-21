@@ -90,7 +90,7 @@ Humans solve the same task in different ways, and are more variable where precis
 - Checked against the full text: $k = 100$ (hyperparameter table); in the chunk-size ablation, success rises from 1% at $k = 1$ to 44% at $k = 100$ and then dips slightly, averaged over four simulated settings; temporal ensembling adds about 4 points for BC-ConvMLP and 3.3 for ACT and hurts VINN; removing the CVAE drops success on human data from 35.3% to 2%.
 - Table II (more real tasks) is not quoted, only the two tasks above.
 
-**Carry forward:** chunks predicted by ACT are a deterministic decode of one latent. π0 replaces that with flow matching: [π0](pi0.html).
+**Carry forward:** chunks predicted by ACT are a deterministic decode of one latent; [π0](pi0.html) replaces that with flow matching. ACT also trains one model per task on one robot. Training one model on many robots raises new questions: [cross-embodiment data](cross-embodiment-data.html).
 
 **Check question:** $T = 600$, $k = 20$. How many chunk decisions does one episode need, and by what factor did the number of decisions shrink?
 
@@ -183,7 +183,7 @@ Con người giải cùng một tác vụ theo nhiều cách, và thay đổi nh
 - Đã đối chiếu với toàn văn: $k = 100$ (bảng siêu tham số); trong ablation về cỡ chunk, tỉ lệ thành công tăng từ 1% ở $k = 1$ lên 44% ở $k = 100$ rồi giảm nhẹ, tính trung bình trên bốn thiết lập mô phỏng; temporal ensembling giúp thêm khoảng 4 điểm cho BC-ConvMLP và 3,3 điểm cho ACT, còn VINN thì kém đi; bỏ CVAE làm tỉ lệ thành công trên dữ liệu người giảm từ 35,3% xuống 2%.
 - Bảng II (thêm tác vụ thật) đọc ở dạng bị làm phẳng; tôi chỉ trích hai tác vụ ở trên.
 
-**Mang theo:** các đoạn do ACT dự đoán là giải mã xác định từ một latent. π0 thay bằng flow matching: [π0](pi0.html).
+**Mang theo:** các đoạn do ACT dự đoán là giải mã xác định từ một latent; [π0](pi0.html) thay bằng flow matching. ACT còn huấn luyện mỗi tác vụ một mô hình trên một robot. Huấn luyện một mô hình trên nhiều robot đặt ra câu hỏi mới: [dữ liệu cross-embodiment](cross-embodiment-data.html).
 
 **Câu hỏi kiểm tra:** $T = 600$, $k = 20$. Một episode cần bao nhiêu quyết định theo đoạn, và số quyết định giảm bao nhiêu lần?
 

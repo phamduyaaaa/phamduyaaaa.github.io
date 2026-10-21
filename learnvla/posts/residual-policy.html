@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A hand-tuned controller or a VLA is good but not good enough at contact. Instead of replacing it, add a small learned correction on top, bounded so the base stays in charge. Worked: a bounded residual step, and where TER-DAgger, FIRe and MoDE-VLA use the idea.">
+<title>Residual Policy: Learning Only the Correction · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Residual Policy: Learning Only the Correction">
+<meta property="og:description" content="A hand-tuned controller or a VLA is good but not good enough at contact. Instead of replacing it, add a small learned correction on top, bounded so the base stays in charge. Worked: a bounded residual step, and where TER-DAgger, FIRe and MoDE-VLA use the idea.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Residual Policy: Learning Only the Correction</h1>
+    <h1 data-vi>Residual policy: Chỉ học phần hiệu chỉnh</h1>
+
+    <p class="post-excerpt-lead" data-en>A hand-tuned controller or a VLA is good but not good enough at contact. Instead of replacing it, add a small learned correction on top, bounded so the base stays in charge. Worked: a bounded residual step, and where TER-DAgger, FIRe and MoDE-VLA use the idea.</p>
+    <p class="post-excerpt-lead" data-vi>Một bộ điều khiển chỉnh tay hay một VLA thì tốt nhưng chưa đủ tốt khi tiếp xúc. Thay vì thay thế nó, hãy cộng một phần hiệu chỉnh nhỏ học được lên trên, có giới hạn để phần nền vẫn nắm quyền. Tính tay một bước residual có giới hạn, và TER-DAgger, FIRe, MoDE-VLA dùng ý tưởng này ở đâu.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Residual</span><span class="pill">Reinforcement Learning</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> Residual Policy Learning, <a href="https://arxiv.org/abs/1812.06298">arXiv 1812.06298</a> · 12/2018. Residual Reinforcement Learning for Robot Control, <a href="https://arxiv.org/abs/1812.03201">arXiv 1812.03201</a> · 12/2018</p>
+<p><strong>PROBLEM</strong> Contact and friction are hard to model, so a hand-designed controller is "brittle and inaccurate" at them (Residual RL's words), and a VLA trained by imitation drifts exactly at contact. Yet both get most of the motion right.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Reinforcement learning from scratch is data-hungry and, for long tasks with sparse rewards, often fails outright. Retuning the controller by hand for every task does not scale.</p>
+<p><strong>IDEA</strong> Keep the base policy and add a learned residual: $a = a_{base}(s) + a_{res}(s)$. The residual starts at zero and is bounded, so learning starts from the base's behaviour and can only nudge it.</p>
+<p><strong>RESULT</strong> Residual Policy Learning solves long-horizon, sparse-reward MuJoCo tasks where RL alone fails and "consistently and substantially improves on the initial controllers". On this site: FIRe's residual on a frozen VLA reaches 96.7% on peg insertion against 23.3% for the VLA alone; TER-DAgger and MoDE-VLA use residual corrections too.</p>
+</div>
+<h2>1. The problem: good enough in free space, not at contact</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is what is learned: not the whole behaviour, only the gap between the base and good behaviour." class="dg-natural" width="638" height="304" viewBox="0 0 638 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Base alone</text><rect class="dg-box" x="134" y="22" width="110" height="38"/><text class="dg-t" x="189" y="45" text-anchor="middle">Observation</text><path class="dg-a" d="M244 41 H276"/><rect class="dg-badbox" x="278" y="14" width="167" height="54"/><text class="dg-t" x="361" y="37" text-anchor="middle">Controller or VLA</text><text class="dg-s" x="361" y="53" text-anchor="middle">misses contact details</text><path class="dg-a" d="M444 41 H476"/><rect class="dg-box" x="478" y="22" width="96" height="38"/><text class="dg-t" x="526" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="86">✗ drifts, jams, pushes too hard</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">RL from scratch</text><rect class="dg-box" x="134" y="120" width="110" height="38"/><text class="dg-t" x="189" y="143" text-anchor="middle">Observation</text><path class="dg-a" d="M244 139 H276"/><rect class="dg-badbox" x="278" y="112" width="148" height="54"/><text class="dg-t" x="351" y="135" text-anchor="middle">Learn everything</text><text class="dg-s" x="351" y="151" text-anchor="middle">sparse reward</text><path class="dg-a" d="M425 139 H457"/><rect class="dg-box" x="459" y="120" width="96" height="38"/><text class="dg-t" x="507" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="184">✗ too slow, unsafe to explore</text><text class="dg-lab dg-green" x="14" y="241">Residual</text><rect class="dg-box" x="134" y="218" width="110" height="38"/><text class="dg-t" x="189" y="241" text-anchor="middle">Observation</text><path class="dg-a" d="M244 237 H276"/><rect class="dg-key" x="278" y="210" width="216" height="54"/><text class="dg-t" x="386" y="233" text-anchor="middle">Base + bounded correction</text><text class="dg-s" x="386" y="249" text-anchor="middle">learn only the difference</text><path class="dg-a" d="M494 237 H526"/><rect class="dg-box" x="528" y="218" width="96" height="38"/><text class="dg-t" x="576" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="134.0" y="282">✓ starts good, gets better</text></svg><figcaption>The change is what is learned: not the whole behaviour, only the gap between the base and good behaviour.</figcaption></figure>
+<h2>2. How it is built</h2>
+<figure class="diagram"><svg role="img" aria-label="The base policy is kept (often frozen). A small residual policy outputs a correction that is squashed into a fixed range and added to the base action." viewBox="0 0 980 280" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">KEEP A GOOD BASE, LEARN ONLY A SMALL, BOUNDED CORRECTION</text>
+<rect class="dg-ext" x="20" y="100" width="150" height="56"/><text class="dg-t" x="95" y="124" text-anchor="middle">observation</text><text class="dg-s" x="95" y="142" text-anchor="middle">incl. force</text>
+<rect class="dg-box" x="230" y="44" width="220" height="64"/><text class="dg-t" x="340" y="70" text-anchor="middle">base policy (frozen)</text><text class="dg-s" x="340" y="90" text-anchor="middle">controller, BC policy or VLA</text>
+<rect class="dg-key" x="230" y="150" width="220" height="64"/><text class="dg-t" x="340" y="176" text-anchor="middle">residual policy</text><text class="dg-s" x="340" y="196" text-anchor="middle">small, trained by RL or BC</text>
+<path class="dg-a" d="M170 120 H200 V76 H230"/><path class="dg-a" d="M170 136 H200 V182 H230"/>
+<rect class="dg-box" x="500" y="150" width="170" height="64"/><text class="dg-t" x="585" y="176" text-anchor="middle">bound</text><text class="dg-s" x="585" y="196" text-anchor="middle">a_res = b tanh(u)</text>
+<path class="dg-a" d="M450 182 H500"/>
+<circle class="dg-key" cx="730" cy="128" r="22"/><text class="dg-t" x="730" y="135" text-anchor="middle">+</text>
+<path class="dg-a" d="M450 76 H730 V106"/><path class="dg-a" d="M670 182 H730 V150"/>
+<rect class="dg-box" x="800" y="100" width="160" height="56"/><text class="dg-t" x="880" y="124" text-anchor="middle">a = a_base + a_res</text><text class="dg-s" x="880" y="142" text-anchor="middle">sent to the robot</text>
+<path class="dg-a" d="M752 128 H800"/>
+<text class="dg-l" x="230" y="252">residual starts at zero, so training starts from the base policy's behaviour</text>
+</svg><figcaption>The base policy is kept (often frozen). A small residual policy outputs a correction that is squashed into a fixed range and added to the base action.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Role</th>
+<th>Typical choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base policy</td>
+<td>does most of the work</td>
+<td>hand-designed controller, model-predictive controller, BC policy, or a frozen VLA</td>
+</tr>
+<tr>
+<td>Residual policy</td>
+<td>learns the correction</td>
+<td>small network, often given force or touch the base does not see</td>
+</tr>
+<tr>
+<td>Bound</td>
+<td>limits how far the residual can move the action</td>
+<td>$a_{res} = b \tanh(u)$, so $\lvert a_{res}\rvert \le b$</td>
+</tr>
+<tr>
+<td>Zero start</td>
+<td>initial residual output is 0</td>
+<td>training begins exactly at the base's behaviour</td>
+</tr>
+<tr>
+<td>Training signal</td>
+<td>RL reward, or human corrections (BC)</td>
+<td>FIRe: PPO in simulation; TER-DAgger: human-corrected demonstrations</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> One control step: the base proposes a move, the residual network outputs a raw value, the bound squashes it. It shows why a wild residual output cannot take over.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_{base}$</td>
+<td>base action along one axis</td>
+<td>input</td>
+<td>0.010 m</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>raw residual network output</td>
+<td>input</td>
+<td>2.0, then −5.0</td>
+</tr>
+<tr>
+<td>$b$</td>
+<td>bound on the residual</td>
+<td>constant</td>
+<td>0.003 m (illustrative)</td>
+</tr>
+<tr>
+<td>$a$</td>
+<td>executed action</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$a_{res} = b\,\tanh(u), \qquad a = a_{base} + a_{res}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\tanh(2.0) = 0.964$, so $a_{res} = 0.003 \times 0.964 = 0.0029$ m.</li>
+<li>$a = 0.010 + 0.0029 = 0.0129$ m.</li>
+<li>A much larger raw output, $u = -5.0$: $\tanh(-5.0) = -0.9999$, $a_{res} = -0.0030$ m, $a = 0.0070$ m.</li>
+</ol>
+<p><strong>Result.</strong> Whatever the network outputs, the action stays within ±3 mm of the base: here 12.9 mm or 7.0 mm against the base's 10 mm.</p>
+<p><strong>Why it matters.</strong> The bound is what makes residual learning safe to train on hardware and keeps the base, which knows where to go, in charge of the motion; FIRe's authors put it as the VLA deciding "where the motion goes" while the residual decides "how the contact is negotiated". The cost is that the residual cannot fix a base that is badly wrong; it can only refine one that is roughly right.</p>
+</div>
+<h2>3. Residuals on this site</h2>
+<ul>
+<li><strong><a href="fire.html">FIRe</a>:</strong> frozen VLA proposes 16-step chunks; a residual trained with PPO in simulation sees force at 15 Hz and adds a bounded 6-D correction to every step.</li>
+<li><strong><a href="ter-dagger.html">TER-DAgger</a>:</strong> a fast residual corrects the base policy where a force-error alarm called a human in.</li>
+<li><strong><a href="mode-vla.html">MoDE-VLA</a>:</strong> force and touch enter through a separate path whose output is added to π0's as a residual, so the pretrained path is not overwritten.</li>
+<li><strong>Not a residual:</strong> Facet-0's local actor receives the frozen policy's action as an input ("a conditioning prior, not a residual base", in its paper's words) and outputs the full action itself.</li>
+</ul>
+<p><strong>Carry forward:</strong> most residuals are trained with reinforcement learning, which needs a way to judge actions by their long-term result: <a href="actor-critic.html">actor-critic RL</a>.</p>
+<p><strong>Check question:</strong> $a_{base} = -0.004$ m, $b = 0.002$ m, $u = 0.5$. What is the executed action?</p>
+<details>
+<summary>Answer</summary>
+<p>$\tanh(0.5) = 0.462$, $a_{res} = 0.002 \times 0.462 = 0.00092$ m, so $a = -0.004 + 0.00092 = -0.00308$ m.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Residual Policy Learning, <a href="https://arxiv.org/abs/1812.06298">arXiv 1812.06298</a> · 12/2018. Residual Reinforcement Learning for Robot Control, <a href="https://arxiv.org/abs/1812.03201">arXiv 1812.03201</a> · 12/2018</p>
+<p><strong>VẤN ĐỀ</strong> Tiếp xúc và ma sát khó mô hình hóa, nên một bộ điều khiển thiết kế tay "giòn và thiếu chính xác" ở những chỗ đó (lời của Residual RL), và một VLA học bằng bắt chước trôi đúng lúc tiếp xúc. Vậy mà cả hai làm đúng phần lớn chuyển động.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Học tăng cường từ đầu tốn rất nhiều dữ liệu và, với tác vụ dài có phần thưởng thưa, thường thất bại hẳn. Chỉnh tay lại bộ điều khiển cho từng tác vụ thì không mở rộng được.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ chính sách nền và cộng một phần residual học được: $a = a_{base}(s) + a_{res}(s)$. Residual khởi đầu bằng 0 và có giới hạn, nên việc học bắt đầu từ hành vi của phần nền và chỉ có thể đẩy nhẹ nó.</p>
+<p><strong>KẾT QUẢ</strong> Residual Policy Learning giải được các tác vụ MuJoCo dài, phần thưởng thưa mà RL đơn thuần thất bại, và "cải thiện nhất quán và đáng kể so với bộ điều khiển ban đầu". Trên trang này: residual của FIRe trên một VLA đóng băng đạt 96,7% ở cắm chốt so với 23,3% khi chỉ có VLA; TER-DAgger và MoDE-VLA cũng dùng hiệu chỉnh residual.</p>
+</div>
+<h2>1. Vấn đề: đủ tốt khi chuyển động tự do, chưa đủ khi tiếp xúc</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở thứ được học: không phải toàn bộ hành vi, chỉ là khoảng cách giữa phần nền và hành vi tốt." class="dg-natural" width="647" height="304" viewBox="0 0 647 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Chỉ có phần nền</text><rect class="dg-box" x="134" y="22" width="96" height="38"/><text class="dg-t" x="182" y="45" text-anchor="middle">Quan sát</text><path class="dg-a" d="M230 41 H262"/><rect class="dg-badbox" x="264" y="14" width="193" height="54"/><text class="dg-t" x="361" y="37" text-anchor="middle">Bộ điều khiển hoặc VLA</text><text class="dg-s" x="361" y="53" text-anchor="middle">bỏ sót chi tiết tiếp xúc</text><path class="dg-a" d="M457 41 H489"/><rect class="dg-box" x="491" y="22" width="96" height="38"/><text class="dg-t" x="539" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="86">✗ trôi, kẹt, ấn quá mạnh</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">RL từ đầu</text><rect class="dg-box" x="134" y="120" width="96" height="38"/><text class="dg-t" x="182" y="143" text-anchor="middle">Quan sát</text><path class="dg-a" d="M230 139 H262"/><rect class="dg-badbox" x="264" y="112" width="128" height="54"/><text class="dg-t" x="328" y="135" text-anchor="middle">Học mọi thứ</text><text class="dg-s" x="328" y="151" text-anchor="middle">phần thưởng thưa</text><path class="dg-a" d="M392 139 H424"/><rect class="dg-box" x="426" y="120" width="96" height="38"/><text class="dg-t" x="474" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="134.0" y="184">✗ quá chậm, khám phá không an toàn</text><text class="dg-lab dg-green" x="14" y="241">Residual</text><rect class="dg-box" x="134" y="218" width="96" height="38"/><text class="dg-t" x="182" y="241" text-anchor="middle">Quan sát</text><path class="dg-a" d="M230 237 H262"/><rect class="dg-key" x="264" y="210" width="239" height="54"/><text class="dg-t" x="383" y="233" text-anchor="middle">Nền + hiệu chỉnh có giới hạn</text><text class="dg-s" x="383" y="249" text-anchor="middle">chỉ học phần chênh lệch</text><path class="dg-a" d="M503 237 H535"/><rect class="dg-box" x="537" y="218" width="96" height="38"/><text class="dg-t" x="585" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="134.0" y="282">✓ khởi đầu tốt, rồi tốt hơn</text></svg><figcaption>Thay đổi nằm ở thứ được học: không phải toàn bộ hành vi, chỉ là khoảng cách giữa phần nền và hành vi tốt.</figcaption></figure>
+<h2>2. Cách dựng</h2>
+<figure class="diagram"><svg role="img" aria-label="Chính sách nền được giữ lại (thường đóng băng). Một chính sách residual nhỏ xuất ra phần hiệu chỉnh, được nén vào một khoảng cố định rồi cộng vào hành động nền." viewBox="0 0 980 280" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">KEEP A GOOD BASE, LEARN ONLY A SMALL, BOUNDED CORRECTION</text>
+<rect class="dg-ext" x="20" y="100" width="150" height="56"/><text class="dg-t" x="95" y="124" text-anchor="middle">observation</text><text class="dg-s" x="95" y="142" text-anchor="middle">incl. force</text>
+<rect class="dg-box" x="230" y="44" width="220" height="64"/><text class="dg-t" x="340" y="70" text-anchor="middle">base policy (frozen)</text><text class="dg-s" x="340" y="90" text-anchor="middle">controller, BC policy or VLA</text>
+<rect class="dg-key" x="230" y="150" width="220" height="64"/><text class="dg-t" x="340" y="176" text-anchor="middle">residual policy</text><text class="dg-s" x="340" y="196" text-anchor="middle">small, trained by RL or BC</text>
+<path class="dg-a" d="M170 120 H200 V76 H230"/><path class="dg-a" d="M170 136 H200 V182 H230"/>
+<rect class="dg-box" x="500" y="150" width="170" height="64"/><text class="dg-t" x="585" y="176" text-anchor="middle">bound</text><text class="dg-s" x="585" y="196" text-anchor="middle">a_res = b tanh(u)</text>
+<path class="dg-a" d="M450 182 H500"/>
+<circle class="dg-key" cx="730" cy="128" r="22"/><text class="dg-t" x="730" y="135" text-anchor="middle">+</text>
+<path class="dg-a" d="M450 76 H730 V106"/><path class="dg-a" d="M670 182 H730 V150"/>
+<rect class="dg-box" x="800" y="100" width="160" height="56"/><text class="dg-t" x="880" y="124" text-anchor="middle">a = a_base + a_res</text><text class="dg-s" x="880" y="142" text-anchor="middle">sent to the robot</text>
+<path class="dg-a" d="M752 128 H800"/>
+<text class="dg-l" x="230" y="252">residual starts at zero, so training starts from the base policy's behaviour</text>
+</svg><figcaption>Chính sách nền được giữ lại (thường đóng băng). Một chính sách residual nhỏ xuất ra phần hiệu chỉnh, được nén vào một khoảng cố định rồi cộng vào hành động nền.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ phận</th>
+<th>Vai trò</th>
+<th>Lựa chọn điển hình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chính sách nền</td>
+<td>làm phần lớn công việc</td>
+<td>bộ điều khiển thiết kế tay, bộ điều khiển dự báo mô hình, chính sách BC, hoặc một VLA đóng băng</td>
+</tr>
+<tr>
+<td>Chính sách residual</td>
+<td>học phần hiệu chỉnh</td>
+<td>mạng nhỏ, thường được cho lực hoặc xúc giác mà phần nền không thấy</td>
+</tr>
+<tr>
+<td>Giới hạn</td>
+<td>chặn mức residual được phép dời hành động</td>
+<td>$a_{res} = b \tanh(u)$, nên $\lvert a_{res}\rvert \le b$</td>
+</tr>
+<tr>
+<td>Khởi đầu bằng 0</td>
+<td>đầu ra residual ban đầu bằng 0</td>
+<td>huấn luyện bắt đầu đúng tại hành vi của phần nền</td>
+</tr>
+<tr>
+<td>Tín hiệu huấn luyện</td>
+<td>phần thưởng RL, hoặc hiệu chỉnh của người (BC)</td>
+<td>FIRe: PPO trong mô phỏng; TER-DAgger: demo được người hiệu chỉnh</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một bước điều khiển: phần nền đề xuất một bước dịch, mạng residual xuất một giá trị thô, giới hạn nén nó lại. Phép tính cho thấy vì sao một đầu ra residual hoang dã không thể chiếm quyền.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_{base}$</td>
+<td>hành động nền theo một trục</td>
+<td>input</td>
+<td>0,010 m</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>đầu ra thô của mạng residual</td>
+<td>input</td>
+<td>2,0, rồi −5,0</td>
+</tr>
+<tr>
+<td>$b$</td>
+<td>giới hạn của residual</td>
+<td>hằng số</td>
+<td>0,003 m (minh họa)</td>
+</tr>
+<tr>
+<td>$a$</td>
+<td>hành động được thực thi</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$a_{res} = b\,\tanh(u), \qquad a = a_{base} + a_{res}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$\tanh(2{,}0) = 0{,}964$, nên $a_{res} = 0{,}003 \times 0{,}964 = 0{,}0029$ m.</li>
+<li>$a = 0{,}010 + 0{,}0029 = 0{,}0129$ m.</li>
+<li>Đầu ra thô lớn hơn nhiều, $u = -5{,}0$: $\tanh(-5{,}0) = -0{,}9999$, $a_{res} = -0{,}0030$ m, $a = 0{,}0070$ m.</li>
+</ol>
+<p><strong>Kết quả.</strong> Dù mạng xuất ra gì, hành động vẫn nằm trong ±3 mm quanh phần nền: ở đây 12,9 mm hoặc 7,0 mm so với 10 mm của phần nền.</p>
+<p><strong>Ý nghĩa.</strong> Giới hạn là thứ làm việc học residual an toàn khi huấn luyện trên phần cứng và giữ cho phần nền, vốn biết phải đi đâu, nắm quyền chuyển động; các tác giả FIRe diễn đạt là VLA quyết định "chuyển động đi về đâu" còn residual quyết định "tiếp xúc được xử lý thế nào". Cái giá là residual không sửa được một phần nền sai nghiêm trọng; nó chỉ tinh chỉnh được một phần nền đại khái đúng.</p>
+</div>
+<h2>3. Residual trên trang này</h2>
+<ul>
+<li><strong><a href="fire.html">FIRe</a>:</strong> VLA đóng băng đề xuất chunk 16 bước; một residual huấn luyện bằng PPO trong mô phỏng thấy lực ở 15 Hz và cộng một hiệu chỉnh 6 chiều có giới hạn vào mọi bước.</li>
+<li><strong><a href="ter-dagger.html">TER-DAgger</a>:</strong> một residual nhanh hiệu chỉnh chính sách nền ở những chỗ chuông báo sai số lực đã gọi người can thiệp.</li>
+<li><strong><a href="mode-vla.html">MoDE-VLA</a>:</strong> lực và xúc giác đi vào qua một đường riêng, đầu ra của nó được cộng vào đầu ra của π0 như một residual, nên đường đã pretrain không bị ghi đè.</li>
+<li><strong>Không phải residual:</strong> actor cục bộ của Facet-0 nhận hành động của chính sách đóng băng làm đầu vào ("một tiên nghiệm điều kiện, không phải nền residual", theo lời paper) và tự xuất toàn bộ hành động.</li>
+</ul>
+<p><strong>Mang theo:</strong> phần lớn residual được huấn luyện bằng học tăng cường, cần một cách đánh giá hành động theo kết quả lâu dài: <a href="actor-critic.html">actor-critic RL</a>.</p>
+<p><strong>Câu kiểm tra:</strong> $a_{base} = -0{,}004$ m, $b = 0{,}002$ m, $u = 0{,}5$. Hành động được thực thi là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\tanh(0{,}5) = 0{,}462$, $a_{res} = 0{,}002 \times 0{,}462 = 0{,}00092$ m, nên $a = -0{,}004 + 0{,}00092 = -0{,}00308$ m.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

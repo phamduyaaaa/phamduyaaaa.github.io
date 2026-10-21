@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Classifiers learn a fixed list of labels. Contrastive learning only asks which caption goes with which image, using the rest of the batch as counter-examples. InfoNCE worked by hand, and where it shows up in VLAs: the SigLIP image encoder and TaF-VLA's touch–force alignment.">
+<title>Contrastive Learning: Learning by Telling the Right Pair from the Wrong Ones · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Contrastive Learning: Learning by Telling the Right Pair from the Wrong Ones">
+<meta property="og:description" content="Classifiers learn a fixed list of labels. Contrastive learning only asks which caption goes with which image, using the rest of the batch as counter-examples. InfoNCE worked by hand, and where it shows up in VLAs: the SigLIP image encoder and TaF-VLA's touch–force alignment.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Contrastive Learning: Learning by Telling the Right Pair from the Wrong Ones</h1>
+    <h1 data-vi>Contrastive learning: Học bằng cách phân biệt cặp đúng với các cặp sai</h1>
+
+    <p class="post-excerpt-lead" data-en>Classifiers learn a fixed list of labels. Contrastive learning only asks which caption goes with which image, using the rest of the batch as counter-examples. InfoNCE worked by hand, and where it shows up in VLAs: the SigLIP image encoder and TaF-VLA's touch–force alignment.</p>
+    <p class="post-excerpt-lead" data-vi>Bộ phân loại học một danh sách nhãn cố định. Contrastive learning chỉ hỏi chú thích nào đi với ảnh nào, dùng phần còn lại của batch làm phản ví dụ. Tính tay InfoNCE, và nó xuất hiện ở đâu trong VLA: bộ mã hóa ảnh SigLIP và việc căn xúc giác với lực của TaF-VLA.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Contrastive Learning</span><span class="pill">InfoNCE</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> InfoNCE from Contrastive Predictive Coding, <a href="https://arxiv.org/abs/1807.03748">arXiv 1807.03748</a> · 07/2018. CLIP, <a href="https://arxiv.org/abs/2103.00020">arXiv 2103.00020</a> · 02/2021. SigLIP, <a href="https://arxiv.org/abs/2303.15343">arXiv 2303.15343</a> · 03/2023</p>
+<p><strong>PROBLEM</strong> We want an image encoder (or a touch encoder) whose vectors mean something, without labelling millions of examples by hand.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Supervised classifiers predict "a fixed set of predetermined object categories"; CLIP's authors note that this "restricted form of supervision limits their generality", because any new concept needs new labels.</p>
+<p><strong>IDEA</strong> Take pairs that belong together (an image and its caption, a touch image and the force measured at the same moment). Train two encoders so that each item is more similar to its own partner than to every other item in the batch.</p>
+<p><strong>RESULT</strong> CLIP learned from 400 million image–text pairs found on the internet and transfers to new tasks without labels. SigLIP replaces the batch softmax with one sigmoid per pair; it is the image encoder in PaliGemma and therefore in π0. TaF-VLA uses the same loss to align touch with force.</p>
+</div>
+<h2>1. The problem: labels are a narrow teacher</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is where supervision comes from: the pairing that already exists in the data." class="dg-natural" width="748" height="206" viewBox="0 0 748 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Classifier</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Image</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="148" height="54"/><text class="dg-t" x="328" y="37" text-anchor="middle">Fixed label list</text><text class="dg-s" x="328" y="53" text-anchor="middle">1,000 classes</text><path class="dg-a" d="M402 41 H434"/><rect class="dg-box" x="436" y="22" width="96" height="38"/><text class="dg-t" x="484" y="45" text-anchor="middle">Class id</text><text class="dg-note dg-red" x="124" y="86">✗ every new concept needs new labels</text><text class="dg-lab dg-green" x="14" y="143">Contrastive</text><rect class="dg-box" x="124" y="120" width="170" height="38"/><text class="dg-t" x="209" y="143" text-anchor="middle">Image + its caption</text><path class="dg-a" d="M294 139 H326"/><rect class="dg-key" x="328" y="112" width="201" height="54"/><text class="dg-t" x="429" y="135" text-anchor="middle">Match against the batch</text><text class="dg-s" x="429" y="151" text-anchor="middle">pairs are the labels</text><path class="dg-a" d="M529 139 H561"/><rect class="dg-box" x="563" y="120" width="170" height="38"/><text class="dg-t" x="648" y="143" text-anchor="middle">Shared vector space</text><text class="dg-note dg-green" x="124" y="184">✓ any concept a caption can name</text></svg><figcaption>The change is where supervision comes from: the pairing that already exists in the data.</figcaption></figure>
+<h2>2. How it works</h2>
+<figure class="diagram"><svg role="img" aria-label="Each row is an image, each column a caption. The diagonal holds the true pairs. InfoNCE asks the diagonal to win its row; SigLIP asks every cell for a yes or no." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A BATCH OF N PAIRS GIVES N RIGHT ANSWERS AND N x (N - 1) WRONG ONES</text>
+<rect class="dg-ext" x="20" y="60" width="150" height="50"/><text class="dg-t" x="95" y="82" text-anchor="middle">image encoder</text><text class="dg-s" x="95" y="98" text-anchor="middle">e.g. ViT</text>
+<rect class="dg-ext" x="20" y="170" width="150" height="50"/><text class="dg-t" x="95" y="192" text-anchor="middle">text encoder</text><text class="dg-s" x="95" y="208" text-anchor="middle">caption</text>
+<text class="dg-s" x="300" y="56" text-anchor="middle">"red cup"</text><text class="dg-s" x="380" y="56" text-anchor="middle">"blue plate"</text><text class="dg-s" x="460" y="56" text-anchor="middle">"spoon"</text>
+<text class="dg-s" x="250" y="94" text-anchor="end">cup photo</text><text class="dg-s" x="250" y="144" text-anchor="end">plate photo</text><text class="dg-s" x="250" y="194" text-anchor="end">spoon photo</text>
+<rect class="dg-key" x="260" y="70" width="80" height="44"/><text class="dg-t" x="300" y="97" text-anchor="middle">0.9</text>
+<rect class="dg-box" x="340" y="70" width="80" height="44"/><text class="dg-t" x="380" y="97" text-anchor="middle">0.3</text>
+<rect class="dg-box" x="420" y="70" width="80" height="44"/><text class="dg-t" x="460" y="97" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="260" y="120" width="80" height="44"/><text class="dg-t" x="300" y="147" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="340" y="120" width="80" height="44"/><text class="dg-t" x="380" y="147" text-anchor="middle">0.8</text>
+<rect class="dg-box" x="420" y="120" width="80" height="44"/><text class="dg-t" x="460" y="147" text-anchor="middle">0.0</text>
+<rect class="dg-box" x="260" y="170" width="80" height="44"/><text class="dg-t" x="300" y="197" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="340" y="170" width="80" height="44"/><text class="dg-t" x="380" y="197" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="420" y="170" width="80" height="44"/><text class="dg-t" x="460" y="197" text-anchor="middle">0.7</text>
+<text class="dg-s" x="380" y="240" text-anchor="middle">cosine similarity of image i and caption j</text>
+<rect class="dg-box" x="580" y="70" width="380" height="64"/><text class="dg-t" x="770" y="96" text-anchor="middle">InfoNCE / CLIP: softmax along each row</text><text class="dg-s" x="770" y="116" text-anchor="middle">the diagonal must win against the rest of its row</text>
+<rect class="dg-box" x="580" y="150" width="380" height="64"/><text class="dg-t" x="770" y="176" text-anchor="middle">SigLIP: a yes/no sigmoid for every cell</text><text class="dg-s" x="770" y="196" text-anchor="middle">diagonal = yes, everything else = no</text>
+<path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
+<text class="dg-note" x="20" y="280">no class labels: the caption that came with the image is the label, and the other captions in the batch are the counter-examples</text>
+</svg><figcaption>Each row is an image, each column a caption. The diagonal holds the true pairs. InfoNCE asks the diagonal to win its row; SigLIP asks every cell for a yes or no.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Two encoders</td>
+<td>images; captions (or touch; force)</td>
+<td>one vector each, length 1</td>
+<td>put both kinds into one space</td>
+</tr>
+<tr>
+<td>Similarity matrix</td>
+<td>$N$ image vectors, $N$ caption vectors</td>
+<td>$N \times N$ cosine similarities</td>
+<td>how well each image fits each caption</td>
+</tr>
+<tr>
+<td>Temperature $\tau$</td>
+<td>similarities</td>
+<td>logits $s/\tau$</td>
+<td>how sharply the loss separates pairs (learned in CLIP)</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>logits</td>
+<td>scalar</td>
+<td>InfoNCE: cross-entropy along each row (and column); SigLIP: binary loss per cell</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Compute the InfoNCE loss for one image in a batch of three, once when the right caption clearly wins and once when it barely wins.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$s_{11}$</td>
+<td>similarity of image 1 with its own caption</td>
+<td>input</td>
+<td>0.9 (clear) or 0.5 (barely)</td>
+</tr>
+<tr>
+<td>$s_{12},\ s_{13}$</td>
+<td>similarity with the two other captions</td>
+<td>input</td>
+<td>0.3, 0.1 (clear) or 0.45, 0.1 (barely)</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>temperature</td>
+<td>constant</td>
+<td>0.1 (illustrative)</td>
+</tr>
+<tr>
+<td>$L_1$</td>
+<td>loss for image 1</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$L_1 = -\log \frac{e^{s_{11}/\tau}}{\sum_{j} e^{s_{1j}/\tau}}$$</p>
+<p><strong>Steps</strong> (clear case)</p>
+<ol>
+<li>Logits: $0.9/0.1 = 9$, $0.3/0.1 = 3$, $0.1/0.1 = 1$.</li>
+<li>$e^9 = 8103.1$, $e^3 = 20.1$, $e^1 = 2.7$; sum $= 8125.9$.</li>
+<li>Probability of the right caption $= 8103.1 / 8125.9 = 0.9972$; $L_1 = -\log 0.9972 = 0.0028$.</li>
+</ol>
+<p>Barely case: logits 5, 4.5, 1; $e^5 = 148.4$, $e^{4.5} = 90.0$, $e^1 = 2.7$; probability $= 148.4 / 241.1 = 0.615$; $L_1 = 0.486$.</p>
+<p><strong>Result.</strong> 0.003 when the right caption clearly wins, 0.49 when it only just wins.</p>
+<p><strong>Why it matters.</strong> The loss is a classification over the batch: "which of these $N$ captions is mine?". It keeps pushing until the right partner stands out, so vectors end up meaning what captions describe. More items in the batch means more and harder counter-examples, which is why CLIP used batches of 32,768. SigLIP's per-cell sigmoid does not need the whole row at once, which makes large batches cheaper, and its paper reports better results at small batch sizes too.</p>
+</div>
+<h2>3. In VLA</h2>
+<ul>
+<li><strong>Image encoder:</strong> PaliGemma, used by π0 and π0.5, builds on the SigLIP So400m encoder, trained contrastively on image–text pairs. A robot rarely trains this part from scratch (<a href="vit.html">ViT</a>).</li>
+<li><strong>Touch meets force:</strong> <a href="taf-vla.html">TaF-VLA</a> pulls each tactile-image sequence toward the force code measured at the same moment with InfoNCE, so the touch encoder learns force, not texture.</li>
+<li><strong>Time:</strong> CPC, where InfoNCE comes from, predicts the future in latent space; the same idea appears when a policy learns representations by predicting what comes next.</li>
+</ul>
+<p><strong>Carry forward:</strong> an encoder trained this way gives vectors a language model can relate to words. Joining the two into one model is a <a href="vlm.html">VLM</a>.</p>
+<p><strong>Check question:</strong> $\tau = 0.1$, $s_{11} = 0.8$, $s_{12} = 0.6$, $s_{13} = 0.0$. What is $L_1$?</p>
+<details>
+<summary>Answer</summary>
+<p>Logits 8, 6, 0. $e^8 = 2981.0$, $e^6 = 403.4$, $e^0 = 1$; sum $= 3385.4$. Probability $= 2981.0 / 3385.4 = 0.881$, so $L_1 = -\log 0.881 = 0.127$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> InfoNCE từ Contrastive Predictive Coding, <a href="https://arxiv.org/abs/1807.03748">arXiv 1807.03748</a> · 07/2018. CLIP, <a href="https://arxiv.org/abs/2103.00020">arXiv 2103.00020</a> · 02/2021. SigLIP, <a href="https://arxiv.org/abs/2303.15343">arXiv 2303.15343</a> · 03/2023</p>
+<p><strong>VẤN ĐỀ</strong> Ta muốn một bộ mã hóa ảnh (hoặc mã hóa xúc giác) có vector mang ý nghĩa, mà không phải gán nhãn tay hàng triệu ví dụ.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Bộ phân loại có giám sát dự đoán "một tập cố định các loại vật định sẵn"; các tác giả CLIP nhận xét "dạng giám sát hạn hẹp này giới hạn tính tổng quát", vì mỗi khái niệm mới lại cần nhãn mới.</p>
+<p><strong>Ý TƯỞNG</strong> Lấy những cặp vốn đi cùng nhau (một ảnh và chú thích của nó, một ảnh xúc giác và lực đo cùng lúc). Huấn luyện hai bộ mã hóa sao cho mỗi phần tử giống bạn đồng hành của nó hơn giống mọi phần tử khác trong batch.</p>
+<p><strong>KẾT QUẢ</strong> CLIP học từ 400 triệu cặp ảnh–chữ trên internet và chuyển sang tác vụ mới mà không cần nhãn. SigLIP thay softmax trên cả batch bằng một sigmoid cho từng cặp; nó là bộ mã hóa ảnh trong PaliGemma và do đó trong π0. TaF-VLA dùng cùng hàm loss để căn xúc giác với lực.</p>
+</div>
+<h2>1. Vấn đề: nhãn là một người thầy hẹp</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở nguồn giám sát: chính việc ghép cặp vốn đã có sẵn trong dữ liệu." class="dg-natural" width="778" height="206" viewBox="0 0 778 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Bộ phân loại</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Ảnh</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="193" height="54"/><text class="dg-t" x="351" y="37" text-anchor="middle">Danh sách nhãn cố định</text><text class="dg-s" x="351" y="53" text-anchor="middle">1.000 lớp</text><path class="dg-a" d="M447 41 H479"/><rect class="dg-box" x="481" y="22" width="96" height="38"/><text class="dg-t" x="529" y="45" text-anchor="middle">Mã lớp</text><text class="dg-note dg-red" x="124" y="86">✗ mỗi khái niệm mới cần nhãn mới</text><text class="dg-lab dg-green" x="14" y="143">Contrastive</text><rect class="dg-box" x="124" y="120" width="193" height="38"/><text class="dg-t" x="221" y="143" text-anchor="middle">Ảnh + chú thích của nó</text><path class="dg-a" d="M317 139 H349"/><rect class="dg-key" x="351" y="112" width="178" height="54"/><text class="dg-t" x="440" y="135" text-anchor="middle">So khớp với cả batch</text><text class="dg-s" x="440" y="151" text-anchor="middle">chính các cặp là nhãn</text><path class="dg-a" d="M529 139 H561"/><rect class="dg-box" x="563" y="120" width="201" height="38"/><text class="dg-t" x="664" y="143" text-anchor="middle">Không gian vector chung</text><text class="dg-note dg-green" x="124" y="184">✓ mọi khái niệm mà một câu chú thích gọi tên được</text></svg><figcaption>Thay đổi nằm ở nguồn giám sát: chính việc ghép cặp vốn đã có sẵn trong dữ liệu.</figcaption></figure>
+<h2>2. Cách hoạt động</h2>
+<figure class="diagram"><svg role="img" aria-label="Mỗi hàng là một ảnh, mỗi cột là một chú thích. Đường chéo chứa các cặp đúng. InfoNCE đòi đường chéo thắng cả hàng của nó; SigLIP hỏi từng ô một câu có hoặc không." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A BATCH OF N PAIRS GIVES N RIGHT ANSWERS AND N x (N - 1) WRONG ONES</text>
+<rect class="dg-ext" x="20" y="60" width="150" height="50"/><text class="dg-t" x="95" y="82" text-anchor="middle">image encoder</text><text class="dg-s" x="95" y="98" text-anchor="middle">e.g. ViT</text>
+<rect class="dg-ext" x="20" y="170" width="150" height="50"/><text class="dg-t" x="95" y="192" text-anchor="middle">text encoder</text><text class="dg-s" x="95" y="208" text-anchor="middle">caption</text>
+<text class="dg-s" x="300" y="56" text-anchor="middle">"red cup"</text><text class="dg-s" x="380" y="56" text-anchor="middle">"blue plate"</text><text class="dg-s" x="460" y="56" text-anchor="middle">"spoon"</text>
+<text class="dg-s" x="250" y="94" text-anchor="end">cup photo</text><text class="dg-s" x="250" y="144" text-anchor="end">plate photo</text><text class="dg-s" x="250" y="194" text-anchor="end">spoon photo</text>
+<rect class="dg-key" x="260" y="70" width="80" height="44"/><text class="dg-t" x="300" y="97" text-anchor="middle">0.9</text>
+<rect class="dg-box" x="340" y="70" width="80" height="44"/><text class="dg-t" x="380" y="97" text-anchor="middle">0.3</text>
+<rect class="dg-box" x="420" y="70" width="80" height="44"/><text class="dg-t" x="460" y="97" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="260" y="120" width="80" height="44"/><text class="dg-t" x="300" y="147" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="340" y="120" width="80" height="44"/><text class="dg-t" x="380" y="147" text-anchor="middle">0.8</text>
+<rect class="dg-box" x="420" y="120" width="80" height="44"/><text class="dg-t" x="460" y="147" text-anchor="middle">0.0</text>
+<rect class="dg-box" x="260" y="170" width="80" height="44"/><text class="dg-t" x="300" y="197" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="340" y="170" width="80" height="44"/><text class="dg-t" x="380" y="197" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="420" y="170" width="80" height="44"/><text class="dg-t" x="460" y="197" text-anchor="middle">0.7</text>
+<text class="dg-s" x="380" y="240" text-anchor="middle">cosine similarity of image i and caption j</text>
+<rect class="dg-box" x="580" y="70" width="380" height="64"/><text class="dg-t" x="770" y="96" text-anchor="middle">InfoNCE / CLIP: softmax along each row</text><text class="dg-s" x="770" y="116" text-anchor="middle">the diagonal must win against the rest of its row</text>
+<rect class="dg-box" x="580" y="150" width="380" height="64"/><text class="dg-t" x="770" y="176" text-anchor="middle">SigLIP: a yes/no sigmoid for every cell</text><text class="dg-s" x="770" y="196" text-anchor="middle">diagonal = yes, everything else = no</text>
+<path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
+<text class="dg-note" x="20" y="280">no class labels: the caption that came with the image is the label, and the other captions in the batch are the counter-examples</text>
+</svg><figcaption>Mỗi hàng là một ảnh, mỗi cột là một chú thích. Đường chéo chứa các cặp đúng. InfoNCE đòi đường chéo thắng cả hàng của nó; SigLIP hỏi từng ô một câu có hoặc không.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hai bộ mã hóa</td>
+<td>ảnh; chú thích (hoặc xúc giác; lực)</td>
+<td>mỗi thứ một vector, độ dài 1</td>
+<td>đưa cả hai loại vào một không gian</td>
+</tr>
+<tr>
+<td>Ma trận tương đồng</td>
+<td>$N$ vector ảnh, $N$ vector chú thích</td>
+<td>$N \times N$ độ tương đồng cosine</td>
+<td>mỗi ảnh hợp với mỗi chú thích tới đâu</td>
+</tr>
+<tr>
+<td>Nhiệt độ $\tau$</td>
+<td>độ tương đồng</td>
+<td>logit $s/\tau$</td>
+<td>loss tách các cặp sắc tới mức nào (CLIP học tham số này)</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>logit</td>
+<td>một số</td>
+<td>InfoNCE: cross-entropy theo mỗi hàng (và cột); SigLIP: loss nhị phân cho mỗi ô</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Tính loss InfoNCE cho một ảnh trong batch ba cặp, một lần khi chú thích đúng thắng rõ, một lần khi nó chỉ thắng sát nút.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$s_{11}$</td>
+<td>độ tương đồng giữa ảnh 1 và chú thích của nó</td>
+<td>input</td>
+<td>0,9 (rõ) hoặc 0,5 (sát nút)</td>
+</tr>
+<tr>
+<td>$s_{12},\ s_{13}$</td>
+<td>độ tương đồng với hai chú thích còn lại</td>
+<td>input</td>
+<td>0,3; 0,1 (rõ) hoặc 0,45; 0,1 (sát nút)</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>nhiệt độ</td>
+<td>hằng số</td>
+<td>0,1 (minh họa)</td>
+</tr>
+<tr>
+<td>$L_1$</td>
+<td>loss của ảnh 1</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$L_1 = -\log \frac{e^{s_{11}/\tau}}{\sum_{j} e^{s_{1j}/\tau}}$$</p>
+<p><strong>Từng bước</strong> (trường hợp rõ)</p>
+<ol>
+<li>Logit: $0{,}9/0{,}1 = 9$, $0{,}3/0{,}1 = 3$, $0{,}1/0{,}1 = 1$.</li>
+<li>$e^9 = 8103{,}1$, $e^3 = 20{,}1$, $e^1 = 2{,}7$; tổng $= 8125{,}9$.</li>
+<li>Xác suất của chú thích đúng $= 8103{,}1 / 8125{,}9 = 0{,}9972$; $L_1 = -\log 0{,}9972 = 0{,}0028$.</li>
+</ol>
+<p>Trường hợp sát nút: logit 5; 4,5; 1; $e^5 = 148{,}4$, $e^{4{,}5} = 90{,}0$, $e^1 = 2{,}7$; xác suất $= 148{,}4 / 241{,}1 = 0{,}615$; $L_1 = 0{,}486$.</p>
+<p><strong>Kết quả.</strong> 0,003 khi chú thích đúng thắng rõ, 0,49 khi nó chỉ vừa thắng.</p>
+<p><strong>Ý nghĩa.</strong> Loss này là một bài phân loại trên batch: "trong $N$ chú thích này, cái nào là của mình?". Nó cứ đẩy cho tới khi bạn đồng hành đúng nổi bật hẳn, nên vector rốt cuộc mang ý nghĩa mà chú thích mô tả. Batch càng nhiều phần tử thì càng nhiều phản ví dụ và càng khó, vì thế CLIP dùng batch 32.768. Sigmoid theo từng ô của SigLIP không cần cả hàng cùng lúc, nên batch lớn rẻ hơn, và paper của nó báo cáo kết quả tốt hơn cả ở batch nhỏ.</p>
+</div>
+<h2>3. Trong VLA</h2>
+<ul>
+<li><strong>Bộ mã hóa ảnh:</strong> PaliGemma, mà π0 và π0.5 dùng, xây trên bộ mã hóa SigLIP So400m, được huấn luyện contrastive trên các cặp ảnh–chữ. Robot hiếm khi huấn luyện phần này từ đầu (<a href="vit.html">ViT</a>).</li>
+<li><strong>Xúc giác gặp lực:</strong> <a href="taf-vla.html">TaF-VLA</a> dùng InfoNCE kéo mỗi chuỗi ảnh xúc giác về phía mã lực đo cùng thời điểm, để bộ mã hóa xúc giác học lực chứ không học kết cấu bề mặt.</li>
+<li><strong>Thời gian:</strong> CPC, nơi InfoNCE ra đời, dự đoán tương lai trong không gian latent; cùng ý tưởng xuất hiện khi một chính sách học biểu diễn bằng cách đoán điều sắp tới.</li>
+</ul>
+<p><strong>Mang theo:</strong> bộ mã hóa học theo cách này cho ra các vector mà mô hình ngôn ngữ liên hệ được với chữ. Ghép hai thứ đó thành một mô hình là <a href="vlm.html">VLM</a>.</p>
+<p><strong>Câu kiểm tra:</strong> $\tau = 0{,}1$, $s_{11} = 0{,}8$, $s_{12} = 0{,}6$, $s_{13} = 0{,}0$. $L_1$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Logit 8; 6; 0. $e^8 = 2981{,}0$, $e^6 = 403{,}4$, $e^0 = 1$; tổng $= 3385{,}4$. Xác suất $= 2981{,}0 / 3385{,}4 = 0{,}881$, nên $L_1 = -\log 0{,}881 = 0{,}127$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

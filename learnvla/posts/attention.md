@@ -16,7 +16,7 @@ tags: [VLA, Foundations, Attention, Transformer]
 
 **WHAT FAILED BEFORE** Encoder-decoder RNNs compressed the whole source sentence into one fixed-length vector. The paper argues this is a bottleneck, and quality drops on long sentences.
 
-**IDEA** Keep one vector per input position. For each output, score every position, softmax the scores into weights, and take the weighted sum. The model learns where to look.
+**IDEA** Keep one vector per input position. For each output, score every position, softmax the scores into weights, and take the weighted sum. The model learns where to look. (Bahdanau scored with a small neural network, "additive" attention; the query–key–value dot-product form below is the one the Transformer made standard in 2017.)
 
 **RESULT** Better translation on long sentences. The Transformer later made this the only mechanism, with every token attending to every other token (self-attention).
 </div>
@@ -36,7 +36,7 @@ tags: [VLA, Foundations, Attention, Transformer]
 |---|---|---|---|
 | $W_Q, W_K, W_V$ | $X$ ($n \times d$) | $Q, K, V$ | three learned views of the same tokens |
 | Scores | $Q, K$ | $n \times n$ matrix | how well each query matches each key |
-| Divide by $\sqrt{d}$ | scores | scaled scores | keeps values from growing with $d$ |
+| Divide by $\sqrt{d}$ | scores | scaled scores | keeps the spread of scores the same for any $d$ |
 | Softmax | scaled scores | weights, each row sums to 1 | turns scores into a distribution |
 | Weights × $V$ | weights, $V$ | output ($n \times d$) | context-aware token vectors |
 
@@ -67,12 +67,12 @@ $$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$
 
 **Result.** Token 1 now carries 67% of itself and 33% of token 2. By symmetry, token 2 gets $[0.330, 0.670]$.
 
-**Why it matters.** Both tokens became vectors that contain information from the other. The $\sqrt{d}$ keeps scores from growing as vectors get longer, which would make softmax saturate to a one-hot.
+**Why it matters.** Both tokens became vectors that contain information from the other. Why exactly $\sqrt{d}$? If the components of $q$ and $k$ are random with variance 1, their dot product is a sum of $d$ such products, so its variance is $d$ and its typical size is $\sqrt{d}$. With $d = 512$ a typical score is about 22; $e^{22}$ against $e^{0}$ makes softmax a one-hot whose gradient is almost zero. Dividing by $\sqrt{d}$ brings the typical score back to about 1 for any $d$.
 </div>
 
 ## 3. Cost and variants
 
-- $n$ tokens give an $n \times n$ score matrix: $N^2$ pairs. This is the reason ViT cuts images into patches.
+- $n$ tokens give an $n \times n$ score matrix: $n^2$ pairs. This is the reason ViT cuts images into patches.
 - **Self-attention:** $Q$, $K$, $V$ all come from the same sequence (this post).
 - **Cross-attention:** $Q$ from one sequence, $K, V$ from another (action expert reading the VLM: see [cross-attention](cross-attention.html)).
 
@@ -95,7 +95,7 @@ $q_1 \cdot k_1 = 2 \times 2 + 0 \times 0 = 4$; $q_1 \cdot k_2 = 0$. Token 1 atte
 
 **PAPER TRƯỚC HỎNG Ở ĐÂU** RNN encoder-decoder nén cả câu nguồn vào một vector độ dài cố định. Paper cho rằng đó là nút thắt cổ chai, và chất lượng giảm trên câu dài.
 
-**Ý TƯỞNG** Giữ một vector cho mỗi vị trí đầu vào. Với mỗi đầu ra, chấm điểm mọi vị trí, softmax thành trọng số rồi lấy tổng có trọng số. Mô hình tự học nên nhìn vào đâu.
+**Ý TƯỞNG** Giữ một vector cho mỗi vị trí đầu vào. Với mỗi đầu ra, chấm điểm mọi vị trí, softmax thành trọng số rồi lấy tổng có trọng số. Mô hình tự học nên nhìn vào đâu. (Bahdanau chấm điểm bằng một mạng nơ-ron nhỏ, gọi là attention "cộng"; dạng tích vô hướng query–key–value bên dưới là dạng mà Transformer biến thành chuẩn từ 2017.)
 
 **KẾT QUẢ** Dịch tốt hơn trên câu dài. Về sau Transformer biến đây thành cơ chế duy nhất, mỗi token chú ý đến mọi token khác (self-attention).
 </div>
@@ -115,7 +115,7 @@ $q_1 \cdot k_1 = 2 \times 2 + 0 \times 0 = 4$; $q_1 \cdot k_2 = 0$. Token 1 atte
 |---|---|---|---|
 | $W_Q, W_K, W_V$ | $X$ ($n \times d$) | $Q, K, V$ | ba góc nhìn học được của cùng các token |
 | Điểm | $Q, K$ | ma trận $n \times n$ | mỗi query khớp mỗi key đến đâu |
-| Chia $\sqrt{d}$ | điểm | điểm đã co | không cho giá trị lớn theo $d$ |
+| Chia $\sqrt{d}$ | điểm | điểm đã co | giữ độ dao động của điểm như nhau với mọi $d$ |
 | Softmax | điểm đã co | trọng số, mỗi hàng tổng 1 | biến điểm thành phân phối |
 | Trọng số × $V$ | trọng số, $V$ | đầu ra ($n \times d$) | vector token có ngữ cảnh |
 
@@ -146,12 +146,12 @@ $$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$
 
 **Kết quả.** Token 1 giờ mang 67% chính nó và 33% token 2. Theo đối xứng, token 2 ra $[0{,}330, 0{,}670]$.
 
-**Ý nghĩa.** Cả hai token thành vector chứa thông tin của token kia. Chia $\sqrt{d}$ để điểm không phình ra khi vector dài, nếu không softmax sẽ bão hòa thành one-hot.
+**Ý nghĩa.** Cả hai token thành vector chứa thông tin của token kia. Vì sao lại đúng là $\sqrt{d}$? Nếu các thành phần của $q$ và $k$ ngẫu nhiên với phương sai 1, tích vô hướng là tổng của $d$ tích như vậy, nên phương sai bằng $d$ và độ lớn điển hình là $\sqrt{d}$. Với $d = 512$, một điểm điển hình khoảng 22; $e^{22}$ so với $e^{0}$ khiến softmax thành one-hot với gradient gần bằng 0. Chia cho $\sqrt{d}$ đưa điểm điển hình về khoảng 1 với mọi $d$.
 </div>
 
 ## 3. Chi phí và biến thể
 
-- $n$ token cho ma trận điểm $n \times n$: $N^2$ cặp. Đây là lý do ViT cắt ảnh thành patch.
+- $n$ token cho ma trận điểm $n \times n$: $n^2$ cặp. Đây là lý do ViT cắt ảnh thành patch.
 - **Self-attention:** $Q$, $K$, $V$ đều từ cùng một chuỗi (bài này).
 - **Cross-attention:** $Q$ từ chuỗi này, $K, V$ từ chuỗi khác (action expert đọc VLM: xem [cross-attention](cross-attention.html)).
 

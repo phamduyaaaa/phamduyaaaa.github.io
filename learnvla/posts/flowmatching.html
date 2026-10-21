@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Flow Matching: Straight Paths From Noise to Action</h1>
@@ -202,8 +202,9 @@
 <ul>
 <li>π0 and its relatives put a flow-matching action expert after the VLM: noise action chunk in, velocity out, ten Euler steps. TaF-VLA, ForceVLA and others reuse it.</li>
 <li>Force papers keep this action head and change what it is conditioned on or what it outputs: see the <a href="survey-force-output.html">force surveys</a>.</li>
+<li>Why this solves the "average of two good answers" problem from <a href="imitation-learning.html">imitation learning</a>: sampling starts from <em>random</em> noise, and different noise samples are carried to different modes. If the demonstrations go left half the time and right half the time, about half of the samples end on the left and half on the right; none is pushed to the useless middle, which is what a single squared-error regression would output.</li>
 </ul>
-<p><strong>Carry forward:</strong> with imitation learning, tokens, attention, the Transformer and flow matching, you have the pieces of π0. The next layer is how a vision-language model (VLM) is plugged in.</p>
+<p><strong>Carry forward:</strong> flow matching turns noise into a whole <em>chunk</em> of actions at once. Why predict a chunk at all, and how is it executed? <a href="action-chunking.html">Action chunking</a>.</p>
 <p><strong>Check question:</strong> $x_0 = 1$, $x_1 = 5$, $t = 0.5$. What are $x_t$ and $u$?</p>
 <details>
 <summary>Answer</summary>
@@ -339,8 +340,9 @@
 <ul>
 <li>π0 và các biến thể đặt một action expert flow-matching sau VLM: vào là đoạn hành động nhiễu, ra là vận tốc, mười bước Euler. TaF-VLA, ForceVLA và các paper khác dùng lại.</li>
 <li>Các paper lực giữ phần đầu ra hành động này và đổi thứ nó nhận vào hoặc xuất ra: xem <a href="survey-force-output.html">survey lực</a>.</li>
+<li>Vì sao điều này giải được bài toán "trung bình của hai câu trả lời đúng" ở bài <a href="imitation-learning.html">imitation learning</a>: việc lấy mẫu bắt đầu từ nhiễu <em>ngẫu nhiên</em>, và các mẫu nhiễu khác nhau được đưa tới các mode khác nhau. Nếu demo rẽ trái một nửa số lần và rẽ phải một nửa, khoảng một nửa số mẫu kết thúc bên trái và một nửa bên phải; không mẫu nào bị đẩy vào khoảng giữa vô dụng, vốn là thứ mà một phép hồi quy sai số bình phương sẽ xuất ra.</li>
 </ul>
-<p><strong>Mang theo:</strong> với imitation learning, token, attention, Transformer và flow matching, bạn đã có các mảnh của π0. Lớp tiếp theo là cách cắm mô hình thị giác-ngôn ngữ (VLM) vào.</p>
+<p><strong>Mang theo:</strong> flow matching biến nhiễu thành cả một <em>chunk</em> hành động cùng lúc. Vì sao lại dự đoán cả chunk, và chunk được thực thi ra sao? <a href="action-chunking.html">Action chunking</a>.</p>
 <p><strong>Câu hỏi kiểm tra:</strong> $x_0 = 1$, $x_1 = 5$, $t = 0{,}5$. $x_t$ và $u$ bằng bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.">
+<meta name="description" content="A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image.">
 <title>ViT: When an Image Becomes Tokens · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ViT: When an Image Becomes Tokens">
-<meta property="og:description" content="How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.">
+<meta property="og:description" content="A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image.">
 <meta property="og:type" content="article">
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
@@ -66,8 +66,8 @@
     <h1 data-en>ViT: When an Image Becomes Tokens</h1>
     <h1 data-vi>ViT: Ảnh trở thành token</h1>
 
-    <p class="post-excerpt-lead" data-en>How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.</p>
-    <p class="post-excerpt-lead" data-vi>Transformer ăn một dãy vector, còn ảnh là một lưới số. Cắt patch, duỗi phẳng, chiếu tuyến tính và cộng mã vị trí, tính tay trên ảnh 4×4.</p>
+    <p class="post-excerpt-lead" data-en>A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image.</p>
+    <p class="post-excerpt-lead" data-vi>Transformer đọc một dãy, ảnh là một lưới, và mỗi pixel một token thì quá nhiều. ViT cắt ảnh thành patch, chiếu từng patch và cộng một vector vị trí. Tính tay trên ảnh 4×4.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">ViT</span><span class="pill">Transformer</span></div>
   </header>
@@ -75,180 +75,286 @@
   <article class="post-body">
     <div data-en>
 <div class="tldr">
-<p><strong>PAPER</strong> ViT, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
-<p><strong>PROBLEM</strong> A Transformer reads a sequence of vectors; an image is a grid. One token per pixel gives 50,176 tokens and about 2.5 billion attention pairs for a 224×224 image.</p>
-<p><strong>IDEA</strong> Cut the image into patches, flatten each, project it linearly to a vector, and add a position vector.</p>
-<p><strong>RESULT</strong> A 224×224 image becomes 256 tokens (14×14 patches) that a Transformer, and later a VLA, can attend over.</p>
-<p><strong>KEY POINT</strong> Without position embeddings the model cannot tell left from right.</p>
+<p><strong>PAPER</strong> Dosovitskiy et al., <em>An Image is Worth 16x16 Words</em>, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
+<p><strong>PROBLEM</strong> A Transformer reads a sequence of vectors; an image is a grid. One token per pixel of a 224×224 image gives 50,176 tokens and about 2.5 billion attention pairs per layer.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Vision was ruled by convolutional networks (CNNs). Attention was used with them or to replace some of their parts, keeping the CNN structure. Applying attention to every pixel was too expensive.</p>
+<p><strong>IDEA</strong> Cut the image into patches, flatten each patch, project it linearly to a vector of size $d$, add a position vector, and feed the sequence to a standard Transformer.</p>
+<p><strong>RESULT</strong> Pre-trained on ImageNet-21k or JFT-300M, the best model reaches 88.55% on ImageNet. Trained on ImageNet alone, ViT ends a few points <em>below</em> ResNets of similar size. VLAs inherit pretrained ViT-style encoders, for example SigLIP in PaliGemma and π0.</p>
 </div>
-<h2>The pain to cure</h2>
-<p>A Transformer eats a sequence of vectors. An image is a grid of numbers. How do we turn the grid into a sequence without losing anything important?</p>
-<h2>Step 1: The naive try, one token per pixel</h2>
-<p>A $4 \times 4$ grayscale image has 16 pixels, so 16 tokens. That sounds fine. But attention compares every pair of tokens, so it costs $N^2$.</p>
+<h2>1. The problem: a grid is not a sequence</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the unit: a patch, not a pixel. A lone pixel means almost nothing, like a single letter." class="dg-natural" width="761" height="304" viewBox="0 0 761 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">One token per pixel</text><rect class="dg-box" x="160" y="22" width="125" height="38"/><text class="dg-t" x="222" y="45" text-anchor="middle">224×224 image</text><path class="dg-a" d="M284 41 H316"/><rect class="dg-badbox" x="318" y="14" width="199" height="54"/><text class="dg-t" x="418" y="37" text-anchor="middle">50,176 tokens</text><text class="dg-s" x="418" y="53" text-anchor="middle">2.5 billion pairs per layer</text><path class="dg-a" d="M517 41 H549"/><rect class="dg-box" x="551" y="22" width="110" height="38"/><text class="dg-t" x="606" y="45" text-anchor="middle">Transformer</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ too expensive</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">CNN</text><rect class="dg-box" x="160" y="120" width="96" height="38"/><text class="dg-t" x="208" y="143" text-anchor="middle">Image</text><path class="dg-a" d="M256 139 H288"/><rect class="dg-badbox" x="290" y="112" width="135" height="54"/><text class="dg-t" x="357" y="135" text-anchor="middle">Convolutions</text><text class="dg-s" x="357" y="151" text-anchor="middle">locality built in</text><path class="dg-a" d="M424 139 H456"/><rect class="dg-box" x="458" y="120" width="96" height="38"/><text class="dg-t" x="506" y="143" text-anchor="middle">Features</text><text class="dg-note dg-red" x="159.60000000000002" y="184">✗ strong on small data, but a separate architecture from language</text><text class="dg-lab dg-green" x="14" y="241">ViT</text><rect class="dg-box" x="160" y="218" width="96" height="38"/><text class="dg-t" x="208" y="241" text-anchor="middle">Image</text><path class="dg-a" d="M256 237 H288"/><rect class="dg-key" x="290" y="210" width="178" height="54"/><text class="dg-t" x="379" y="233" text-anchor="middle">Patches + projection</text><text class="dg-s" x="379" y="249" text-anchor="middle">256 tokens</text><path class="dg-a" d="M468 237 H500"/><rect class="dg-key" x="502" y="218" width="102" height="38"/><text class="dg-t" x="553" y="241" text-anchor="middle">+ position</text><path class="dg-a" d="M604 237 H636"/><rect class="dg-box" x="638" y="218" width="110" height="38"/><text class="dg-t" x="692" y="241" text-anchor="middle">Transformer</text><text class="dg-note dg-green" x="159.60000000000002" y="282">✓ the same machine as for text</text></svg><figcaption>The change is the unit: a patch, not a pixel. A lone pixel means almost nothing, like a single letter.</figcaption></figure>
+<h2>2. The pipeline</h2>
+<figure class="diagram"><svg role="img" aria-label="Cut, flatten, project, add position, then plain self-attention. In code, &quot;cut and project&quot; is one convolution whose kernel size and stride both equal the patch size." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">IMAGE GRID TO TOKEN SEQUENCE</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="150"/>
+<path class="dg-grp" d="M57 50 V200 M95 50 V200 M132 50 V200 M20 87 H170 M20 125 H170 M20 162 H170"/>
+<text class="dg-s" x="95" y="222" text-anchor="middle">224 x 224 pixels</text><text class="dg-s" x="95" y="238" text-anchor="middle">cut into 14 x 14 squares</text>
+<rect class="dg-box" x="220" y="70" width="150" height="56"/><text class="dg-t" x="295" y="94" text-anchor="middle">Flatten</text><text class="dg-s" x="295" y="112" text-anchor="middle">14 x 14 x 3 = 588 numbers</text>
+<rect class="dg-key" x="420" y="70" width="160" height="56"/><text class="dg-t" x="500" y="94" text-anchor="middle">Linear projection</text><text class="dg-s" x="500" y="112" text-anchor="middle">z = p W_p, size d</text>
+<rect class="dg-key" x="630" y="70" width="150" height="56"/><text class="dg-t" x="705" y="94" text-anchor="middle">+ position</text><text class="dg-s" x="705" y="112" text-anchor="middle">one vector per slot</text>
+<rect class="dg-box" x="830" y="70" width="130" height="56"/><text class="dg-t" x="895" y="94" text-anchor="middle">Transformer</text><text class="dg-s" x="895" y="112" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M170 98 H220"/><path class="dg-a" d="M370 98 H420"/><path class="dg-a" d="M580 98 H630"/><path class="dg-a" d="M780 98 H830"/>
+<text class="dg-l" x="220" y="168">one token per pixel: 50,176 tokens, about 2.5 billion attention pairs</text>
+<text class="dg-l" x="220" y="190">one token per 14 x 14 patch: 16 x 16 = 256 tokens, 65,536 pairs</text>
+<text class="dg-note dg-red" x="220" y="230">without the position vectors, shuffling the patches gives the same set of outputs</text>
+</svg><figcaption>Cut, flatten, project, add position, then plain self-attention. In code, "cut and project" is one convolution whose kernel size and stride both equal the patch size.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Image size</th>
-<th>Tokens (one per pixel)</th>
-<th>Pairs $N^2$</th>
+<th>Step</th>
+<th>Input</th>
+<th>Output</th>
+<th>Why</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$4 \times 4$</td>
-<td>16</td>
-<td>256</td>
+<td>Cut into patches</td>
+<td>$H \times W$ image</td>
+<td>$N = (H/P)(W/P)$ patches of $P \times P$</td>
+<td>fewer, more meaningful pieces</td>
 </tr>
 <tr>
-<td>$224 \times 224$</td>
-<td>50,176</td>
-<td>$\approx 2.5 \times 10^9$</td>
+<td>Flatten</td>
+<td>one $P \times P \times 3$ patch</td>
+<td>vector of $3P^2$ numbers</td>
+<td>a fixed order keeps pixel positions inside the patch</td>
+</tr>
+<tr>
+<td>Linear projection $W_p$</td>
+<td>$3P^2$ numbers</td>
+<td>vector of size $d$</td>
+<td>each column of $W_p$ is a learned template (edge, colour, texture)</td>
+</tr>
+<tr>
+<td>Add position</td>
+<td>patch vector</td>
+<td>vector + $\mathrm{pos}_i$</td>
+<td>attention itself is blind to order</td>
+</tr>
+<tr>
+<td>Transformer</td>
+<td>$N$ vectors</td>
+<td>$N$ contextual vectors</td>
+<td>patches exchange information</td>
 </tr>
 </tbody>
 </table>
-<p>Every layer and every head would have to compute that many pairs: not feasible. Also, a lone pixel means almost nothing, like a single letter standing by itself.</p>
-<h2>Step 2: Group pixels into patches (the ViT idea, 2020)</h2>
-<p>Cut the image into square cells and treat each cell as a "word". For a $4 \times 4$ image with $2 \times 2$ patches:</p>
-<p>$$
-\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix}
-\Rightarrow
-\underbrace{\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}}_{A}\;
-\underbrace{\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}}_{B}\;
-\underbrace{\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix}}_{C}\;
-\underbrace{\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}}_{D}
-$$</p>
-<p>(The numbers are made up for illustration.) 16 tokens become 4, and the number of pairs drops from 256 to 16. For a real $224 \times 224$ image with $14 \times 14$ patches, we get 256 tokens. (The original ViT used $16 \times 16$ patches, giving 196 tokens; encoders common in VLAs, such as SigLIP So400m/14, use $14 \times 14$.)</p>
-<h2>Step 3: Flatten (reshape)</h2>
-<p>Each $2 \times 2$ patch is read row by row into a 4-dimensional vector:</p>
-<p>$$
-p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
-$$</p>
-<p>This only rearranges the numbers and loses no information: the position of a pixel inside the patch is kept by the fixed order of the 4 coordinates.</p>
-<h2>Step 4: Linear projection to an embedding vector</h2>
-<p>Each token needs a dimension $d$ that we choose (here $d=2$). We use a learned matrix $W_p$ of size $4 \times 2$:</p>
-<p>$$
-z = p\,W_p
-$$</p>
-<p>Pick a toy $W_p = \begin{pmatrix}1&amp;0\\0&amp;1\\1&amp;0\\0&amp;1\end{pmatrix}$. For patch A:</p>
-<p>$$
-z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
-$$</p>
-<p>Likewise $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.</p>
-<p><strong>Meaning:</strong> each column of $W_p$ is a $2\times 2$ "template", and $z$ is how well the patch matches each template (a dot product). This is pattern matching: $W_p$ learns filters for edges, colour and texture. It resembles the lookup $E$ that turns a word into a vector, except that patches have no dictionary (there are endlessly many possible patches), so we use a projection instead of a table lookup. And $W_p$ is learned by gradient like any other matrix. In code, cutting patches and projecting them is usually one convolution whose kernel size and stride both equal the patch size.</p>
-<h2>Step 5: The big problem, attention is blind to order</h2>
-<p>Recall the remaining weakness from the attention stage: shuffle the tokens and the output is just shuffled the same way. For images, that means the original image and one cut into 4 pieces and randomly reordered give the same set of representations. The model does not know that "A is in the top-left corner".</p>
-<p>For a robot this is a disaster, because the core task is where things are.</p>
-<h2>Step 6: Add position embeddings</h2>
-<p>Give each position a vector $\mathrm{pos}_i$ (learned, also randomly initialised then trained) and add it to the token:</p>
-<p>$$
-\tilde z_i = z_i + \mathrm{pos}_i
-$$</p>
-<p>Toy example: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (column, row). Then:</p>
-<p>$$
-\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
-$$</p>
-<p>Now each token carries both content (what the patch looks like) and coordinates (where it is). Permuting tokens changes the result, because each token is already labelled with its position.</p>
-<p>The toy uses 2D (column, row) coordinates to make the idea visible. The original ViT simply numbers the patches $0, 1, \dots, N-1$ and learns one vector per number; the authors found 2D-aware variants gave no significant gain.</p>
-<h2>Step 7: From here on it is pure Transformer</h2>
-<p>The four vectors $\tilde z_A,\dots,\tilde z_D$ enter exactly the attention mechanism: $q,k,v$, softmax, mixing. Image tokens look at each other just like text tokens. A "cup handle" patch pulls in information from the surrounding patches to become the representation of "cup". (The original ViT also prepends a learned [CLS] token to summarise the image for classification; VLAs usually drop it and pass all patch tokens to the language model.)</p>
-<h2>Summary of the flow</h2>
-<p>$$
-\text{image (grid)} \xrightarrow{\text{cut}} \text{patches} \xrightarrow{\text{flatten}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{contextual tokens}
-$$</p>
-<p>Carry forward: the image is now continuous tokens used only as <strong>input</strong>, and nothing has to be generated. Actions are different: the robot must produce them. That tension is what the next stage resolves (see <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
-<p><strong>Check question:</strong> if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?</p>
+<figure class="diagram compact"><svg role="img" aria-label="Tokens for a 224×224 image. Patches cut the count by about 200×, and attention pairs by about 40,000×." class="dg-natural" width="696" height="102" viewBox="0 0 696 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="236" y="23" text-anchor="end">One token per pixel</text><rect class="dg-bar" x="246" y="10" width="313" height="18"/><text class="dg-barval" x="567" y="23">50176 tokens</text><text class="dg-barlabel" x="236" y="53" text-anchor="end">16×16 patches (original ViT)</text><rect class="dg-bar" x="246" y="40" width="2" height="18"/><text class="dg-barval" x="256" y="53">196 tokens</text><text class="dg-barlabel" x="236" y="83" text-anchor="end">14×14 patches (SigLIP, PaliGemma)</text><rect class="dg-key" x="246" y="70" width="2" height="18"/><text class="dg-barval" x="256" y="83">256 tokens</text></svg><figcaption>Tokens for a 224×224 image. Patches cut the count by about 200×, and attention pairs by about 40,000×.</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Follow one tiny image all the way to tokens: a 4×4 grayscale image, 2×2 patches, $d = 2$. It shows that projection is pattern matching and that the position vector is what tells the patches apart.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$p_A$</td>
+<td>patch A flattened row by row</td>
+<td>input</td>
+<td>$(1, 2, 3, 4)$</td>
+</tr>
+<tr>
+<td>$W_p$</td>
+<td>projection, $4 \times 2$ (toy values)</td>
+<td>weights</td>
+<td>columns $(1,0,1,0)$ and $(0,1,0,1)$</td>
+</tr>
+<tr>
+<td>$\mathrm{pos}_A,\ \mathrm{pos}_B$</td>
+<td>position vectors (toy values)</td>
+<td>weights</td>
+<td>$(0,0)$, $(1,0)$</td>
+</tr>
+<tr>
+<td>$z_A$</td>
+<td>patch embedding</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\tilde z_A$</td>
+<td>embedding with position</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>The image (made-up numbers) and its four patches:</p>
+<p>$$\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix},\ B=\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix},\ C=\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix},\ D=\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}$$</p>
+<p><strong>Formula</strong></p>
+<p>$$z = p\,W_p, \qquad \tilde z_i = z_i + \mathrm{pos}_i$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Flatten: $p_A = (1,2,3,4)$, $p_B = (5,6,7,8)$, $p_C = (9,0,1,8)$, $p_D = (3,2,4,6)$.</li>
+<li>Project A: first column adds entries 1 and 3, second adds 2 and 4: $z_A = (1+3,\ 2+4) = (4, 6)$. Likewise $z_B = (12, 14)$, $z_C = (10, 8)$, $z_D = (7, 8)$.</li>
+<li>Add position with $\mathrm{pos} = (0,0), (1,0), (0,1), (1,1)$ for A, B, C, D: $\tilde z_A = (4,6)$, $\tilde z_B = (13,14)$, $\tilde z_C = (10,9)$, $\tilde z_D = (8,9)$.</li>
+</ol>
+<p><strong>Result.</strong> Sixteen pixels became four tokens of size 2, and each token now carries both <em>what</em> (the projection) and <em>where</em> (the position).</p>
+<p><strong>Why it matters.</strong> Without step 3, swapping patches A and D would only swap two vectors in the set; attention, which treats its inputs as a set, would give the same answers. For a robot that must know whether the cup is left or right of the gripper, that is fatal. (The original ViT simply numbers the patches $0 \dots N-1$ and learns one vector per number; the toy uses column and row to make the idea visible.)</p>
+</div>
+<h2>3. The price of having no built-in assumptions</h2>
+<p>A convolution assumes two things before seeing any data: nearby pixels belong together (locality), and a pattern means the same thing wherever it appears (weight sharing). ViT assumes neither; it has to learn them. That is why it trails ResNets when trained on ImageNet alone and overtakes them only with much more data. The paper's words: "large scale training trumps inductive bias".</p>
+<p>For a VLA this has a practical consequence. Nobody trains the image encoder from robot data alone; it comes pretrained on hundreds of millions of image–text pairs (<a href="contrastive-learning.html">contrastive learning</a>), and the robot data only adapts it.</p>
+<h2>4. In VLA</h2>
+<ul>
+<li>PaliGemma, used by π0, encodes a 224×224 image with SigLIP So400m/14 into 256 tokens; with two or three cameras, images are most of the sequence.</li>
+<li>The [CLS] token that the original ViT adds for classification is usually dropped; all patch tokens go to the language model.</li>
+<li>Tactile images from gel sensors (<a href="gelsight.html">GelSight</a>) are images too, so the same patch encoder can read them, as in TaF-VLA.</li>
+</ul>
+<p><strong>Carry forward:</strong> a ViT trained only to classify knows categories, not language. Encoders that a language model can talk to are trained by matching images with captions: <a href="contrastive-learning.html">contrastive learning</a>.</p>
+<p><strong>Check question:</strong> A 448×448 image is cut into 14×14 patches. How many tokens is that, and how many attention pairs per layer?</p>
 <details>
 <summary>Answer</summary>
-<p>the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.</p>
+<p>$448 / 14 = 32$, so $32 \times 32 = 1024$ tokens and $1024^2 = 1{,}048{,}576$ pairs: four times the tokens of a 224×224 image, sixteen times the pairs.</p>
 </details>
     </div>
     <div data-vi>
 <div class="tldr">
-<p><strong>PAPER</strong> ViT, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
-<p><strong>VẤN ĐỀ</strong> Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention.</p>
-<p><strong>Ý TƯỞNG</strong> Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector, rồi cộng một vector vị trí.</p>
-<p><strong>KẾT QUẢ</strong> Ảnh 224×224 thành 256 token (patch 14×14) để Transformer, và sau này là VLA, chú ý qua lại.</p>
-<p><strong>ĐIỂM CỐT LÕI</strong> Không có mã vị trí, mô hình không phân biệt được trái với phải.</p>
+<p><strong>PAPER</strong> Dosovitskiy và cộng sự, <em>An Image is Worth 16x16 Words</em>, <a href="https://arxiv.org/abs/2010.11929">arXiv 2010.11929</a> · 10/2020</p>
+<p><strong>VẤN ĐỀ</strong> Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention mỗi lớp.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Thị giác máy do mạng tích chập (CNN) thống trị. Attention được dùng kèm CNN hoặc thay một vài bộ phận của nó, vẫn giữ cấu trúc CNN. Áp attention lên từng pixel thì quá tốn.</p>
+<p><strong>Ý TƯỞNG</strong> Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector cỡ $d$, cộng một vector vị trí, rồi đưa cả dãy vào một Transformer bình thường.</p>
+<p><strong>KẾT QUẢ</strong> Pretrain trên ImageNet-21k hoặc JFT-300M, mô hình tốt nhất đạt 88,55% trên ImageNet. Chỉ huấn luyện trên ImageNet thì ViT kém ResNet cùng cỡ vài điểm. VLA thừa hưởng các bộ mã hóa kiểu ViT đã pretrain, ví dụ SigLIP trong PaliGemma và π0.</p>
 </div>
-<h2>Cái đau cần chữa</h2>
-<p>Transformer ăn một dãy vector. Ảnh lại là một lưới số. Làm sao biến lưới thành dãy mà không mất thứ gì quan trọng?</p>
-<h2>Bước 1: Thử cách ngây thơ nhất, mỗi pixel một token</h2>
-<p>Ảnh $4 \times 4$ thang xám có 16 pixel, tức 16 token. Nghe ổn. Nhưng attention so mọi cặp token, nên tốn $N^2$.</p>
+<h2>1. Vấn đề: lưới không phải là dãy</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở đơn vị: một patch chứ không phải một pixel. Một pixel đứng riêng gần như không nói gì, như một chữ cái đứng một mình." class="dg-natural" width="740" height="304" viewBox="0 0 740 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Mỗi pixel một token</text><rect class="dg-box" x="160" y="22" width="110" height="38"/><text class="dg-t" x="214" y="45" text-anchor="middle">Ảnh 224×224</text><path class="dg-a" d="M269 41 H301"/><rect class="dg-badbox" x="303" y="14" width="141" height="54"/><text class="dg-t" x="374" y="37" text-anchor="middle">50.176 token</text><text class="dg-s" x="374" y="53" text-anchor="middle">2,5 tỉ cặp mỗi lớp</text><path class="dg-a" d="M444 41 H476"/><rect class="dg-box" x="478" y="22" width="110" height="38"/><text class="dg-t" x="533" y="45" text-anchor="middle">Transformer</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ quá tốn</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">CNN</text><rect class="dg-box" x="160" y="120" width="96" height="38"/><text class="dg-t" x="208" y="143" text-anchor="middle">Ảnh</text><path class="dg-a" d="M256 139 H288"/><rect class="dg-badbox" x="290" y="112" width="148" height="54"/><text class="dg-t" x="363" y="135" text-anchor="middle">Tích chập</text><text class="dg-s" x="363" y="151" text-anchor="middle">tính cục bộ cài sẵn</text><path class="dg-a" d="M437 139 H469"/><rect class="dg-box" x="471" y="120" width="96" height="38"/><text class="dg-t" x="519" y="143" text-anchor="middle">Đặc trưng</text><text class="dg-note dg-red" x="159.60000000000002" y="184">✗ mạnh khi ít dữ liệu, nhưng là kiến trúc tách biệt với ngôn ngữ</text><text class="dg-lab dg-green" x="14" y="241">ViT</text><rect class="dg-box" x="160" y="218" width="96" height="38"/><text class="dg-t" x="208" y="241" text-anchor="middle">Ảnh</text><path class="dg-a" d="M256 237 H288"/><rect class="dg-key" x="290" y="210" width="163" height="54"/><text class="dg-t" x="371" y="233" text-anchor="middle">Patch + phép chiếu</text><text class="dg-s" x="371" y="249" text-anchor="middle">256 token</text><path class="dg-a" d="M452 237 H484"/><rect class="dg-key" x="486" y="218" width="96" height="38"/><text class="dg-t" x="534" y="241" text-anchor="middle">+ vị trí</text><path class="dg-a" d="M582 237 H614"/><rect class="dg-box" x="616" y="218" width="110" height="38"/><text class="dg-t" x="671" y="241" text-anchor="middle">Transformer</text><text class="dg-note dg-green" x="159.60000000000002" y="282">✓ cùng một cỗ máy như với chữ</text></svg><figcaption>Thay đổi nằm ở đơn vị: một patch chứ không phải một pixel. Một pixel đứng riêng gần như không nói gì, như một chữ cái đứng một mình.</figcaption></figure>
+<h2>2. Quy trình</h2>
+<figure class="diagram"><svg role="img" aria-label="Cắt, duỗi phẳng, chiếu, cộng vị trí, rồi self-attention bình thường. Trong code, &quot;cắt và chiếu&quot; là một phép tích chập có kích thước kernel và bước nhảy đều bằng cỡ patch." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">IMAGE GRID TO TOKEN SEQUENCE</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="150"/>
+<path class="dg-grp" d="M57 50 V200 M95 50 V200 M132 50 V200 M20 87 H170 M20 125 H170 M20 162 H170"/>
+<text class="dg-s" x="95" y="222" text-anchor="middle">224 x 224 pixels</text><text class="dg-s" x="95" y="238" text-anchor="middle">cut into 14 x 14 squares</text>
+<rect class="dg-box" x="220" y="70" width="150" height="56"/><text class="dg-t" x="295" y="94" text-anchor="middle">Flatten</text><text class="dg-s" x="295" y="112" text-anchor="middle">14 x 14 x 3 = 588 numbers</text>
+<rect class="dg-key" x="420" y="70" width="160" height="56"/><text class="dg-t" x="500" y="94" text-anchor="middle">Linear projection</text><text class="dg-s" x="500" y="112" text-anchor="middle">z = p W_p, size d</text>
+<rect class="dg-key" x="630" y="70" width="150" height="56"/><text class="dg-t" x="705" y="94" text-anchor="middle">+ position</text><text class="dg-s" x="705" y="112" text-anchor="middle">one vector per slot</text>
+<rect class="dg-box" x="830" y="70" width="130" height="56"/><text class="dg-t" x="895" y="94" text-anchor="middle">Transformer</text><text class="dg-s" x="895" y="112" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M170 98 H220"/><path class="dg-a" d="M370 98 H420"/><path class="dg-a" d="M580 98 H630"/><path class="dg-a" d="M780 98 H830"/>
+<text class="dg-l" x="220" y="168">one token per pixel: 50,176 tokens, about 2.5 billion attention pairs</text>
+<text class="dg-l" x="220" y="190">one token per 14 x 14 patch: 16 x 16 = 256 tokens, 65,536 pairs</text>
+<text class="dg-note dg-red" x="220" y="230">without the position vectors, shuffling the patches gives the same set of outputs</text>
+</svg><figcaption>Cắt, duỗi phẳng, chiếu, cộng vị trí, rồi self-attention bình thường. Trong code, "cắt và chiếu" là một phép tích chập có kích thước kernel và bước nhảy đều bằng cỡ patch.</figcaption></figure>
 <table>
 <thead>
 <tr>
-<th>Kích thước ảnh</th>
-<th>Số token (mỗi pixel)</th>
-<th>Số cặp $N^2$</th>
+<th>Bước</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vì sao</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$4 \times 4$</td>
-<td>16</td>
-<td>256</td>
+<td>Cắt patch</td>
+<td>ảnh $H \times W$</td>
+<td>$N = (H/P)(W/P)$ patch cỡ $P \times P$</td>
+<td>ít mảnh hơn, mỗi mảnh có nghĩa hơn</td>
 </tr>
 <tr>
-<td>$224 \times 224$</td>
-<td>50,176</td>
-<td>$\approx 2.5 \times 10^9$</td>
+<td>Duỗi phẳng</td>
+<td>một patch $P \times P \times 3$</td>
+<td>vector $3P^2$ số</td>
+<td>thứ tự cố định giữ vị trí pixel bên trong patch</td>
+</tr>
+<tr>
+<td>Chiếu tuyến tính $W_p$</td>
+<td>$3P^2$ số</td>
+<td>vector cỡ $d$</td>
+<td>mỗi cột của $W_p$ là một khuôn mẫu học được (cạnh, màu, kết cấu)</td>
+</tr>
+<tr>
+<td>Cộng vị trí</td>
+<td>vector patch</td>
+<td>vector + $\mathrm{pos}_i$</td>
+<td>bản thân attention không biết thứ tự</td>
+</tr>
+<tr>
+<td>Transformer</td>
+<td>$N$ vector</td>
+<td>$N$ vector có ngữ cảnh</td>
+<td>các patch trao đổi thông tin</td>
 </tr>
 </tbody>
 </table>
-<p>Mỗi lớp, mỗi head đều phải tính chừng đó cặp: không khả thi. Thêm nữa, một pixel đơn lẻ gần như vô nghĩa, như một chữ cái đứng riêng.</p>
-<h2>Bước 2: Gom pixel thành patch (ý tưởng của ViT, 2020)</h2>
-<p>Chia ảnh thành các ô vuông, mỗi ô là một "từ". Với ảnh $4 \times 4$ và patch $2 \times 2$:</p>
-<p>$$
-\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix}
-\Rightarrow
-\underbrace{\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}}_{A}\;
-\underbrace{\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}}_{B}\;
-\underbrace{\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix}}_{C}\;
-\underbrace{\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}}_{D}
-$$</p>
-<p>(Số bịa để minh họa.) Từ 16 token còn 4 token, và số cặp giảm từ 256 xuống 16. Với ảnh thật $224 \times 224$, patch $14 \times 14$ cho 256 token. (ViT gốc dùng patch $16 \times 16$ nên ra 196 token; các encoder hay dùng trong VLA như SigLIP So400m/14 dùng $14 \times 14$.)</p>
-<h2>Bước 3: Duỗi phẳng (reshape)</h2>
-<p>Mỗi patch $2 \times 2$ đọc theo hàng thành vector 4 chiều:</p>
-<p>$$
-p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
-$$</p>
-<p>Đây chỉ là sắp lại các con số, không mất thông tin gì: vị trí pixel trong patch được giữ bởi thứ tự cố định của 4 tọa độ.</p>
-<h2>Bước 4: Chiếu tuyến tính thành vector embedding</h2>
-<p>Ta cần mỗi token có số chiều $d$ do ta chọn (ở đây $d=2$). Dùng ma trận học được $W_p$ cỡ $4 \times 2$:</p>
-<p>$$
-z = p\,W_p
-$$</p>
-<p>Chọn đồ chơi $W_p = \begin{pmatrix}1&amp;0\\0&amp;1\\1&amp;0\\0&amp;1\end{pmatrix}$. Khi đó với patch A:</p>
-<p>$$
-z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
-$$</p>
-<p>Tương tự $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.</p>
-<p><strong>Ý nghĩa:</strong> mỗi cột của $W_p$ là một "mẫu" cỡ $2\times 2$, và $z$ chính là độ khớp của patch với từng mẫu (tích vô hướng). Đây là so khớp mẫu: $W_p$ học ra các bộ lọc cạnh, màu, kết cấu. Nó giống phép tra bảng $E$ biến từ thành vector, chỉ khác là patch không có từ điển (vô số patch có thể có), nên ta dùng phép chiếu thay cho tra bảng. Đồng thời $W_p$ cũng học bằng gradient như mọi ma trận khác. Trong code, bước cắt patch và chiếu thường gộp thành một lớp tích chập có kernel và stride đều bằng kích thước patch.</p>
-<h2>Bước 5: Vấn đề lớn, attention mù thứ tự</h2>
-<p>Nhớ lại điểm yếu còn lại từ chặng attention: tráo các token thì kết quả chỉ tráo theo. Với ảnh, nghĩa là ảnh gốc và ảnh bị cắt 4 mảnh rồi xáo ngẫu nhiên cho ra cùng một tập biểu diễn. Mô hình không biết "A ở góc trên trái".</p>
-<p>Với robot đây là thảm họa, vì nhiệm vụ cốt lõi là vật ở đâu.</p>
-<h2>Bước 6: Cộng mã vị trí</h2>
-<p>Cho mỗi vị trí một vector $\mathrm{pos}_i$ (học được, cũng khởi tạo ngẫu nhiên rồi học) và cộng vào token:</p>
-<p>$$
-\tilde z_i = z_i + \mathrm{pos}_i
-$$</p>
-<p>Ví dụ đồ chơi: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (tọa độ cột, hàng). Khi đó:</p>
-<p>$$
-\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
-$$</p>
-<p>Giờ token vừa mang nội dung (patch trông thế nào) vừa mang tọa độ (nó nằm đâu). Hoán vị token sẽ làm thay đổi kết quả, vì mỗi token đã gắn nhãn vị trí.</p>
-<p>Ví dụ đồ chơi dùng tọa độ 2D (cột, hàng) cho dễ thấy. ViT gốc chỉ đánh số patch $0, 1, \dots, N-1$ và học một vector cho mỗi số; tác giả thấy các biến thể biết cấu trúc 2D không tốt hơn đáng kể.</p>
-<h2>Bước 7: Từ đây trở đi là Transformer thuần túy</h2>
-<p>Bốn vector $\tilde z_A,\dots,\tilde z_D$ vào đúng cơ chế attention: $q,k,v$, softmax, trộn. Token ảnh cũng nhìn nhau như token chữ. Patch "quai cốc" hút thông tin từ patch xung quanh để thành biểu diễn "cốc". (ViT gốc còn thêm một token [CLS] học được ở đầu dãy để tóm tắt ảnh cho bài toán phân loại; VLA thường bỏ token này và đưa toàn bộ token patch cho mô hình ngôn ngữ.)</p>
-<h2>Tóm tắt dòng chảy</h2>
-<p>$$
-\text{ảnh (lưới)} \xrightarrow{\text{cắt}} \text{patch} \xrightarrow{\text{duỗi phẳng}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{token có ngữ cảnh}
-$$</p>
-<p>Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm <strong>đầu vào</strong>, không cần sinh ra. Còn hành động thì khác: robot phải sinh chúng. Đó là mâu thuẫn mà bài tiếp theo giải quyết (xem <a href="action-tokenization.html">Tokenizer &amp; Action Tokenization</a>).</p>
-<p><strong>Câu kiểm tra:</strong> nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?</p>
+<figure class="diagram compact"><svg role="img" aria-label="Số token của ảnh 224×224. Patch giảm số token khoảng 200 lần và số cặp attention khoảng 40.000 lần." class="dg-natural" width="682" height="102" viewBox="0 0 682 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Mỗi pixel một token</text><rect class="dg-bar" x="232" y="10" width="313" height="18"/><text class="dg-barval" x="553" y="23">50176 token</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Patch 16×16 (ViT gốc)</text><rect class="dg-bar" x="232" y="40" width="2" height="18"/><text class="dg-barval" x="242" y="53">196 token</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Patch 14×14 (SigLIP, PaliGemma)</text><rect class="dg-key" x="232" y="70" width="2" height="18"/><text class="dg-barval" x="242" y="83">256 token</text></svg><figcaption>Số token của ảnh 224×224. Patch giảm số token khoảng 200 lần và số cặp attention khoảng 40.000 lần.</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Đi theo một ảnh tí hon tới tận token: ảnh xám 4×4, patch 2×2, $d = 2$. Phép tính cho thấy phép chiếu là so khớp khuôn mẫu, và vector vị trí là thứ giúp phân biệt các patch.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$p_A$</td>
+<td>patch A duỗi phẳng theo hàng</td>
+<td>input</td>
+<td>$(1, 2, 3, 4)$</td>
+</tr>
+<tr>
+<td>$W_p$</td>
+<td>phép chiếu $4 \times 2$ (giá trị minh họa)</td>
+<td>trọng số</td>
+<td>các cột $(1,0,1,0)$ và $(0,1,0,1)$</td>
+</tr>
+<tr>
+<td>$\mathrm{pos}_A,\ \mathrm{pos}_B$</td>
+<td>vector vị trí (giá trị minh họa)</td>
+<td>trọng số</td>
+<td>$(0,0)$, $(1,0)$</td>
+</tr>
+<tr>
+<td>$z_A$</td>
+<td>embedding của patch</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\tilde z_A$</td>
+<td>embedding có vị trí</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>Ảnh (số bịa để minh họa) và bốn patch của nó:</p>
+<p>$$\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix},\ B=\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix},\ C=\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix},\ D=\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}$$</p>
+<p><strong>Công thức</strong></p>
+<p>$$z = p\,W_p, \qquad \tilde z_i = z_i + \mathrm{pos}_i$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Duỗi phẳng: $p_A = (1,2,3,4)$, $p_B = (5,6,7,8)$, $p_C = (9,0,1,8)$, $p_D = (3,2,4,6)$.</li>
+<li>Chiếu A: cột thứ nhất cộng phần tử 1 và 3, cột thứ hai cộng 2 và 4: $z_A = (1+3,\ 2+4) = (4, 6)$. Tương tự $z_B = (12, 14)$, $z_C = (10, 8)$, $z_D = (7, 8)$.</li>
+<li>Cộng vị trí với $\mathrm{pos} = (0,0), (1,0), (0,1), (1,1)$ cho A, B, C, D: $\tilde z_A = (4,6)$, $\tilde z_B = (13,14)$, $\tilde z_C = (10,9)$, $\tilde z_D = (8,9)$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Mười sáu pixel thành bốn token cỡ 2, và mỗi token giờ mang cả <em>cái gì</em> (phép chiếu) lẫn <em>ở đâu</em> (vị trí).</p>
+<p><strong>Ý nghĩa.</strong> Không có bước 3, đổi chỗ patch A và D chỉ làm đổi chỗ hai vector trong tập; attention, vốn xử lý đầu vào như một tập hợp, sẽ cho cùng câu trả lời. Với robot cần biết cái cốc nằm bên trái hay bên phải tay kẹp, đó là lỗi chết người. (ViT gốc chỉ đánh số các patch $0 \dots N-1$ và học một vector cho mỗi số; ví dụ tí hon dùng cột và hàng để thấy rõ ý tưởng.)</p>
+</div>
+<h2>3. Cái giá của việc không giả định gì sẵn</h2>
+<p>Một phép tích chập giả định hai điều trước khi thấy dữ liệu: các pixel gần nhau thuộc về nhau (tính cục bộ), và một hoa văn có cùng ý nghĩa dù xuất hiện ở đâu (chia sẻ trọng số). ViT không giả định điều nào; nó phải tự học. Vì thế nó thua ResNet khi chỉ huấn luyện trên ImageNet và chỉ vượt lên khi có nhiều dữ liệu hơn hẳn. Lời của paper: "huấn luyện quy mô lớn thắng thiên kiến quy nạp".</p>
+<p>Với VLA, điều này có hệ quả thực tế. Không ai huấn luyện bộ mã hóa ảnh chỉ bằng dữ liệu robot; nó được pretrain sẵn trên hàng trăm triệu cặp ảnh–chú thích (<a href="contrastive-learning.html">contrastive learning</a>), và dữ liệu robot chỉ để thích nghi nó.</p>
+<h2>4. Trong VLA</h2>
+<ul>
+<li>PaliGemma, mà π0 dùng, mã hóa ảnh 224×224 bằng SigLIP So400m/14 thành 256 token; với hai hoặc ba camera, ảnh chiếm phần lớn dãy.</li>
+<li>Token [CLS] mà ViT gốc thêm để phân loại thường bị bỏ; mọi token patch đều được đưa vào mô hình ngôn ngữ.</li>
+<li>Ảnh xúc giác từ cảm biến gel (<a href="gelsight.html">GelSight</a>) cũng là ảnh, nên cùng bộ mã hóa patch đọc được chúng, như trong TaF-VLA.</li>
+</ul>
+<p><strong>Mang theo:</strong> một ViT chỉ học phân loại thì biết các lớp đồ vật chứ không biết ngôn ngữ. Bộ mã hóa mà mô hình ngôn ngữ "nói chuyện" được thì được huấn luyện bằng cách ghép ảnh với chú thích: <a href="contrastive-learning.html">contrastive learning</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Ảnh 448×448 cắt thành patch 14×14. Được bao nhiêu token, và bao nhiêu cặp attention mỗi lớp?</p>
 <details>
 <summary>Đáp án</summary>
-<p>ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.</p>
+<p>$448 / 14 = 32$, nên $32 \times 32 = 1024$ token và $1024^2 = 1{.}048{.}576$ cặp: gấp bốn lần số token của ảnh 224×224, gấp mười sáu lần số cặp.</p>
 </details>
     </div>
   </article>

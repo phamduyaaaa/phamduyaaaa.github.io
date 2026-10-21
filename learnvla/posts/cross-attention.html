@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An action expert has to read hundreds of VLM tokens without rewriting them. Cross-attention takes queries from one sequence and keys and values from the other. Worked cost: why caching the VLM side makes ten denoising steps cheap, and why π0's block mask costs the same.">
+<title>Cross-Attention: Letting One Sequence Read Another · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Cross-Attention: Letting One Sequence Read Another">
+<meta property="og:description" content="An action expert has to read hundreds of VLM tokens without rewriting them. Cross-attention takes queries from one sequence and keys and values from the other. Worked cost: why caching the VLM side makes ten denoising steps cheap, and why π0's block mask costs the same.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Cross-Attention: Letting One Sequence Read Another</h1>
+    <h1 data-vi>Cross-attention: Cho một dãy đọc một dãy khác</h1>
+
+    <p class="post-excerpt-lead" data-en>An action expert has to read hundreds of VLM tokens without rewriting them. Cross-attention takes queries from one sequence and keys and values from the other. Worked cost: why caching the VLM side makes ten denoising steps cheap, and why π0's block mask costs the same.</p>
+    <p class="post-excerpt-lead" data-vi>Action expert phải đọc hàng trăm token của VLM mà không viết lại chúng. Cross-attention lấy query từ dãy này, key và value từ dãy kia. Tính chi phí: vì sao lưu đệm phía VLM làm mười bước khử nhiễu trở nên rẻ, và vì sao mask theo khối của π0 tốn đúng bằng vậy.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Attention</span><span class="pill">Transformer</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Encoder–decoder attention in Vaswani et al., <a href="https://arxiv.org/abs/1706.03762">arXiv 1706.03762</a> · 06/2017. Perceiver, <a href="https://arxiv.org/abs/2103.03206">arXiv 2103.03206</a> · 03/2021</p>
+<p><strong>PROBLEM</strong> Two sequences of different kinds must talk: 50 action tokens need the scene and instruction held in about 800 VLM tokens, and the VLM side should not be disturbed by the actions.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Squeezing the condition into one vector (a pooled embedding, or FiLM scaling) recreates the bottleneck that <a href="attention.html">attention</a> removed. Concatenating everything into one self-attention lets every token rewrite every other and makes the cost grow with $(n+m)^2$; Perceiver notes this does not scale to very large inputs.</p>
+<p><strong>IDEA</strong> Take queries from the sequence being updated and keys and values from the other one. Each action token picks what it needs from the VLM tokens, which are only read.</p>
+<p><strong>RESULT</strong> GR00T N1's action module cross-attends to the VLM's tokens (from its 12th layer in the 2B model); FACT's refiner cross-attends to cached planner states. π0 reaches the same effect inside one Transformer with a block mask.</p>
+</div>
+<h2>1. The problem: two sequences, one direction of reading</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is direction: information flows from the scene to the actions, not back." class="dg-natural" width="742" height="290" viewBox="0 0 742 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Before</text><text class="dg-lab dg-red" x="14" y="46">One condition vector</text><rect class="dg-box" x="179" y="15" width="132" height="38"/><text class="dg-t" x="245" y="38" text-anchor="middle">800 VLM tokens</text><path class="dg-a" d="M311 34 H343"/><rect class="dg-badbox" x="345" y="15" width="163" height="38"/><text class="dg-t" x="427" y="38" text-anchor="middle">Pooled to 1 vector</text><path class="dg-a" d="M508 34 H540"/><rect class="dg-box" x="542" y="15" width="110" height="38"/><text class="dg-t" x="597" y="38" text-anchor="middle">Action head</text><text class="dg-note dg-red" x="178.8" y="72">✗ detail lost, the old bottleneck</text><text class="dg-lab dg-red" x="14" y="123">Before</text><text class="dg-lab dg-red" x="14" y="137">One big self-attention</text><rect class="dg-box" x="179" y="106" width="102" height="38"/><text class="dg-t" x="230" y="129" text-anchor="middle">850 tokens</text><path class="dg-a" d="M281 125 H313"/><rect class="dg-badbox" x="315" y="98" width="216" height="54"/><text class="dg-t" x="423" y="121" text-anchor="middle">Everyone updates everyone</text><text class="dg-s" x="423" y="137" text-anchor="middle">(n+m)² pairs</text><path class="dg-a" d="M531 125 H563"/><rect class="dg-box" x="565" y="106" width="96" height="38"/><text class="dg-t" x="613" y="129" text-anchor="middle">Actions</text><text class="dg-note dg-red" x="178.8" y="170">✗ VLM tokens disturbed by noisy actions</text><text class="dg-lab dg-green" x="14" y="227">Cross-attention</text><rect class="dg-box" x="179" y="204" width="132" height="38"/><text class="dg-t" x="245" y="227" text-anchor="middle">Action queries</text><path class="dg-a" d="M311 223 H343"/><rect class="dg-key" x="345" y="196" width="208" height="54"/><text class="dg-t" x="449" y="219" text-anchor="middle">Read VLM keys and values</text><text class="dg-s" x="449" y="235" text-anchor="middle">n×m pairs</text><path class="dg-a" d="M554 223 H586"/><rect class="dg-box" x="588" y="204" width="140" height="38"/><text class="dg-t" x="658" y="227" text-anchor="middle">Updated actions</text><text class="dg-note dg-green" x="178.8" y="268">✓ VLM side read-only, cacheable</text></svg><figcaption>The change is direction: information flows from the scene to the actions, not back.</figcaption></figure>
+<h2>2. The mechanism</h2>
+<figure class="diagram"><svg role="img" aria-label="Queries come from the action tokens, keys and values from the VLM tokens. The arithmetic is the same as self-attention; only the sources differ." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SELF-ATTENTION: ONE SEQUENCE    CROSS-ATTENTION: QUERIES FROM ONE, KEYS AND VALUES FROM ANOTHER</text>
+<rect class="dg-ext" x="20" y="60" width="200" height="60"/><text class="dg-t" x="120" y="84" text-anchor="middle">VLM tokens (m)</text><text class="dg-s" x="120" y="102" text-anchor="middle">images + instruction, e.g. 800</text>
+<rect class="dg-ext" x="20" y="180" width="200" height="60"/><text class="dg-t" x="120" y="204" text-anchor="middle">action tokens (n)</text><text class="dg-s" x="120" y="222" text-anchor="middle">noisy chunk, e.g. 50</text>
+<rect class="dg-box" x="300" y="60" width="140" height="60"/><text class="dg-t" x="370" y="84" text-anchor="middle">K = X W_K</text><text class="dg-s" x="370" y="102" text-anchor="middle">V = X W_V</text>
+<rect class="dg-box" x="300" y="180" width="140" height="60"/><text class="dg-t" x="370" y="204" text-anchor="middle">Q = Y W_Q</text><text class="dg-s" x="370" y="222" text-anchor="middle">what each action needs</text>
+<path class="dg-a" d="M220 90 H300"/><path class="dg-a" d="M220 210 H300"/>
+<rect class="dg-key" x="520" y="110" width="200" height="80"/><text class="dg-t" x="620" y="140" text-anchor="middle">softmax(Q K^T / sqrt d) V</text><text class="dg-s" x="620" y="160" text-anchor="middle">n x m scores</text><text class="dg-s" x="620" y="176" text-anchor="middle">VLM tokens are only read</text>
+<path class="dg-a" d="M440 90 H480 V130 H520"/><path class="dg-a" d="M440 210 H480 V170 H520"/>
+<rect class="dg-box" x="790" y="110" width="170" height="80"/><text class="dg-t" x="875" y="140" text-anchor="middle">updated actions</text><text class="dg-s" x="875" y="160" text-anchor="middle">n vectors, each now</text><text class="dg-s" x="875" y="176" text-anchor="middle">carries scene information</text>
+<path class="dg-a" d="M720 150 H790"/>
+<text class="dg-note" x="20" y="280">the VLM keys and values do not change between denoising steps, so they are computed once and cached</text>
+</svg><figcaption>Queries come from the action tokens, keys and values from the VLM tokens. The arithmetic is the same as self-attention; only the sources differ.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$Q = Y W_Q$</td>
+<td>action tokens $Y$ ($n \times d$)</td>
+<td>queries</td>
+<td>what each action step is looking for</td>
+</tr>
+<tr>
+<td>$K = X W_K,\ V = X W_V$</td>
+<td>VLM tokens $X$ ($m \times d$)</td>
+<td>keys, values</td>
+<td>what the scene offers</td>
+</tr>
+<tr>
+<td>Scores, softmax</td>
+<td>$Q, K$</td>
+<td>$n \times m$ weights</td>
+<td>which scene tokens each action step uses</td>
+</tr>
+<tr>
+<td>Weights × $V$</td>
+<td>weights, $V$</td>
+<td>$n \times d$</td>
+<td>scene information added to the actions</td>
+</tr>
+</tbody>
+</table>
+<p>A one-line example: an action query $q = (1, 0)$ meets a "cup" token with $k = (1, 0)$, $v = (5, 0)$ and a "table" token with $k = (0, 1)$, $v = (0, 5)$. With $d = 2$ the scores are $0.707$ and $0$, the weights $0.67$ and $0.33$, and the output $(3.35,\ 1.65)$: mostly cup, a little table.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> A flow-matching action expert runs 10 denoising steps per chunk. Count attention pairs with and without caching the VLM side, and compare cross-attention with π0's single-Transformer design.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$m$</td>
+<td>VLM tokens (3 images × 256 + text)</td>
+<td>input</td>
+<td>800</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>action tokens in the chunk</td>
+<td>input</td>
+<td>50</td>
+</tr>
+<tr>
+<td>$S$</td>
+<td>denoising steps</td>
+<td>input</td>
+<td>10</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>attention pairs per layer, summed over the steps</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$P_{\text{no cache}} = S\,(n+m)^2, \qquad P_{\text{cache}} = m^2 + S\,(n\,m + n^2)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>No cache, one joint self-attention redone each step: $10 \times 850^2 = 10 \times 722{,}500 = 7{,}225{,}000$.</li>
+<li>Cache: the VLM tokens attend to themselves once, $800^2 = 640{,}000$.</li>
+<li>Each step, the 50 action tokens read 800 VLM tokens and each other: $50 \times 800 + 50^2 = 40{,}000 + 2{,}500 = 42{,}500$; ten steps give $425{,}000$.</li>
+<li>Total with cache: $640{,}000 + 425{,}000 = 1{,}065{,}000$.</li>
+</ol>
+<p><strong>Result.</strong> About 6.8× fewer pairs with the VLM side computed once.</p>
+<p><strong>Why it matters.</strong> Step 3 is exactly what cross-attention computes, and it is also what π0 computes: its block mask stops the prefix from looking at the actions, so the prefix keys and values can be cached, as the π0 paper describes. The cost is the same; the difference is architectural. In π0 the action expert sits in the <em>same</em> layer stack and reads the prefix at every layer; in a cross-attention design such as GR00T N1 the action module reads one chosen set of VLM features.</p>
+</div>
+<h2>3. Where you meet it</h2>
+<ul>
+<li><strong>Action expert reading a VLM:</strong> GR00T N1 (cross-attention), π0 and π0.5 (shared stack with a block mask).</li>
+<li><strong>Refiners reading a coarse plan:</strong> FACT's force–action refiner reads the planner's frozen states through cached cross-attention.</li>
+<li><strong>Compressing a large input:</strong> Perceiver lets a small array of latents cross-attend to a huge input, so cost grows with the input once, not squared; force-history encoders in CR-VLA-Force use one learnable token that cross-attends over force segments in the same spirit.</li>
+</ul>
+<p><strong>Carry forward:</strong> the VLM tokens being read here start as image patches. How an image becomes tokens: <a href="vit.html">ViT</a>.</p>
+<p><strong>Check question:</strong> With $m = 600$, $n = 50$ and $S = 10$, how many attention pairs per layer with caching?</p>
+<details>
+<summary>Answer</summary>
+<p>$600^2 + 10 \times (50 \times 600 + 50^2) = 360{,}000 + 10 \times 32{,}500 = 360{,}000 + 325{,}000 = 685{,}000$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Attention encoder–decoder trong Vaswani và cộng sự, <a href="https://arxiv.org/abs/1706.03762">arXiv 1706.03762</a> · 06/2017. Perceiver, <a href="https://arxiv.org/abs/2103.03206">arXiv 2103.03206</a> · 03/2021</p>
+<p><strong>VẤN ĐỀ</strong> Hai dãy khác loại phải nói chuyện với nhau: 50 token hành động cần khung cảnh và câu lệnh nằm trong khoảng 800 token của VLM, và phía VLM không nên bị hành động làm xáo trộn.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Ép điều kiện vào một vector (embedding gộp, hoặc phép co giãn FiLM) tạo lại đúng nút thắt mà <a href="attention.html">attention</a> đã gỡ bỏ. Nối mọi thứ vào một self-attention thì mọi token viết lại mọi token khác và chi phí tăng theo $(n+m)^2$; Perceiver chỉ ra cách này không mở rộng được cho đầu vào rất lớn.</p>
+<p><strong>Ý TƯỞNG</strong> Lấy query từ dãy cần cập nhật, key và value từ dãy kia. Mỗi token hành động tự chọn thứ nó cần từ các token VLM, vốn chỉ được đọc.</p>
+<p><strong>KẾT QUẢ</strong> Mô-đun hành động của GR00T N1 cross-attend tới token của VLM (lấy từ lớp thứ 12 trong mô hình 2B); refiner của FACT cross-attend tới trạng thái planner đã lưu đệm. π0 đạt cùng hiệu quả bên trong một Transformer duy nhất bằng mask theo khối.</p>
+</div>
+<h2>1. Vấn đề: hai dãy, một chiều đọc</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở chiều: thông tin chảy từ khung cảnh sang hành động, không chảy ngược lại." class="dg-natural" width="795" height="290" viewBox="0 0 795 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Trước</text><text class="dg-lab dg-red" x="14" y="46">Một vector điều kiện</text><rect class="dg-box" x="179" y="15" width="125" height="38"/><text class="dg-t" x="241" y="38" text-anchor="middle">800 token VLM</text><path class="dg-a" d="M304 34 H336"/><rect class="dg-badbox" x="338" y="15" width="163" height="38"/><text class="dg-t" x="419" y="38" text-anchor="middle">Gộp thành 1 vector</text><path class="dg-a" d="M500 34 H532"/><rect class="dg-box" x="534" y="15" width="125" height="38"/><text class="dg-t" x="597" y="38" text-anchor="middle">Đầu hành động</text><text class="dg-note dg-red" x="178.8" y="72">✗ mất chi tiết, nút thắt cũ</text><text class="dg-lab dg-red" x="14" y="123">Trước</text><text class="dg-lab dg-red" x="14" y="137">Một self-attention lớn</text><rect class="dg-box" x="179" y="106" width="96" height="38"/><text class="dg-t" x="227" y="129" text-anchor="middle">850 token</text><path class="dg-a" d="M275 125 H307"/><rect class="dg-badbox" x="309" y="98" width="224" height="54"/><text class="dg-t" x="421" y="121" text-anchor="middle">Ai cũng cập nhật mọi người</text><text class="dg-s" x="421" y="137" text-anchor="middle">(n+m)² cặp</text><path class="dg-a" d="M532 125 H564"/><rect class="dg-box" x="566" y="106" width="96" height="38"/><text class="dg-t" x="614" y="129" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="178.8" y="170">✗ token VLM bị hành động nhiễu làm xáo trộn</text><text class="dg-lab dg-green" x="14" y="227">Cross-attention</text><rect class="dg-box" x="179" y="204" width="140" height="38"/><text class="dg-t" x="249" y="227" text-anchor="middle">Query hành động</text><path class="dg-a" d="M319 223 H351"/><rect class="dg-key" x="353" y="196" width="208" height="54"/><text class="dg-t" x="457" y="219" text-anchor="middle">Đọc key và value của VLM</text><text class="dg-s" x="457" y="235" text-anchor="middle">n×m cặp</text><path class="dg-a" d="M561 223 H593"/><rect class="dg-box" x="595" y="204" width="186" height="38"/><text class="dg-t" x="688" y="227" text-anchor="middle">Hành động đã cập nhật</text><text class="dg-note dg-green" x="178.8" y="268">✓ phía VLM chỉ đọc, lưu đệm được</text></svg><figcaption>Thay đổi nằm ở chiều: thông tin chảy từ khung cảnh sang hành động, không chảy ngược lại.</figcaption></figure>
+<h2>2. Cơ chế</h2>
+<figure class="diagram"><svg role="img" aria-label="Query đến từ token hành động, key và value đến từ token VLM. Phép tính giống self-attention; chỉ có nguồn là khác." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SELF-ATTENTION: ONE SEQUENCE    CROSS-ATTENTION: QUERIES FROM ONE, KEYS AND VALUES FROM ANOTHER</text>
+<rect class="dg-ext" x="20" y="60" width="200" height="60"/><text class="dg-t" x="120" y="84" text-anchor="middle">VLM tokens (m)</text><text class="dg-s" x="120" y="102" text-anchor="middle">images + instruction, e.g. 800</text>
+<rect class="dg-ext" x="20" y="180" width="200" height="60"/><text class="dg-t" x="120" y="204" text-anchor="middle">action tokens (n)</text><text class="dg-s" x="120" y="222" text-anchor="middle">noisy chunk, e.g. 50</text>
+<rect class="dg-box" x="300" y="60" width="140" height="60"/><text class="dg-t" x="370" y="84" text-anchor="middle">K = X W_K</text><text class="dg-s" x="370" y="102" text-anchor="middle">V = X W_V</text>
+<rect class="dg-box" x="300" y="180" width="140" height="60"/><text class="dg-t" x="370" y="204" text-anchor="middle">Q = Y W_Q</text><text class="dg-s" x="370" y="222" text-anchor="middle">what each action needs</text>
+<path class="dg-a" d="M220 90 H300"/><path class="dg-a" d="M220 210 H300"/>
+<rect class="dg-key" x="520" y="110" width="200" height="80"/><text class="dg-t" x="620" y="140" text-anchor="middle">softmax(Q K^T / sqrt d) V</text><text class="dg-s" x="620" y="160" text-anchor="middle">n x m scores</text><text class="dg-s" x="620" y="176" text-anchor="middle">VLM tokens are only read</text>
+<path class="dg-a" d="M440 90 H480 V130 H520"/><path class="dg-a" d="M440 210 H480 V170 H520"/>
+<rect class="dg-box" x="790" y="110" width="170" height="80"/><text class="dg-t" x="875" y="140" text-anchor="middle">updated actions</text><text class="dg-s" x="875" y="160" text-anchor="middle">n vectors, each now</text><text class="dg-s" x="875" y="176" text-anchor="middle">carries scene information</text>
+<path class="dg-a" d="M720 150 H790"/>
+<text class="dg-note" x="20" y="280">the VLM keys and values do not change between denoising steps, so they are computed once and cached</text>
+</svg><figcaption>Query đến từ token hành động, key và value đến từ token VLM. Phép tính giống self-attention; chỉ có nguồn là khác.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$Q = Y W_Q$</td>
+<td>token hành động $Y$ ($n \times d$)</td>
+<td>query</td>
+<td>mỗi bước hành động đang tìm gì</td>
+</tr>
+<tr>
+<td>$K = X W_K,\ V = X W_V$</td>
+<td>token VLM $X$ ($m \times d$)</td>
+<td>key, value</td>
+<td>khung cảnh có gì để đưa</td>
+</tr>
+<tr>
+<td>Điểm, softmax</td>
+<td>$Q, K$</td>
+<td>trọng số $n \times m$</td>
+<td>mỗi bước hành động dùng token cảnh nào</td>
+</tr>
+<tr>
+<td>Trọng số × $V$</td>
+<td>trọng số, $V$</td>
+<td>$n \times d$</td>
+<td>thông tin khung cảnh được cộng vào hành động</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ một dòng: query hành động $q = (1, 0)$ gặp token "cốc" có $k = (1, 0)$, $v = (5, 0)$ và token "bàn" có $k = (0, 1)$, $v = (0, 5)$. Với $d = 2$ điểm là $0{,}707$ và $0$, trọng số $0{,}67$ và $0{,}33$, đầu ra $(3{,}35;\ 1{,}65)$: chủ yếu là cốc, một chút bàn.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một action expert flow matching chạy 10 bước khử nhiễu cho mỗi chunk. Đếm số cặp attention khi có và không có lưu đệm phía VLM, và so cross-attention với thiết kế một-Transformer của π0.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$m$</td>
+<td>token VLM (3 ảnh × 256 + chữ)</td>
+<td>input</td>
+<td>800</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>token hành động trong chunk</td>
+<td>input</td>
+<td>50</td>
+</tr>
+<tr>
+<td>$S$</td>
+<td>số bước khử nhiễu</td>
+<td>input</td>
+<td>10</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>số cặp attention mỗi lớp, cộng qua các bước</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$P_{\text{không đệm}} = S\,(n+m)^2, \qquad P_{\text{có đệm}} = m^2 + S\,(n\,m + n^2)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Không đệm, một self-attention chung tính lại mỗi bước: $10 \times 850^2 = 10 \times 722.500 = 7.225.000$.</li>
+<li>Có đệm: token VLM attend lẫn nhau một lần, $800^2 = 640.000$.</li>
+<li>Mỗi bước, 50 token hành động đọc 800 token VLM và đọc nhau: $50 \times 800 + 50^2 = 40.000 + 2.500 = 42.500$; mười bước được $425.000$.</li>
+<li>Tổng khi có đệm: $640.000 + 425.000 = 1.065.000$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Ít hơn khoảng 6,8 lần số cặp khi phía VLM chỉ tính một lần.</p>
+<p><strong>Ý nghĩa.</strong> Bước 3 chính là thứ cross-attention tính, và cũng là thứ π0 tính: mask theo khối của nó chặn phần tiền tố nhìn sang hành động, nên key và value của tiền tố lưu đệm được, như paper π0 mô tả. Chi phí như nhau; khác biệt nằm ở kiến trúc. Trong π0, action expert nằm <em>cùng</em> chồng lớp và đọc tiền tố ở mọi lớp; trong thiết kế cross-attention như GR00T N1, mô-đun hành động đọc một bộ đặc trưng VLM được chọn sẵn.</p>
+</div>
+<h2>3. Gặp nó ở đâu</h2>
+<ul>
+<li><strong>Action expert đọc VLM:</strong> GR00T N1 (cross-attention), π0 và π0.5 (chung chồng lớp với mask theo khối).</li>
+<li><strong>Refiner đọc kế hoạch thô:</strong> refiner lực–hành động của FACT đọc trạng thái đóng băng của planner qua cross-attention có lưu đệm.</li>
+<li><strong>Nén một đầu vào lớn:</strong> Perceiver cho một mảng latent nhỏ cross-attend tới đầu vào khổng lồ, nên chi phí tăng theo đầu vào một lần chứ không bình phương; bộ mã hóa lịch sử lực trong CR-VLA-Force dùng một token học được cross-attend lên các đoạn lực theo cùng tinh thần.</li>
+</ul>
+<p><strong>Mang theo:</strong> các token VLM được đọc ở đây khởi đầu là những patch ảnh. Ảnh trở thành token thế nào: <a href="vit.html">ViT</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với $m = 600$, $n = 50$ và $S = 10$, có lưu đệm thì mỗi lớp có bao nhiêu cặp attention?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$600^2 + 10 \times (50 \times 600 + 50^2) = 360.000 + 10 \times 32.500 = 360.000 + 325.000 = 685.000$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -168,7 +168,8 @@
 <h2>3. From id to vector</h2>
 <p>The id is just a row number. A table $E$ of shape (vocabulary size $V$) × ($d$) is learned with the model; the token's vector is row $i$ of $E$.</p>
 <p>Example with $V = 5$, $d = 3$: ids $[2, 4]$ pick rows 2 and 4 of $E$ and give a $2 \times 3$ matrix. No arithmetic, only lookup.</p>
-<p><strong>Carry forward:</strong> a sequence of vectors still has no way for tokens to talk to each other. That is <a href="attention.html">Attention</a>.</p>
+<p>Why is a lookup enough? Write the id as a one-hot vector (all zeros, a 1 at position $i$). Multiplying that one-hot vector by $E$ selects row $i$. So an embedding table is exactly a linear layer applied to a one-hot input; it is stored as a table only because multiplying by a vector of zeros would be wasteful. The table is trained by the same gradients as everything else, so ids that behave alike end up with nearby rows.</p>
+<p><strong>Carry forward:</strong> text and image tokens are only read. Actions must also be <em>written</em> by the model, which needs its own tokenizer: <a href="action-tokenization.html">action tokenization</a>.</p>
 <p><strong>Check question:</strong> $a = -0.5$, $K = 256$. What is $i$?</p>
 <details>
 <summary>Answer</summary>
@@ -270,7 +271,8 @@
 <h2>3. Từ id đến vector</h2>
 <p>Id chỉ là số thứ tự hàng. Một bảng $E$ kích thước (cỡ từ vựng $V$) × ($d$) được học cùng mô hình; vector của token là hàng $i$ của $E$.</p>
 <p>Ví dụ $V = 5$, $d = 3$: các id $[2, 4]$ lấy hàng 2 và 4 của $E$, cho ma trận $2 \times 3$. Không có phép tính, chỉ tra bảng.</p>
-<p><strong>Mang theo:</strong> một chuỗi vector vẫn chưa cho các token nói chuyện với nhau. Đó là <a href="attention.html">Attention</a>.</p>
+<p>Vì sao tra bảng là đủ? Viết id thành vector one-hot (toàn số 0, có một số 1 ở vị trí $i$). Nhân vector one-hot đó với $E$ thì lấy ra đúng hàng $i$. Vậy bảng embedding chính là một lớp tuyến tính áp lên đầu vào one-hot; người ta lưu nó dạng bảng chỉ vì nhân với một vector toàn số 0 thì phí công. Bảng được học bằng cùng gradient như mọi thứ khác, nên những id có hành vi giống nhau sẽ có các hàng gần nhau.</p>
+<p><strong>Mang theo:</strong> token chữ và token ảnh chỉ được đọc. Hành động thì mô hình phải <em>viết</em> ra, nên cần tokenizer riêng: <a href="action-tokenization.html">action tokenization</a>.</p>
 <p><strong>Câu hỏi kiểm tra:</strong> $a = -0{,}5$, $K = 256$. $i$ bằng bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>

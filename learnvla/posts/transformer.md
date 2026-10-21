@@ -18,7 +18,7 @@ tags: [VLA, Foundations, Transformer, Attention]
 
 **IDEA** Drop the recurrence. Use self-attention to mix tokens, a feed-forward layer per token, residual connections and layer norm, and add position information because attention itself has no order.
 
-**RESULT** 28.4 BLEU on WMT14 English→German (the paper's headline), with far less training cost than recurrent models. Every VLA backbone since is a Transformer.
+**RESULT** 28.4 BLEU on WMT14 English→German (the paper's headline), with far less training cost than recurrent models. Every VLA on this site is built on Transformers.
 </div>
 
 ## 1. The problem: sequential and far apart
@@ -42,6 +42,13 @@ tags: [VLA, Foundations, Transformer, Attention]
 | Feed-forward | $n \times d$ | $n \times d$ | same small MLP applied to each token |
 
 The base model in the paper: $d = 512$, 8 heads, feed-forward width 2048, 6 layers.
+
+**Why each piece is there, from first principles.**
+
+- *Feed-forward.* Attention outputs a weighted average of value vectors, so on its own it only mixes what is already there. The per-token MLP, with its nonlinearity, is where a token's vector is actually transformed; it holds most of the block's parameters ($2 \times 512 \times 2048 \approx 2.1$M per layer in the base model, against $4 \times 512^2 \approx 1.0$M for the four attention projections).
+- *Residual.* Each sublayer adds a correction to its input instead of replacing it: $x + f(x)$. If $f$ starts near zero, the stack starts near the identity, and the gradient always has a direct path back through the "$+x$". This is what lets dozens of layers train.
+- *Layer norm.* Rescales each token vector to zero mean and unit spread so that sums of many corrections do not drift in size. (The 2017 paper normalised after the residual; most modern models normalise before the sublayer, which trains more stably.)
+- *Masks.* An attention mask decides who may look at whom. A *causal* mask lets token $i$ see only tokens $\le i$, which is what makes next-token generation possible. VLAs use block masks: in π0 image and text tokens see each other, and the action tokens see everything before them, but the prefix never sees the actions.
 
 <div class="calc" markdown="1">
 
@@ -76,7 +83,7 @@ $$C_{attn} = n^2 d \ (\text{sequential steps } O(1)) \qquad C_{rnn} = n\, d^2 \ 
 - A VLA puts image tokens, text tokens and action tokens in one sequence; one Transformer lets them all attend to each other.
 - Variants you will meet: decoder-only (next-token prediction, e.g. language models), encoder (ViT), and the action expert of π0, a smaller Transformer that reads the VLM's tokens.
 
-**Carry forward:** a Transformer is a general sequence machine. Next, how to make it *generate continuous actions*: [Flow matching](flowmatching.html).
+**Carry forward:** a Transformer is a general sequence machine. When there are two different sequences, say the VLM's tokens and the action tokens, one needs a way to read the other: [cross-attention](cross-attention.html).
 
 **Check question:** $n = 1024$, $d = 512$. Which is cheaper per layer, attention or RNN?
 
@@ -97,7 +104,7 @@ $C_{attn} = 1024^2 \times 512 = 536{,}870{,}912$; $C_{rnn} = 1024 \times 512^2 =
 
 **Ý TƯỞNG** Bỏ hồi quy. Dùng self-attention để trộn token, một lớp feed-forward cho từng token, kết nối residual và layer norm, cộng thêm thông tin vị trí vì bản thân attention không biết thứ tự.
 
-**KẾT QUẢ** 28,4 BLEU trên WMT14 Anh→Đức (số nổi bật của paper), với chi phí huấn luyện thấp hơn nhiều so với mô hình hồi quy. Mọi backbone VLA từ đó đều là Transformer.
+**KẾT QUẢ** 28,4 BLEU trên WMT14 Anh→Đức (số nổi bật của paper), với chi phí huấn luyện thấp hơn nhiều so với mô hình hồi quy. Mọi VLA trên trang này đều xây trên Transformer.
 </div>
 
 ## 1. Vấn đề: tuần tự và cách xa nhau
@@ -121,6 +128,13 @@ $C_{attn} = 1024^2 \times 512 = 536{,}870{,}912$; $C_{rnn} = 1024 \times 512^2 =
 | Feed-forward | $n \times d$ | $n \times d$ | cùng một MLP nhỏ áp cho từng token |
 
 Mô hình base trong paper: $d = 512$, 8 đầu, độ rộng feed-forward 2048, 6 lớp.
+
+**Vì sao mỗi mảnh có mặt, nghĩ từ gốc.**
+
+- *Feed-forward.* Attention xuất ra trung bình có trọng số của các vector value, nên tự nó chỉ trộn những gì đã có. MLP áp cho từng token, với hàm phi tuyến, mới là nơi vector của token thật sự được biến đổi; nó giữ phần lớn tham số của khối ($2 \times 512 \times 2048 \approx 2{,}1$ triệu mỗi lớp trong mô hình base, so với $4 \times 512^2 \approx 1{,}0$ triệu cho bốn phép chiếu của attention).
+- *Residual.* Mỗi lớp con cộng một phần hiệu chỉnh vào đầu vào thay vì thay thế nó: $x + f(x)$. Nếu $f$ khởi đầu gần 0 thì cả chồng khởi đầu gần phép đồng nhất, và gradient luôn có đường đi thẳng về qua "$+x$". Nhờ vậy hàng chục lớp mới huấn luyện được.
+- *Layer norm.* Co giãn mỗi vector token về trung bình 0 và độ trải bằng 1, để tổng của nhiều lần hiệu chỉnh không trôi về độ lớn. (Paper 2017 chuẩn hóa sau residual; phần lớn mô hình hiện nay chuẩn hóa trước lớp con, huấn luyện ổn định hơn.)
+- *Mask.* Mask của attention quyết định ai được nhìn ai. Mask *nhân quả* chỉ cho token $i$ thấy các token $\le i$, đó là điều làm việc sinh token kế tiếp khả thi. VLA dùng mask theo khối: trong π0, token ảnh và chữ thấy nhau, token hành động thấy mọi thứ đứng trước, nhưng phần tiền tố không bao giờ thấy hành động.
 
 <div class="calc" markdown="1">
 
@@ -155,7 +169,7 @@ $$C_{attn} = n^2 d \ (\text{số bước tuần tự } O(1)) \qquad C_{rnn} = n\
 - VLA đặt token ảnh, token chữ và token hành động vào một chuỗi; một Transformer cho chúng chú ý lẫn nhau.
 - Các biến thể sẽ gặp: decoder-only (dự đoán token kế tiếp, như mô hình ngôn ngữ), encoder (ViT), và action expert của π0, một Transformer nhỏ đọc token của VLM.
 
-**Mang theo:** Transformer là cỗ máy chuỗi tổng quát. Tiếp theo: làm sao để nó *sinh hành động liên tục*: [Flow matching](flowmatching.html).
+**Mang theo:** Transformer là cỗ máy chuỗi tổng quát. Khi có hai chuỗi khác nhau, ví dụ token của VLM và token hành động, cần một cách để chuỗi này đọc chuỗi kia: [cross-attention](cross-attention.html).
 
 **Câu hỏi kiểm tra:** $n = 1024$, $d = 512$. Mỗi lớp, attention hay RNN rẻ hơn?
 

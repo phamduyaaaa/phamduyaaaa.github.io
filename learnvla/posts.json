@@ -1,5 +1,246 @@
 [
   {
+    "slug": "action-spaces",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Action Spaces: Joints or Pose, Absolute or Delta, and How to Write a Rotation",
+    "title_vi": "Không gian hành động: Khớp hay pose, tuyệt đối hay delta, và cách viết một phép quay",
+    "excerpt_en": "The same motion can be written as joint angles or a gripper pose, as a target or a step, with rotation in Euler angles, quaternions or six numbers. These choices decide what a network can learn. Two worked examples: the Euler jump at 180°, and normalising an action.",
+    "excerpt_vi": "Cùng một chuyển động có thể viết bằng góc khớp hay pose tay kẹp, bằng đích đến hay bước dịch, với phép quay bằng góc Euler, quaternion hay sáu con số. Những lựa chọn này quyết định mạng học được gì. Hai ví dụ tính tay: cú nhảy của góc Euler ở 180°, và chuẩn hóa một hành động.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Action",
+      "Rotation"
+    ],
+    "read_min": 6
+  },
+  {
+    "slug": "actor-critic",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Actor-Critic RL: Improving a Policy by Trial and a Learned Judge",
+    "title_vi": "Actor-critic RL: Cải thiện chính sách bằng thử nghiệm và một giám khảo học được",
+    "excerpt_en": "Imitation can only copy the demonstrator. Reinforcement learning improves on it from reward, but raw trial and error is noisy. A critic learns how good states are, the actor follows what beat the critic's expectation, and PPO keeps each update small. Discount, TD error and the PPO clip worked by hand.",
+    "excerpt_vi": "Bắt chước chỉ chép lại được người làm mẫu. Học tăng cường cải thiện từ phần thưởng, nhưng thử và sai thuần túy thì nhiễu. Một critic học xem trạng thái tốt tới đâu, actor đi theo những gì vượt kỳ vọng của critic, và PPO giữ mỗi lần cập nhật nhỏ. Tính tay chiết khấu, sai số TD và phép kẹp của PPO.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Reinforcement Learning",
+      "Actor-Critic"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "backbone",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Backbone and Fine-Tuning: How Much of a Pretrained Model to Retrain",
+    "title_vi": "Backbone và fine-tuning: Huấn luyện lại bao nhiêu phần của mô hình đã pretrain",
+    "excerpt_en": "A VLA starts from a pretrained backbone. Retraining all of it costs memory; freezing it costs accuracy. LoRA learns a small low-rank correction instead. OpenVLA's own comparison, and the parameter count of LoRA worked by hand.",
+    "excerpt_vi": "VLA khởi đầu từ một backbone đã pretrain. Huấn luyện lại toàn bộ thì tốn bộ nhớ; đóng băng thì mất độ chính xác. LoRA học một phần hiệu chỉnh hạng thấp nhỏ thay vào đó. So sánh của chính OpenVLA, và tính tay số tham số của LoRA.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Fine-tuning",
+      "LoRA"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "contact-rich-control",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Contact-Rich Control: Impedance, Admittance and Hybrid Force–Position",
+    "title_vi": "Điều khiển giàu tiếp xúc: Impedance, admittance và lai lực–vị trí",
+    "excerpt_en": "A position controller told to be 2 mm inside a rigid part will push until something gives. Impedance control makes the robot act like a spring instead, admittance turns measured force into motion, and hybrid control splits axes into force and position. Worked: the force from a stiff versus a soft setting, and critical damping.",
+    "excerpt_vi": "Bộ điều khiển vị trí được bảo phải nằm sâu 2 mm trong một chi tiết cứng sẽ ấn tới khi có thứ gì đó chịu thua. Điều khiển impedance khiến robot cư xử như một lò xo, admittance biến lực đo được thành chuyển động, còn điều khiển lai chia các trục thành trục lực và trục vị trí. Tính tay: lực sinh ra với độ cứng cao so với thấp, và giảm chấn tới hạn.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Force",
+      "Control"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "contrastive-learning",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Contrastive Learning: Learning by Telling the Right Pair from the Wrong Ones",
+    "title_vi": "Contrastive learning: Học bằng cách phân biệt cặp đúng với các cặp sai",
+    "excerpt_en": "Classifiers learn a fixed list of labels. Contrastive learning only asks which caption goes with which image, using the rest of the batch as counter-examples. InfoNCE worked by hand, and where it shows up in VLAs: the SigLIP image encoder and TaF-VLA's touch–force alignment.",
+    "excerpt_vi": "Bộ phân loại học một danh sách nhãn cố định. Contrastive learning chỉ hỏi chú thích nào đi với ảnh nào, dùng phần còn lại của batch làm phản ví dụ. Tính tay InfoNCE, và nó xuất hiện ở đâu trong VLA: bộ mã hóa ảnh SigLIP và việc căn xúc giác với lực của TaF-VLA.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Contrastive Learning",
+      "InfoNCE"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "cross-attention",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Cross-Attention: Letting One Sequence Read Another",
+    "title_vi": "Cross-attention: Cho một dãy đọc một dãy khác",
+    "excerpt_en": "An action expert has to read hundreds of VLM tokens without rewriting them. Cross-attention takes queries from one sequence and keys and values from the other. Worked cost: why caching the VLM side makes ten denoising steps cheap, and why π0's block mask costs the same.",
+    "excerpt_vi": "Action expert phải đọc hàng trăm token của VLM mà không viết lại chúng. Cross-attention lấy query từ dãy này, key và value từ dãy kia. Tính chi phí: vì sao lưu đệm phía VLM làm mười bước khử nhiễu trở nên rẻ, và vì sao mask theo khối của π0 tốn đúng bằng vậy.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Attention",
+      "Transformer"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "cross-embodiment-data",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Cross-Embodiment Data: Training One Policy on Many Robots",
+    "title_vi": "Dữ liệu cross-embodiment: Huấn luyện một chính sách trên nhiều robot",
+    "excerpt_en": "One lab's robot data is small; pooling data from many robots is large but messy: different arms, cameras, action sizes and rates. How Open X-Embodiment, π0 and GR00T make it one dataset, and π0's re-weighting of big and small datasets worked by hand.",
+    "excerpt_vi": "Dữ liệu robot của một phòng thí nghiệm thì ít; gộp dữ liệu từ nhiều robot thì nhiều nhưng lộn xộn: cánh tay, camera, kích thước hành động và tần số khác nhau. Cách Open X-Embodiment, π0 và GR00T biến nó thành một bộ dữ liệu, và tính tay cách π0 cân lại các bộ dữ liệu lớn nhỏ.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Data",
+      "Cross-embodiment"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "diffusion-policy",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Diffusion Policy: Generating Actions by Removing Noise",
+    "title_vi": "Diffusion Policy: Sinh hành động bằng cách gỡ nhiễu",
+    "excerpt_en": "Demonstrations often contain several right ways to act, and a regression head averages them. Diffusion Policy learns to remove noise from an action sequence, so sampling from noise lands on one valid way. The noising step and the noise target worked by hand.",
+    "excerpt_vi": "Demo thường chứa nhiều cách làm đúng, và một đầu hồi quy lấy trung bình chúng. Diffusion Policy học cách gỡ nhiễu khỏi một chuỗi hành động, nên lấy mẫu từ nhiễu sẽ rơi vào một cách làm hợp lệ. Tính tay bước thêm nhiễu và mục tiêu dự đoán nhiễu.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Diffusion",
+      "Generative"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "distillation",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Distillation: Teaching a Student What the Teacher Knows",
+    "title_vi": "Distillation: Dạy học trò những gì người thầy biết",
+    "excerpt_en": "A big model, or a model with a sensor the robot will not carry, can teach a smaller or sensor-free one. The trick is to copy the teacher's soft outputs, not only the right answer. Temperature worked by hand, and how FD-VLA and HapticVLA distil force and touch away.",
+    "excerpt_vi": "Một mô hình lớn, hoặc một mô hình có cảm biến mà robot sẽ không mang theo, có thể dạy một mô hình nhỏ hơn hoặc không cần cảm biến. Mẹo là chép đầu ra mềm của người thầy, không chỉ đáp án đúng. Tính tay nhiệt độ, và cách FD-VLA, HapticVLA chưng cất lực và xúc giác để bỏ cảm biến.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Distillation",
+      "Force"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "force-tactile-sensing",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Force and Tactile Sensing: What Each Sensor Actually Measures",
+    "title_vi": "Cảm biến lực và xúc giác: Mỗi cảm biến thực sự đo được gì",
+    "excerpt_en": "A wrist F/T sensor, joint torques, a pressure array and a gel camera all say something about contact, but not the same thing. Where each one sits, what it reports, and two worked corrections a policy needs: removing the tool's weight, and estimating force from joint torques.",
+    "excerpt_vi": "Cảm biến F/T ở cổ tay, mô-men khớp, mảng áp suất và camera gel đều nói gì đó về tiếp xúc, nhưng không giống nhau. Mỗi loại nằm ở đâu, báo về gì, và tính tay hai hiệu chỉnh mà chính sách cần: trừ trọng lượng dụng cụ, và ước lượng lực từ mô-men khớp.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Force",
+      "Tactile",
+      "Sensors"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "moe",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Mixture of Experts: Many Sub-Networks, Only One at a Time",
+    "title_vi": "Mixture of Experts: Nhiều mạng con, mỗi lúc chỉ dùng một",
+    "excerpt_en": "A dense layer uses every parameter for every token. A sparse mixture of experts keeps several expert networks and lets a router pick one per token, adding capacity without adding compute. Router and load-balancing loss worked by hand, and why π0's 'action expert' is something else.",
+    "excerpt_vi": "Một lớp dày đặc dùng mọi tham số cho mọi token. Mixture of experts thưa giữ nhiều mạng chuyên gia và để một router chọn một mạng cho mỗi token, thêm sức chứa mà không thêm tính toán. Tính tay router và loss cân bằng tải, và vì sao 'action expert' của π0 là một thứ khác.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "MoE",
+      "Force"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "proprioception",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Proprioception: What the Robot Knows About Its Own Body",
+    "title_vi": "Proprioception: Robot biết gì về chính cơ thể nó",
+    "excerpt_en": "Cameras miss the exact joint angles, the gripper opening and the force at the wrist; the robot's own sensors give them directly. Which signals go into the state vector, how forward kinematics turns angles into a gripper pose, and why a long state history can make a policy lazy.",
+    "excerpt_vi": "Camera không thấy chính xác góc khớp, độ mở tay kẹp hay lực ở cổ tay; cảm biến của chính robot cho những thứ đó trực tiếp. Tín hiệu nào vào vector trạng thái, động học thuận biến góc khớp thành pose tay kẹp ra sao, và vì sao lịch sử trạng thái dài có thể làm chính sách lười.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Proprioception",
+      "State"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "residual-policy",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Residual Policy: Learning Only the Correction",
+    "title_vi": "Residual policy: Chỉ học phần hiệu chỉnh",
+    "excerpt_en": "A hand-tuned controller or a VLA is good but not good enough at contact. Instead of replacing it, add a small learned correction on top, bounded so the base stays in charge. Worked: a bounded residual step, and where TER-DAgger, FIRe and MoDE-VLA use the idea.",
+    "excerpt_vi": "Một bộ điều khiển chỉnh tay hay một VLA thì tốt nhưng chưa đủ tốt khi tiếp xúc. Thay vì thay thế nó, hãy cộng một phần hiệu chỉnh nhỏ học được lên trên, có giới hạn để phần nền vẫn nắm quyền. Tính tay một bước residual có giới hạn, và TER-DAgger, FIRe, MoDE-VLA dùng ý tưởng này ở đâu.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "Residual",
+      "Reinforcement Learning"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "vlm",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "VLM: Giving a Language Model Eyes",
+    "title_vi": "VLM: Cho mô hình ngôn ngữ đôi mắt",
+    "excerpt_en": "A language model reads words; a vision encoder produces vectors in a different space. A small projector maps image vectors into the language model's input space, and the pair becomes a vision-language model. Worked: the size of PaliGemma's projector and a VLA's token budget.",
+    "excerpt_vi": "Mô hình ngôn ngữ đọc chữ; bộ mã hóa ảnh sinh vector trong một không gian khác. Một bộ chiếu nhỏ ánh xạ vector ảnh vào không gian đầu vào của mô hình ngôn ngữ, và cả hai thành mô hình thị giác-ngôn ngữ. Tính tay: kích thước bộ chiếu của PaliGemma và ngân sách token của một VLA.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "VLM",
+      "PaliGemma"
+    ],
+    "read_min": 4
+  },
+  {
+    "slug": "vq-vae",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "VQ-VAE: Learning a Codebook of Discrete Tokens",
+    "title_vi": "VQ-VAE: Học một codebook các token rời rạc",
+    "excerpt_en": "Bins cut a signal on a fixed grid; a VQ-VAE learns where its codes should be. The encoder's output snaps to the nearest codebook vector, and a stop-gradient trick lets the whole thing train. Worked by hand, and where force and touch papers use it.",
+    "excerpt_vi": "Bin cắt tín hiệu theo một lưới cố định; VQ-VAE tự học xem các mã nên nằm ở đâu. Đầu ra của encoder bị kéo về vector codebook gần nhất, và một mẹo dừng gradient giúp cả hệ huấn luyện được. Tính tay, và các bài lực, xúc giác dùng nó ở đâu.",
+    "tags": [
+      "VLA",
+      "Foundations",
+      "VQ-VAE",
+      "Tokenizer"
+    ],
+    "read_min": 4
+  },
+  {
     "slug": "cr-vla-force",
     "date": "2026-10-19",
     "date_display": "19 Oct 2026",
@@ -125,15 +366,15 @@
     "date_display": "18 Oct 2026",
     "title_en": "Action Tokenization: Turning Actions into Tokens",
     "title_vi": "Action Tokenization: Hành động trở thành token",
-    "excerpt_en": "An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.",
-    "excerpt_vi": "LLM chọn một chữ trong từ điển hữu hạn, còn hành động robot là số thực. Chia thùng (bin) biến số liên tục thành token, tính tay một ví dụ, cùng cái lợi và cái giá.",
+    "excerpt_en": "A language model picks words from a finite vocabulary, but robot actions are real numbers. Binning makes each value a token and breaks down at high control rates; FAST compresses the whole chunk with a DCT first. Both worked by hand.",
+    "excerpt_vi": "Mô hình ngôn ngữ chọn chữ trong một từ điển hữu hạn, còn hành động robot là số thực. Chia bin biến mỗi giá trị thành một token và gãy khi tần số điều khiển cao; FAST nén cả chunk bằng DCT trước. Tính tay cả hai.",
     "tags": [
       "VLA",
       "Foundations",
       "Tokenizer",
       "Action"
     ],
-    "read_min": 4
+    "read_min": 6
   },
   {
     "slug": "attention",
@@ -149,7 +390,7 @@
       "Attention",
       "Transformer"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "danh-gia-vla",
@@ -197,7 +438,7 @@
       "Flow Matching",
       "Diffusion"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "forcevla",
@@ -281,7 +522,7 @@
       "Imitation Learning",
       "DAgger"
     ],
-    "read_min": 3
+    "read_min": 4
   },
   {
     "slug": "mode-vla",
@@ -464,7 +705,7 @@
       "Transformer",
       "Attention"
     ],
-    "read_min": 3
+    "read_min": 5
   },
   {
     "slug": "vit",
@@ -472,8 +713,8 @@
     "date_display": "18 Oct 2026",
     "title_en": "ViT: When an Image Becomes Tokens",
     "title_vi": "ViT: Ảnh trở thành token",
-    "excerpt_en": "How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image.",
-    "excerpt_vi": "Transformer ăn một dãy vector, còn ảnh là một lưới số. Cắt patch, duỗi phẳng, chiếu tuyến tính và cộng mã vị trí, tính tay trên ảnh 4×4.",
+    "excerpt_en": "A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image.",
+    "excerpt_vi": "Transformer đọc một dãy, ảnh là một lưới, và mỗi pixel một token thì quá nhiều. ViT cắt ảnh thành patch, chiếu từng patch và cộng một vector vị trí. Tính tay trên ảnh 4×4.",
     "tags": [
       "VLA",
       "Foundations",

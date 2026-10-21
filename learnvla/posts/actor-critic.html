@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Imitation can only copy the demonstrator. Reinforcement learning improves on it from reward, but raw trial and error is noisy. A critic learns how good states are, the actor follows what beat the critic's expectation, and PPO keeps each update small. Discount, TD error and the PPO clip worked by hand.">
+<title>Actor-Critic RL: Improving a Policy by Trial and a Learned Judge · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Actor-Critic RL: Improving a Policy by Trial and a Learned Judge">
+<meta property="og:description" content="Imitation can only copy the demonstrator. Reinforcement learning improves on it from reward, but raw trial and error is noisy. A critic learns how good states are, the actor follows what beat the critic's expectation, and PPO keeps each update small. Discount, TD error and the PPO clip worked by hand.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Actor-Critic RL: Improving a Policy by Trial and a Learned Judge</h1>
+    <h1 data-vi>Actor-critic RL: Cải thiện chính sách bằng thử nghiệm và một giám khảo học được</h1>
+
+    <p class="post-excerpt-lead" data-en>Imitation can only copy the demonstrator. Reinforcement learning improves on it from reward, but raw trial and error is noisy. A critic learns how good states are, the actor follows what beat the critic's expectation, and PPO keeps each update small. Discount, TD error and the PPO clip worked by hand.</p>
+    <p class="post-excerpt-lead" data-vi>Bắt chước chỉ chép lại được người làm mẫu. Học tăng cường cải thiện từ phần thưởng, nhưng thử và sai thuần túy thì nhiễu. Một critic học xem trạng thái tốt tới đâu, actor đi theo những gì vượt kỳ vọng của critic, và PPO giữ mỗi lần cập nhật nhỏ. Tính tay chiết khấu, sai số TD và phép kẹp của PPO.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Reinforcement Learning</span><span class="pill">Actor-Critic</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> PPO, <a href="https://arxiv.org/abs/1707.06347">arXiv 1707.06347</a> · 07/2017. Soft Actor-Critic, <a href="https://arxiv.org/abs/1801.01290">arXiv 1801.01290</a> · 01/2018</p>
+<p><strong>PROBLEM</strong> A policy trained by imitation can at best match its demonstrations and keeps repeating the same failures at contact. To do better it must learn from the <em>results</em> of its own actions, measured by a reward.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Plain policy gradient uses the whole noisy return of an episode as its learning signal, and "standard policy gradient methods perform one gradient update per data sample" (PPO paper). Deep RL in general suffered from "very high sample complexity and brittle convergence properties" (SAC paper).</p>
+<p><strong>IDEA</strong> Learn two networks. The <em>critic</em> estimates how much future reward to expect from a state (or a state and action). The <em>actor</em>, the policy, is pushed toward actions that did better than the critic expected. PPO limits how far one update can move the policy; SAC learns off-policy from a replay buffer and rewards keeping some randomness.</p>
+<p><strong>RESULT</strong> PPO became the default on-policy method, especially in simulation; SAC and TD3-style off-policy methods are common on real robots because they reuse old data. On this site: FIRe trains its residual with PPO in simulation; TORL-VLA and Facet-0 train critics on real rollouts.</p>
+</div>
+<h2>1. The problem: copying cannot beat the teacher</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is a learned baseline: an action is judged against what the critic expected from that state, not against zero." class="dg-natural" width="956" height="290" viewBox="0 0 956 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Imitation only</text><rect class="dg-box" x="172" y="22" width="132" height="38"/><text class="dg-t" x="239" y="45" text-anchor="middle">Demonstrations</text><path class="dg-a" d="M305 41 H337"/><rect class="dg-badbox" x="339" y="14" width="148" height="54"/><text class="dg-t" x="413" y="37" text-anchor="middle">Copy the expert</text><text class="dg-s" x="413" y="53" text-anchor="middle">no notion of better</text><path class="dg-a" d="M486 41 H518"/><rect class="dg-box" x="520" y="22" width="96" height="38"/><text class="dg-t" x="568" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="172.4" y="86">✗ capped at the demonstrator, repeats failures</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Plain policy gradient</text><rect class="dg-box" x="172" y="120" width="178" height="38"/><text class="dg-t" x="261" y="143" text-anchor="middle">Whole-episode return</text><path class="dg-a" d="M350 139 H382"/><rect class="dg-badbox" x="384" y="112" width="160" height="54"/><text class="dg-t" x="465" y="135" text-anchor="middle">Noisy signal</text><text class="dg-s" x="465" y="151" text-anchor="middle">one update per sample</text><path class="dg-a" d="M545 139 H577"/><rect class="dg-box" x="579" y="120" width="96" height="38"/><text class="dg-t" x="627" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="172.4" y="184">✗ slow, unstable</text><text class="dg-lab dg-green" x="14" y="234">Actor-critic</text><rect class="dg-box" x="172" y="211" width="224" height="38"/><text class="dg-t" x="284" y="234" text-anchor="middle">Reward + critic's estimate</text><path class="dg-a" d="M396 230 H428"/><rect class="dg-key" x="430" y="211" width="269" height="38"/><text class="dg-t" x="565" y="234" text-anchor="middle">Advantage: better than expected?</text><path class="dg-a" d="M699 230 H731"/><rect class="dg-box" x="733" y="211" width="208" height="38"/><text class="dg-t" x="837" y="234" text-anchor="middle">Actor update, kept small</text><text class="dg-note dg-green" x="172.4" y="268">✓ learns from outcomes, stably</text></svg><figcaption>The change is a learned baseline: an action is judged against what the critic expected from that state, not against zero.</figcaption></figure>
+<h2>2. The loop</h2>
+<figure class="diagram"><svg role="img" aria-label="The actor acts; the environment returns a reward and a new state; the critic's estimate turns that into a &quot;better or worse than expected&quot; signal that updates the actor." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THE ACTOR ACTS, THE CRITIC JUDGES, THE ENVIRONMENT ANSWERS</text>
+<rect class="dg-ext" x="20" y="110" width="170" height="70"/><text class="dg-t" x="105" y="138" text-anchor="middle">environment</text><text class="dg-s" x="105" y="158" text-anchor="middle">robot + task (or simulator)</text>
+<rect class="dg-key" x="300" y="44" width="200" height="70"/><text class="dg-t" x="400" y="72" text-anchor="middle">actor  pi(a | s)</text><text class="dg-s" x="400" y="92" text-anchor="middle">the policy</text>
+<rect class="dg-key" x="300" y="176" width="200" height="70"/><text class="dg-t" x="400" y="204" text-anchor="middle">critic  V(s) or Q(s, a)</text><text class="dg-s" x="400" y="224" text-anchor="middle">expected future reward</text>
+<path class="dg-a" d="M105 110 V79 H300"/><text class="dg-s" x="115" y="72">state s</text>
+<path class="dg-a" d="M400 114 V145 H190"/><text class="dg-s" x="250" y="138">action a</text>
+<path class="dg-a" d="M105 180 V211 H300"/><text class="dg-s" x="115" y="230">reward r, next s'</text>
+<rect class="dg-box" x="580" y="176" width="200" height="70"/><text class="dg-t" x="680" y="204" text-anchor="middle">TD error</text><text class="dg-s" x="680" y="224" text-anchor="middle">r + gamma V(s') - V(s)</text>
+<path class="dg-a" d="M500 211 H580"/>
+<rect class="dg-box" x="580" y="44" width="200" height="70"/><text class="dg-t" x="680" y="72" text-anchor="middle">update the actor</text><text class="dg-s" x="680" y="92" text-anchor="middle">more of what beat expectations</text>
+<path class="dg-a" d="M680 176 V114"/><path class="dg-a" d="M580 79 H500"/>
+<rect class="dg-box" x="820" y="110" width="140" height="70"/><text class="dg-t" x="890" y="138" text-anchor="middle">PPO: clip</text><text class="dg-s" x="890" y="158" text-anchor="middle">small steps only</text>
+<path class="dg-ad" d="M780 79 H890 V110"/>
+</svg><figcaption>The actor acts; the environment returns a reward and a new state; the critic's estimate turns that into a "better or worse than expected" signal that updates the actor.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return $G_t$</td>
+<td>discounted sum of future rewards, $\sum_k \gamma^k r_{t+k}$</td>
+</tr>
+<tr>
+<td>Discount $\gamma$</td>
+<td>how much a reward one step later counts, e.g. 0.99</td>
+</tr>
+<tr>
+<td>Value $V(s)$</td>
+<td>expected return from state $s$ under the current policy</td>
+</tr>
+<tr>
+<td>$Q(s, a)$</td>
+<td>expected return after taking action $a$ in $s$</td>
+</tr>
+<tr>
+<td>TD error $\delta$</td>
+<td>$r + \gamma V(s') - V(s)$: what happened minus what was expected</td>
+</tr>
+<tr>
+<td>Advantage</td>
+<td>how much better an action was than average; $\delta$ is a one-step estimate of it</td>
+</tr>
+<tr>
+<td>On-policy (PPO)</td>
+<td>learns from data of the current policy only</td>
+</tr>
+<tr>
+<td>Off-policy (SAC, TD3)</td>
+<td>learns from a replay buffer of older data, more sample-efficient</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Three small calculations that make up one actor-critic update: what a delayed reward is worth, how surprising one step was, and how much PPO lets the policy change.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\gamma$</td>
+<td>discount</td>
+<td>constant</td>
+<td>0.99</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>reward this step</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$V(s),\ V(s')$</td>
+<td>critic's value now and at the next state</td>
+<td>input</td>
+<td>0.70, 0.80</td>
+</tr>
+<tr>
+<td>$\rho$</td>
+<td>new policy probability ÷ old policy probability for the action taken</td>
+<td>input</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>$\epsilon$</td>
+<td>PPO clip range</td>
+<td>constant</td>
+<td>0.2 (the paper's best setting)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$G = \gamma^{k} r_{t+k}, \qquad \delta = r + \gamma V(s') - V(s), \qquad L^{CLIP} = \min\big(\rho A,\ \mathrm{clip}(\rho, 1-\epsilon, 1+\epsilon)\,A\big)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>A success reward of 1 arriving 9 steps from now is worth $0.99^9 = 0.914$ today; 99 steps away, $0.99^{99} = 0.370$.</li>
+<li>TD error: $\delta = 0 + 0.99 \times 0.80 - 0.70 = 0.092$. The step went better than expected; use $A = 0.092$.</li>
+<li>PPO: $\rho A = 1.5 \times 0.092 = 0.138$; clipped $\rho = 1.2$ gives $1.2 \times 0.092 = 0.110$; $L^{CLIP} = \min(0.138, 0.110) = 0.110$.</li>
+</ol>
+<p><strong>Result.</strong> The delayed reward is worth 0.914; the step beat expectations by 0.092; PPO counts the gain as if the probability had risen only 20%, not 50%.</p>
+<p><strong>Why it matters.</strong> The discount is why RL prefers fast success, and why a reward 100 steps away is weak: long contact tasks need denser rewards or a good starting policy. The critic replaces a noisy whole-episode return with a one-step surprise. The clip means that once the action's probability has risen 20%, pushing it further earns nothing in this update, so a lucky batch cannot wreck the policy.</p>
+</div>
+<h2>3. On this site</h2>
+<ul>
+<li><strong><a href="fire.html">FIRe</a>:</strong> PPO in Isaac Lab; the critic sees privileged simulator state the actor does not (an asymmetric actor-critic); the reward is success plus a force term.</li>
+<li><strong><a href="torl-vla.html">TORL-VLA</a>:</strong> online RL on a real robot on top of a frozen force-aware VLA, with two critics, one of which stops bootstrapping across human takeovers.</li>
+<li><strong><a href="facet-0.html">Facet-0</a>:</strong> a distributional critic scores predicted action–wrench pairs from deployment rollouts; a small local actor is trained TD3-style with a behaviour-cloning anchor.</li>
+<li><strong>Why most robot RL starts from a policy:</strong> with a reward only at success, random exploration on a real arm rarely reaches it. Starting from a BC policy or a VLA (<a href="residual-policy.html">residual policy</a>) makes the first successes happen.</li>
+</ul>
+<p><strong>Carry forward:</strong> this completes the learning tools. Applying them to contact needs to know what force sensors measure: <a href="force-tactile-sensing.html">force and tactile sensing</a>.</p>
+<p><strong>Check question:</strong> $r = 1$ (the task just succeeded), episode ends so $V(s') = 0$, and $V(s) = 0.6$. What is $\delta$? If $\rho = 0.7$ and $\epsilon = 0.2$, what is $L^{CLIP}$?</p>
+<details>
+<summary>Answer</summary>
+<p>$\delta = 1 + 0 - 0.6 = 0.4$. $\rho A = 0.7 \times 0.4 = 0.28$; clipped $\rho = 0.8$ gives $0.32$; $\min(0.28, 0.32) = 0.28$. The clip only limits <em>increases</em> of the objective, so this update is not clipped.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> PPO, <a href="https://arxiv.org/abs/1707.06347">arXiv 1707.06347</a> · 07/2017. Soft Actor-Critic, <a href="https://arxiv.org/abs/1801.01290">arXiv 1801.01290</a> · 01/2018</p>
+<p><strong>VẤN ĐỀ</strong> Chính sách học bằng bắt chước cùng lắm chỉ bằng các demo của nó và cứ lặp lại những thất bại khi tiếp xúc. Muốn tốt hơn, nó phải học từ <em>kết quả</em> hành động của chính mình, đo bằng một phần thưởng.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Policy gradient thuần dùng cả tổng phần thưởng nhiễu của một episode làm tín hiệu học, và "các phương pháp policy gradient chuẩn chỉ cập nhật gradient một lần cho mỗi mẫu dữ liệu" (paper PPO). Deep RL nói chung chịu "độ phức tạp mẫu rất cao và hội tụ dễ gãy" (paper SAC).</p>
+<p><strong>Ý TƯỞNG</strong> Học hai mạng. <em>Critic</em> ước lượng nên kỳ vọng bao nhiêu phần thưởng tương lai từ một trạng thái (hoặc một trạng thái và hành động). <em>Actor</em>, tức chính sách, bị đẩy về phía những hành động làm tốt hơn kỳ vọng của critic. PPO giới hạn mức một lần cập nhật được phép dời chính sách; SAC học off-policy từ một bộ đệm replay và thưởng cho việc giữ một chút ngẫu nhiên.</p>
+<p><strong>KẾT QUẢ</strong> PPO trở thành phương pháp on-policy mặc định, nhất là trong mô phỏng; SAC và các phương pháp off-policy kiểu TD3 phổ biến trên robot thật vì chúng tái dùng dữ liệu cũ. Trên trang này: FIRe huấn luyện residual của nó bằng PPO trong mô phỏng; TORL-VLA và Facet-0 huấn luyện critic trên các lượt chạy thật.</p>
+</div>
+<h2>1. Vấn đề: chép lại thì không vượt được thầy</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là một mốc so sánh học được: một hành động được đánh giá so với điều critic kỳ vọng từ trạng thái đó, chứ không so với số 0." class="dg-natural" width="1016" height="290" viewBox="0 0 1016 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Chỉ bắt chước</text><rect class="dg-box" x="172" y="22" width="96" height="38"/><text class="dg-t" x="220" y="45" text-anchor="middle">Demo</text><path class="dg-a" d="M268 41 H300"/><rect class="dg-badbox" x="302" y="14" width="192" height="54"/><text class="dg-t" x="399" y="37" text-anchor="middle">Chép chuyên gia</text><text class="dg-s" x="399" y="53" text-anchor="middle">không có khái niệm tốt hơn</text><path class="dg-a" d="M495 41 H527"/><rect class="dg-box" x="529" y="22" width="102" height="38"/><text class="dg-t" x="580" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="172.4" y="86">✗ dừng ở mức người làm mẫu, lặp lại thất bại</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Policy gradient thuần</text><rect class="dg-box" x="172" y="120" width="231" height="38"/><text class="dg-t" x="288" y="143" text-anchor="middle">Tổng phần thưởng cả episode</text><path class="dg-a" d="M404 139 H436"/><rect class="dg-badbox" x="438" y="112" width="180" height="54"/><text class="dg-t" x="527" y="135" text-anchor="middle">Tín hiệu nhiễu</text><text class="dg-s" x="527" y="151" text-anchor="middle">mỗi mẫu một lần cập nhật</text><path class="dg-a" d="M617 139 H649"/><rect class="dg-box" x="651" y="120" width="102" height="38"/><text class="dg-t" x="702" y="143" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="172.4" y="184">✗ chậm, bất ổn</text><text class="dg-lab dg-green" x="14" y="234">Actor-critic</text><rect class="dg-box" x="172" y="211" width="284" height="38"/><text class="dg-t" x="315" y="234" text-anchor="middle">Phần thưởng + ước lượng của critic</text><path class="dg-a" d="M457 230 H489"/><rect class="dg-key" x="491" y="211" width="277" height="38"/><text class="dg-t" x="629" y="234" text-anchor="middle">Advantage: tốt hơn kỳ vọng không?</text><path class="dg-a" d="M768 230 H800"/><rect class="dg-box" x="802" y="211" width="201" height="38"/><text class="dg-t" x="902" y="234" text-anchor="middle">Cập nhật actor, giữ nhỏ</text><text class="dg-note dg-green" x="172.4" y="268">✓ học từ kết quả, ổn định</text></svg><figcaption>Thay đổi là một mốc so sánh học được: một hành động được đánh giá so với điều critic kỳ vọng từ trạng thái đó, chứ không so với số 0.</figcaption></figure>
+<h2>2. Vòng lặp</h2>
+<figure class="diagram"><svg role="img" aria-label="Actor hành động; môi trường trả về phần thưởng và trạng thái mới; ước lượng của critic biến điều đó thành tín hiệu &quot;tốt hơn hay tệ hơn kỳ vọng&quot; để cập nhật actor." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THE ACTOR ACTS, THE CRITIC JUDGES, THE ENVIRONMENT ANSWERS</text>
+<rect class="dg-ext" x="20" y="110" width="170" height="70"/><text class="dg-t" x="105" y="138" text-anchor="middle">environment</text><text class="dg-s" x="105" y="158" text-anchor="middle">robot + task (or simulator)</text>
+<rect class="dg-key" x="300" y="44" width="200" height="70"/><text class="dg-t" x="400" y="72" text-anchor="middle">actor  pi(a | s)</text><text class="dg-s" x="400" y="92" text-anchor="middle">the policy</text>
+<rect class="dg-key" x="300" y="176" width="200" height="70"/><text class="dg-t" x="400" y="204" text-anchor="middle">critic  V(s) or Q(s, a)</text><text class="dg-s" x="400" y="224" text-anchor="middle">expected future reward</text>
+<path class="dg-a" d="M105 110 V79 H300"/><text class="dg-s" x="115" y="72">state s</text>
+<path class="dg-a" d="M400 114 V145 H190"/><text class="dg-s" x="250" y="138">action a</text>
+<path class="dg-a" d="M105 180 V211 H300"/><text class="dg-s" x="115" y="230">reward r, next s'</text>
+<rect class="dg-box" x="580" y="176" width="200" height="70"/><text class="dg-t" x="680" y="204" text-anchor="middle">TD error</text><text class="dg-s" x="680" y="224" text-anchor="middle">r + gamma V(s') - V(s)</text>
+<path class="dg-a" d="M500 211 H580"/>
+<rect class="dg-box" x="580" y="44" width="200" height="70"/><text class="dg-t" x="680" y="72" text-anchor="middle">update the actor</text><text class="dg-s" x="680" y="92" text-anchor="middle">more of what beat expectations</text>
+<path class="dg-a" d="M680 176 V114"/><path class="dg-a" d="M580 79 H500"/>
+<rect class="dg-box" x="820" y="110" width="140" height="70"/><text class="dg-t" x="890" y="138" text-anchor="middle">PPO: clip</text><text class="dg-s" x="890" y="158" text-anchor="middle">small steps only</text>
+<path class="dg-ad" d="M780 79 H890 V110"/>
+</svg><figcaption>Actor hành động; môi trường trả về phần thưởng và trạng thái mới; ước lượng của critic biến điều đó thành tín hiệu "tốt hơn hay tệ hơn kỳ vọng" để cập nhật actor.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return $G_t$</td>
+<td>tổng phần thưởng tương lai có chiết khấu, $\sum_k \gamma^k r_{t+k}$</td>
+</tr>
+<tr>
+<td>Chiết khấu $\gamma$</td>
+<td>phần thưởng đến muộn một bước được tính bao nhiêu, ví dụ 0,99</td>
+</tr>
+<tr>
+<td>Giá trị $V(s)$</td>
+<td>return kỳ vọng từ trạng thái $s$ dưới chính sách hiện tại</td>
+</tr>
+<tr>
+<td>$Q(s, a)$</td>
+<td>return kỳ vọng sau khi làm hành động $a$ ở $s$</td>
+</tr>
+<tr>
+<td>Sai số TD $\delta$</td>
+<td>$r + \gamma V(s') - V(s)$: điều đã xảy ra trừ điều được kỳ vọng</td>
+</tr>
+<tr>
+<td>Advantage</td>
+<td>một hành động tốt hơn mức trung bình bao nhiêu; $\delta$ là ước lượng một bước của nó</td>
+</tr>
+<tr>
+<td>On-policy (PPO)</td>
+<td>chỉ học từ dữ liệu của chính sách hiện tại</td>
+</tr>
+<tr>
+<td>Off-policy (SAC, TD3)</td>
+<td>học từ bộ đệm replay chứa dữ liệu cũ hơn, tiết kiệm mẫu hơn</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Ba phép tính nhỏ tạo nên một lần cập nhật actor-critic: một phần thưởng đến muộn đáng giá bao nhiêu, một bước gây bất ngờ tới đâu, và PPO cho chính sách thay đổi bao nhiêu.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\gamma$</td>
+<td>chiết khấu</td>
+<td>hằng số</td>
+<td>0,99</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>phần thưởng bước này</td>
+<td>input</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$V(s),\ V(s')$</td>
+<td>giá trị critic hiện tại và ở trạng thái kế</td>
+<td>input</td>
+<td>0,70; 0,80</td>
+</tr>
+<tr>
+<td>$\rho$</td>
+<td>xác suất của chính sách mới ÷ xác suất của chính sách cũ cho hành động đã làm</td>
+<td>input</td>
+<td>1,5</td>
+</tr>
+<tr>
+<td>$\epsilon$</td>
+<td>khoảng kẹp của PPO</td>
+<td>hằng số</td>
+<td>0,2 (thiết lập tốt nhất của paper)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$G = \gamma^{k} r_{t+k}, \qquad \delta = r + \gamma V(s') - V(s), \qquad L^{CLIP} = \min\big(\rho A,\ \mathrm{clip}(\rho, 1-\epsilon, 1+\epsilon)\,A\big)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Phần thưởng thành công 1 đến sau 9 bước đáng giá $0{,}99^9 = 0{,}914$ ở hiện tại; cách 99 bước thì $0{,}99^{99} = 0{,}370$.</li>
+<li>Sai số TD: $\delta = 0 + 0{,}99 \times 0{,}80 - 0{,}70 = 0{,}092$. Bước này diễn ra tốt hơn kỳ vọng; dùng $A = 0{,}092$.</li>
+<li>PPO: $\rho A = 1{,}5 \times 0{,}092 = 0{,}138$; kẹp $\rho = 1{,}2$ cho $1{,}2 \times 0{,}092 = 0{,}110$; $L^{CLIP} = \min(0{,}138;\ 0{,}110) = 0{,}110$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Phần thưởng đến muộn đáng giá 0,914; bước này vượt kỳ vọng 0,092; PPO tính phần lợi như thể xác suất chỉ tăng 20% chứ không phải 50%.</p>
+<p><strong>Ý nghĩa.</strong> Chiết khấu là lý do RL thích thành công nhanh, và vì sao một phần thưởng cách 100 bước thì yếu: tác vụ tiếp xúc dài cần phần thưởng dày hơn hoặc một chính sách khởi đầu tốt. Critic thay một tổng phần thưởng nhiễu của cả episode bằng một độ bất ngờ một bước. Phép kẹp có nghĩa là khi xác suất của hành động đã tăng 20%, đẩy thêm nữa không được lợi gì trong lần cập nhật này, nên một batch may mắn không thể phá hỏng chính sách.</p>
+</div>
+<h2>3. Trên trang này</h2>
+<ul>
+<li><strong><a href="fire.html">FIRe</a>:</strong> PPO trong Isaac Lab; critic thấy trạng thái đặc quyền của mô phỏng mà actor không thấy (actor-critic bất đối xứng); phần thưởng là thành công cộng một số hạng lực.</li>
+<li><strong><a href="torl-vla.html">TORL-VLA</a>:</strong> RL online trên robot thật, chồng lên một VLA nhận biết lực đã đóng băng, với hai critic, một trong số đó dừng bootstrap qua các lần người tiếp quản.</li>
+<li><strong><a href="facet-0.html">Facet-0</a>:</strong> một critic phân phối chấm điểm các cặp hành động–wrench dự đoán từ các lượt triển khai; một actor cục bộ nhỏ được huấn luyện kiểu TD3 với một mỏ neo behaviour cloning.</li>
+<li><strong>Vì sao phần lớn RL cho robot bắt đầu từ một chính sách:</strong> khi chỉ có phần thưởng lúc thành công, khám phá ngẫu nhiên trên cánh tay thật hiếm khi chạm tới nó. Bắt đầu từ một chính sách BC hay một VLA (<a href="residual-policy.html">residual policy</a>) giúp những lần thành công đầu tiên xảy ra.</li>
+</ul>
+<p><strong>Mang theo:</strong> đến đây là đủ bộ công cụ học. Áp chúng vào tiếp xúc thì cần biết cảm biến lực đo được gì: <a href="force-tactile-sensing.html">cảm biến lực và xúc giác</a>.</p>
+<p><strong>Câu kiểm tra:</strong> $r = 1$ (tác vụ vừa thành công), episode kết thúc nên $V(s') = 0$, và $V(s) = 0{,}6$. $\delta$ bằng bao nhiêu? Nếu $\rho = 0{,}7$ và $\epsilon = 0{,}2$ thì $L^{CLIP}$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\delta = 1 + 0 - 0{,}6 = 0{,}4$. $\rho A = 0{,}7 \times 0{,}4 = 0{,}28$; kẹp $\rho = 0{,}8$ cho $0{,}32$; $\min(0{,}28;\ 0{,}32) = 0{,}28$. Phép kẹp chỉ chặn việc <em>tăng</em> mục tiêu, nên lần cập nhật này không bị kẹp.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The same motion can be written as joint angles or a gripper pose, as a target or a step, with rotation in Euler angles, quaternions or six numbers. These choices decide what a network can learn. Two worked examples: the Euler jump at 180°, and normalising an action.">
+<title>Action Spaces: Joints or Pose, Absolute or Delta, and How to Write a Rotation · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Action Spaces: Joints or Pose, Absolute or Delta, and How to Write a Rotation">
+<meta property="og:description" content="The same motion can be written as joint angles or a gripper pose, as a target or a step, with rotation in Euler angles, quaternions or six numbers. These choices decide what a network can learn. Two worked examples: the Euler jump at 180°, and normalising an action.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Action Spaces: Joints or Pose, Absolute or Delta, and How to Write a Rotation</h1>
+    <h1 data-vi>Không gian hành động: Khớp hay pose, tuyệt đối hay delta, và cách viết một phép quay</h1>
+
+    <p class="post-excerpt-lead" data-en>The same motion can be written as joint angles or a gripper pose, as a target or a step, with rotation in Euler angles, quaternions or six numbers. These choices decide what a network can learn. Two worked examples: the Euler jump at 180°, and normalising an action.</p>
+    <p class="post-excerpt-lead" data-vi>Cùng một chuyển động có thể viết bằng góc khớp hay pose tay kẹp, bằng đích đến hay bước dịch, với phép quay bằng góc Euler, quaternion hay sáu con số. Những lựa chọn này quyết định mạng học được gì. Hai ví dụ tính tay: cú nhảy của góc Euler ở 180°, và chuẩn hóa một hành động.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Action</span><span class="pill">Rotation</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>CONCEPT</strong> Action spaces. Rotation result from Zhou et al., <em>On the Continuity of Rotation Representations in Neural Networks</em>, <a href="https://arxiv.org/abs/1812.07035">arXiv 1812.07035</a> · 12/2018. Position-vs-velocity result from <a href="diffusion-policy.html">Diffusion Policy</a> · 03/2023</p>
+<p><strong>PROBLEM</strong> A policy outputs numbers; the robot needs to know what they mean. The same motion can be written in several ways, and a network learns some of them much better than others.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Rotations as Euler angles or quaternions: Zhou et al. prove that every representation of 3D rotations in four or fewer numbers is discontinuous, which makes them "difficult for neural networks to learn". Velocity or delta commands: most behavior-cloning work used them, but Diffusion Policy found position commands "consistently" better for its policies. Mixing datasets with different conventions silently corrupts training.</p>
+<p><strong>IDEA</strong> Make four choices explicitly and keep them identical across the data: what is commanded (joints or pose), absolute or delta, how rotation is encoded, and in which frame and scale.</p>
+<p><strong>RESULT</strong> No single best answer. VLAs on this site use joint or pose targets in chunks, and normalise each dimension with dataset statistics.</p>
+</div>
+<h2>1. The problem: the same motion, many vectors</h2>
+<figure class="diagram flow"><svg role="img" aria-label="A network fits smooth functions best, so the action format should make nearby motions have nearby numbers." class="dg-natural" width="960" height="276" viewBox="0 0 960 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Euler angles</text><rect class="dg-box" x="198" y="22" width="155" height="38"/><text class="dg-t" x="276" y="45" text-anchor="middle">Yaw 179° to −179°</text><path class="dg-a" d="M353 41 H385"/><rect class="dg-badbox" x="387" y="14" width="178" height="54"/><text class="dg-t" x="476" y="37" text-anchor="middle">Number jumps by 358°</text><text class="dg-s" x="476" y="53" text-anchor="middle">a 2° turn</text><path class="dg-a" d="M565 41 H597"/><rect class="dg-box" x="599" y="22" width="96" height="38"/><text class="dg-t" x="647" y="45" text-anchor="middle">Network</text><text class="dg-note dg-red" x="198.0" y="86">✗ learns a cliff that is not there</text><text class="dg-lab dg-red" x="14" y="130">Before</text><text class="dg-lab dg-red" x="14" y="144">Deltas executed open-loop</text><rect class="dg-box" x="198" y="113" width="155" height="38"/><text class="dg-t" x="276" y="136" text-anchor="middle">Small step errors</text><path class="dg-a" d="M353 132 H385"/><rect class="dg-badbox" x="387" y="113" width="186" height="38"/><text class="dg-t" x="480" y="136" text-anchor="middle">Add up over the chunk</text><path class="dg-a" d="M573 132 H605"/><rect class="dg-box" x="607" y="113" width="96" height="38"/><text class="dg-t" x="655" y="136" text-anchor="middle">Drift</text><text class="dg-note dg-red" x="198.0" y="170">✗ error grows with chunk length</text><text class="dg-lab dg-green" x="14" y="220">Explicit convention</text><rect class="dg-box" x="198" y="197" width="269" height="38"/><text class="dg-t" x="333" y="220" text-anchor="middle">Joints or pose, absolute targets</text><path class="dg-a" d="M467 216 H499"/><rect class="dg-key" x="501" y="197" width="315" height="38"/><text class="dg-t" x="659" y="220" text-anchor="middle">Continuous rotation + normalised scale</text><path class="dg-a" d="M816 216 H848"/><rect class="dg-box" x="850" y="197" width="96" height="38"/><text class="dg-t" x="898" y="220" text-anchor="middle">Network</text><text class="dg-note dg-green" x="198.0" y="254">✓ smooth targets, comparable dimensions</text></svg><figcaption>A network fits smooth functions best, so the action format should make nearby motions have nearby numbers.</figcaption></figure>
+<h2>2. The four choices</h2>
+<figure class="diagram"><svg role="img" aria-label="Every action vector hides four decisions. They have to match across all the datasets one model is trained on." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR CHOICES BEHIND ONE ACTION VECTOR</text>
+<rect class="dg-box" x="20" y="44" width="220" height="96"/><text class="dg-t" x="130" y="68" text-anchor="middle">1. What is commanded</text><text class="dg-s" x="130" y="90" text-anchor="middle">joint angles (one per joint)</text><text class="dg-s" x="130" y="106" text-anchor="middle">or gripper pose (x, y, z, rotation)</text><text class="dg-s" x="130" y="122" text-anchor="middle">+ gripper opening</text>
+<rect class="dg-box" x="260" y="44" width="220" height="96"/><text class="dg-t" x="370" y="68" text-anchor="middle">2. Absolute or delta</text><text class="dg-s" x="370" y="90" text-anchor="middle">"go to here"</text><text class="dg-s" x="370" y="106" text-anchor="middle">or "move by this much"</text><text class="dg-s" x="370" y="122" text-anchor="middle">deltas add up their errors</text>
+<rect class="dg-key" x="500" y="44" width="220" height="96"/><text class="dg-t" x="610" y="68" text-anchor="middle">3. Rotation encoding</text><text class="dg-s" x="610" y="90" text-anchor="middle">Euler: jumps at +-180 deg</text><text class="dg-s" x="610" y="106" text-anchor="middle">quaternion: q and -q are equal</text><text class="dg-s" x="610" y="122" text-anchor="middle">6D: continuous</text>
+<rect class="dg-box" x="740" y="44" width="220" height="96"/><text class="dg-t" x="850" y="68" text-anchor="middle">4. Frame and scale</text><text class="dg-s" x="850" y="90" text-anchor="middle">base frame or tool frame</text><text class="dg-s" x="850" y="106" text-anchor="middle">normalise each dimension</text><text class="dg-s" x="850" y="122" text-anchor="middle">to about [-1, 1]</text>
+<rect class="dg-ext" x="260" y="190" width="460" height="56"/><text class="dg-t" x="490" y="214" text-anchor="middle">one action vector a_t, then a chunk a_t ... a_t+H-1</text><text class="dg-s" x="490" y="232" text-anchor="middle">the policy only learns well if every dataset uses the same convention</text>
+<path class="dg-a" d="M130 140 V170 H490 V190"/><path class="dg-a" d="M370 140 V170"/><path class="dg-a" d="M610 140 V170"/><path class="dg-a" d="M850 140 V170 H490"/>
+</svg><figcaption>Every action vector hides four decisions. They have to match across all the datasets one model is trained on.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>Options</th>
+<th>What it costs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is commanded</td>
+<td>joint angles; gripper pose (position + rotation)</td>
+<td>joints are exact for one robot but do not transfer to another arm; poses transfer better but need inverse kinematics</td>
+</tr>
+<tr>
+<td>Absolute or delta</td>
+<td>"go to this pose"; "move by this much"</td>
+<td>deltas are small and centred near zero, but errors add up when a chunk is executed without feedback</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td>Euler angles (3); quaternion (4); axis-angle (3); 6D, the first two columns of the rotation matrix</td>
+<td>Euler jumps at ±180° and has gimbal lock; $q$ and $-q$ are the same rotation; 6D is continuous but needs re-orthogonalising</td>
+</tr>
+<tr>
+<td>Frame and scale</td>
+<td>base frame or tool frame; metres, radians</td>
+<td>dimensions with large ranges dominate the loss unless each is normalised</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card 1: why Euler angles hurt</p>
+<p><strong>What and why.</strong> A gripper turns from yaw 179° to yaw −179°, a 2° turn. Compare how the Euler number and the 6D representation change.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\psi$</td>
+<td>yaw angle about the vertical axis</td>
+<td>input</td>
+<td>179°, then −179°</td>
+</tr>
+<tr>
+<td>$r_1,\ r_2$</td>
+<td>first two columns of the rotation matrix (6D representation)</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (rotation about $z$ only)</p>
+<p>$$r_1 = (\cos\psi,\ \sin\psi,\ 0), \qquad r_2 = (-\sin\psi,\ \cos\psi,\ 0)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Euler: the target changes from 179 to −179, a difference of 358.</li>
+<li>6D at 179°: $r_1 = (-0.9998,\ 0.0175,\ 0)$, $r_2 = (-0.0175,\ -0.9998,\ 0)$.</li>
+<li>6D at −179°: $r_1 = (-0.9998,\ -0.0175,\ 0)$, $r_2 = (0.0175,\ -0.9998,\ 0)$.</li>
+<li>Largest change in any of the six numbers: $0.0175 - (-0.0175) = 0.035$.</li>
+</ol>
+<p><strong>Result.</strong> For the same 2° turn the Euler target moves by 358 and the 6D target by at most 0.035.</p>
+<p><strong>Why it matters.</strong> A regression loss sees the Euler jump as a huge error, and the network has to learn a cliff that does not exist physically. Zhou et al. show the problem is unavoidable with four or fewer numbers and goes away with five or six. Axis-angle and quaternions also have a seam, but it sits at 180° of total rotation, which small per-step deltas rarely reach.</p>
+</div>
+<div class="calc">
+<p>Calculation card 2: normalising one action dimension</p>
+<p><strong>What and why.</strong> Positions in metres, rotations in radians and gripper widths have very different ranges. Mapping each dimension's typical range to $[-1, 1]$ makes them comparable, using percentiles so one outlier does not stretch the scale (as OpenVLA and FAST do).</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_{01},\ q_{99}$</td>
+<td>1st and 99th percentile of this dimension in the data</td>
+<td>statistics</td>
+<td>−0.08 m, 0.12 m</td>
+</tr>
+<tr>
+<td>$a$</td>
+<td>raw action value</td>
+<td>input</td>
+<td>0.03 m</td>
+</tr>
+<tr>
+<td>$\tilde a$</td>
+<td>normalised value</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\tilde a = 2\,\frac{a - q_{01}}{q_{99} - q_{01}} - 1$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$a - q_{01} = 0.03 + 0.08 = 0.11$.</li>
+<li>$q_{99} - q_{01} = 0.20$, so $0.11 / 0.20 = 0.55$.</li>
+<li>$\tilde a = 2 \times 0.55 - 1 = 0.10$.</li>
+</ol>
+<p><strong>Result.</strong> 0.03 m becomes 0.10. The policy predicts 0.10; the robot receives the inverse, 0.03 m.</p>
+<p><strong>Why it matters.</strong> The statistics are part of the model. Deploying with statistics from a different dataset shifts every command, which is why checkpoints ship with their normalisation files (the Facet-0 release includes <code>norm_stats.json</code>).</p>
+</div>
+<h2>3. Absolute or delta, from first principles</h2>
+<p>A delta says "move 0.2 mm". If every step of a 50-step chunk carries a 0.2 mm bias and the chunk runs without looking back, the errors add: $50 \times 0.2 = 10$ mm by the end. An absolute target says "be at this pose"; a 0.2 mm error stays 0.2 mm. Diffusion Policy reports that its policies did better with position commands, against the trend in earlier behavior cloning, and connects this to action chunking: a chunk of positions is a plan, and errors in it do not compound. Deltas still have a place: they are small and centred, which makes them easy to normalise, and they transfer across workspaces where absolute coordinates differ.</p>
+<h2>4. In VLA</h2>
+<ul>
+<li>π0: actions with the same size as the robot's configuration vector (7 numbers for a UR5e arm with gripper), predicted in chunks of 50.</li>
+<li>Facet-0: absolute gripper pose with rotation as a rotation vector (axis-angle), plus gripper.</li>
+<li>FACT: delta base pose plus absolute hand joints, per arm, 62 numbers per step.</li>
+<li>Force papers often add a force target to the action (<a href="survey-force-output.html">Survey 3</a>).</li>
+</ul>
+<p><strong>Carry forward:</strong> whatever its format, the action becomes numbers that the model must read and write alongside text and images. The common currency is the <a href="token.html">token</a>.</p>
+<p><strong>Check question:</strong> With $q_{01} = -0.08$ and $q_{99} = 0.12$, what raw value does the normalised output $\tilde a = -0.5$ correspond to?</p>
+<details>
+<summary>Answer</summary>
+<p>Invert the formula: $a = q_{01} + (\tilde a + 1)(q_{99} - q_{01})/2 = -0.08 + 0.5 \times 0.20 / 2 = -0.08 + 0.05 = -0.03$ m.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>KHÁI NIỆM</strong> Không gian hành động. Kết quả về phép quay từ Zhou và cộng sự, <em>On the Continuity of Rotation Representations in Neural Networks</em>, <a href="https://arxiv.org/abs/1812.07035">arXiv 1812.07035</a> · 12/2018. Kết quả vị trí so với vận tốc từ <a href="diffusion-policy.html">Diffusion Policy</a> · 03/2023</p>
+<p><strong>VẤN ĐỀ</strong> Chính sách xuất ra các con số; robot cần biết chúng nghĩa là gì. Cùng một chuyển động có thể viết theo nhiều cách, và mạng học một số cách tốt hơn hẳn các cách khác.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Phép quay viết bằng góc Euler hay quaternion: Zhou và cộng sự chứng minh mọi cách biểu diễn phép quay 3D bằng bốn số trở xuống đều không liên tục, khiến chúng "khó cho mạng nơ-ron học". Lệnh vận tốc hay delta: phần lớn công trình behavior cloning dùng chúng, nhưng Diffusion Policy thấy lệnh vị trí "luôn" tốt hơn cho các chính sách của nó. Trộn các bộ dữ liệu khác quy ước làm hỏng việc huấn luyện một cách âm thầm.</p>
+<p><strong>Ý TƯỞNG</strong> Đưa ra bốn lựa chọn một cách tường minh và giữ chúng giống nhau trên toàn bộ dữ liệu: điều khiển cái gì (khớp hay pose), tuyệt đối hay delta, mã hóa phép quay ra sao, và theo hệ tọa độ, thang đo nào.</p>
+<p><strong>KẾT QUẢ</strong> Không có một đáp án tốt nhất duy nhất. Các VLA trên trang này dùng đích đến theo khớp hoặc theo pose trong các chunk, và chuẩn hóa từng chiều bằng thống kê của tập dữ liệu.</p>
+</div>
+<h2>1. Vấn đề: cùng một chuyển động, nhiều vector</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Mạng khớp tốt nhất với hàm mượt, nên định dạng hành động phải làm cho các chuyển động gần nhau có các con số gần nhau." class="dg-natural" width="908" height="276" viewBox="0 0 908 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Góc Euler</text><rect class="dg-box" x="153" y="22" width="170" height="38"/><text class="dg-t" x="238" y="45" text-anchor="middle">Yaw 179° sang −179°</text><path class="dg-a" d="M324 41 H356"/><rect class="dg-badbox" x="358" y="14" width="148" height="54"/><text class="dg-t" x="431" y="37" text-anchor="middle">Con số nhảy 358°</text><text class="dg-s" x="431" y="53" text-anchor="middle">cho một cú xoay 2°</text><path class="dg-a" d="M505 41 H537"/><rect class="dg-box" x="539" y="22" width="96" height="38"/><text class="dg-t" x="587" y="45" text-anchor="middle">Mạng</text><text class="dg-note dg-red" x="153.2" y="86">✗ học một vách đá không hề có</text><text class="dg-lab dg-red" x="14" y="130">Trước</text><text class="dg-lab dg-red" x="14" y="144">Delta chạy mở vòng</text><rect class="dg-box" x="153" y="113" width="170" height="38"/><text class="dg-t" x="238" y="136" text-anchor="middle">Sai số nhỏ mỗi bước</text><path class="dg-a" d="M324 132 H356"/><rect class="dg-badbox" x="358" y="113" width="186" height="38"/><text class="dg-t" x="450" y="136" text-anchor="middle">Cộng dồn qua cả chunk</text><path class="dg-a" d="M543 132 H575"/><rect class="dg-box" x="577" y="113" width="96" height="38"/><text class="dg-t" x="625" y="136" text-anchor="middle">Trôi</text><text class="dg-note dg-red" x="153.2" y="170">✗ sai số tăng theo độ dài chunk</text><text class="dg-lab dg-green" x="14" y="220">Quy ước tường minh</text><rect class="dg-box" x="153" y="197" width="254" height="38"/><text class="dg-t" x="280" y="220" text-anchor="middle">Khớp hoặc pose, đích tuyệt đối</text><path class="dg-a" d="M407 216 H439"/><rect class="dg-key" x="441" y="197" width="322" height="38"/><text class="dg-t" x="602" y="220" text-anchor="middle">Phép quay liên tục + thang đo chuẩn hóa</text><path class="dg-a" d="M764 216 H796"/><rect class="dg-box" x="798" y="197" width="96" height="38"/><text class="dg-t" x="846" y="220" text-anchor="middle">Mạng</text><text class="dg-note dg-green" x="153.2" y="254">✓ mục tiêu mượt, các chiều so sánh được</text></svg><figcaption>Mạng khớp tốt nhất với hàm mượt, nên định dạng hành động phải làm cho các chuyển động gần nhau có các con số gần nhau.</figcaption></figure>
+<h2>2. Bốn lựa chọn</h2>
+<figure class="diagram"><svg role="img" aria-label="Mỗi vector hành động giấu bốn quyết định. Chúng phải khớp nhau trên mọi bộ dữ liệu mà một mô hình được huấn luyện." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR CHOICES BEHIND ONE ACTION VECTOR</text>
+<rect class="dg-box" x="20" y="44" width="220" height="96"/><text class="dg-t" x="130" y="68" text-anchor="middle">1. What is commanded</text><text class="dg-s" x="130" y="90" text-anchor="middle">joint angles (one per joint)</text><text class="dg-s" x="130" y="106" text-anchor="middle">or gripper pose (x, y, z, rotation)</text><text class="dg-s" x="130" y="122" text-anchor="middle">+ gripper opening</text>
+<rect class="dg-box" x="260" y="44" width="220" height="96"/><text class="dg-t" x="370" y="68" text-anchor="middle">2. Absolute or delta</text><text class="dg-s" x="370" y="90" text-anchor="middle">"go to here"</text><text class="dg-s" x="370" y="106" text-anchor="middle">or "move by this much"</text><text class="dg-s" x="370" y="122" text-anchor="middle">deltas add up their errors</text>
+<rect class="dg-key" x="500" y="44" width="220" height="96"/><text class="dg-t" x="610" y="68" text-anchor="middle">3. Rotation encoding</text><text class="dg-s" x="610" y="90" text-anchor="middle">Euler: jumps at +-180 deg</text><text class="dg-s" x="610" y="106" text-anchor="middle">quaternion: q and -q are equal</text><text class="dg-s" x="610" y="122" text-anchor="middle">6D: continuous</text>
+<rect class="dg-box" x="740" y="44" width="220" height="96"/><text class="dg-t" x="850" y="68" text-anchor="middle">4. Frame and scale</text><text class="dg-s" x="850" y="90" text-anchor="middle">base frame or tool frame</text><text class="dg-s" x="850" y="106" text-anchor="middle">normalise each dimension</text><text class="dg-s" x="850" y="122" text-anchor="middle">to about [-1, 1]</text>
+<rect class="dg-ext" x="260" y="190" width="460" height="56"/><text class="dg-t" x="490" y="214" text-anchor="middle">one action vector a_t, then a chunk a_t ... a_t+H-1</text><text class="dg-s" x="490" y="232" text-anchor="middle">the policy only learns well if every dataset uses the same convention</text>
+<path class="dg-a" d="M130 140 V170 H490 V190"/><path class="dg-a" d="M370 140 V170"/><path class="dg-a" d="M610 140 V170"/><path class="dg-a" d="M850 140 V170 H490"/>
+</svg><figcaption>Mỗi vector hành động giấu bốn quyết định. Chúng phải khớp nhau trên mọi bộ dữ liệu mà một mô hình được huấn luyện.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>Phương án</th>
+<th>Cái giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Điều khiển cái gì</td>
+<td>góc khớp; pose tay kẹp (vị trí + hướng)</td>
+<td>khớp thì chính xác cho một robot nhưng không chuyển sang cánh tay khác; pose chuyển tốt hơn nhưng cần động học ngược</td>
+</tr>
+<tr>
+<td>Tuyệt đối hay delta</td>
+<td>"tới pose này"; "dời một chừng này"</td>
+<td>delta nhỏ và quanh 0, nhưng sai số cộng dồn khi chạy cả chunk mà không có phản hồi</td>
+</tr>
+<tr>
+<td>Phép quay</td>
+<td>góc Euler (3); quaternion (4); trục-góc (3); 6D, hai cột đầu của ma trận quay</td>
+<td>Euler nhảy ở ±180° và bị gimbal lock; $q$ và $-q$ là cùng một phép quay; 6D liên tục nhưng cần trực chuẩn hóa lại</td>
+</tr>
+<tr>
+<td>Hệ tọa độ và thang đo</td>
+<td>hệ tọa độ đế hay hệ tọa độ dụng cụ; mét, radian</td>
+<td>các chiều có khoảng giá trị lớn sẽ lấn át loss nếu không chuẩn hóa từng chiều</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay 1: vì sao góc Euler gây hại</p>
+<p><strong>Tính gì và vì sao.</strong> Tay kẹp xoay từ yaw 179° sang yaw −179°, một cú xoay 2°. So sánh con số Euler và cách biểu diễn 6D thay đổi ra sao.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\psi$</td>
+<td>góc yaw quanh trục thẳng đứng</td>
+<td>input</td>
+<td>179°, rồi −179°</td>
+</tr>
+<tr>
+<td>$r_1,\ r_2$</td>
+<td>hai cột đầu của ma trận quay (biểu diễn 6D)</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (chỉ quay quanh $z$)</p>
+<p>$$r_1 = (\cos\psi,\ \sin\psi,\ 0), \qquad r_2 = (-\sin\psi,\ \cos\psi,\ 0)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Euler: mục tiêu đổi từ 179 sang −179, chênh 358.</li>
+<li>6D ở 179°: $r_1 = (-0{,}9998;\ 0{,}0175;\ 0)$, $r_2 = (-0{,}0175;\ -0{,}9998;\ 0)$.</li>
+<li>6D ở −179°: $r_1 = (-0{,}9998;\ -0{,}0175;\ 0)$, $r_2 = (0{,}0175;\ -0{,}9998;\ 0)$.</li>
+<li>Thay đổi lớn nhất trong sáu con số: $0{,}0175 - (-0{,}0175) = 0{,}035$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Với cùng cú xoay 2°, mục tiêu Euler dời 358 còn mục tiêu 6D dời nhiều nhất 0,035.</p>
+<p><strong>Ý nghĩa.</strong> Loss hồi quy thấy cú nhảy Euler là một sai số khổng lồ, và mạng phải học một vách đá không có thật về mặt vật lý. Zhou và cộng sự chỉ ra vấn đề này không tránh được với bốn số trở xuống và biến mất với năm hoặc sáu số. Trục-góc và quaternion cũng có một đường nối, nhưng nó nằm ở tổng góc quay 180°, mà các delta nhỏ mỗi bước hiếm khi chạm tới.</p>
+</div>
+<div class="calc">
+<p>Thẻ tính tay 2: chuẩn hóa một chiều hành động</p>
+<p><strong>Tính gì và vì sao.</strong> Vị trí tính bằng mét, phép quay bằng radian và độ mở tay kẹp có khoảng giá trị rất khác nhau. Ánh xạ khoảng điển hình của mỗi chiều về $[-1, 1]$ làm chúng so sánh được, dùng phân vị để một giá trị ngoại lai không kéo giãn thang đo (như OpenVLA và FAST làm).</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_{01},\ q_{99}$</td>
+<td>phân vị 1 và 99 của chiều này trong dữ liệu</td>
+<td>thống kê</td>
+<td>−0,08 m; 0,12 m</td>
+</tr>
+<tr>
+<td>$a$</td>
+<td>giá trị hành động thô</td>
+<td>input</td>
+<td>0,03 m</td>
+</tr>
+<tr>
+<td>$\tilde a$</td>
+<td>giá trị đã chuẩn hóa</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\tilde a = 2\,\frac{a - q_{01}}{q_{99} - q_{01}} - 1$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$a - q_{01} = 0{,}03 + 0{,}08 = 0{,}11$.</li>
+<li>$q_{99} - q_{01} = 0{,}20$, nên $0{,}11 / 0{,}20 = 0{,}55$.</li>
+<li>$\tilde a = 2 \times 0{,}55 - 1 = 0{,}10$.</li>
+</ol>
+<p><strong>Kết quả.</strong> 0,03 m thành 0,10. Chính sách dự đoán 0,10; robot nhận phép nghịch đảo, 0,03 m.</p>
+<p><strong>Ý nghĩa.</strong> Bộ thống kê là một phần của mô hình. Triển khai với thống kê của một bộ dữ liệu khác sẽ làm lệch mọi lệnh, vì thế các checkpoint được phát hành kèm file chuẩn hóa (bản phát hành Facet-0 có <code>norm_stats.json</code>).</p>
+</div>
+<h2>3. Tuyệt đối hay delta, nghĩ từ gốc</h2>
+<p>Một delta nói "dời 0,2 mm". Nếu mỗi bước trong một chunk 50 bước mang độ lệch 0,2 mm và chunk chạy mà không nhìn lại, các sai số cộng lại: $50 \times 0{,}2 = 10$ mm ở cuối. Một đích tuyệt đối nói "ở pose này"; sai số 0,2 mm vẫn là 0,2 mm. Diffusion Policy báo cáo các chính sách của nó tốt hơn với lệnh vị trí, ngược xu hướng behavior cloning trước đó, và gắn điều này với action chunking: một chunk vị trí là một kế hoạch, sai số trong đó không cộng dồn. Delta vẫn có chỗ đứng: chúng nhỏ và quanh 0, dễ chuẩn hóa, và chuyển được giữa các không gian làm việc có tọa độ tuyệt đối khác nhau.</p>
+<h2>4. Trong VLA</h2>
+<ul>
+<li>π0: hành động có cùng kích thước với vector cấu hình của robot (7 số cho một cánh tay UR5e có tay kẹp), dự đoán theo chunk 50 bước.</li>
+<li>Facet-0: pose tay kẹp tuyệt đối với phép quay dạng vector quay (trục-góc), cộng tay kẹp.</li>
+<li>FACT: delta pose đế cộng góc khớp bàn tay tuyệt đối, mỗi tay, 62 số mỗi bước.</li>
+<li>Các bài lực thường thêm một mục tiêu lực vào hành động (<a href="survey-force-output.html">Survey 3</a>).</li>
+</ul>
+<p><strong>Mang theo:</strong> dù định dạng thế nào, hành động cũng thành các con số mà mô hình phải đọc và viết cạnh chữ và ảnh. Đơn vị tiền tệ chung là <a href="token.html">token</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với $q_{01} = -0{,}08$ và $q_{99} = 0{,}12$, đầu ra đã chuẩn hóa $\tilde a = -0{,}5$ ứng với giá trị thô nào?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Đảo công thức: $a = q_{01} + (\tilde a + 1)(q_{99} - q_{01})/2 = -0{,}08 + 0{,}5 \times 0{,}20 / 2 = -0{,}08 + 0{,}05 = -0{,}03$ m.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

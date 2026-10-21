@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Attention: Letting Each Token Look at the Others</h1>
@@ -78,7 +78,7 @@
 <p><strong>PAPER</strong> Bahdanau, Cho, Bengio, <em>Neural Machine Translation by Jointly Learning to Align and Translate</em>, <a href="https://arxiv.org/abs/1409.0473">arXiv 1409.0473</a> · 09/2014</p>
 <p><strong>PROBLEM</strong> To generate each output, a model must find which input pieces matter.</p>
 <p><strong>WHAT FAILED BEFORE</strong> Encoder-decoder RNNs compressed the whole source sentence into one fixed-length vector. The paper argues this is a bottleneck, and quality drops on long sentences.</p>
-<p><strong>IDEA</strong> Keep one vector per input position. For each output, score every position, softmax the scores into weights, and take the weighted sum. The model learns where to look.</p>
+<p><strong>IDEA</strong> Keep one vector per input position. For each output, score every position, softmax the scores into weights, and take the weighted sum. The model learns where to look. (Bahdanau scored with a small neural network, "additive" attention; the query–key–value dot-product form below is the one the Transformer made standard in 2017.)</p>
 <p><strong>RESULT</strong> Better translation on long sentences. The Transformer later made this the only mechanism, with every token attending to every other token (self-attention).</p>
 </div>
 <h2>1. The problem: a fixed-size bottleneck</h2>
@@ -98,7 +98,7 @@
 <path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
 <rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
 <path class="dg-a" d="M750 218 H810"/>
-<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = n² pairs</text>
 </svg><figcaption>Each token makes a query (what it needs), a key (what it offers) and a value (what it carries). Scores come from query·key; softmax gives weights; the output is a weighted mix of values.</figcaption></figure>
 <table>
 <thead>
@@ -126,7 +126,7 @@
 <td>Divide by $\sqrt{d}$</td>
 <td>scores</td>
 <td>scaled scores</td>
-<td>keeps values from growing with $d$</td>
+<td>keeps the spread of scores the same for any $d$</td>
 </tr>
 <tr>
 <td>Softmax</td>
@@ -197,11 +197,11 @@
 <li>Output: $0.670\,[1,0] + 0.330\,[0,1] = [0.670,\ 0.330]$.</li>
 </ol>
 <p><strong>Result.</strong> Token 1 now carries 67% of itself and 33% of token 2. By symmetry, token 2 gets $[0.330, 0.670]$.</p>
-<p><strong>Why it matters.</strong> Both tokens became vectors that contain information from the other. The $\sqrt{d}$ keeps scores from growing as vectors get longer, which would make softmax saturate to a one-hot.</p>
+<p><strong>Why it matters.</strong> Both tokens became vectors that contain information from the other. Why exactly $\sqrt{d}$? If the components of $q$ and $k$ are random with variance 1, their dot product is a sum of $d$ such products, so its variance is $d$ and its typical size is $\sqrt{d}$. With $d = 512$ a typical score is about 22; $e^{22}$ against $e^{0}$ makes softmax a one-hot whose gradient is almost zero. Dividing by $\sqrt{d}$ brings the typical score back to about 1 for any $d$.</p>
 </div>
 <h2>3. Cost and variants</h2>
 <ul>
-<li>$n$ tokens give an $n \times n$ score matrix: $N^2$ pairs. This is the reason ViT cuts images into patches.</li>
+<li>$n$ tokens give an $n \times n$ score matrix: $n^2$ pairs. This is the reason ViT cuts images into patches.</li>
 <li><strong>Self-attention:</strong> $Q$, $K$, $V$ all come from the same sequence (this post).</li>
 <li><strong>Cross-attention:</strong> $Q$ from one sequence, $K, V$ from another (action expert reading the VLM: see <a href="cross-attention.html">cross-attention</a>).</li>
 </ul>
@@ -217,7 +217,7 @@
 <p><strong>PAPER</strong> Bahdanau, Cho, Bengio, <em>Neural Machine Translation by Jointly Learning to Align and Translate</em>, <a href="https://arxiv.org/abs/1409.0473">arXiv 1409.0473</a> · 09/2014</p>
 <p><strong>VẤN ĐỀ</strong> Để sinh mỗi đầu ra, mô hình phải tìm ra mẩu đầu vào nào quan trọng.</p>
 <p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> RNN encoder-decoder nén cả câu nguồn vào một vector độ dài cố định. Paper cho rằng đó là nút thắt cổ chai, và chất lượng giảm trên câu dài.</p>
-<p><strong>Ý TƯỞNG</strong> Giữ một vector cho mỗi vị trí đầu vào. Với mỗi đầu ra, chấm điểm mọi vị trí, softmax thành trọng số rồi lấy tổng có trọng số. Mô hình tự học nên nhìn vào đâu.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ một vector cho mỗi vị trí đầu vào. Với mỗi đầu ra, chấm điểm mọi vị trí, softmax thành trọng số rồi lấy tổng có trọng số. Mô hình tự học nên nhìn vào đâu. (Bahdanau chấm điểm bằng một mạng nơ-ron nhỏ, gọi là attention "cộng"; dạng tích vô hướng query–key–value bên dưới là dạng mà Transformer biến thành chuẩn từ 2017.)</p>
 <p><strong>KẾT QUẢ</strong> Dịch tốt hơn trên câu dài. Về sau Transformer biến đây thành cơ chế duy nhất, mỗi token chú ý đến mọi token khác (self-attention).</p>
 </div>
 <h2>1. Vấn đề: nút thắt kích thước cố định</h2>
@@ -237,7 +237,7 @@
 <path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
 <rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
 <path class="dg-a" d="M750 218 H810"/>
-<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = n² pairs</text>
 </svg><figcaption>Mỗi token tạo ra một query (cần gì), một key (có gì) và một value (mang gì). Điểm lấy từ query·key; softmax cho trọng số; đầu ra là tổ hợp có trọng số của các value.</figcaption></figure>
 <table>
 <thead>
@@ -265,7 +265,7 @@
 <td>Chia $\sqrt{d}$</td>
 <td>điểm</td>
 <td>điểm đã co</td>
-<td>không cho giá trị lớn theo $d$</td>
+<td>giữ độ dao động của điểm như nhau với mọi $d$</td>
 </tr>
 <tr>
 <td>Softmax</td>
@@ -336,11 +336,11 @@
 <li>Đầu ra: $0{,}670\,[1,0] + 0{,}330\,[0,1] = [0{,}670,\ 0{,}330]$.</li>
 </ol>
 <p><strong>Kết quả.</strong> Token 1 giờ mang 67% chính nó và 33% token 2. Theo đối xứng, token 2 ra $[0{,}330, 0{,}670]$.</p>
-<p><strong>Ý nghĩa.</strong> Cả hai token thành vector chứa thông tin của token kia. Chia $\sqrt{d}$ để điểm không phình ra khi vector dài, nếu không softmax sẽ bão hòa thành one-hot.</p>
+<p><strong>Ý nghĩa.</strong> Cả hai token thành vector chứa thông tin của token kia. Vì sao lại đúng là $\sqrt{d}$? Nếu các thành phần của $q$ và $k$ ngẫu nhiên với phương sai 1, tích vô hướng là tổng của $d$ tích như vậy, nên phương sai bằng $d$ và độ lớn điển hình là $\sqrt{d}$. Với $d = 512$, một điểm điển hình khoảng 22; $e^{22}$ so với $e^{0}$ khiến softmax thành one-hot với gradient gần bằng 0. Chia cho $\sqrt{d}$ đưa điểm điển hình về khoảng 1 với mọi $d$.</p>
 </div>
 <h2>3. Chi phí và biến thể</h2>
 <ul>
-<li>$n$ token cho ma trận điểm $n \times n$: $N^2$ cặp. Đây là lý do ViT cắt ảnh thành patch.</li>
+<li>$n$ token cho ma trận điểm $n \times n$: $n^2$ cặp. Đây là lý do ViT cắt ảnh thành patch.</li>
 <li><strong>Self-attention:</strong> $Q$, $K$, $V$ đều từ cùng một chuỗi (bài này).</li>
 <li><strong>Cross-attention:</strong> $Q$ từ chuỗi này, $K, V$ từ chuỗi khác (action expert đọc VLM: xem <a href="cross-attention.html">cross-attention</a>).</li>
 </ul>

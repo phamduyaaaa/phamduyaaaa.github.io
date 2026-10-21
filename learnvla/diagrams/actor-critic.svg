@@ -1,0 +1,15 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THE ACTOR ACTS, THE CRITIC JUDGES, THE ENVIRONMENT ANSWERS</text>
+<rect class="dg-ext" x="20" y="110" width="170" height="70"/><text class="dg-t" x="105" y="138" text-anchor="middle">environment</text><text class="dg-s" x="105" y="158" text-anchor="middle">robot + task (or simulator)</text>
+<rect class="dg-key" x="300" y="44" width="200" height="70"/><text class="dg-t" x="400" y="72" text-anchor="middle">actor  pi(a | s)</text><text class="dg-s" x="400" y="92" text-anchor="middle">the policy</text>
+<rect class="dg-key" x="300" y="176" width="200" height="70"/><text class="dg-t" x="400" y="204" text-anchor="middle">critic  V(s) or Q(s, a)</text><text class="dg-s" x="400" y="224" text-anchor="middle">expected future reward</text>
+<path class="dg-a" d="M105 110 V79 H300"/><text class="dg-s" x="115" y="72">state s</text>
+<path class="dg-a" d="M400 114 V145 H190"/><text class="dg-s" x="250" y="138">action a</text>
+<path class="dg-a" d="M105 180 V211 H300"/><text class="dg-s" x="115" y="230">reward r, next s'</text>
+<rect class="dg-box" x="580" y="176" width="200" height="70"/><text class="dg-t" x="680" y="204" text-anchor="middle">TD error</text><text class="dg-s" x="680" y="224" text-anchor="middle">r + gamma V(s') - V(s)</text>
+<path class="dg-a" d="M500 211 H580"/>
+<rect class="dg-box" x="580" y="44" width="200" height="70"/><text class="dg-t" x="680" y="72" text-anchor="middle">update the actor</text><text class="dg-s" x="680" y="92" text-anchor="middle">more of what beat expectations</text>
+<path class="dg-a" d="M680 176 V114"/><path class="dg-a" d="M580 79 H500"/>
+<rect class="dg-box" x="820" y="110" width="140" height="70"/><text class="dg-t" x="890" y="138" text-anchor="middle">PPO: clip</text><text class="dg-s" x="890" y="158" text-anchor="middle">small steps only</text>
+<path class="dg-ad" d="M780 79 H890 V110"/>
+</svg>

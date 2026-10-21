@@ -1,0 +1,21 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A BATCH OF N PAIRS GIVES N RIGHT ANSWERS AND N x (N - 1) WRONG ONES</text>
+<rect class="dg-ext" x="20" y="60" width="150" height="50"/><text class="dg-t" x="95" y="82" text-anchor="middle">image encoder</text><text class="dg-s" x="95" y="98" text-anchor="middle">e.g. ViT</text>
+<rect class="dg-ext" x="20" y="170" width="150" height="50"/><text class="dg-t" x="95" y="192" text-anchor="middle">text encoder</text><text class="dg-s" x="95" y="208" text-anchor="middle">caption</text>
+<text class="dg-s" x="300" y="56" text-anchor="middle">"red cup"</text><text class="dg-s" x="380" y="56" text-anchor="middle">"blue plate"</text><text class="dg-s" x="460" y="56" text-anchor="middle">"spoon"</text>
+<text class="dg-s" x="250" y="94" text-anchor="end">cup photo</text><text class="dg-s" x="250" y="144" text-anchor="end">plate photo</text><text class="dg-s" x="250" y="194" text-anchor="end">spoon photo</text>
+<rect class="dg-key" x="260" y="70" width="80" height="44"/><text class="dg-t" x="300" y="97" text-anchor="middle">0.9</text>
+<rect class="dg-box" x="340" y="70" width="80" height="44"/><text class="dg-t" x="380" y="97" text-anchor="middle">0.3</text>
+<rect class="dg-box" x="420" y="70" width="80" height="44"/><text class="dg-t" x="460" y="97" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="260" y="120" width="80" height="44"/><text class="dg-t" x="300" y="147" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="340" y="120" width="80" height="44"/><text class="dg-t" x="380" y="147" text-anchor="middle">0.8</text>
+<rect class="dg-box" x="420" y="120" width="80" height="44"/><text class="dg-t" x="460" y="147" text-anchor="middle">0.0</text>
+<rect class="dg-box" x="260" y="170" width="80" height="44"/><text class="dg-t" x="300" y="197" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="340" y="170" width="80" height="44"/><text class="dg-t" x="380" y="197" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="420" y="170" width="80" height="44"/><text class="dg-t" x="460" y="197" text-anchor="middle">0.7</text>
+<text class="dg-s" x="380" y="240" text-anchor="middle">cosine similarity of image i and caption j</text>
+<rect class="dg-box" x="580" y="70" width="380" height="64"/><text class="dg-t" x="770" y="96" text-anchor="middle">InfoNCE / CLIP: softmax along each row</text><text class="dg-s" x="770" y="116" text-anchor="middle">the diagonal must win against the rest of its row</text>
+<rect class="dg-box" x="580" y="150" width="380" height="64"/><text class="dg-t" x="770" y="176" text-anchor="middle">SigLIP: a yes/no sigmoid for every cell</text><text class="dg-s" x="770" y="196" text-anchor="middle">diagonal = yes, everything else = no</text>
+<path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
+<text class="dg-note" x="20" y="280">no class labels: the caption that came with the image is the label, and the other captions in the batch are the counter-examples</text>
+</svg>

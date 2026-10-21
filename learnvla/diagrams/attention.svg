@@ -12,5 +12,5 @@
 <path class="dg-a" d="M685 126 V190"/><path class="dg-a" d="M330 226 H620"/>
 <rect class="dg-box" x="810" y="190" width="140" height="56"/><text class="dg-t" x="880" y="212" text-anchor="middle">Output</text><text class="dg-s" x="880" y="228" text-anchor="middle">n × d, context-aware</text>
 <path class="dg-a" d="M750 218 H810"/>
-<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = N² pairs</text>
+<text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = n² pairs</text>
 </svg>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A language model reads words; a vision encoder produces vectors in a different space. A small projector maps image vectors into the language model's input space, and the pair becomes a vision-language model. Worked: the size of PaliGemma's projector and a VLA's token budget.">
+<title>VLM: Giving a Language Model Eyes · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="VLM: Giving a Language Model Eyes">
+<meta property="og:description" content="A language model reads words; a vision encoder produces vectors in a different space. A small projector maps image vectors into the language model's input space, and the pair becomes a vision-language model. Worked: the size of PaliGemma's projector and a VLA's token budget.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>VLM: Giving a Language Model Eyes</h1>
+    <h1 data-vi>VLM: Cho mô hình ngôn ngữ đôi mắt</h1>
+
+    <p class="post-excerpt-lead" data-en>A language model reads words; a vision encoder produces vectors in a different space. A small projector maps image vectors into the language model's input space, and the pair becomes a vision-language model. Worked: the size of PaliGemma's projector and a VLA's token budget.</p>
+    <p class="post-excerpt-lead" data-vi>Mô hình ngôn ngữ đọc chữ; bộ mã hóa ảnh sinh vector trong một không gian khác. Một bộ chiếu nhỏ ánh xạ vector ảnh vào không gian đầu vào của mô hình ngôn ngữ, và cả hai thành mô hình thị giác-ngôn ngữ. Tính tay: kích thước bộ chiếu của PaliGemma và ngân sách token của một VLA.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">VLM</span><span class="pill">PaliGemma</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> LLaVA, <em>Visual Instruction Tuning</em>, <a href="https://arxiv.org/abs/2304.08485">arXiv 2304.08485</a> · 04/2023. PaliGemma, <a href="https://arxiv.org/abs/2407.07726">arXiv 2407.07726</a> · 07/2024</p>
+<p><strong>PROBLEM</strong> "Pick up the red cup on the left" needs both seeing (which cup, where) and language (what to do with it). A language model cannot see; an image encoder cannot follow instructions.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Language models were text-only. Contrastive encoders such as CLIP match a whole image to a whole caption but cannot answer questions or reason about the scene. Earlier systems glued separate models together by hand.</p>
+<p><strong>IDEA</strong> Turn the vision encoder's patch vectors into vectors the language model accepts as if they were words, with a small projector, and let the language model read image tokens and text tokens in one sequence. Train the projector first, then fine-tune on instructions.</p>
+<p><strong>RESULT</strong> LLaVA reached an 85.1% relative score against GPT-4 on its synthetic instruction benchmark. PaliGemma (SigLIP-So400m + Gemma-2B, 3B parameters) is the base of π0. A VLA is a VLM whose output is extended to actions.</p>
+</div>
+<h2>1. The problem: two models that speak different languages</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is a translation layer: image vectors are moved into the space where the language model's word vectors live." class="dg-natural" width="844" height="276" viewBox="0 0 844 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Before</text><text class="dg-lab dg-red" x="14" y="46">Text-only LLM</text><rect class="dg-box" x="160" y="15" width="110" height="38"/><text class="dg-t" x="214" y="38" text-anchor="middle">Instruction</text><path class="dg-a" d="M269 34 H301"/><rect class="dg-badbox" x="303" y="15" width="193" height="38"/><text class="dg-t" x="400" y="38" text-anchor="middle">No access to the image</text><path class="dg-a" d="M496 34 H528"/><rect class="dg-box" x="530" y="15" width="96" height="38"/><text class="dg-t" x="578" y="38" text-anchor="middle">Text</text><text class="dg-note dg-red" x="159.60000000000002" y="72">✗ cannot tell which cup</text><text class="dg-lab dg-red" x="14" y="116">Before</text><text class="dg-lab dg-red" x="14" y="130">Contrastive encoder</text><rect class="dg-box" x="160" y="99" width="140" height="38"/><text class="dg-t" x="230" y="122" text-anchor="middle">Image + caption</text><path class="dg-a" d="M300 118 H332"/><rect class="dg-badbox" x="334" y="99" width="178" height="38"/><text class="dg-t" x="423" y="122" text-anchor="middle">One similarity score</text><path class="dg-a" d="M512 118 H544"/><rect class="dg-box" x="546" y="99" width="148" height="38"/><text class="dg-t" x="619" y="122" text-anchor="middle">Match / no match</text><text class="dg-note dg-red" x="159.60000000000002" y="156">✗ sees, but cannot follow or reason</text><text class="dg-lab dg-green" x="14" y="213">VLM</text><rect class="dg-box" x="160" y="190" width="96" height="38"/><text class="dg-t" x="208" y="213" text-anchor="middle">Image</text><path class="dg-a" d="M256 209 H288"/><rect class="dg-key" x="290" y="182" width="170" height="54"/><text class="dg-t" x="375" y="205" text-anchor="middle">Encoder + projector</text><text class="dg-s" x="375" y="221" text-anchor="middle">image tokens</text><path class="dg-a" d="M460 209 H492"/><rect class="dg-key" x="494" y="182" width="154" height="54"/><text class="dg-t" x="571" y="205" text-anchor="middle">Language model</text><text class="dg-s" x="571" y="221" text-anchor="middle">reads image and text</text><path class="dg-a" d="M648 209 H680"/><rect class="dg-box" x="682" y="190" width="148" height="38"/><text class="dg-t" x="756" y="213" text-anchor="middle">Answer or action</text><text class="dg-note dg-green" x="159.60000000000002" y="254">✓ one sequence, one model</text></svg><figcaption>The change is a translation layer: image vectors are moved into the space where the language model's word vectors live.</figcaption></figure>
+<h2>2. The parts</h2>
+<figure class="diagram"><svg role="img" aria-label="Encoder, projector, language model. A VLA keeps this front and changes the back: either actions as tokens (RT-2, OpenVLA) or a separate action expert (π0)." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A VLM IS A VISION ENCODER, A SMALL ADAPTER AND A LANGUAGE MODEL</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="56"/><text class="dg-t" x="95" y="74" text-anchor="middle">camera image</text><text class="dg-s" x="95" y="92" text-anchor="middle">224 x 224</text>
+<rect class="dg-key" x="210" y="50" width="170" height="56"/><text class="dg-t" x="295" y="74" text-anchor="middle">vision encoder</text><text class="dg-s" x="295" y="92" text-anchor="middle">SigLIP: 256 x 1152</text>
+<rect class="dg-box" x="420" y="50" width="160" height="56"/><text class="dg-t" x="500" y="74" text-anchor="middle">projector</text><text class="dg-s" x="500" y="92" text-anchor="middle">linear: 1152 to 2048</text>
+<rect class="dg-ext" x="420" y="140" width="160" height="56"/><text class="dg-t" x="500" y="164" text-anchor="middle">text tokens</text><text class="dg-s" x="500" y="182" text-anchor="middle">"pick up the red cup"</text>
+<rect class="dg-key" x="630" y="80" width="170" height="96"/><text class="dg-t" x="715" y="114" text-anchor="middle">language model</text><text class="dg-s" x="715" y="134" text-anchor="middle">Gemma 2B, width 2048</text><text class="dg-s" x="715" y="150" text-anchor="middle">reads image + text tokens</text>
+<path class="dg-a" d="M170 78 H210"/><path class="dg-a" d="M380 78 H420"/><path class="dg-a" d="M580 78 H605 V110 H630"/><path class="dg-a" d="M580 168 H605 V146 H630"/>
+<rect class="dg-box" x="840" y="50" width="120" height="50"/><text class="dg-t" x="900" y="72" text-anchor="middle">VLM output</text><text class="dg-s" x="900" y="88" text-anchor="middle">text answer</text>
+<rect class="dg-box" x="840" y="120" width="120" height="50"/><text class="dg-t" x="900" y="142" text-anchor="middle">VLA, tokens</text><text class="dg-s" x="900" y="158" text-anchor="middle">RT-2, OpenVLA</text>
+<rect class="dg-box" x="840" y="190" width="120" height="50"/><text class="dg-t" x="900" y="212" text-anchor="middle">VLA, expert</text><text class="dg-s" x="900" y="228" text-anchor="middle">pi0: flow head</text>
+<path class="dg-a" d="M800 110 H820 V75 H840"/><path class="dg-a" d="M800 128 H820 V145 H840"/><path class="dg-a" d="M800 150 H820 V215 H840"/>
+<text class="dg-l" x="20" y="270">step 1: train the projector so image vectors land where the language model expects words</text>
+<text class="dg-l" x="20" y="292">step 2: fine-tune on instructions (VLM), or on robot demonstrations with an action output (VLA)</text>
+</svg><figcaption>Encoder, projector, language model. A VLA keeps this front and changes the back: either actions as tokens (RT-2, OpenVLA) or a separate action expert (π0).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>PaliGemma (π0's base)</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision encoder</td>
+<td>SigLIP So400m, patch 14: 256 tokens of width 1152 for a 224×224 image</td>
+<td>what is in the picture (<a href="vit.html">ViT</a>, <a href="contrastive-learning.html">contrastive learning</a>)</td>
+</tr>
+<tr>
+<td>Projector</td>
+<td>one linear layer, 1152 → 2048</td>
+<td>translate image vectors into the language model's input space</td>
+</tr>
+<tr>
+<td>Language model</td>
+<td>Gemma-2B, width 2048</td>
+<td>reasons over image and text tokens together</td>
+</tr>
+<tr>
+<td>Attention pattern</td>
+<td>full attention over image + prompt, causal over the generated text</td>
+<td>the prompt can use the whole image; the answer is written left to right</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How big is the part that joins the two models, and how much of a VLA's sequence do images take? Both numbers explain design choices in robot VLAs.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d_v$</td>
+<td>vision encoder width</td>
+<td>constant</td>
+<td>1152 (SigLIP So400m)</td>
+</tr>
+<tr>
+<td>$d_l$</td>
+<td>language model width</td>
+<td>constant</td>
+<td>2048 (Gemma-2B)</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>projector parameters</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$C$</td>
+<td>cameras</td>
+<td>input</td>
+<td>3</td>
+</tr>
+<tr>
+<td>$T$</td>
+<td>text tokens of the instruction</td>
+<td>input</td>
+<td>32</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>total tokens before any action</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$P = d_v \times d_l + d_l, \qquad N = 256\,C + T$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Weights: $1152 \times 2048 = 2{,}359{,}296$; bias: $2048$; $P = 2{,}361{,}344$.</li>
+<li>As a share of a 3B model: $2.36\text{M} / 3\text{B} \approx 0.08\%$.</li>
+<li>Tokens: $256 \times 3 + 32 = 800$; images are $768 / 800 = 96\%$ of them.</li>
+</ol>
+<p><strong>Result.</strong> The bridge is 2.4 million parameters, under a tenth of a percent of the model. Images make up 96% of the sequence.</p>
+<p><strong>Why it matters.</strong> The projector is tiny because both sides are already trained; it only has to rotate and scale one space into another, which is why it can be trained first, alone, on image–caption pairs. The token count is why every extra camera costs inference time, and why π0 caches the image and text part while denoising actions (<a href="cross-attention.html">cross-attention</a>).</p>
+</div>
+<h2>3. From VLM to VLA</h2>
+<ul>
+<li><strong>Actions as words.</strong> RT-2 and OpenVLA keep the VLM unchanged and write actions as tokens (<a href="action-tokenization.html">action tokenization</a>). OpenVLA uses Llama 2 7B with a fused DINOv2 + SigLIP encoder, trained on 970k robot demonstrations.</li>
+<li><strong>A separate action expert.</strong> π0 adds 300M parameters of action expert to PaliGemma's 3B; the expert reads the VLM's tokens and outputs continuous chunks with <a href="flowmatching.html">flow matching</a>.</li>
+<li><strong>What the VLM brings.</strong> Recognising "the red cup" or "the charger" from internet-scale image–text data that no robot dataset could provide. What it does not bring: force, contact and fine motion, which come from robot data and, on this site, from force sensing.</li>
+</ul>
+<p><strong>Carry forward:</strong> the VLM is the pretrained <em>backbone</em> of a VLA. How much of it to retrain, and how cheaply: <a href="backbone.html">backbone and fine-tuning</a>.</p>
+<p><strong>Check question:</strong> A VLA uses 2 cameras at 256 tokens each and a 20-token instruction. How many tokens precede the actions, and what share are images?</p>
+<details>
+<summary>Answer</summary>
+<p>$2 \times 256 + 20 = 532$ tokens; images are $512 / 532 = 96.2\%$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> LLaVA, <em>Visual Instruction Tuning</em>, <a href="https://arxiv.org/abs/2304.08485">arXiv 2304.08485</a> · 04/2023. PaliGemma, <a href="https://arxiv.org/abs/2407.07726">arXiv 2407.07726</a> · 07/2024</p>
+<p><strong>VẤN ĐỀ</strong> "Nhặt cái cốc đỏ bên trái" cần cả nhìn (cốc nào, ở đâu) lẫn ngôn ngữ (làm gì với nó). Mô hình ngôn ngữ không nhìn được; bộ mã hóa ảnh không làm theo được câu lệnh.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Mô hình ngôn ngữ chỉ có chữ. Bộ mã hóa contrastive như CLIP so khớp cả bức ảnh với cả câu chú thích nhưng không trả lời câu hỏi hay suy luận về khung cảnh được. Các hệ thống trước đó ghép các mô hình riêng rẽ bằng tay.</p>
+<p><strong>Ý TƯỞNG</strong> Dùng một bộ chiếu nhỏ biến các vector patch của bộ mã hóa ảnh thành những vector mà mô hình ngôn ngữ nhận như thể chúng là chữ, rồi cho mô hình ngôn ngữ đọc token ảnh và token chữ trong cùng một dãy. Huấn luyện bộ chiếu trước, sau đó fine-tune trên dữ liệu chỉ dẫn.</p>
+<p><strong>KẾT QUẢ</strong> LLaVA đạt điểm tương đối 85,1% so với GPT-4 trên bộ đánh giá chỉ dẫn tổng hợp của nó. PaliGemma (SigLIP-So400m + Gemma-2B, 3 tỉ tham số) là nền của π0. VLA là một VLM có đầu ra được mở rộng sang hành động.</p>
+</div>
+<h2>1. Vấn đề: hai mô hình nói hai thứ tiếng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là một lớp phiên dịch: vector ảnh được dời vào không gian nơi các vector chữ của mô hình ngôn ngữ sống." class="dg-natural" width="934" height="276" viewBox="0 0 934 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Trước</text><text class="dg-lab dg-red" x="14" y="46">LLM chỉ có chữ</text><rect class="dg-box" x="172" y="15" width="96" height="38"/><text class="dg-t" x="220" y="38" text-anchor="middle">Câu lệnh</text><path class="dg-a" d="M268 34 H300"/><rect class="dg-badbox" x="302" y="15" width="132" height="38"/><text class="dg-t" x="369" y="38" text-anchor="middle">Không thấy ảnh</text><path class="dg-a" d="M435 34 H467"/><rect class="dg-box" x="469" y="15" width="96" height="38"/><text class="dg-t" x="517" y="38" text-anchor="middle">Chữ</text><text class="dg-note dg-red" x="172.4" y="72">✗ không biết là cốc nào</text><text class="dg-lab dg-red" x="14" y="116">Trước</text><text class="dg-lab dg-red" x="14" y="130">Bộ mã hóa contrastive</text><rect class="dg-box" x="172" y="99" width="140" height="38"/><text class="dg-t" x="242" y="122" text-anchor="middle">Ảnh + chú thích</text><path class="dg-a" d="M312 118 H344"/><rect class="dg-badbox" x="346" y="99" width="170" height="38"/><text class="dg-t" x="432" y="122" text-anchor="middle">Một điểm tương đồng</text><path class="dg-a" d="M517 118 H549"/><rect class="dg-box" x="551" y="99" width="155" height="38"/><text class="dg-t" x="628" y="122" text-anchor="middle">Khớp / không khớp</text><text class="dg-note dg-red" x="172.4" y="156">✗ thấy được, nhưng không làm theo hay suy luận được</text><text class="dg-lab dg-green" x="14" y="213">VLM</text><rect class="dg-box" x="172" y="190" width="96" height="38"/><text class="dg-t" x="220" y="213" text-anchor="middle">Ảnh</text><path class="dg-a" d="M268 209 H300"/><rect class="dg-key" x="302" y="182" width="178" height="54"/><text class="dg-t" x="391" y="205" text-anchor="middle">Bộ mã hóa + bộ chiếu</text><text class="dg-s" x="391" y="221" text-anchor="middle">token ảnh</text><path class="dg-a" d="M480 209 H512"/><rect class="dg-key" x="514" y="182" width="148" height="54"/><text class="dg-t" x="588" y="205" text-anchor="middle">Mô hình ngôn ngữ</text><text class="dg-s" x="588" y="221" text-anchor="middle">đọc ảnh và chữ</text><path class="dg-a" d="M662 209 H694"/><rect class="dg-box" x="696" y="190" width="224" height="38"/><text class="dg-t" x="808" y="213" text-anchor="middle">Câu trả lời hoặc hành động</text><text class="dg-note dg-green" x="172.4" y="254">✓ một dãy, một mô hình</text></svg><figcaption>Thay đổi là một lớp phiên dịch: vector ảnh được dời vào không gian nơi các vector chữ của mô hình ngôn ngữ sống.</figcaption></figure>
+<h2>2. Các bộ phận</h2>
+<figure class="diagram"><svg role="img" aria-label="Bộ mã hóa, bộ chiếu, mô hình ngôn ngữ. VLA giữ phần đầu này và đổi phần đuôi: hoặc hành động dạng token (RT-2, OpenVLA), hoặc một action expert riêng (π0)." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A VLM IS A VISION ENCODER, A SMALL ADAPTER AND A LANGUAGE MODEL</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="56"/><text class="dg-t" x="95" y="74" text-anchor="middle">camera image</text><text class="dg-s" x="95" y="92" text-anchor="middle">224 x 224</text>
+<rect class="dg-key" x="210" y="50" width="170" height="56"/><text class="dg-t" x="295" y="74" text-anchor="middle">vision encoder</text><text class="dg-s" x="295" y="92" text-anchor="middle">SigLIP: 256 x 1152</text>
+<rect class="dg-box" x="420" y="50" width="160" height="56"/><text class="dg-t" x="500" y="74" text-anchor="middle">projector</text><text class="dg-s" x="500" y="92" text-anchor="middle">linear: 1152 to 2048</text>
+<rect class="dg-ext" x="420" y="140" width="160" height="56"/><text class="dg-t" x="500" y="164" text-anchor="middle">text tokens</text><text class="dg-s" x="500" y="182" text-anchor="middle">"pick up the red cup"</text>
+<rect class="dg-key" x="630" y="80" width="170" height="96"/><text class="dg-t" x="715" y="114" text-anchor="middle">language model</text><text class="dg-s" x="715" y="134" text-anchor="middle">Gemma 2B, width 2048</text><text class="dg-s" x="715" y="150" text-anchor="middle">reads image + text tokens</text>
+<path class="dg-a" d="M170 78 H210"/><path class="dg-a" d="M380 78 H420"/><path class="dg-a" d="M580 78 H605 V110 H630"/><path class="dg-a" d="M580 168 H605 V146 H630"/>
+<rect class="dg-box" x="840" y="50" width="120" height="50"/><text class="dg-t" x="900" y="72" text-anchor="middle">VLM output</text><text class="dg-s" x="900" y="88" text-anchor="middle">text answer</text>
+<rect class="dg-box" x="840" y="120" width="120" height="50"/><text class="dg-t" x="900" y="142" text-anchor="middle">VLA, tokens</text><text class="dg-s" x="900" y="158" text-anchor="middle">RT-2, OpenVLA</text>
+<rect class="dg-box" x="840" y="190" width="120" height="50"/><text class="dg-t" x="900" y="212" text-anchor="middle">VLA, expert</text><text class="dg-s" x="900" y="228" text-anchor="middle">pi0: flow head</text>
+<path class="dg-a" d="M800 110 H820 V75 H840"/><path class="dg-a" d="M800 128 H820 V145 H840"/><path class="dg-a" d="M800 150 H820 V215 H840"/>
+<text class="dg-l" x="20" y="270">step 1: train the projector so image vectors land where the language model expects words</text>
+<text class="dg-l" x="20" y="292">step 2: fine-tune on instructions (VLM), or on robot demonstrations with an action output (VLA)</text>
+</svg><figcaption>Bộ mã hóa, bộ chiếu, mô hình ngôn ngữ. VLA giữ phần đầu này và đổi phần đuôi: hoặc hành động dạng token (RT-2, OpenVLA), hoặc một action expert riêng (π0).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ phận</th>
+<th>PaliGemma (nền của π0)</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ mã hóa ảnh</td>
+<td>SigLIP So400m, patch 14: 256 token độ rộng 1152 cho ảnh 224×224</td>
+<td>trong ảnh có gì (<a href="vit.html">ViT</a>, <a href="contrastive-learning.html">contrastive learning</a>)</td>
+</tr>
+<tr>
+<td>Bộ chiếu</td>
+<td>một lớp tuyến tính, 1152 → 2048</td>
+<td>dịch vector ảnh sang không gian đầu vào của mô hình ngôn ngữ</td>
+</tr>
+<tr>
+<td>Mô hình ngôn ngữ</td>
+<td>Gemma-2B, độ rộng 2048</td>
+<td>suy luận trên token ảnh và chữ cùng lúc</td>
+</tr>
+<tr>
+<td>Kiểu attention</td>
+<td>attention đầy đủ trên ảnh + câu lệnh, nhân quả trên phần chữ được sinh</td>
+<td>câu lệnh dùng được cả bức ảnh; câu trả lời được viết từ trái sang phải</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Phần nối hai mô hình lớn cỡ nào, và ảnh chiếm bao nhiêu trong dãy của một VLA? Cả hai con số giải thích các lựa chọn thiết kế trong VLA cho robot.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d_v$</td>
+<td>độ rộng bộ mã hóa ảnh</td>
+<td>hằng số</td>
+<td>1152 (SigLIP So400m)</td>
+</tr>
+<tr>
+<td>$d_l$</td>
+<td>độ rộng mô hình ngôn ngữ</td>
+<td>hằng số</td>
+<td>2048 (Gemma-2B)</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>số tham số bộ chiếu</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$C$</td>
+<td>số camera</td>
+<td>input</td>
+<td>3</td>
+</tr>
+<tr>
+<td>$T$</td>
+<td>số token chữ của câu lệnh</td>
+<td>input</td>
+<td>32</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>tổng số token trước phần hành động</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$P = d_v \times d_l + d_l, \qquad N = 256\,C + T$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Trọng số: $1152 \times 2048 = 2.359.296$; bias: $2048$; $P = 2.361.344$.</li>
+<li>Tỉ lệ trong mô hình 3 tỉ tham số: $2{,}36\text{ triệu} / 3\text{ tỉ} \approx 0{,}08\%$.</li>
+<li>Token: $256 \times 3 + 32 = 800$; ảnh chiếm $768 / 800 = 96\%$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Cây cầu nối là 2,4 triệu tham số, chưa tới một phần mười phần trăm của mô hình. Ảnh chiếm 96% dãy.</p>
+<p><strong>Ý nghĩa.</strong> Bộ chiếu nhỏ vì cả hai phía đều đã được huấn luyện; nó chỉ cần xoay và co giãn không gian này sang không gian kia, vì vậy nó có thể được huấn luyện trước, một mình, trên các cặp ảnh–chú thích. Số token là lý do mỗi camera thêm vào đều tốn thời gian suy luận, và vì sao π0 lưu đệm phần ảnh và chữ khi khử nhiễu hành động (<a href="cross-attention.html">cross-attention</a>).</p>
+</div>
+<h2>3. Từ VLM tới VLA</h2>
+<ul>
+<li><strong>Hành động là chữ.</strong> RT-2 và OpenVLA giữ nguyên VLM và viết hành động thành token (<a href="action-tokenization.html">action tokenization</a>). OpenVLA dùng Llama 2 7B với bộ mã hóa gộp DINOv2 + SigLIP, huấn luyện trên 970 nghìn demo robot.</li>
+<li><strong>Một action expert riêng.</strong> π0 thêm 300 triệu tham số action expert vào 3 tỉ của PaliGemma; expert đọc token của VLM và xuất chunk liên tục bằng <a href="flowmatching.html">flow matching</a>.</li>
+<li><strong>VLM mang lại gì.</strong> Nhận ra "cái cốc đỏ" hay "cái sạc" nhờ dữ liệu ảnh–chữ cỡ internet mà không bộ dữ liệu robot nào cung cấp nổi. Nó không mang lại: lực, tiếp xúc và chuyển động tinh, những thứ đến từ dữ liệu robot và, trên trang này, từ cảm biến lực.</li>
+</ul>
+<p><strong>Mang theo:</strong> VLM là <em>backbone</em> đã pretrain của VLA. Huấn luyện lại bao nhiêu phần của nó, và rẻ tới đâu: <a href="backbone.html">backbone và fine-tuning</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Một VLA dùng 2 camera, mỗi camera 256 token, và câu lệnh 20 token. Có bao nhiêu token đứng trước phần hành động, và ảnh chiếm bao nhiêu phần?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$2 \times 256 + 20 = 532$ token; ảnh chiếm $512 / 532 = 96{,}2\%$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

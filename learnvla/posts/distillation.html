@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A big model, or a model with a sensor the robot will not carry, can teach a smaller or sensor-free one. The trick is to copy the teacher's soft outputs, not only the right answer. Temperature worked by hand, and how FD-VLA and HapticVLA distil force and touch away.">
+<title>Distillation: Teaching a Student What the Teacher Knows · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Distillation: Teaching a Student What the Teacher Knows">
+<meta property="og:description" content="A big model, or a model with a sensor the robot will not carry, can teach a smaller or sensor-free one. The trick is to copy the teacher's soft outputs, not only the right answer. Temperature worked by hand, and how FD-VLA and HapticVLA distil force and touch away.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Distillation: Teaching a Student What the Teacher Knows</h1>
+    <h1 data-vi>Distillation: Dạy học trò những gì người thầy biết</h1>
+
+    <p class="post-excerpt-lead" data-en>A big model, or a model with a sensor the robot will not carry, can teach a smaller or sensor-free one. The trick is to copy the teacher's soft outputs, not only the right answer. Temperature worked by hand, and how FD-VLA and HapticVLA distil force and touch away.</p>
+    <p class="post-excerpt-lead" data-vi>Một mô hình lớn, hoặc một mô hình có cảm biến mà robot sẽ không mang theo, có thể dạy một mô hình nhỏ hơn hoặc không cần cảm biến. Mẹo là chép đầu ra mềm của người thầy, không chỉ đáp án đúng. Tính tay nhiệt độ, và cách FD-VLA, HapticVLA chưng cất lực và xúc giác để bỏ cảm biến.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Distillation</span><span class="pill">Force</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Hinton, Vinyals, Dean, <em>Distilling the Knowledge in a Neural Network</em>, <a href="https://arxiv.org/abs/1503.02531">arXiv 1503.02531</a> · 03/2015</p>
+<p><strong>PROBLEM</strong> The best model is often too big to run fast, or depends on information that will not exist at deployment: a force sensor removed for cost, a touch sensor that wears out, a simulator's exact object pose.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Training the small model only on the correct labels throws away what the big model knows about the <em>wrong</em> answers, which ones are almost right. Deploying an ensemble or the big model is "cumbersome and may be too computationally expensive" (the paper).</p>
+<p><strong>IDEA</strong> Train the student to match the teacher's output distribution, softened with a temperature $T$ so that small probabilities become visible. In robotics the same pattern appears with features: a student without a sensor learns to predict what the teacher's sensor-based encoder would have produced.</p>
+<p><strong>RESULT</strong> The paper distils an ensemble into one model and improves a commercial speech system. On this site, <a href="fd-vla.html">FD-VLA</a> trains with a force sensor and deploys without one (61.1% against 46.7% for π0 on its three tasks), and <a href="hapticvla.html">HapticVLA</a> removes touch at run time (86.7% mean).</p>
+</div>
+<h2>1. The problem: knowledge locked in the wrong model</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the target: the student copies a distribution or a feature, which carries more information per example than one label." class="dg-natural" width="771" height="290" viewBox="0 0 771 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Hard labels only</text><rect class="dg-box" x="153" y="22" width="96" height="38"/><text class="dg-t" x="201" y="45" text-anchor="middle">Data</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="239" height="54"/><text class="dg-t" x="403" y="37" text-anchor="middle">Small model learns the label</text><text class="dg-s" x="403" y="53" text-anchor="middle">"cup", nothing else</text><path class="dg-a" d="M522 41 H554"/><rect class="dg-box" x="556" y="22" width="96" height="38"/><text class="dg-t" x="604" y="45" text-anchor="middle">Student</text><text class="dg-note dg-red" x="153.2" y="86">✗ loses the teacher's "almost a mug"</text><text class="dg-lab dg-red" x="14" y="130">Before</text><text class="dg-lab dg-red" x="14" y="144">Deploy the teacher</text><rect class="dg-box" x="153" y="113" width="216" height="38"/><text class="dg-t" x="261" y="136" text-anchor="middle">Big model or extra sensor</text><path class="dg-a" d="M369 132 H401"/><rect class="dg-badbox" x="403" y="113" width="224" height="38"/><text class="dg-t" x="515" y="136" text-anchor="middle">Too slow, or sensor absent</text><path class="dg-a" d="M627 132 H659"/><rect class="dg-box" x="661" y="113" width="96" height="38"/><text class="dg-t" x="709" y="136" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="153.2" y="170">✗ cannot run as trained</text><text class="dg-lab dg-green" x="14" y="227">Distillation</text><rect class="dg-box" x="153" y="204" width="140" height="38"/><text class="dg-t" x="223" y="227" text-anchor="middle">Teacher outputs</text><path class="dg-a" d="M293 223 H325"/><rect class="dg-key" x="327" y="196" width="208" height="54"/><text class="dg-t" x="431" y="219" text-anchor="middle">Soft targets or features</text><text class="dg-s" x="431" y="235" text-anchor="middle">at temperature T</text><path class="dg-a" d="M536 223 H568"/><rect class="dg-box" x="570" y="204" width="96" height="38"/><text class="dg-t" x="618" y="227" text-anchor="middle">Student</text><text class="dg-note dg-green" x="153.2" y="268">✓ small, fast, sensor-free</text></svg><figcaption>The change is the target: the student copies a distribution or a feature, which carries more information per example than one label.</figcaption></figure>
+<h2>2. Teacher and student</h2>
+<figure class="diagram"><svg role="img" aria-label="The teacher sees more (a bigger network, or privileged signals). The student is trained to reproduce the teacher's soft outputs or internal features and is the only one deployed." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A TEACHER THAT HAS SOMETHING THE STUDENT WILL NOT HAVE AT RUN TIME</text>
+<rect class="dg-ext" x="20" y="54" width="170" height="56"/><text class="dg-t" x="105" y="78" text-anchor="middle">training input</text><text class="dg-s" x="105" y="96" text-anchor="middle">images + state (+ F/T)</text>
+<rect class="dg-key" x="250" y="40" width="210" height="84"/><text class="dg-t" x="355" y="68" text-anchor="middle">teacher</text><text class="dg-s" x="355" y="88" text-anchor="middle">bigger, or sees privileged</text><text class="dg-s" x="355" y="104" text-anchor="middle">signals (real force, touch)</text>
+<rect class="dg-box" x="250" y="170" width="210" height="84"/><text class="dg-t" x="355" y="198" text-anchor="middle">student</text><text class="dg-s" x="355" y="218" text-anchor="middle">smaller, or without</text><text class="dg-s" x="355" y="234" text-anchor="middle">the extra sensor</text>
+<path class="dg-a" d="M190 76 H250"/><path class="dg-a" d="M190 96 H220 V212 H250"/>
+<rect class="dg-box" x="530" y="40" width="200" height="84"/><text class="dg-t" x="630" y="68" text-anchor="middle">soft targets</text><text class="dg-s" x="630" y="88" text-anchor="middle">probabilities at temperature T</text><text class="dg-s" x="630" y="104" text-anchor="middle">or a feature / force token</text>
+<path class="dg-a" d="M460 82 H530"/>
+<rect class="dg-key" x="530" y="170" width="200" height="84"/><text class="dg-t" x="630" y="198" text-anchor="middle">match the teacher</text><text class="dg-s" x="630" y="218" text-anchor="middle">cross-entropy or</text><text class="dg-s" x="630" y="234" text-anchor="middle">feature distance</text>
+<path class="dg-a" d="M630 124 V170"/><path class="dg-a" d="M460 212 H530"/>
+<rect class="dg-box" x="790" y="170" width="170" height="84"/><text class="dg-t" x="875" y="198" text-anchor="middle">deploy student</text><text class="dg-s" x="875" y="218" text-anchor="middle">faster, or no sensor</text><text class="dg-s" x="875" y="234" text-anchor="middle">needed on the robot</text>
+<path class="dg-a" d="M730 212 H790"/>
+</svg><figcaption>The teacher sees more (a bigger network, or privileged signals). The student is trained to reproduce the teacher's soft outputs or internal features and is the only one deployed.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Teacher</td>
+<td>trained first; large, an ensemble, or given privileged inputs</td>
+</tr>
+<tr>
+<td>Student</td>
+<td>trained to match the teacher; what runs on the robot</td>
+</tr>
+<tr>
+<td>Temperature $T$</td>
+<td>divide logits by $T$ before softmax; $T &gt; 1$ spreads probability onto the "almost right" answers</td>
+</tr>
+<tr>
+<td>Soft-target loss</td>
+<td>cross-entropy between teacher and student distributions, both at temperature $T$, scaled by $T^2$</td>
+</tr>
+<tr>
+<td>Feature distillation</td>
+<td>match an internal vector instead of output probabilities (FD-VLA's force token)</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> See what temperature does to a teacher's output, and compute the student's soft-target loss.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$z$</td>
+<td>teacher logits for (cup, mug, plate)</td>
+<td>input</td>
+<td>$(4,\ 1,\ 0)$</td>
+</tr>
+<tr>
+<td>$T$</td>
+<td>temperature</td>
+<td>constant</td>
+<td>1, then 2</td>
+</tr>
+<tr>
+<td>$p^T$</td>
+<td>teacher soft targets</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$q^T$</td>
+<td>student probabilities at the same $T$</td>
+<td>input</td>
+<td>$(0.6,\ 0.3,\ 0.1)$</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>soft-target loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$p^T_i = \frac{e^{z_i/T}}{\sum_j e^{z_j/T}}, \qquad L = -T^2 \sum_i p^T_i \log q^T_i$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$T = 1$: $e^4 = 54.6$, $e^1 = 2.72$, $e^0 = 1$; sum $= 58.3$; $p = (0.936,\ 0.047,\ 0.017)$.</li>
+<li>$T = 2$: logits $(2,\ 0.5,\ 0)$; $e^2 = 7.39$, $e^{0.5} = 1.65$, $e^0 = 1$; sum $= 10.04$; $p = (0.736,\ 0.164,\ 0.100)$.</li>
+<li>Cross-entropy: $0.736 \times 0.511 + 0.164 \times 1.204 + 0.100 \times 2.303 = 0.376 + 0.197 + 0.230 = 0.804$.</li>
+<li>Scale by $T^2 = 4$: $L = 3.22$.</li>
+</ol>
+<p><strong>Result.</strong> At $T = 1$ the teacher says "cup" with 94% and almost nothing else; at $T = 2$ it says 74% cup, 16% mug, 10% plate. The student's loss against that is 0.80 before scaling.</p>
+<p><strong>Why it matters.</strong> "Mug is more likely than plate" is knowledge the hard label "cup" does not contain; the temperature makes it large enough to learn from. Softening also shrinks gradients by about $1/T^2$, which is why the paper multiplies the loss by $T^2$ to keep its weight comparable when mixed with the normal hard-label loss.</p>
+</div>
+<h2>3. Distillation in robot learning</h2>
+<ul>
+<li><strong>Sensor at training, not at deployment.</strong> FD-VLA's force distillation module predicts a force token from images and state; during training it is pulled toward the encoding of the real sensor force, and at run time the sensor is gone.</li>
+<li><strong>Touch removed after training.</strong> HapticVLA uses touch offline to judge which demonstrations were safe, then trains a policy that does not need touch at run time.</li>
+<li><strong>Privileged simulation teachers.</strong> A teacher trained in simulation with exact object poses supervises a student that only sees cameras; FIRe's critic, which sees privileged simulator state while the actor does not, uses a related asymmetry (<a href="residual-policy.html">residual policy</a>).</li>
+<li><strong>Fewer generation steps.</strong> A many-step diffusion policy can teach a one- or few-step student; this is how some fast policies avoid the cost of <a href="diffusion-policy.html">diffusion</a>.</li>
+</ul>
+<p><strong>Carry forward:</strong> a student replaces a teacher. Sometimes the better move is to <em>keep</em> a good policy and learn only a small correction on top: <a href="residual-policy.html">residual policy</a>.</p>
+<p><strong>Check question:</strong> Teacher logits $(2,\ 2,\ 0)$ at $T = 1$. What are the soft targets?</p>
+<details>
+<summary>Answer</summary>
+<p>$e^2 = 7.39$ twice, $e^0 = 1$; sum $= 15.78$; $p = (0.468,\ 0.468,\ 0.063)$. The teacher is undecided between the first two, which is exactly the information a hard label would hide.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Hinton, Vinyals, Dean, <em>Distilling the Knowledge in a Neural Network</em>, <a href="https://arxiv.org/abs/1503.02531">arXiv 1503.02531</a> · 03/2015</p>
+<p><strong>VẤN ĐỀ</strong> Mô hình tốt nhất thường quá lớn để chạy nhanh, hoặc phụ thuộc vào thông tin sẽ không có khi triển khai: cảm biến lực bị bỏ đi vì giá, cảm biến xúc giác bị mòn, tư thế vật chính xác chỉ có trong mô phỏng.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Huấn luyện mô hình nhỏ chỉ trên nhãn đúng sẽ vứt bỏ những gì mô hình lớn biết về các đáp án <em>sai</em>, đáp án nào gần đúng. Triển khai cả một tổ hợp mô hình hay mô hình lớn thì "cồng kềnh và có thể quá tốn tính toán" (lời paper).</p>
+<p><strong>Ý TƯỞNG</strong> Huấn luyện học trò khớp phân phối đầu ra của người thầy, được làm mềm bằng nhiệt độ $T$ để các xác suất nhỏ hiện ra. Trong robot, cùng mẫu hình này xuất hiện với đặc trưng: học trò không có cảm biến học cách dự đoán thứ mà bộ mã hóa dựa trên cảm biến của người thầy lẽ ra sẽ sinh ra.</p>
+<p><strong>KẾT QUẢ</strong> Paper chưng cất một tổ hợp mô hình vào một mô hình và cải thiện một hệ thống nhận dạng giọng nói thương mại. Trên trang này, <a href="fd-vla.html">FD-VLA</a> huấn luyện có cảm biến lực và triển khai không cần nó (61,1% so với 46,7% của π0 trên ba tác vụ của nó), và <a href="hapticvla.html">HapticVLA</a> bỏ xúc giác khi chạy (trung bình 86,7%).</p>
+</div>
+<h2>1. Vấn đề: kiến thức bị khóa trong mô hình không phù hợp</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở mục tiêu: học trò chép một phân phối hay một đặc trưng, thứ chứa nhiều thông tin mỗi mẫu hơn một nhãn." class="dg-natural" width="874" height="290" viewBox="0 0 874 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Chỉ nhãn cứng</text><rect class="dg-box" x="172" y="22" width="96" height="38"/><text class="dg-t" x="220" y="45" text-anchor="middle">Dữ liệu</text><path class="dg-a" d="M268 41 H300"/><rect class="dg-badbox" x="302" y="14" width="180" height="54"/><text class="dg-t" x="392" y="37" text-anchor="middle">Mô hình nhỏ học nhãn</text><text class="dg-s" x="392" y="53" text-anchor="middle">"cốc", ngoài ra không gì</text><path class="dg-a" d="M482 41 H514"/><rect class="dg-box" x="516" y="22" width="96" height="38"/><text class="dg-t" x="564" y="45" text-anchor="middle">Học trò</text><text class="dg-note dg-red" x="172.4" y="86">✗ mất cái "gần như là ca" của người thầy</text><text class="dg-lab dg-red" x="14" y="130">Trước</text><text class="dg-lab dg-red" x="14" y="144">Triển khai người thầy</text><rect class="dg-box" x="172" y="113" width="254" height="38"/><text class="dg-t" x="299" y="136" text-anchor="middle">Mô hình lớn hoặc cảm biến thêm</text><path class="dg-a" d="M426 132 H458"/><rect class="dg-badbox" x="460" y="113" width="269" height="38"/><text class="dg-t" x="595" y="136" text-anchor="middle">Quá chậm, hoặc không có cảm biến</text><path class="dg-a" d="M730 132 H762"/><rect class="dg-box" x="764" y="113" width="96" height="38"/><text class="dg-t" x="812" y="136" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="172.4" y="170">✗ không chạy được như lúc huấn luyện</text><text class="dg-lab dg-green" x="14" y="227">Distillation</text><rect class="dg-box" x="172" y="204" width="140" height="38"/><text class="dg-t" x="242" y="227" text-anchor="middle">Đầu ra của thầy</text><path class="dg-a" d="M312 223 H344"/><rect class="dg-key" x="346" y="196" width="231" height="54"/><text class="dg-t" x="462" y="219" text-anchor="middle">Mục tiêu mềm hoặc đặc trưng</text><text class="dg-s" x="462" y="235" text-anchor="middle">ở nhiệt độ T</text><path class="dg-a" d="M578 223 H610"/><rect class="dg-box" x="612" y="204" width="96" height="38"/><text class="dg-t" x="660" y="227" text-anchor="middle">Học trò</text><text class="dg-note dg-green" x="172.4" y="268">✓ nhỏ, nhanh, không cần cảm biến</text></svg><figcaption>Thay đổi nằm ở mục tiêu: học trò chép một phân phối hay một đặc trưng, thứ chứa nhiều thông tin mỗi mẫu hơn một nhãn.</figcaption></figure>
+<h2>2. Thầy và trò</h2>
+<figure class="diagram"><svg role="img" aria-label="Người thầy thấy nhiều hơn (mạng lớn hơn, hoặc tín hiệu đặc quyền). Học trò được huấn luyện để tái tạo đầu ra mềm hoặc đặc trưng bên trong của thầy, và chỉ học trò được triển khai." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A TEACHER THAT HAS SOMETHING THE STUDENT WILL NOT HAVE AT RUN TIME</text>
+<rect class="dg-ext" x="20" y="54" width="170" height="56"/><text class="dg-t" x="105" y="78" text-anchor="middle">training input</text><text class="dg-s" x="105" y="96" text-anchor="middle">images + state (+ F/T)</text>
+<rect class="dg-key" x="250" y="40" width="210" height="84"/><text class="dg-t" x="355" y="68" text-anchor="middle">teacher</text><text class="dg-s" x="355" y="88" text-anchor="middle">bigger, or sees privileged</text><text class="dg-s" x="355" y="104" text-anchor="middle">signals (real force, touch)</text>
+<rect class="dg-box" x="250" y="170" width="210" height="84"/><text class="dg-t" x="355" y="198" text-anchor="middle">student</text><text class="dg-s" x="355" y="218" text-anchor="middle">smaller, or without</text><text class="dg-s" x="355" y="234" text-anchor="middle">the extra sensor</text>
+<path class="dg-a" d="M190 76 H250"/><path class="dg-a" d="M190 96 H220 V212 H250"/>
+<rect class="dg-box" x="530" y="40" width="200" height="84"/><text class="dg-t" x="630" y="68" text-anchor="middle">soft targets</text><text class="dg-s" x="630" y="88" text-anchor="middle">probabilities at temperature T</text><text class="dg-s" x="630" y="104" text-anchor="middle">or a feature / force token</text>
+<path class="dg-a" d="M460 82 H530"/>
+<rect class="dg-key" x="530" y="170" width="200" height="84"/><text class="dg-t" x="630" y="198" text-anchor="middle">match the teacher</text><text class="dg-s" x="630" y="218" text-anchor="middle">cross-entropy or</text><text class="dg-s" x="630" y="234" text-anchor="middle">feature distance</text>
+<path class="dg-a" d="M630 124 V170"/><path class="dg-a" d="M460 212 H530"/>
+<rect class="dg-box" x="790" y="170" width="170" height="84"/><text class="dg-t" x="875" y="198" text-anchor="middle">deploy student</text><text class="dg-s" x="875" y="218" text-anchor="middle">faster, or no sensor</text><text class="dg-s" x="875" y="234" text-anchor="middle">needed on the robot</text>
+<path class="dg-a" d="M730 212 H790"/>
+</svg><figcaption>Người thầy thấy nhiều hơn (mạng lớn hơn, hoặc tín hiệu đặc quyền). Học trò được huấn luyện để tái tạo đầu ra mềm hoặc đặc trưng bên trong của thầy, và chỉ học trò được triển khai.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thầy</td>
+<td>huấn luyện trước; lớn, một tổ hợp, hoặc được cho đầu vào đặc quyền</td>
+</tr>
+<tr>
+<td>Trò</td>
+<td>huấn luyện để khớp với thầy; là thứ chạy trên robot</td>
+</tr>
+<tr>
+<td>Nhiệt độ $T$</td>
+<td>chia logit cho $T$ trước softmax; $T &gt; 1$ dàn xác suất sang các đáp án "gần đúng"</td>
+</tr>
+<tr>
+<td>Loss mục tiêu mềm</td>
+<td>cross-entropy giữa phân phối của thầy và trò, cả hai ở nhiệt độ $T$, nhân với $T^2$</td>
+</tr>
+<tr>
+<td>Chưng cất đặc trưng</td>
+<td>khớp một vector bên trong thay vì xác suất đầu ra (token lực của FD-VLA)</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Xem nhiệt độ làm gì với đầu ra của người thầy, và tính loss mục tiêu mềm của học trò.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$z$</td>
+<td>logit của thầy cho (cốc, ca, đĩa)</td>
+<td>input</td>
+<td>$(4,\ 1,\ 0)$</td>
+</tr>
+<tr>
+<td>$T$</td>
+<td>nhiệt độ</td>
+<td>hằng số</td>
+<td>1, rồi 2</td>
+</tr>
+<tr>
+<td>$p^T$</td>
+<td>mục tiêu mềm của thầy</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$q^T$</td>
+<td>xác suất của trò ở cùng $T$</td>
+<td>input</td>
+<td>$(0{,}6;\ 0{,}3;\ 0{,}1)$</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>loss mục tiêu mềm</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$p^T_i = \frac{e^{z_i/T}}{\sum_j e^{z_j/T}}, \qquad L = -T^2 \sum_i p^T_i \log q^T_i$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$T = 1$: $e^4 = 54{,}6$, $e^1 = 2{,}72$, $e^0 = 1$; tổng $= 58{,}3$; $p = (0{,}936;\ 0{,}047;\ 0{,}017)$.</li>
+<li>$T = 2$: logit $(2;\ 0{,}5;\ 0)$; $e^2 = 7{,}39$, $e^{0{,}5} = 1{,}65$, $e^0 = 1$; tổng $= 10{,}04$; $p = (0{,}736;\ 0{,}164;\ 0{,}100)$.</li>
+<li>Cross-entropy: $0{,}736 \times 0{,}511 + 0{,}164 \times 1{,}204 + 0{,}100 \times 2{,}303 = 0{,}376 + 0{,}197 + 0{,}230 = 0{,}804$.</li>
+<li>Nhân $T^2 = 4$: $L = 3{,}22$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Ở $T = 1$ người thầy nói "cốc" với 94% và gần như không nói gì khác; ở $T = 2$ thầy nói 74% cốc, 16% ca, 10% đĩa. Loss của học trò so với đó là 0,80 trước khi nhân.</p>
+<p><strong>Ý nghĩa.</strong> "Ca dễ đúng hơn đĩa" là kiến thức mà nhãn cứng "cốc" không chứa; nhiệt độ làm nó đủ lớn để học được. Làm mềm cũng thu nhỏ gradient khoảng $1/T^2$, vì thế paper nhân loss với $T^2$ để giữ trọng số tương đương khi trộn với loss nhãn cứng thông thường.</p>
+</div>
+<h2>3. Distillation trong học robot</h2>
+<ul>
+<li><strong>Có cảm biến khi huấn luyện, không có khi triển khai.</strong> Mô-đun chưng cất lực của FD-VLA dự đoán một token lực từ ảnh và trạng thái; khi huấn luyện, nó bị kéo về phía mã hóa của lực đo thật, và khi chạy thì cảm biến không còn.</li>
+<li><strong>Bỏ xúc giác sau khi huấn luyện.</strong> HapticVLA dùng xúc giác offline để đánh giá demo nào an toàn, rồi huấn luyện một chính sách không cần xúc giác khi chạy.</li>
+<li><strong>Người thầy đặc quyền trong mô phỏng.</strong> Một người thầy huấn luyện trong mô phỏng với tư thế vật chính xác giám sát một học trò chỉ thấy camera; critic của FIRe, thấy trạng thái đặc quyền của mô phỏng trong khi actor thì không, dùng một kiểu bất đối xứng tương tự (<a href="residual-policy.html">residual policy</a>).</li>
+<li><strong>Ít bước sinh hơn.</strong> Một chính sách diffusion nhiều bước có thể dạy một học trò một hoặc vài bước; đó là cách một số chính sách nhanh tránh được chi phí của <a href="diffusion-policy.html">diffusion</a>.</li>
+</ul>
+<p><strong>Mang theo:</strong> học trò thay thế người thầy. Đôi khi cách tốt hơn là <em>giữ</em> một chính sách tốt và chỉ học một phần hiệu chỉnh nhỏ bên trên: <a href="residual-policy.html">residual policy</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Logit của thầy $(2,\ 2,\ 0)$ ở $T = 1$. Mục tiêu mềm là gì?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$e^2 = 7{,}39$ hai lần, $e^0 = 1$; tổng $= 15{,}78$; $p = (0{,}468;\ 0{,}468;\ 0{,}063)$. Người thầy phân vân giữa hai lựa chọn đầu, đúng là thông tin mà một nhãn cứng sẽ che mất.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

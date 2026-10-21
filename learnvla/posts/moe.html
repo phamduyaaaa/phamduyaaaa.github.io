@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A dense layer uses every parameter for every token. A sparse mixture of experts keeps several expert networks and lets a router pick one per token, adding capacity without adding compute. Router and load-balancing loss worked by hand, and why π0's 'action expert' is something else.">
+<title>Mixture of Experts: Many Sub-Networks, Only One at a Time · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Mixture of Experts: Many Sub-Networks, Only One at a Time">
+<meta property="og:description" content="A dense layer uses every parameter for every token. A sparse mixture of experts keeps several expert networks and lets a router pick one per token, adding capacity without adding compute. Router and load-balancing loss worked by hand, and why π0's 'action expert' is something else.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Mixture of Experts: Many Sub-Networks, Only One at a Time</h1>
+    <h1 data-vi>Mixture of Experts: Nhiều mạng con, mỗi lúc chỉ dùng một</h1>
+
+    <p class="post-excerpt-lead" data-en>A dense layer uses every parameter for every token. A sparse mixture of experts keeps several expert networks and lets a router pick one per token, adding capacity without adding compute. Router and load-balancing loss worked by hand, and why π0's 'action expert' is something else.</p>
+    <p class="post-excerpt-lead" data-vi>Một lớp dày đặc dùng mọi tham số cho mọi token. Mixture of experts thưa giữ nhiều mạng chuyên gia và để một router chọn một mạng cho mỗi token, thêm sức chứa mà không thêm tính toán. Tính tay router và loss cân bằng tải, và vì sao 'action expert' của π0 là một thứ khác.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">MoE</span><span class="pill">Force</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> Shazeer et al., <em>Sparsely-Gated Mixture-of-Experts Layer</em>, <a href="https://arxiv.org/abs/1701.06538">arXiv 1701.06538</a> · 01/2017. Switch Transformers, <a href="https://arxiv.org/abs/2101.03961">arXiv 2101.03961</a> · 01/2021</p>
+<p><strong>PROBLEM</strong> More parameters store more knowledge, but in a normal (dense) layer every parameter is used for every token, so compute grows with size. In robotics there is a second wish: different situations (free motion, first contact, sliding) may need different processing.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Dense networks: capacity and compute rise together. Earlier mixture-of-experts work had the right idea but suffered from complexity, communication cost and training instability, which Switch Transformers set out to fix.</p>
+<p><strong>IDEA</strong> Keep $N$ expert networks and a small router. For each token the router scores the experts and only the top $k$ (often $k = 1$) run. An auxiliary loss keeps the experts evenly used.</p>
+<p><strong>RESULT</strong> Shazeer et al. report over 1000× more capacity with minor efficiency loss; Switch Transformers up to 7× faster pre-training at equal compute. In force VLAs: ForceVLA (4 experts, top-1), MoDE-VLA (8 experts, top-1), CR-VLA-Force (4 experts) route force and vision tokens through sparse MoEs.</p>
+</div>
+<h2>1. The problem: capacity costs compute</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is conditional computation: which parameters run depends on the token." class="dg-natural" width="643" height="206" viewBox="0 0 643 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Dense layer</text><rect class="dg-box" x="124" y="22" width="110" height="38"/><text class="dg-t" x="179" y="45" text-anchor="middle">Every token</text><path class="dg-a" d="M234 41 H266"/><rect class="dg-badbox" x="268" y="14" width="170" height="54"/><text class="dg-t" x="353" y="37" text-anchor="middle">All parameters used</text><text class="dg-s" x="353" y="53" text-anchor="middle">cost grows with size</text><path class="dg-a" d="M438 41 H470"/><rect class="dg-box" x="472" y="22" width="96" height="38"/><text class="dg-t" x="520" y="45" text-anchor="middle">Output</text><text class="dg-note dg-red" x="124" y="86">✗ bigger model, slower model</text><text class="dg-lab dg-green" x="14" y="143">Sparse MoE</text><rect class="dg-box" x="124" y="120" width="110" height="38"/><text class="dg-t" x="179" y="143" text-anchor="middle">Every token</text><path class="dg-a" d="M234 139 H266"/><rect class="dg-key" x="268" y="112" width="231" height="54"/><text class="dg-t" x="383" y="135" text-anchor="middle">Router picks 1 of N experts</text><text class="dg-s" x="383" y="151" text-anchor="middle">N× parameters, 1× compute</text><path class="dg-a" d="M499 139 H531"/><rect class="dg-box" x="533" y="120" width="96" height="38"/><text class="dg-t" x="581" y="143" text-anchor="middle">Output</text><text class="dg-note dg-green" x="124" y="184">✓ capacity without the cost</text></svg><figcaption>The change is conditional computation: which parameters run depends on the token.</figcaption></figure>
+<h2>2. The layer</h2>
+<figure class="diagram"><svg role="img" aria-label="The router turns a token into probabilities over experts; only the chosen expert runs, and its output is scaled by the router's probability so the router still gets a gradient." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A SPARSE MoE LAYER: A ROUTER SENDS EACH TOKEN TO ONE (OR k) OF N EXPERTS</text>
+<rect class="dg-ext" x="20" y="120" width="140" height="56"/><text class="dg-t" x="90" y="144" text-anchor="middle">token x</text><text class="dg-s" x="90" y="162" text-anchor="middle">e.g. a force token</text>
+<rect class="dg-key" x="210" y="120" width="150" height="56"/><text class="dg-t" x="285" y="144" text-anchor="middle">router</text><text class="dg-s" x="285" y="162" text-anchor="middle">softmax(W_r x)</text>
+<path class="dg-a" d="M160 148 H210"/>
+<rect class="dg-key" x="440" y="44" width="150" height="44"/><text class="dg-t" x="515" y="64" text-anchor="middle">expert 1</text><text class="dg-s" x="515" y="80" text-anchor="middle">p = 0.70, chosen</text>
+<rect class="dg-box" x="440" y="100" width="150" height="44"/><text class="dg-t" x="515" y="120" text-anchor="middle">expert 2</text><text class="dg-s" x="515" y="136" text-anchor="middle">p = 0.16, skipped</text>
+<rect class="dg-box" x="440" y="156" width="150" height="44"/><text class="dg-t" x="515" y="176" text-anchor="middle">expert 3</text><text class="dg-s" x="515" y="192" text-anchor="middle">p = 0.11, skipped</text>
+<rect class="dg-box" x="440" y="212" width="150" height="44"/><text class="dg-t" x="515" y="232" text-anchor="middle">expert 4</text><text class="dg-s" x="515" y="248" text-anchor="middle">p = 0.04, skipped</text>
+<path class="dg-a" d="M360 140 H400 V66 H440"/><path class="dg-ad" d="M400 122 H440"/><path class="dg-ad" d="M400 140 V178 H440"/><path class="dg-ad" d="M400 178 V234 H440"/>
+<rect class="dg-box" x="660" y="44" width="150" height="56"/><text class="dg-t" x="735" y="68" text-anchor="middle">p x E1(x)</text><text class="dg-s" x="735" y="86" text-anchor="middle">gate times output</text>
+<path class="dg-a" d="M590 66 H660"/>
+<rect class="dg-box" x="840" y="44" width="120" height="56"/><text class="dg-t" x="900" y="68" text-anchor="middle">x + ...</text><text class="dg-s" x="900" y="86" text-anchor="middle">residual</text>
+<path class="dg-a" d="M810 72 H840"/>
+<text class="dg-l" x="640" y="160">capacity: 4 experts of parameters</text>
+<text class="dg-l" x="640" y="182">compute: 1 expert per token</text>
+<text class="dg-note dg-red" x="640" y="230">without a balancing loss, one expert</text><text class="dg-note dg-red" x="640" y="248">can end up taking every token</text>
+</svg><figcaption>The router turns a token into probabilities over experts; only the chosen expert runs, and its output is scaled by the router's probability so the router still gets a gradient.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Router $W_r$</td>
+<td>token $x$</td>
+<td>$N$ probabilities</td>
+<td>which expert should handle this token</td>
+</tr>
+<tr>
+<td>Top-$k$</td>
+<td>probabilities</td>
+<td>chosen expert(s)</td>
+<td>sparsity: the others do not run</td>
+</tr>
+<tr>
+<td>Expert $E_i$</td>
+<td>token $x$</td>
+<td>vector</td>
+<td>a normal feed-forward network</td>
+</tr>
+<tr>
+<td>Combine</td>
+<td>$p_i$, $E_i(x)$</td>
+<td>$p_i E_i(x)$, added to $x$</td>
+<td>gating keeps the router trainable</td>
+</tr>
+<tr>
+<td>Balancing loss</td>
+<td>routing statistics of a batch</td>
+<td>scalar</td>
+<td>stops one expert from taking everything</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Route one token, then check whether a batch is balanced. The second part shows what the auxiliary loss rewards.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$r$</td>
+<td>router logits for 4 experts</td>
+<td>input</td>
+<td>$(2.0,\ 0.5,\ 0.1,\ -1.0)$ (illustrative)</td>
+</tr>
+<tr>
+<td>$p$</td>
+<td>router probabilities</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$f_i$</td>
+<td>share of the batch's tokens sent to expert $i$</td>
+<td>input</td>
+<td>$(0.5,\ 0.25,\ 0.25,\ 0)$</td>
+</tr>
+<tr>
+<td>$P_i$</td>
+<td>average router probability for expert $i$</td>
+<td>input</td>
+<td>$(0.4,\ 0.3,\ 0.2,\ 0.1)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>loss weight</td>
+<td>constant</td>
+<td>0.01 (the value Switch Transformers use)</td>
+</tr>
+<tr>
+<td>$L_{bal}$</td>
+<td>balancing loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$p = \mathrm{softmax}(r), \qquad L_{bal} = \alpha\,N \sum_{i=1}^{N} f_i\,P_i$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$e^{2.0} = 7.389$, $e^{0.5} = 1.649$, $e^{0.1} = 1.105$, $e^{-1.0} = 0.368$; sum $= 10.511$.</li>
+<li>$p = (0.703,\ 0.157,\ 0.105,\ 0.035)$. Top-1 picks expert 1; the layer outputs $0.703 \times E_1(x)$.</li>
+<li>Unbalanced batch: $\sum f_i P_i = 0.5 \times 0.4 + 0.25 \times 0.3 + 0.25 \times 0.2 + 0 = 0.325$; $L_{bal} = 0.01 \times 4 \times 0.325 = 0.013$.</li>
+<li>Perfectly balanced batch, all $f_i = P_i = 0.25$: $\sum = 4 \times 0.0625 = 0.25$; $L_{bal} = 0.010$.</li>
+</ol>
+<p><strong>Result.</strong> The token goes to expert 1 with weight 0.703. The unbalanced batch costs 0.013, the balanced one the minimum 0.010.</p>
+<p><strong>Why it matters.</strong> Routing is self-reinforcing: an expert that gets more tokens trains faster, becomes better, and gets even more tokens. Multiplying the share of tokens $f$ by the router's own probability $P$ penalises exactly that concentration and is smallest when work is spread evenly.</p>
+</div>
+<h2>3. Two things called "expert" in VLAs</h2>
+<ul>
+<li><strong>Sparse MoE (this post).</strong> Several feed-forward experts, a router, one or a few active per token. ForceVLA's FVLMoE fuses a force token with the VLM tokens this way, and its analysis shows experts specialising by task phase; MoDE-VLA routes force and touch through an 8-expert sparse path added as a residual.</li>
+<li><strong>π0's "action expert" is not a sparse MoE.</strong> It is a second set of Transformer weights that always processes the action tokens, while the VLM weights process image and text. Every token always goes to its own set; there is no router. The name means "separate weights per kind of token", sometimes called a mixture of transformers.</li>
+</ul>
+<p><strong>Carry forward:</strong> a router chooses among a few discrete options. Another way to make continuous signals discrete, with a learned codebook instead of a router: <a href="vq-vae.html">VQ-VAE</a>.</p>
+<p><strong>Check question:</strong> Router logits $(1.0,\ 1.0,\ 0.0,\ 0.0)$. What are the probabilities, and which expert does top-1 choose?</p>
+<details>
+<summary>Answer</summary>
+<p>$e^1 = 2.718$ twice, $e^0 = 1$ twice; sum $= 7.437$. $p = (0.366,\ 0.366,\ 0.134,\ 0.134)$. Experts 1 and 2 tie; implementations break the tie by index, so top-1 picks expert 1 with weight 0.366.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Shazeer và cộng sự, <em>Sparsely-Gated Mixture-of-Experts Layer</em>, <a href="https://arxiv.org/abs/1701.06538">arXiv 1701.06538</a> · 01/2017. Switch Transformers, <a href="https://arxiv.org/abs/2101.03961">arXiv 2101.03961</a> · 01/2021</p>
+<p><strong>VẤN ĐỀ</strong> Nhiều tham số hơn thì chứa được nhiều kiến thức hơn, nhưng trong một lớp bình thường (dày đặc), mọi tham số được dùng cho mọi token, nên chi phí tính toán tăng theo kích thước. Trong robot còn một mong muốn thứ hai: những tình huống khác nhau (chuyển động tự do, lúc vừa chạm, lúc trượt) có thể cần cách xử lý khác nhau.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Mạng dày đặc: sức chứa và tính toán tăng cùng nhau. Các công trình mixture-of-experts trước đó có ý tưởng đúng nhưng vướng sự phức tạp, chi phí truyền thông và huấn luyện bất ổn, những thứ mà Switch Transformers đặt mục tiêu sửa.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ $N$ mạng chuyên gia và một router nhỏ. Với mỗi token, router chấm điểm các chuyên gia và chỉ $k$ chuyên gia điểm cao nhất (thường $k = 1$) được chạy. Một loss phụ giữ cho các chuyên gia được dùng đều nhau.</p>
+<p><strong>KẾT QUẢ</strong> Shazeer và cộng sự báo cáo sức chứa tăng hơn 1000 lần mà hiệu quả chỉ giảm nhẹ; Switch Transformers pretrain nhanh tới 7 lần với cùng lượng tính toán. Trong VLA có lực: ForceVLA (4 chuyên gia, top-1), MoDE-VLA (8 chuyên gia, top-1), CR-VLA-Force (4 chuyên gia) đưa token lực và token thị giác qua các MoE thưa.</p>
+</div>
+<h2>1. Vấn đề: sức chứa thì tốn tính toán</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là tính toán có điều kiện: tham số nào chạy phụ thuộc vào token." class="dg-natural" width="667" height="206" viewBox="0 0 667 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Lớp dày đặc</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="205" height="54"/><text class="dg-t" x="357" y="37" text-anchor="middle">Dùng mọi tham số</text><text class="dg-s" x="357" y="53" text-anchor="middle">chi phí tăng theo kích thước</text><path class="dg-a" d="M459 41 H491"/><rect class="dg-box" x="493" y="22" width="96" height="38"/><text class="dg-t" x="541" y="45" text-anchor="middle">Đầu ra</text><text class="dg-note dg-red" x="124" y="86">✗ mô hình lớn hơn, chậm hơn</text><text class="dg-lab dg-green" x="14" y="143">MoE thưa</text><rect class="dg-box" x="124" y="120" width="96" height="38"/><text class="dg-t" x="172" y="143" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 139 H252"/><rect class="dg-key" x="254" y="112" width="269" height="54"/><text class="dg-t" x="389" y="135" text-anchor="middle">Router chọn 1 trong N chuyên gia</text><text class="dg-s" x="389" y="151" text-anchor="middle">N lần tham số, 1 lần tính toán</text><path class="dg-a" d="M523 139 H555"/><rect class="dg-box" x="557" y="120" width="96" height="38"/><text class="dg-t" x="605" y="143" text-anchor="middle">Đầu ra</text><text class="dg-note dg-green" x="124" y="184">✓ có sức chứa mà không tốn thêm</text></svg><figcaption>Thay đổi là tính toán có điều kiện: tham số nào chạy phụ thuộc vào token.</figcaption></figure>
+<h2>2. Lớp MoE</h2>
+<figure class="diagram"><svg role="img" aria-label="Router biến một token thành xác suất trên các chuyên gia; chỉ chuyên gia được chọn chạy, và đầu ra của nó được nhân với xác suất của router để router vẫn nhận được gradient." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">A SPARSE MoE LAYER: A ROUTER SENDS EACH TOKEN TO ONE (OR k) OF N EXPERTS</text>
+<rect class="dg-ext" x="20" y="120" width="140" height="56"/><text class="dg-t" x="90" y="144" text-anchor="middle">token x</text><text class="dg-s" x="90" y="162" text-anchor="middle">e.g. a force token</text>
+<rect class="dg-key" x="210" y="120" width="150" height="56"/><text class="dg-t" x="285" y="144" text-anchor="middle">router</text><text class="dg-s" x="285" y="162" text-anchor="middle">softmax(W_r x)</text>
+<path class="dg-a" d="M160 148 H210"/>
+<rect class="dg-key" x="440" y="44" width="150" height="44"/><text class="dg-t" x="515" y="64" text-anchor="middle">expert 1</text><text class="dg-s" x="515" y="80" text-anchor="middle">p = 0.70, chosen</text>
+<rect class="dg-box" x="440" y="100" width="150" height="44"/><text class="dg-t" x="515" y="120" text-anchor="middle">expert 2</text><text class="dg-s" x="515" y="136" text-anchor="middle">p = 0.16, skipped</text>
+<rect class="dg-box" x="440" y="156" width="150" height="44"/><text class="dg-t" x="515" y="176" text-anchor="middle">expert 3</text><text class="dg-s" x="515" y="192" text-anchor="middle">p = 0.11, skipped</text>
+<rect class="dg-box" x="440" y="212" width="150" height="44"/><text class="dg-t" x="515" y="232" text-anchor="middle">expert 4</text><text class="dg-s" x="515" y="248" text-anchor="middle">p = 0.04, skipped</text>
+<path class="dg-a" d="M360 140 H400 V66 H440"/><path class="dg-ad" d="M400 122 H440"/><path class="dg-ad" d="M400 140 V178 H440"/><path class="dg-ad" d="M400 178 V234 H440"/>
+<rect class="dg-box" x="660" y="44" width="150" height="56"/><text class="dg-t" x="735" y="68" text-anchor="middle">p x E1(x)</text><text class="dg-s" x="735" y="86" text-anchor="middle">gate times output</text>
+<path class="dg-a" d="M590 66 H660"/>
+<rect class="dg-box" x="840" y="44" width="120" height="56"/><text class="dg-t" x="900" y="68" text-anchor="middle">x + ...</text><text class="dg-s" x="900" y="86" text-anchor="middle">residual</text>
+<path class="dg-a" d="M810 72 H840"/>
+<text class="dg-l" x="640" y="160">capacity: 4 experts of parameters</text>
+<text class="dg-l" x="640" y="182">compute: 1 expert per token</text>
+<text class="dg-note dg-red" x="640" y="230">without a balancing loss, one expert</text><text class="dg-note dg-red" x="640" y="248">can end up taking every token</text>
+</svg><figcaption>Router biến một token thành xác suất trên các chuyên gia; chỉ chuyên gia được chọn chạy, và đầu ra của nó được nhân với xác suất của router để router vẫn nhận được gradient.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Router $W_r$</td>
+<td>token $x$</td>
+<td>$N$ xác suất</td>
+<td>chuyên gia nào nên xử lý token này</td>
+</tr>
+<tr>
+<td>Top-$k$</td>
+<td>các xác suất</td>
+<td>chuyên gia được chọn</td>
+<td>tính thưa: các chuyên gia khác không chạy</td>
+</tr>
+<tr>
+<td>Chuyên gia $E_i$</td>
+<td>token $x$</td>
+<td>vector</td>
+<td>một mạng feed-forward bình thường</td>
+</tr>
+<tr>
+<td>Kết hợp</td>
+<td>$p_i$, $E_i(x)$</td>
+<td>$p_i E_i(x)$, cộng vào $x$</td>
+<td>nhân với cổng giữ cho router học được</td>
+</tr>
+<tr>
+<td>Loss cân bằng</td>
+<td>thống kê định tuyến của một batch</td>
+<td>một số</td>
+<td>ngăn một chuyên gia ôm hết mọi việc</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Định tuyến một token, rồi kiểm tra xem một batch có cân bằng không. Phần thứ hai cho thấy loss phụ thưởng cho điều gì.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$r$</td>
+<td>logit của router cho 4 chuyên gia</td>
+<td>input</td>
+<td>$(2{,}0;\ 0{,}5;\ 0{,}1;\ -1{,}0)$ (minh họa)</td>
+</tr>
+<tr>
+<td>$p$</td>
+<td>xác suất của router</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$f_i$</td>
+<td>tỉ lệ token trong batch được gửi tới chuyên gia $i$</td>
+<td>input</td>
+<td>$(0{,}5;\ 0{,}25;\ 0{,}25;\ 0)$</td>
+</tr>
+<tr>
+<td>$P_i$</td>
+<td>xác suất router trung bình cho chuyên gia $i$</td>
+<td>input</td>
+<td>$(0{,}4;\ 0{,}3;\ 0{,}2;\ 0{,}1)$</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>trọng số loss</td>
+<td>hằng số</td>
+<td>0,01 (giá trị Switch Transformers dùng)</td>
+</tr>
+<tr>
+<td>$L_{bal}$</td>
+<td>loss cân bằng</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$p = \mathrm{softmax}(r), \qquad L_{bal} = \alpha\,N \sum_{i=1}^{N} f_i\,P_i$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$e^{2{,}0} = 7{,}389$, $e^{0{,}5} = 1{,}649$, $e^{0{,}1} = 1{,}105$, $e^{-1{,}0} = 0{,}368$; tổng $= 10{,}511$.</li>
+<li>$p = (0{,}703;\ 0{,}157;\ 0{,}105;\ 0{,}035)$. Top-1 chọn chuyên gia 1; lớp xuất ra $0{,}703 \times E_1(x)$.</li>
+<li>Batch lệch: $\sum f_i P_i = 0{,}5 \times 0{,}4 + 0{,}25 \times 0{,}3 + 0{,}25 \times 0{,}2 + 0 = 0{,}325$; $L_{bal} = 0{,}01 \times 4 \times 0{,}325 = 0{,}013$.</li>
+<li>Batch cân bằng hoàn hảo, mọi $f_i = P_i = 0{,}25$: $\sum = 4 \times 0{,}0625 = 0{,}25$; $L_{bal} = 0{,}010$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Token đi tới chuyên gia 1 với trọng số 0,703. Batch lệch tốn 0,013, batch cân bằng đạt mức nhỏ nhất 0,010.</p>
+<p><strong>Ý nghĩa.</strong> Việc định tuyến tự củng cố: chuyên gia nhận nhiều token hơn thì học nhanh hơn, giỏi hơn, rồi nhận càng nhiều token. Nhân tỉ lệ token $f$ với chính xác suất $P$ của router phạt đúng sự dồn cục đó, và nhỏ nhất khi việc được chia đều.</p>
+</div>
+<h2>3. Hai thứ được gọi là "expert" trong VLA</h2>
+<ul>
+<li><strong>MoE thưa (bài này).</strong> Nhiều chuyên gia feed-forward, một router, một hoặc vài chuyên gia hoạt động cho mỗi token. FVLMoE của ForceVLA trộn một token lực với các token VLM theo cách này, và phân tích của nó cho thấy các chuyên gia chuyên hóa theo giai đoạn của tác vụ; MoDE-VLA đưa lực và xúc giác qua một đường MoE thưa 8 chuyên gia, cộng vào dạng residual.</li>
+<li><strong>"Action expert" của π0 không phải MoE thưa.</strong> Đó là một bộ trọng số Transformer thứ hai luôn xử lý các token hành động, trong khi trọng số của VLM xử lý token ảnh và chữ. Mỗi token luôn đi vào đúng bộ của nó; không có router. Cái tên có nghĩa là "mỗi loại token một bộ trọng số riêng", đôi khi được gọi là mixture of transformers.</li>
+</ul>
+<p><strong>Mang theo:</strong> router chọn giữa vài phương án rời rạc. Một cách khác để biến tín hiệu liên tục thành rời rạc, bằng một codebook học được thay vì router: <a href="vq-vae.html">VQ-VAE</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Logit router $(1{,}0;\ 1{,}0;\ 0{,}0;\ 0{,}0)$. Xác suất là bao nhiêu, và top-1 chọn chuyên gia nào?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$e^1 = 2{,}718$ hai lần, $e^0 = 1$ hai lần; tổng $= 7{,}437$. $p = (0{,}366;\ 0{,}366;\ 0{,}134;\ 0{,}134)$. Chuyên gia 1 và 2 hòa nhau; các cài đặt phá thế hòa theo chỉ số, nên top-1 chọn chuyên gia 1 với trọng số 0,366.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">IMAGE GRID TO TOKEN SEQUENCE</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="150"/>
+<path class="dg-grp" d="M57 50 V200 M95 50 V200 M132 50 V200 M20 87 H170 M20 125 H170 M20 162 H170"/>
+<text class="dg-s" x="95" y="222" text-anchor="middle">224 x 224 pixels</text><text class="dg-s" x="95" y="238" text-anchor="middle">cut into 14 x 14 squares</text>
+<rect class="dg-box" x="220" y="70" width="150" height="56"/><text class="dg-t" x="295" y="94" text-anchor="middle">Flatten</text><text class="dg-s" x="295" y="112" text-anchor="middle">14 x 14 x 3 = 588 numbers</text>
+<rect class="dg-key" x="420" y="70" width="160" height="56"/><text class="dg-t" x="500" y="94" text-anchor="middle">Linear projection</text><text class="dg-s" x="500" y="112" text-anchor="middle">z = p W_p, size d</text>
+<rect class="dg-key" x="630" y="70" width="150" height="56"/><text class="dg-t" x="705" y="94" text-anchor="middle">+ position</text><text class="dg-s" x="705" y="112" text-anchor="middle">one vector per slot</text>
+<rect class="dg-box" x="830" y="70" width="130" height="56"/><text class="dg-t" x="895" y="94" text-anchor="middle">Transformer</text><text class="dg-s" x="895" y="112" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M170 98 H220"/><path class="dg-a" d="M370 98 H420"/><path class="dg-a" d="M580 98 H630"/><path class="dg-a" d="M780 98 H830"/>
+<text class="dg-l" x="220" y="168">one token per pixel: 50,176 tokens, about 2.5 billion attention pairs</text>
+<text class="dg-l" x="220" y="190">one token per 14 x 14 patch: 16 x 16 = 256 tokens, 65,536 pairs</text>
+<text class="dg-note dg-red" x="220" y="230">without the position vectors, shuffling the patches gives the same set of outputs</text>
+</svg>

@@ -77,8 +77,9 @@ $$\text{sampling: } x \leftarrow x + \delta \, v_\theta(x, t)$$
 
 - π0 and its relatives put a flow-matching action expert after the VLM: noise action chunk in, velocity out, ten Euler steps. TaF-VLA, ForceVLA and others reuse it.
 - Force papers keep this action head and change what it is conditioned on or what it outputs: see the [force surveys](survey-force-output.html).
+- Why this solves the "average of two good answers" problem from [imitation learning](imitation-learning.html): sampling starts from *random* noise, and different noise samples are carried to different modes. If the demonstrations go left half the time and right half the time, about half of the samples end on the left and half on the right; none is pushed to the useless middle, which is what a single squared-error regression would output.
 
-**Carry forward:** with imitation learning, tokens, attention, the Transformer and flow matching, you have the pieces of π0. The next layer is how a vision-language model (VLM) is plugged in.
+**Carry forward:** flow matching turns noise into a whole *chunk* of actions at once. Why predict a chunk at all, and how is it executed? [Action chunking](action-chunking.html).
 
 **Check question:** $x_0 = 1$, $x_1 = 5$, $t = 0.5$. What are $x_t$ and $u$?
 
@@ -158,8 +159,9 @@ $$\text{lấy mẫu: } x \leftarrow x + \delta \, v_\theta(x, t)$$
 
 - π0 và các biến thể đặt một action expert flow-matching sau VLM: vào là đoạn hành động nhiễu, ra là vận tốc, mười bước Euler. TaF-VLA, ForceVLA và các paper khác dùng lại.
 - Các paper lực giữ phần đầu ra hành động này và đổi thứ nó nhận vào hoặc xuất ra: xem [survey lực](survey-force-output.html).
+- Vì sao điều này giải được bài toán "trung bình của hai câu trả lời đúng" ở bài [imitation learning](imitation-learning.html): việc lấy mẫu bắt đầu từ nhiễu *ngẫu nhiên*, và các mẫu nhiễu khác nhau được đưa tới các mode khác nhau. Nếu demo rẽ trái một nửa số lần và rẽ phải một nửa, khoảng một nửa số mẫu kết thúc bên trái và một nửa bên phải; không mẫu nào bị đẩy vào khoảng giữa vô dụng, vốn là thứ mà một phép hồi quy sai số bình phương sẽ xuất ra.
 
-**Mang theo:** với imitation learning, token, attention, Transformer và flow matching, bạn đã có các mảnh của π0. Lớp tiếp theo là cách cắm mô hình thị giác-ngôn ngữ (VLM) vào.
+**Mang theo:** flow matching biến nhiễu thành cả một *chunk* hành động cùng lúc. Vì sao lại dự đoán cả chunk, và chunk được thực thi ra sao? [Action chunking](action-chunking.html).
 
 **Câu hỏi kiểm tra:** $x_0 = 1$, $x_1 = 5$, $t = 0{,}5$. $x_t$ và $u$ bằng bao nhiêu?
 

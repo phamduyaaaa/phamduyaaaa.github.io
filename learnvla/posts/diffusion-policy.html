@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Demonstrations often contain several right ways to act, and a regression head averages them. Diffusion Policy learns to remove noise from an action sequence, so sampling from noise lands on one valid way. The noising step and the noise target worked by hand.">
+<title>Diffusion Policy: Generating Actions by Removing Noise · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Diffusion Policy: Generating Actions by Removing Noise">
+<meta property="og:description" content="Demonstrations often contain several right ways to act, and a regression head averages them. Diffusion Policy learns to remove noise from an action sequence, so sampling from noise lands on one valid way. The noising step and the noise target worked by hand.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Diffusion Policy: Generating Actions by Removing Noise</h1>
+    <h1 data-vi>Diffusion Policy: Sinh hành động bằng cách gỡ nhiễu</h1>
+
+    <p class="post-excerpt-lead" data-en>Demonstrations often contain several right ways to act, and a regression head averages them. Diffusion Policy learns to remove noise from an action sequence, so sampling from noise lands on one valid way. The noising step and the noise target worked by hand.</p>
+    <p class="post-excerpt-lead" data-vi>Demo thường chứa nhiều cách làm đúng, và một đầu hồi quy lấy trung bình chúng. Diffusion Policy học cách gỡ nhiễu khỏi một chuỗi hành động, nên lấy mẫu từ nhiễu sẽ rơi vào một cách làm hợp lệ. Tính tay bước thêm nhiễu và mục tiêu dự đoán nhiễu.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Diffusion</span><span class="pill">Generative</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Chi et al., <em>Diffusion Policy: Visuomotor Policy Learning via Action Diffusion</em>, <a href="https://arxiv.org/abs/2303.04137">arXiv 2303.04137</a> · 03/2023. Built on DDPM, <a href="https://arxiv.org/abs/2006.11239">arXiv 2006.11239</a> · 06/2020</p>
+<p><strong>PROBLEM</strong> A policy must output a sequence of continuous actions that can have several valid modes (go around the left or the right of the obstacle), in many dimensions.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Explicit policies regress one action or a few mixture components and average or miss modes. Implicit, energy-based policies (IBC) can represent modes but need negative samples, which makes training unstable. Action bins (BET) handle modes but coarsely.</p>
+<p><strong>IDEA</strong> Treat the action sequence like an image to be generated: train a network to predict the noise that was added to a demonstrated sequence, then sample by starting from pure noise and removing it step by step, conditioned on the observation. Predict a sequence, execute part of it, re-plan.</p>
+<p><strong>RESULT</strong> Across 12 tasks from 4 benchmarks, an average improvement of 46.9% over the previous state of the art (paper's abstract). In real robots, DDIM with 100 training and 10 inference steps gave 0.1 s inference on an RTX 3080. Flow matching, used by π0, follows the same idea with straighter paths.</p>
+</div>
+<h2>1. The problem: averaging, or unstable training</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change: the network never outputs the action directly; it learns which direction makes a noisy action more like a real one." class="dg-natural" width="761" height="304" viewBox="0 0 761 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Explicit regression</text><rect class="dg-box" x="160" y="22" width="110" height="38"/><text class="dg-t" x="214" y="45" text-anchor="middle">Observation</text><path class="dg-a" d="M269 41 H301"/><rect class="dg-badbox" x="303" y="14" width="205" height="54"/><text class="dg-t" x="406" y="37" text-anchor="middle">One action</text><text class="dg-s" x="406" y="53" text-anchor="middle">squared error averages modes</text><path class="dg-a" d="M508 41 H540"/><rect class="dg-box" x="542" y="22" width="96" height="38"/><text class="dg-t" x="590" y="45" text-anchor="middle">Action</text><text class="dg-note dg-red" x="159.60000000000002" y="86">✗ left + right gives straight into the obstacle</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Implicit (IBC)</text><rect class="dg-box" x="160" y="120" width="201" height="38"/><text class="dg-t" x="260" y="143" text-anchor="middle">Observation + candidate</text><path class="dg-a" d="M360 139 H392"/><rect class="dg-badbox" x="394" y="112" width="186" height="54"/><text class="dg-t" x="487" y="135" text-anchor="middle">Energy model</text><text class="dg-s" x="487" y="151" text-anchor="middle">needs negatives, unstable</text><path class="dg-a" d="M580 139 H612"/><rect class="dg-box" x="614" y="120" width="132" height="38"/><text class="dg-t" x="681" y="143" text-anchor="middle">Best candidate</text><text class="dg-note dg-red" x="159.60000000000002" y="184">✗ represents modes, hard to train</text><text class="dg-lab dg-green" x="14" y="241">Diffusion Policy</text><rect class="dg-box" x="160" y="218" width="170" height="38"/><text class="dg-t" x="245" y="241" text-anchor="middle">Noise + observation</text><path class="dg-a" d="M330 237 H362"/><rect class="dg-key" x="364" y="210" width="178" height="54"/><text class="dg-t" x="453" y="233" text-anchor="middle">Denoise step by step</text><text class="dg-s" x="453" y="249" text-anchor="middle">learned noise predictor</text><path class="dg-a" d="M542 237 H574"/><rect class="dg-box" x="576" y="218" width="140" height="38"/><text class="dg-t" x="646" y="241" text-anchor="middle">Action sequence</text><text class="dg-note dg-green" x="159.60000000000002" y="282">✓ samples one mode, trains as regression</text></svg><figcaption>The change: the network never outputs the action directly; it learns which direction makes a noisy action more like a real one.</figcaption></figure>
+<h2>2. Training and sampling</h2>
+<figure class="diagram"><svg role="img" aria-label="Top: training adds noise of a random level to a demonstration and asks the network to name the noise. Bottom: sampling starts from noise and repeatedly removes the predicted noise." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TRAINING: ADD NOISE, PREDICT IT    SAMPLING: START FROM NOISE, REMOVE IT STEP BY STEP</text>
+<rect class="dg-ext" x="20" y="50" width="160" height="56"/><text class="dg-t" x="100" y="74" text-anchor="middle">demo chunk a0</text><text class="dg-s" x="100" y="92" text-anchor="middle">T_p future actions</text>
+<rect class="dg-box" x="220" y="50" width="190" height="56"/><text class="dg-t" x="315" y="74" text-anchor="middle">add noise, level k</text><text class="dg-s" x="315" y="92" text-anchor="middle">mix of a0 and noise eps</text>
+<rect class="dg-key" x="450" y="50" width="190" height="56"/><text class="dg-t" x="545" y="74" text-anchor="middle">network eps_theta</text><text class="dg-s" x="545" y="92" text-anchor="middle">sees a_k, k, observation</text>
+<rect class="dg-box" x="680" y="50" width="280" height="56"/><text class="dg-t" x="820" y="74" text-anchor="middle">loss = | eps_theta - eps |^2</text><text class="dg-s" x="820" y="92" text-anchor="middle">plain regression on the noise</text>
+<path class="dg-a" d="M180 78 H220"/><path class="dg-a" d="M410 78 H450"/><path class="dg-a" d="M640 78 H680"/>
+<rect class="dg-ext" x="20" y="170" width="160" height="56"/><text class="dg-t" x="100" y="194" text-anchor="middle">pure noise</text><text class="dg-s" x="100" y="212" text-anchor="middle">a_K ~ N(0, I)</text>
+<rect class="dg-key" x="220" y="170" width="190" height="56"/><text class="dg-t" x="315" y="194" text-anchor="middle">denoise step</text><text class="dg-s" x="315" y="212" text-anchor="middle">remove predicted noise</text>
+<rect class="dg-key" x="450" y="170" width="190" height="56"/><text class="dg-t" x="545" y="194" text-anchor="middle">... repeat</text><text class="dg-s" x="545" y="212" text-anchor="middle">100 in training, 10 with DDIM</text>
+<rect class="dg-box" x="680" y="170" width="140" height="56"/><text class="dg-t" x="750" y="194" text-anchor="middle">action chunk</text><text class="dg-s" x="750" y="212" text-anchor="middle">T_p steps planned</text>
+<rect class="dg-box" x="850" y="170" width="110" height="56"/><text class="dg-t" x="905" y="194" text-anchor="middle">run T_a</text><text class="dg-s" x="905" y="212" text-anchor="middle">then re-plan</text>
+<path class="dg-a" d="M180 198 H220"/><path class="dg-a" d="M410 198 H450"/><path class="dg-a" d="M640 198 H680"/><path class="dg-a" d="M820 198 H850"/>
+<text class="dg-l" x="20" y="270">different starting noise ends in different valid actions: the policy samples, it does not average</text>
+</svg><figcaption>Top: training adds noise of a random level to a demonstration and asks the network to name the noise. Bottom: sampling starts from noise and repeatedly removes the predicted noise.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Noise schedule $\bar\alpha_k$</td>
+<td>step $k$</td>
+<td>how much signal is left</td>
+<td>$\bar\alpha$ near 1: almost clean; near 0: almost pure noise</td>
+</tr>
+<tr>
+<td>Noise predictor $\varepsilon_\theta$</td>
+<td>noisy chunk $a_k$, level $k$, observation</td>
+<td>predicted noise</td>
+<td>a CNN or Transformer conditioned on images and state</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>$\varepsilon_\theta$, true $\varepsilon$</td>
+<td>$\lVert\varepsilon_\theta - \varepsilon\rVert^2$</td>
+<td>plain regression, stable to train</td>
+</tr>
+<tr>
+<td>Sampler</td>
+<td>noise $a_K$</td>
+<td>clean chunk $a_0$</td>
+<td>$K$ denoising steps (DDIM allows fewer at inference)</td>
+</tr>
+<tr>
+<td>Receding horizon</td>
+<td>observation horizon $T_o$, prediction $T_p$, execution $T_a$</td>
+<td>executed actions</td>
+<td>plan $T_p$ steps, run $T_a$, observe, plan again</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> One training example in one dimension: make the noisy input, then check that predicting the noise is the same as knowing the clean action.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_0$</td>
+<td>clean demonstrated action</td>
+<td>input</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>Gaussian noise sample</td>
+<td>input</td>
+<td>−0.5</td>
+</tr>
+<tr>
+<td>$\bar\alpha_k$</td>
+<td>signal kept at level $k$</td>
+<td>constant</td>
+<td>0.64</td>
+</tr>
+<tr>
+<td>$a_k$</td>
+<td>noisy action fed to the network</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat\varepsilon$</td>
+<td>network's noise prediction</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a_0$</td>
+<td>clean action implied by $\hat\varepsilon$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$a_k = \sqrt{\bar\alpha_k}\,a_0 + \sqrt{1-\bar\alpha_k}\,\varepsilon, \qquad \hat a_0 = \frac{a_k - \sqrt{1-\bar\alpha_k}\,\hat\varepsilon}{\sqrt{\bar\alpha_k}}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\sqrt{0.64} = 0.8$, $\sqrt{0.36} = 0.6$.</li>
+<li>$a_k = 0.8 \times 0.6 + 0.6 \times (-0.5) = 0.48 - 0.30 = 0.18$.</li>
+<li>A perfect network outputs $\hat\varepsilon = -0.5$; then $\hat a_0 = (0.18 + 0.30) / 0.8 = 0.6$. Exact.</li>
+<li>A network that outputs $\hat\varepsilon = -0.4$ has loss $(-0.4 + 0.5)^2 = 0.01$ and implies $\hat a_0 = (0.18 + 0.24)/0.8 = 0.525$.</li>
+</ol>
+<p><strong>Result.</strong> The noisy input is 0.18; naming the noise recovers 0.6, and a noise error of 0.1 becomes an action error of 0.075.</p>
+<p><strong>Why it matters.</strong> Predicting the noise is a regression with a single right answer per example, so it trains stably, unlike energy models. Yet the <em>sampler</em> can end in different modes: if half the demonstrations go to −1 and half to +1, a noisy point near −1 gets denoised toward −1 and one near +1 toward +1. Repeating this over many small steps turns random noise into one of the demonstrated behaviours instead of their average.</p>
+</div>
+<h2>3. Design lessons that carried over</h2>
+<ul>
+<li><strong>Position, not velocity.</strong> The paper found Diffusion Policy "consistently" better with position commands than with velocity commands, the opposite of many earlier behavior-cloning methods (<a href="action-spaces.html">action spaces</a>).</li>
+<li><strong>Chunks with re-planning.</strong> Predicting $T_p$ steps and executing $T_a$ of them gives smooth motion and tolerates latency; it is the same idea as <a href="action-chunking.html">action chunking</a>.</li>
+<li><strong>Speed is the cost.</strong> Each action chunk needs several network calls. DDIM cut it to 10 in the paper's real-robot runs; <a href="flowmatching.html">flow matching</a> uses straighter paths so that about 10 Euler steps suffice, and is what π0 uses.</li>
+<li><strong>Force papers on this site</strong> keep a diffusion or flow head and change its inputs or outputs: TA-VLA adds torque to the diffusion target; FACT co-denoises force with the action.</li>
+</ul>
+<p><strong>Carry forward:</strong> the curved noise-removal path needs many steps. Straightening it is the idea of <a href="flowmatching.html">flow matching</a>.</p>
+<p><strong>Check question:</strong> $a_0 = -0.2$, $\varepsilon = 1.0$, $\bar\alpha_k = 0.36$. What is $a_k$, and what $\hat a_0$ does a perfect prediction give back?</p>
+<details>
+<summary>Answer</summary>
+<p>$\sqrt{0.36} = 0.6$, $\sqrt{0.64} = 0.8$. $a_k = 0.6 \times (-0.2) + 0.8 \times 1.0 = -0.12 + 0.8 = 0.68$. With $\hat\varepsilon = 1.0$: $\hat a_0 = (0.68 - 0.8)/0.6 = -0.2$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Chi và cộng sự, <em>Diffusion Policy: Visuomotor Policy Learning via Action Diffusion</em>, <a href="https://arxiv.org/abs/2303.04137">arXiv 2303.04137</a> · 03/2023. Dựa trên DDPM, <a href="https://arxiv.org/abs/2006.11239">arXiv 2006.11239</a> · 06/2020</p>
+<p><strong>VẤN ĐỀ</strong> Chính sách phải xuất một chuỗi hành động liên tục có thể có nhiều mode hợp lệ (vòng qua bên trái hay bên phải vật cản), trong nhiều chiều.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Chính sách tường minh hồi quy một hành động hoặc vài thành phần hỗn hợp, nên lấy trung bình hoặc bỏ sót mode. Chính sách ngầm dựa trên năng lượng (IBC) biểu diễn được nhiều mode nhưng cần mẫu âm, khiến huấn luyện bất ổn. Chia hành động thành bin (BET) xử lý được mode nhưng thô.</p>
+<p><strong>Ý TƯỞNG</strong> Coi chuỗi hành động như một bức ảnh cần sinh: huấn luyện mạng đoán phần nhiễu đã được cộng vào một chuỗi demo, rồi lấy mẫu bằng cách bắt đầu từ nhiễu thuần và gỡ nó từng bước, có điều kiện theo quan sát. Dự đoán cả chuỗi, thực thi một phần, rồi lập kế hoạch lại.</p>
+<p><strong>KẾT QUẢ</strong> Trên 12 tác vụ thuộc 4 benchmark, cải thiện trung bình 46,9% so với kết quả tốt nhất trước đó (theo abstract). Trên robot thật, DDIM với 100 bước huấn luyện và 10 bước suy luận cho thời gian suy luận 0,1 s trên RTX 3080. Flow matching, mà π0 dùng, đi theo cùng ý tưởng với đường đi thẳng hơn.</p>
+</div>
+<h2>1. Vấn đề: lấy trung bình, hoặc huấn luyện bất ổn</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi: mạng không bao giờ xuất trực tiếp hành động; nó học hướng nào làm một hành động nhiễu giống hành động thật hơn." class="dg-natural" width="724" height="304" viewBox="0 0 724 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Hồi quy tường minh</text><rect class="dg-box" x="153" y="22" width="96" height="38"/><text class="dg-t" x="201" y="45" text-anchor="middle">Quan sát</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="295" height="54"/><text class="dg-t" x="431" y="37" text-anchor="middle">Một hành động</text><text class="dg-s" x="431" y="53" text-anchor="middle">sai số bình phương lấy trung bình các mode</text><path class="dg-a" d="M578 41 H610"/><rect class="dg-box" x="612" y="22" width="96" height="38"/><text class="dg-t" x="660" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="153.2" y="86">✗ trái + phải thành lao thẳng vào vật cản</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Ngầm (IBC)</text><rect class="dg-box" x="153" y="120" width="170" height="38"/><text class="dg-t" x="238" y="143" text-anchor="middle">Quan sát + ứng viên</text><path class="dg-a" d="M324 139 H356"/><rect class="dg-badbox" x="358" y="112" width="163" height="54"/><text class="dg-t" x="439" y="135" text-anchor="middle">Mô hình năng lượng</text><text class="dg-s" x="439" y="151" text-anchor="middle">cần mẫu âm, bất ổn</text><path class="dg-a" d="M520 139 H552"/><rect class="dg-box" x="554" y="120" width="155" height="38"/><text class="dg-t" x="632" y="143" text-anchor="middle">Ứng viên tốt nhất</text><text class="dg-note dg-red" x="153.2" y="184">✗ biểu diễn được mode, khó huấn luyện</text><text class="dg-lab dg-green" x="14" y="241">Diffusion Policy</text><rect class="dg-box" x="153" y="218" width="148" height="38"/><text class="dg-t" x="227" y="241" text-anchor="middle">Nhiễu + quan sát</text><path class="dg-a" d="M301 237 H333"/><rect class="dg-key" x="335" y="210" width="167" height="54"/><text class="dg-t" x="418" y="233" text-anchor="middle">Gỡ nhiễu từng bước</text><text class="dg-s" x="418" y="249" text-anchor="middle">bộ đoán nhiễu học được</text><path class="dg-a" d="M502 237 H534"/><rect class="dg-box" x="536" y="218" width="140" height="38"/><text class="dg-t" x="606" y="241" text-anchor="middle">Chuỗi hành động</text><text class="dg-note dg-green" x="153.2" y="282">✓ lấy mẫu một mode, huấn luyện như hồi quy</text></svg><figcaption>Thay đổi: mạng không bao giờ xuất trực tiếp hành động; nó học hướng nào làm một hành động nhiễu giống hành động thật hơn.</figcaption></figure>
+<h2>2. Huấn luyện và lấy mẫu</h2>
+<figure class="diagram"><svg role="img" aria-label="Trên: huấn luyện cộng nhiễu ở một mức ngẫu nhiên vào một demo và bắt mạng gọi tên phần nhiễu. Dưới: lấy mẫu bắt đầu từ nhiễu và lặp đi lặp lại việc gỡ phần nhiễu được dự đoán." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TRAINING: ADD NOISE, PREDICT IT    SAMPLING: START FROM NOISE, REMOVE IT STEP BY STEP</text>
+<rect class="dg-ext" x="20" y="50" width="160" height="56"/><text class="dg-t" x="100" y="74" text-anchor="middle">demo chunk a0</text><text class="dg-s" x="100" y="92" text-anchor="middle">T_p future actions</text>
+<rect class="dg-box" x="220" y="50" width="190" height="56"/><text class="dg-t" x="315" y="74" text-anchor="middle">add noise, level k</text><text class="dg-s" x="315" y="92" text-anchor="middle">mix of a0 and noise eps</text>
+<rect class="dg-key" x="450" y="50" width="190" height="56"/><text class="dg-t" x="545" y="74" text-anchor="middle">network eps_theta</text><text class="dg-s" x="545" y="92" text-anchor="middle">sees a_k, k, observation</text>
+<rect class="dg-box" x="680" y="50" width="280" height="56"/><text class="dg-t" x="820" y="74" text-anchor="middle">loss = | eps_theta - eps |^2</text><text class="dg-s" x="820" y="92" text-anchor="middle">plain regression on the noise</text>
+<path class="dg-a" d="M180 78 H220"/><path class="dg-a" d="M410 78 H450"/><path class="dg-a" d="M640 78 H680"/>
+<rect class="dg-ext" x="20" y="170" width="160" height="56"/><text class="dg-t" x="100" y="194" text-anchor="middle">pure noise</text><text class="dg-s" x="100" y="212" text-anchor="middle">a_K ~ N(0, I)</text>
+<rect class="dg-key" x="220" y="170" width="190" height="56"/><text class="dg-t" x="315" y="194" text-anchor="middle">denoise step</text><text class="dg-s" x="315" y="212" text-anchor="middle">remove predicted noise</text>
+<rect class="dg-key" x="450" y="170" width="190" height="56"/><text class="dg-t" x="545" y="194" text-anchor="middle">... repeat</text><text class="dg-s" x="545" y="212" text-anchor="middle">100 in training, 10 with DDIM</text>
+<rect class="dg-box" x="680" y="170" width="140" height="56"/><text class="dg-t" x="750" y="194" text-anchor="middle">action chunk</text><text class="dg-s" x="750" y="212" text-anchor="middle">T_p steps planned</text>
+<rect class="dg-box" x="850" y="170" width="110" height="56"/><text class="dg-t" x="905" y="194" text-anchor="middle">run T_a</text><text class="dg-s" x="905" y="212" text-anchor="middle">then re-plan</text>
+<path class="dg-a" d="M180 198 H220"/><path class="dg-a" d="M410 198 H450"/><path class="dg-a" d="M640 198 H680"/><path class="dg-a" d="M820 198 H850"/>
+<text class="dg-l" x="20" y="270">different starting noise ends in different valid actions: the policy samples, it does not average</text>
+</svg><figcaption>Trên: huấn luyện cộng nhiễu ở một mức ngẫu nhiên vào một demo và bắt mạng gọi tên phần nhiễu. Dưới: lấy mẫu bắt đầu từ nhiễu và lặp đi lặp lại việc gỡ phần nhiễu được dự đoán.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ phận</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lịch nhiễu $\bar\alpha_k$</td>
+<td>bước $k$</td>
+<td>còn lại bao nhiêu tín hiệu</td>
+<td>$\bar\alpha$ gần 1: gần sạch; gần 0: gần như nhiễu thuần</td>
+</tr>
+<tr>
+<td>Bộ đoán nhiễu $\varepsilon_\theta$</td>
+<td>chunk nhiễu $a_k$, mức $k$, quan sát</td>
+<td>nhiễu dự đoán</td>
+<td>một CNN hoặc Transformer có điều kiện theo ảnh và trạng thái</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>$\varepsilon_\theta$, $\varepsilon$ thật</td>
+<td>$\lVert\varepsilon_\theta - \varepsilon\rVert^2$</td>
+<td>hồi quy thuần, huấn luyện ổn định</td>
+</tr>
+<tr>
+<td>Bộ lấy mẫu</td>
+<td>nhiễu $a_K$</td>
+<td>chunk sạch $a_0$</td>
+<td>$K$ bước gỡ nhiễu (DDIM cho phép ít bước hơn khi suy luận)</td>
+</tr>
+<tr>
+<td>Horizon lùi dần</td>
+<td>horizon quan sát $T_o$, dự đoán $T_p$, thực thi $T_a$</td>
+<td>hành động được thực thi</td>
+<td>lên kế hoạch $T_p$ bước, chạy $T_a$, quan sát, lên kế hoạch lại</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Một mẫu huấn luyện một chiều: tạo đầu vào nhiễu, rồi kiểm tra rằng đoán đúng nhiễu cũng chính là biết được hành động sạch.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_0$</td>
+<td>hành động demo sạch</td>
+<td>input</td>
+<td>0,6</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>mẫu nhiễu Gauss</td>
+<td>input</td>
+<td>−0,5</td>
+</tr>
+<tr>
+<td>$\bar\alpha_k$</td>
+<td>phần tín hiệu giữ lại ở mức $k$</td>
+<td>hằng số</td>
+<td>0,64</td>
+</tr>
+<tr>
+<td>$a_k$</td>
+<td>hành động nhiễu đưa vào mạng</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat\varepsilon$</td>
+<td>nhiễu mà mạng dự đoán</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a_0$</td>
+<td>hành động sạch suy ra từ $\hat\varepsilon$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$a_k = \sqrt{\bar\alpha_k}\,a_0 + \sqrt{1-\bar\alpha_k}\,\varepsilon, \qquad \hat a_0 = \frac{a_k - \sqrt{1-\bar\alpha_k}\,\hat\varepsilon}{\sqrt{\bar\alpha_k}}$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$\sqrt{0{,}64} = 0{,}8$, $\sqrt{0{,}36} = 0{,}6$.</li>
+<li>$a_k = 0{,}8 \times 0{,}6 + 0{,}6 \times (-0{,}5) = 0{,}48 - 0{,}30 = 0{,}18$.</li>
+<li>Mạng hoàn hảo xuất $\hat\varepsilon = -0{,}5$; khi đó $\hat a_0 = (0{,}18 + 0{,}30) / 0{,}8 = 0{,}6$. Chính xác.</li>
+<li>Mạng xuất $\hat\varepsilon = -0{,}4$ có loss $(-0{,}4 + 0{,}5)^2 = 0{,}01$ và suy ra $\hat a_0 = (0{,}18 + 0{,}24)/0{,}8 = 0{,}525$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Đầu vào nhiễu là 0,18; gọi đúng tên nhiễu thì lấy lại được 0,6, và sai 0,1 ở nhiễu thành sai 0,075 ở hành động.</p>
+<p><strong>Ý nghĩa.</strong> Đoán nhiễu là một bài hồi quy với một đáp án đúng duy nhất cho mỗi mẫu, nên huấn luyện ổn định, khác với mô hình năng lượng. Thế nhưng <em>bộ lấy mẫu</em> có thể kết thúc ở các mode khác nhau: nếu một nửa số demo đi tới −1 và một nửa tới +1, một điểm nhiễu gần −1 được gỡ nhiễu về phía −1, còn điểm gần +1 về phía +1. Lặp lại qua nhiều bước nhỏ biến nhiễu ngẫu nhiên thành một trong các hành vi đã được làm mẫu, chứ không phải trung bình của chúng.</p>
+</div>
+<h2>3. Những bài học thiết kế được mang theo</h2>
+<ul>
+<li><strong>Vị trí, không phải vận tốc.</strong> Paper thấy Diffusion Policy "luôn" tốt hơn với lệnh vị trí so với lệnh vận tốc, ngược với nhiều phương pháp behavior cloning trước đó (<a href="action-spaces.html">không gian hành động</a>).</li>
+<li><strong>Chunk kèm lập kế hoạch lại.</strong> Dự đoán $T_p$ bước và thực thi $T_a$ bước cho chuyển động mượt và chịu được độ trễ; đó cũng là ý tưởng của <a href="action-chunking.html">action chunking</a>.</li>
+<li><strong>Cái giá là tốc độ.</strong> Mỗi chunk hành động cần nhiều lần gọi mạng. DDIM giảm xuống 10 trong các lượt chạy robot thật của paper; <a href="flowmatching.html">flow matching</a> dùng đường đi thẳng hơn để khoảng 10 bước Euler là đủ, và là thứ π0 dùng.</li>
+<li><strong>Các bài lực trên trang này</strong> giữ một đầu diffusion hoặc flow và đổi đầu vào hoặc đầu ra của nó: TA-VLA thêm mô-men vào mục tiêu diffusion; FACT khử nhiễu lực cùng với hành động.</li>
+</ul>
+<p><strong>Mang theo:</strong> đường gỡ nhiễu cong cần nhiều bước. Làm nó thẳng ra là ý tưởng của <a href="flowmatching.html">flow matching</a>.</p>
+<p><strong>Câu kiểm tra:</strong> $a_0 = -0{,}2$, $\varepsilon = 1{,}0$, $\bar\alpha_k = 0{,}36$. $a_k$ bằng bao nhiêu, và một dự đoán hoàn hảo cho lại $\hat a_0$ bằng bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\sqrt{0{,}36} = 0{,}6$, $\sqrt{0{,}64} = 0{,}8$. $a_k = 0{,}6 \times (-0{,}2) + 0{,}8 \times 1{,}0 = -0{,}12 + 0{,}8 = 0{,}68$. Với $\hat\varepsilon = 1{,}0$: $\hat a_0 = (0{,}68 - 0{,}8)/0{,}6 = -0{,}2$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

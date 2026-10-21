@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Cameras miss the exact joint angles, the gripper opening and the force at the wrist; the robot's own sensors give them directly. Which signals go into the state vector, how forward kinematics turns angles into a gripper pose, and why a long state history can make a policy lazy.">
+<title>Proprioception: What the Robot Knows About Its Own Body · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Proprioception: What the Robot Knows About Its Own Body">
+<meta property="og:description" content="Cameras miss the exact joint angles, the gripper opening and the force at the wrist; the robot's own sensors give them directly. Which signals go into the state vector, how forward kinematics turns angles into a gripper pose, and why a long state history can make a policy lazy.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Proprioception: What the Robot Knows About Its Own Body</h1>
+    <h1 data-vi>Proprioception: Robot biết gì về chính cơ thể nó</h1>
+
+    <p class="post-excerpt-lead" data-en>Cameras miss the exact joint angles, the gripper opening and the force at the wrist; the robot's own sensors give them directly. Which signals go into the state vector, how forward kinematics turns angles into a gripper pose, and why a long state history can make a policy lazy.</p>
+    <p class="post-excerpt-lead" data-vi>Camera không thấy chính xác góc khớp, độ mở tay kẹp hay lực ở cổ tay; cảm biến của chính robot cho những thứ đó trực tiếp. Tín hiệu nào vào vector trạng thái, động học thuận biến góc khớp thành pose tay kẹp ra sao, và vì sao lịch sử trạng thái dài có thể làm chính sách lười.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Proprioception</span><span class="pill">State</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>CONCEPT</strong> Proprioception, the robot's sense of its own body. The pitfall below is from <em>Fighting Copycat Agents in Behavioral Cloning from Observation Histories</em>, <a href="https://arxiv.org/abs/2010.14876">arXiv 2010.14876</a> · 10/2020</p>
+<p><strong>PROBLEM</strong> A policy must know where its own arm and gripper are, and how hard they push, to the millimetre and the newton.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Image-only policies must infer the arm's configuration from pixels, which is imprecise and fails when the arm hides itself. Adding a long history of states fails differently: the policy learns to repeat the expert's previous action, which the copycat paper calls "cheating", and stops reacting.</p>
+<p><strong>IDEA</strong> Give the policy a compact, normalised state vector read directly from the robot: joint angles (or the gripper pose computed from them), gripper width, and for force tasks the wrench or joint torques. Usually only the current step.</p>
+<p><strong>RESULT</strong> Every VLA on this site takes such a vector: 7 numbers for a single UR5e arm with a gripper in π0, 13 in Facet-0 and CR-VLA-Force (pose, gripper, wrench), and a 10-step wrench window in some force papers.</p>
+</div>
+<h2>1. The problem: pixels are a poor ruler</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The camera answers &quot;where is the cup&quot;; proprioception answers &quot;where am I&quot;." class="dg-natural" width="746" height="304" viewBox="0 0 746 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Images only</text><rect class="dg-box" x="153" y="22" width="96" height="38"/><text class="dg-t" x="201" y="45" text-anchor="middle">Camera</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="224" height="54"/><text class="dg-t" x="395" y="37" text-anchor="middle">Infer arm pose from pixels</text><text class="dg-s" x="395" y="53" text-anchor="middle">imprecise, occluded</text><path class="dg-a" d="M507 41 H539"/><rect class="dg-box" x="541" y="22" width="96" height="38"/><text class="dg-t" x="589" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="153.2" y="86">✗ millimetres lost, gripper state guessed</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Long state history</text><rect class="dg-box" x="153" y="120" width="125" height="38"/><text class="dg-t" x="216" y="143" text-anchor="middle">Last k states</text><path class="dg-a" d="M278 139 H310"/><rect class="dg-badbox" x="312" y="112" width="178" height="54"/><text class="dg-t" x="401" y="135" text-anchor="middle">Copy the last action</text><text class="dg-s" x="401" y="151" text-anchor="middle">looks good in training</text><path class="dg-a" d="M490 139 H522"/><rect class="dg-box" x="524" y="120" width="96" height="38"/><text class="dg-t" x="572" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="153.2" y="184">✗ ignores the scene, does not react</text><text class="dg-lab dg-green" x="14" y="241">Proprioception</text><rect class="dg-box" x="153" y="218" width="193" height="38"/><text class="dg-t" x="250" y="241" text-anchor="middle">Encoders, gripper, F/T</text><path class="dg-a" d="M346 237 H378"/><rect class="dg-key" x="380" y="210" width="178" height="54"/><text class="dg-t" x="469" y="233" text-anchor="middle">Current state vector</text><text class="dg-s" x="469" y="249" text-anchor="middle">normalised</text><path class="dg-a" d="M558 237 H590"/><rect class="dg-box" x="592" y="218" width="140" height="38"/><text class="dg-t" x="662" y="241" text-anchor="middle">Policy + images</text><text class="dg-note dg-green" x="153.2" y="282">✓ exact body state, scene still from the camera</text></svg><figcaption>The camera answers "where is the cup"; proprioception answers "where am I".</figcaption></figure>
+<h2>2. What goes into the state vector</h2>
+<figure class="diagram"><svg role="img" aria-label="The robot's own sensors give the state directly; forward kinematics turns joint angles into a gripper pose. The policy reads it next to the camera tokens." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">WHAT THE ROBOT KNOWS ABOUT ITS OWN BODY</text>
+<rect class="dg-ext" x="20" y="44" width="190" height="50"/><text class="dg-t" x="115" y="66" text-anchor="middle">joint encoders</text><text class="dg-s" x="115" y="82" text-anchor="middle">angles q, velocities</text>
+<rect class="dg-ext" x="20" y="104" width="190" height="50"/><text class="dg-t" x="115" y="126" text-anchor="middle">motor currents / torques</text><text class="dg-s" x="115" y="142" text-anchor="middle">how hard each joint works</text>
+<rect class="dg-ext" x="20" y="164" width="190" height="50"/><text class="dg-t" x="115" y="186" text-anchor="middle">gripper</text><text class="dg-s" x="115" y="202" text-anchor="middle">opening width</text>
+<rect class="dg-ext" x="20" y="224" width="190" height="50"/><text class="dg-t" x="115" y="246" text-anchor="middle">wrist F/T sensor</text><text class="dg-s" x="115" y="262" text-anchor="middle">wrench, 6 numbers</text>
+<rect class="dg-box" x="270" y="44" width="190" height="50"/><text class="dg-t" x="365" y="66" text-anchor="middle">forward kinematics</text><text class="dg-s" x="365" y="82" text-anchor="middle">q to gripper pose</text>
+<path class="dg-a" d="M210 69 H270"/>
+<rect class="dg-key" x="520" y="104" width="190" height="110"/><text class="dg-t" x="615" y="146" text-anchor="middle">state vector s</text><text class="dg-s" x="615" y="166" text-anchor="middle">normalised,</text><text class="dg-s" x="615" y="182" text-anchor="middle">usually the current step only</text>
+<path class="dg-a" d="M460 69 H490 V130 H520"/><path class="dg-a" d="M210 129 H520"/><path class="dg-a" d="M210 189 H520"/><path class="dg-a" d="M210 249 H490 V200 H520"/>
+<rect class="dg-box" x="770" y="104" width="190" height="110"/><text class="dg-t" x="865" y="146" text-anchor="middle">policy</text><text class="dg-s" x="865" y="166" text-anchor="middle">with the camera tokens</text><text class="dg-s" x="865" y="182" text-anchor="middle">and the instruction</text>
+<path class="dg-a" d="M710 159 H770"/>
+<text class="dg-note dg-red" x="520" y="250">a long state history lets the policy copy its last action</text>
+</svg><figcaption>The robot's own sensors give the state directly; forward kinematics turns joint angles into a gripper pose. The policy reads it next to the camera tokens.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Source</th>
+<th>Size (typical arm)</th>
+<th>Tells the policy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joint angles $q$</td>
+<td>encoders in each joint</td>
+<td>6 or 7</td>
+<td>the full configuration of the arm</td>
+</tr>
+<tr>
+<td>Joint velocities $\dot q$</td>
+<td>differentiated encoders</td>
+<td>6 or 7</td>
+<td>how fast it is moving</td>
+</tr>
+<tr>
+<td>Gripper pose</td>
+<td>forward kinematics of $q$</td>
+<td>6 or 7 (position + rotation)</td>
+<td>where the tool is in space</td>
+</tr>
+<tr>
+<td>Gripper width</td>
+<td>gripper encoder</td>
+<td>1</td>
+<td>open, closed, holding something</td>
+</tr>
+<tr>
+<td>Joint torques / motor currents</td>
+<td>torque sensors or current</td>
+<td>6 or 7</td>
+<td>load on each joint (<a href="ta-vla.html">TA-VLA</a>)</td>
+</tr>
+<tr>
+<td>Wrench</td>
+<td>wrist F/T sensor</td>
+<td>6</td>
+<td>contact force and torque at the tool (<a href="force-tactile-sensing.html">force sensing</a>)</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> The camera sees the gripper; the encoders give the angles. Forward kinematics computes the gripper position from the angles, and the same formula shows how a tiny angle error turns into millimetres at the tool.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$l_1,\ l_2$</td>
+<td>lengths of the two links of a planar arm</td>
+<td>constants</td>
+<td>0.4 m, 0.3 m</td>
+</tr>
+<tr>
+<td>$\theta_1,\ \theta_2$</td>
+<td>joint angles ($\theta_2$ relative to link 1)</td>
+<td>input</td>
+<td>30°, 45°</td>
+</tr>
+<tr>
+<td>$(x, y)$</td>
+<td>tool position</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta\theta_1$</td>
+<td>an error on joint 1</td>
+<td>input</td>
+<td>0.1°</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$x = l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2), \qquad y = l_1\sin\theta_1 + l_2\sin(\theta_1+\theta_2)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\cos 30° = 0.866$, $\sin 30° = 0.5$, $\cos 75° = 0.259$, $\sin 75° = 0.966$.</li>
+<li>$x = 0.4 \times 0.866 + 0.3 \times 0.259 = 0.346 + 0.078 = 0.424$ m.</li>
+<li>$y = 0.4 \times 0.5 + 0.3 \times 0.966 = 0.200 + 0.290 = 0.490$ m.</li>
+<li>The tool is $\sqrt{0.424^2 + 0.490^2} = 0.648$ m from joint 1. An error of $0.1° = 0.00175$ rad there moves it by $0.648 \times 0.00175 = 0.0011$ m.</li>
+</ol>
+<p><strong>Result.</strong> The tool is at $(0.424, 0.490)$ m, and a 0.1° error at the shoulder already costs about 1.1 mm at the tool.</p>
+<p><strong>Why it matters.</strong> Encoders measure angles far better than a camera can, so the state vector, not the image, is what fixes the arm's own position. The same lever effect is why a millimetre-precise insertion is hard: errors at the base are amplified at the tip.</p>
+</div>
+<h2>3. The copycat trap</h2>
+<p>At 50 Hz, the expert's action at step $t$ is almost the same as at step $t-1$, and a history of states reveals the previous action (the change from one state to the next <em>is</em> the previous action). A network given that history can reach a low training loss by predicting "do what you just did". At test time it keeps doing what it just did, also when the scene says to stop or turn. The copycat paper names this and proposes a fix that removes the previous-action information from the features. The common practical answers in VLAs are simpler: feed only the current state, add noise or dropout to the state, and let the images and the instruction carry the task.</p>
+<p>Force is the exception that proves the rule. A wrench window of a few steps (10 samples in Facet-0) is kept on purpose, because contact onset, a jam and a slip are patterns over time that one sample cannot show.</p>
+<h2>4. In VLA</h2>
+<ul>
+<li>π0 puts the state in its own block of tokens, read by the action expert. Robots with fewer joints are zero-padded to a fixed size (<a href="cross-embodiment-data.html">cross-embodiment data</a>).</li>
+<li>Each dimension is normalised, usually with dataset statistics, so that a joint angle in radians and a gripper width in metres arrive on similar scales.</li>
+<li>Force papers differ mainly in which body signals they add: wrist wrench (ForceVLA), joint torque from motor current (TA-VLA), or a torque-estimated external force (FWBC-VLA).</li>
+</ul>
+<p><strong>Carry forward:</strong> the state says where the arm <em>is</em>; the action says where it should <em>go</em>, and there are several ways to write that down: <a href="action-spaces.html">action spaces</a>.</p>
+<p><strong>Check question:</strong> Same arm, $\theta_1 = 0°$, $\theta_2 = 90°$. Where is the tool?</p>
+<details>
+<summary>Answer</summary>
+<p>$x = 0.4 \times 1 + 0.3 \times \cos 90° = 0.4$ m; $y = 0.4 \times 0 + 0.3 \times \sin 90° = 0.3$ m. The tool is at $(0.4, 0.3)$ m: link 1 along $x$, link 2 pointing straight up.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>KHÁI NIỆM</strong> Proprioception, giác quan của robot về chính cơ thể nó. Cái bẫy ở dưới lấy từ <em>Fighting Copycat Agents in Behavioral Cloning from Observation Histories</em>, <a href="https://arxiv.org/abs/2010.14876">arXiv 2010.14876</a> · 10/2020</p>
+<p><strong>VẤN ĐỀ</strong> Chính sách phải biết cánh tay và tay kẹp của nó đang ở đâu, và đang ấn mạnh bao nhiêu, tới từng milimét và từng newton.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Chính sách chỉ dùng ảnh phải đoán cấu hình cánh tay từ pixel, vừa thiếu chính xác vừa hỏng khi cánh tay tự che khuất. Thêm một lịch sử trạng thái dài thì hỏng theo kiểu khác: chính sách học cách lặp lại hành động trước đó của chuyên gia, điều mà paper copycat gọi là "ăn gian", và thôi không phản ứng.</p>
+<p><strong>Ý TƯỞNG</strong> Đưa cho chính sách một vector trạng thái gọn, đã chuẩn hóa, đọc trực tiếp từ robot: góc khớp (hoặc pose tay kẹp tính từ góc khớp), độ mở tay kẹp, và với tác vụ lực thì thêm wrench hoặc mô-men khớp. Thường chỉ lấy bước hiện tại.</p>
+<p><strong>KẾT QUẢ</strong> Mọi VLA trên trang này đều nhận một vector như vậy: 7 số cho một cánh tay UR5e có tay kẹp trong π0, 13 số trong Facet-0 và CR-VLA-Force (pose, tay kẹp, wrench), và một cửa sổ wrench 10 bước trong vài bài lực.</p>
+</div>
+<h2>1. Vấn đề: pixel là một cây thước tồi</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Camera trả lời &quot;cái cốc ở đâu&quot;; proprioception trả lời &quot;mình đang ở đâu&quot;." class="dg-natural" width="818" height="304" viewBox="0 0 818 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Chỉ có ảnh</text><rect class="dg-box" x="179" y="22" width="96" height="38"/><text class="dg-t" x="227" y="45" text-anchor="middle">Camera</text><path class="dg-a" d="M275 41 H307"/><rect class="dg-badbox" x="309" y="14" width="231" height="54"/><text class="dg-t" x="424" y="37" text-anchor="middle">Đoán pose cánh tay từ pixel</text><text class="dg-s" x="424" y="53" text-anchor="middle">thiếu chính xác, bị che</text><path class="dg-a" d="M540 41 H572"/><rect class="dg-box" x="574" y="22" width="102" height="38"/><text class="dg-t" x="625" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="178.8" y="86">✗ mất vài milimét, trạng thái tay kẹp phải đoán</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Lịch sử trạng thái dài</text><rect class="dg-box" x="179" y="120" width="186" height="38"/><text class="dg-t" x="272" y="143" text-anchor="middle">k trạng thái gần nhất</text><path class="dg-a" d="M364 139 H396"/><rect class="dg-badbox" x="398" y="112" width="193" height="54"/><text class="dg-t" x="495" y="135" text-anchor="middle">Chép hành động vừa làm</text><text class="dg-s" x="495" y="151" text-anchor="middle">trông tốt khi huấn luyện</text><path class="dg-a" d="M592 139 H624"/><rect class="dg-box" x="626" y="120" width="102" height="38"/><text class="dg-t" x="677" y="143" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="178.8" y="184">✗ bỏ qua cảnh, không phản ứng</text><text class="dg-lab dg-green" x="14" y="241">Proprioception</text><rect class="dg-box" x="179" y="218" width="186" height="38"/><text class="dg-t" x="272" y="241" text-anchor="middle">Encoder, tay kẹp, F/T</text><path class="dg-a" d="M364 237 H396"/><rect class="dg-key" x="398" y="210" width="224" height="54"/><text class="dg-t" x="510" y="233" text-anchor="middle">Vector trạng thái hiện tại</text><text class="dg-s" x="510" y="249" text-anchor="middle">đã chuẩn hóa</text><path class="dg-a" d="M622 237 H654"/><rect class="dg-box" x="656" y="218" width="148" height="38"/><text class="dg-t" x="730" y="241" text-anchor="middle">Chính sách + ảnh</text><text class="dg-note dg-green" x="178.8" y="282">✓ trạng thái cơ thể chính xác, cảnh vẫn lấy từ camera</text></svg><figcaption>Camera trả lời "cái cốc ở đâu"; proprioception trả lời "mình đang ở đâu".</figcaption></figure>
+<h2>2. Vector trạng thái gồm những gì</h2>
+<figure class="diagram"><svg role="img" aria-label="Cảm biến của chính robot cho trạng thái trực tiếp; động học thuận biến góc khớp thành pose tay kẹp. Chính sách đọc nó bên cạnh các token camera." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">WHAT THE ROBOT KNOWS ABOUT ITS OWN BODY</text>
+<rect class="dg-ext" x="20" y="44" width="190" height="50"/><text class="dg-t" x="115" y="66" text-anchor="middle">joint encoders</text><text class="dg-s" x="115" y="82" text-anchor="middle">angles q, velocities</text>
+<rect class="dg-ext" x="20" y="104" width="190" height="50"/><text class="dg-t" x="115" y="126" text-anchor="middle">motor currents / torques</text><text class="dg-s" x="115" y="142" text-anchor="middle">how hard each joint works</text>
+<rect class="dg-ext" x="20" y="164" width="190" height="50"/><text class="dg-t" x="115" y="186" text-anchor="middle">gripper</text><text class="dg-s" x="115" y="202" text-anchor="middle">opening width</text>
+<rect class="dg-ext" x="20" y="224" width="190" height="50"/><text class="dg-t" x="115" y="246" text-anchor="middle">wrist F/T sensor</text><text class="dg-s" x="115" y="262" text-anchor="middle">wrench, 6 numbers</text>
+<rect class="dg-box" x="270" y="44" width="190" height="50"/><text class="dg-t" x="365" y="66" text-anchor="middle">forward kinematics</text><text class="dg-s" x="365" y="82" text-anchor="middle">q to gripper pose</text>
+<path class="dg-a" d="M210 69 H270"/>
+<rect class="dg-key" x="520" y="104" width="190" height="110"/><text class="dg-t" x="615" y="146" text-anchor="middle">state vector s</text><text class="dg-s" x="615" y="166" text-anchor="middle">normalised,</text><text class="dg-s" x="615" y="182" text-anchor="middle">usually the current step only</text>
+<path class="dg-a" d="M460 69 H490 V130 H520"/><path class="dg-a" d="M210 129 H520"/><path class="dg-a" d="M210 189 H520"/><path class="dg-a" d="M210 249 H490 V200 H520"/>
+<rect class="dg-box" x="770" y="104" width="190" height="110"/><text class="dg-t" x="865" y="146" text-anchor="middle">policy</text><text class="dg-s" x="865" y="166" text-anchor="middle">with the camera tokens</text><text class="dg-s" x="865" y="182" text-anchor="middle">and the instruction</text>
+<path class="dg-a" d="M710 159 H770"/>
+<text class="dg-note dg-red" x="520" y="250">a long state history lets the policy copy its last action</text>
+</svg><figcaption>Cảm biến của chính robot cho trạng thái trực tiếp; động học thuận biến góc khớp thành pose tay kẹp. Chính sách đọc nó bên cạnh các token camera.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Tín hiệu</th>
+<th>Nguồn</th>
+<th>Kích thước (cánh tay thường gặp)</th>
+<th>Cho chính sách biết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Góc khớp $q$</td>
+<td>encoder ở mỗi khớp</td>
+<td>6 hoặc 7</td>
+<td>toàn bộ cấu hình cánh tay</td>
+</tr>
+<tr>
+<td>Vận tốc khớp $\dot q$</td>
+<td>đạo hàm encoder</td>
+<td>6 hoặc 7</td>
+<td>đang chuyển động nhanh cỡ nào</td>
+</tr>
+<tr>
+<td>Pose tay kẹp</td>
+<td>động học thuận từ $q$</td>
+<td>6 hoặc 7 (vị trí + hướng)</td>
+<td>dụng cụ đang ở đâu trong không gian</td>
+</tr>
+<tr>
+<td>Độ mở tay kẹp</td>
+<td>encoder tay kẹp</td>
+<td>1</td>
+<td>mở, đóng, đang giữ vật</td>
+</tr>
+<tr>
+<td>Mô-men khớp / dòng điện động cơ</td>
+<td>cảm biến mô-men hoặc dòng điện</td>
+<td>6 hoặc 7</td>
+<td>tải trên từng khớp (<a href="ta-vla.html">TA-VLA</a>)</td>
+</tr>
+<tr>
+<td>Wrench</td>
+<td>cảm biến F/T cổ tay</td>
+<td>6</td>
+<td>lực và mô-men tiếp xúc ở dụng cụ (<a href="force-tactile-sensing.html">cảm biến lực</a>)</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Camera thấy tay kẹp; encoder cho góc khớp. Động học thuận tính vị trí tay kẹp từ góc khớp, và cùng công thức đó cho thấy một sai số góc rất nhỏ biến thành vài milimét ở đầu dụng cụ.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$l_1,\ l_2$</td>
+<td>chiều dài hai khâu của một cánh tay phẳng</td>
+<td>hằng số</td>
+<td>0,4 m; 0,3 m</td>
+</tr>
+<tr>
+<td>$\theta_1,\ \theta_2$</td>
+<td>góc khớp ($\theta_2$ tính so với khâu 1)</td>
+<td>input</td>
+<td>30°, 45°</td>
+</tr>
+<tr>
+<td>$(x, y)$</td>
+<td>vị trí dụng cụ</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\Delta\theta_1$</td>
+<td>một sai số ở khớp 1</td>
+<td>input</td>
+<td>0,1°</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$x = l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2), \qquad y = l_1\sin\theta_1 + l_2\sin(\theta_1+\theta_2)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$\cos 30° = 0{,}866$, $\sin 30° = 0{,}5$, $\cos 75° = 0{,}259$, $\sin 75° = 0{,}966$.</li>
+<li>$x = 0{,}4 \times 0{,}866 + 0{,}3 \times 0{,}259 = 0{,}346 + 0{,}078 = 0{,}424$ m.</li>
+<li>$y = 0{,}4 \times 0{,}5 + 0{,}3 \times 0{,}966 = 0{,}200 + 0{,}290 = 0{,}490$ m.</li>
+<li>Dụng cụ cách khớp 1 là $\sqrt{0{,}424^2 + 0{,}490^2} = 0{,}648$ m. Sai số $0{,}1° = 0{,}00175$ rad ở đó làm nó dời $0{,}648 \times 0{,}00175 = 0{,}0011$ m.</li>
+</ol>
+<p><strong>Kết quả.</strong> Dụng cụ ở $(0{,}424;\ 0{,}490)$ m, và sai số 0,1° ở vai đã tốn khoảng 1,1 mm ở đầu dụng cụ.</p>
+<p><strong>Ý nghĩa.</strong> Encoder đo góc tốt hơn camera rất nhiều, nên chính vector trạng thái, chứ không phải ảnh, xác định vị trí của bản thân cánh tay. Cùng hiệu ứng đòn bẩy đó là lý do lắp ghép chính xác tới milimét rất khó: sai số ở gốc bị khuếch đại ở đầu.</p>
+</div>
+<h2>3. Cái bẫy copycat</h2>
+<p>Ở 50 Hz, hành động của chuyên gia ở bước $t$ gần như giống hệt ở bước $t-1$, và một lịch sử trạng thái làm lộ hành động trước đó (độ thay đổi giữa hai trạng thái liên tiếp <em>chính là</em> hành động trước đó). Mạng được cho lịch sử ấy có thể đạt loss huấn luyện thấp bằng cách đoán "làm lại điều vừa làm". Khi chạy thật, nó cứ làm lại điều vừa làm, kể cả khi cảnh bảo dừng hoặc rẽ. Paper copycat đặt tên cho hiện tượng này và đề xuất cách loại thông tin hành động trước khỏi đặc trưng. Các câu trả lời thực tế phổ biến trong VLA đơn giản hơn: chỉ đưa trạng thái hiện tại, thêm nhiễu hoặc dropout vào trạng thái, và để ảnh cùng câu lệnh gánh phần tác vụ.</p>
+<p>Lực là ngoại lệ chứng minh quy tắc. Một cửa sổ wrench vài bước (10 mẫu trong Facet-0) được giữ có chủ ý, vì lúc bắt đầu chạm, lúc kẹt và lúc trượt là những mẫu hình theo thời gian mà một mẫu đơn lẻ không thể hiện được.</p>
+<h2>4. Trong VLA</h2>
+<ul>
+<li>π0 đặt trạng thái vào một khối token riêng, do action expert đọc. Robot ít khớp hơn được đệm số 0 tới một kích thước cố định (<a href="cross-embodiment-data.html">dữ liệu cross-embodiment</a>).</li>
+<li>Mỗi chiều được chuẩn hóa, thường bằng thống kê của tập dữ liệu, để góc khớp tính bằng radian và độ mở tay kẹp tính bằng mét có thang đo tương tự nhau.</li>
+<li>Các bài lực khác nhau chủ yếu ở chỗ thêm tín hiệu cơ thể nào: wrench ở cổ tay (ForceVLA), mô-men khớp từ dòng điện động cơ (TA-VLA), hay lực ngoài ước lượng từ mô-men (FWBC-VLA).</li>
+</ul>
+<p><strong>Mang theo:</strong> trạng thái cho biết cánh tay <em>đang ở</em> đâu; hành động cho biết nó nên <em>đi</em> tới đâu, và có nhiều cách để viết điều đó: <a href="action-spaces.html">không gian hành động</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Cùng cánh tay, $\theta_1 = 0°$, $\theta_2 = 90°$. Dụng cụ ở đâu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$x = 0{,}4 \times 1 + 0{,}3 \times \cos 90° = 0{,}4$ m; $y = 0{,}4 \times 0 + 0{,}3 \times \sin 90° = 0{,}3$ m. Dụng cụ ở $(0{,}4;\ 0{,}3)$ m: khâu 1 nằm dọc trục $x$, khâu 2 chĩa thẳng lên.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

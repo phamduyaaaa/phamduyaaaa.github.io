@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.">
+<meta name="description" content="A language model picks words from a finite vocabulary, but robot actions are real numbers. Binning makes each value a token and breaks down at high control rates; FAST compresses the whole chunk with a DCT first. Both worked by hand.">
 <title>Action Tokenization: Turning Actions into Tokens · Learn VLA · Phạm Đức Duy</title>
 
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Action Tokenization: Turning Actions into Tokens">
-<meta property="og:description" content="An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.">
+<meta property="og:description" content="A language model picks words from a finite vocabulary, but robot actions are real numbers. Binning makes each value a token and breaks down at high control rates; FAST compresses the whole chunk with a DCT first. Both worked by hand.">
 <meta property="og:type" content="article">
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
@@ -60,14 +60,14 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">4 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Action Tokenization: Turning Actions into Tokens</h1>
     <h1 data-vi>Action Tokenization: Hành động trở thành token</h1>
 
-    <p class="post-excerpt-lead" data-en>An LLM picks words from a finite vocabulary, but robot actions are real numbers. Binning turns a continuous action into a token, worked by hand, with its benefits and costs.</p>
-    <p class="post-excerpt-lead" data-vi>LLM chọn một chữ trong từ điển hữu hạn, còn hành động robot là số thực. Chia thùng (bin) biến số liên tục thành token, tính tay một ví dụ, cùng cái lợi và cái giá.</p>
+    <p class="post-excerpt-lead" data-en>A language model picks words from a finite vocabulary, but robot actions are real numbers. Binning makes each value a token and breaks down at high control rates; FAST compresses the whole chunk with a DCT first. Both worked by hand.</p>
+    <p class="post-excerpt-lead" data-vi>Mô hình ngôn ngữ chọn chữ trong một từ điển hữu hạn, còn hành động robot là số thực. Chia bin biến mỗi giá trị thành một token và gãy khi tần số điều khiển cao; FAST nén cả chunk bằng DCT trước. Tính tay cả hai.</p>
 
     <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Tokenizer</span><span class="pill">Action</span></div>
   </header>
@@ -75,140 +75,380 @@
   <article class="post-body">
     <div data-en>
 <div class="tldr">
-<p><strong>USED BY</strong> RT-2 (07/2023), OpenVLA (06/2024): 256 bins per action dimension</p>
-<p><strong>PROBLEM</strong> An LLM picks words from a finite vocabulary; a robot action is a real number.</p>
-<p><strong>IDEA</strong> Split each action dimension into $K$ equal bins; each bin is one token. A 7-D action becomes 7 tokens.</p>
-<p><strong>COST</strong> Maximum error $\Delta/2$; 7 tokens per step; cross-entropy forgets that bin 6 is next to bin 7.</p>
-<p><strong>NEXT</strong> FAST compresses the trajectory first (DCT), then applies BPE.</p>
+<p><strong>PAPERS</strong> Binning as used in RT-2 (07/2023) and OpenVLA, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024. FAST, <a href="https://arxiv.org/abs/2501.09747">arXiv 2501.09747</a> · 01/2025</p>
+<p><strong>PROBLEM</strong> A language model outputs one token from a finite vocabulary at a time. A robot action, such as moving the gripper 0.03 m, is a real number.</p>
+<p><strong>WHAT FAILED BEFORE</strong> A regression head outputs a single number per dimension and, trained with squared error, averages different valid demonstrations. Plain binning fixes that, but at high control rates it produces hundreds of nearly identical tokens per chunk; FAST reports that OpenVLA worked on low-frequency data but struggled to fit the higher-frequency DROID dataset.</p>
+<p><strong>IDEA</strong> Binning: cut each dimension's range into $K$ bins and use the bin index as the token. FAST: compress the whole chunk first (DCT per dimension, scale and round, then BPE), so the number of tokens follows how complex the motion is.</p>
+<p><strong>RESULT</strong> FAST produces roughly 30 tokens per one-second chunk per arm whatever the control rate. The paper's π0-FAST needed 5× fewer GPU hours to train than the flow-matching π0.</p>
 </div>
-<h2>The pain to cure</h2>
-<p>An LLM generates tokens with a softmax over a finite vocabulary, so its output is a <strong>discrete</strong> variable. A robot action (for example moving the gripper by $\Delta x = 0.03$ m) is a <strong>continuous</strong> number.</p>
-<p>Images were easy because they are only input. Actions must be spoken by the model. So how can a model that only knows how to "pick one word from a dictionary" control real numbers?</p>
-<h2>The idea: turn a real number into a "word" by binning</h2>
-<p>Like rounding an exam score: instead of the exact 7.43, we only say "between 7 and 8". Split the value range into equal bins, and make each bin a word.</p>
-<h3>A worked example</h3>
-<p>Suppose $\Delta x$ lies in $[-0.1,\, 0.1]$ metres. Split it into $K=10$ bins to keep things readable (OpenVLA uses $K=256$).</p>
-<p>Bin width:</p>
-<p>$$
-\Delta = \frac{0.1-(-0.1)}{10} = 0.02
-$$</p>
-<p><strong>Encode</strong> (real number $\to$ bin index):</p>
-<p>$$
-b = \left\lfloor \frac{a-(-0.1)}{\Delta} \right\rfloor
-$$</p>
-<p>For $a = 0.03$:</p>
-<p>$$
-b = \left\lfloor \frac{0.03+0.1}{0.02} \right\rfloor = \lfloor 6.5 \rfloor = 6
-$$</p>
-<p>Bin 6 covers $[0.02,\, 0.04)$. The index $b=6$ is the token: one "word" of the vocabulary.</p>
-<p><strong>Decode</strong> (index $\to$ real number): take the bin centre:</p>
-<p>$$
-\hat a = -0.1 + (6+0.5)\times 0.02 = 0.03
-$$</p>
-<p>Here it matches exactly because $0.03$ happens to sit in the middle of the bin. Try $a=0.027$: it still falls in bin 6 (since $\lfloor 6.35 \rfloor = 6$), decodes to $0.03$, an error of $0.003$.</p>
-<p>The maximum error is always half a bin width:</p>
-<p>$$
-|a-\hat a| \le \frac{\Delta}{2} = 0.01
-$$</p>
-<p>For higher accuracy, increase $K$. With $K=256$, $\Delta = 0.2/256 \approx 0.00078$ and the maximum error is about $0.0004$ m, under half a millimetre.</p>
-<p>In practice the range is not set by hand. OpenVLA spreads the 256 bins uniformly between the 1st and 99th percentile of each action dimension in the training data, so rare outliers do not waste bins. Values outside the range are clipped to the first or last bin; otherwise the formula would give $b=10$ for $a=0.1$, a bin that does not exist.</p>
-<h2>Plugging into an LLM</h2>
-<p>Each bin gets a token of the vocabulary (OpenVLA overwrites 256 rarely used tokens of the Llama tokenizer). A 7-dimensional action becomes 7 consecutive tokens:</p>
-<p>$$
-a=(\Delta x,\Delta y,\Delta z,\Delta\phi,\Delta\theta,\Delta\psi,g)\;\to\;(b_1,b_2,\dots,b_7)
-$$</p>
-<p>The model generates one token at a time, exactly like writing a sentence:</p>
-<p>$$
-\pi(a \mid \text{image},\text{command}) = \prod_{j=1}^{7} p(b_j \mid \text{image},\text{command},b_{&lt;j})
-$$</p>
-<p>The loss is still cross-entropy. The whole LLM machinery is reused unchanged, with no architecture change. That is why the approach is attractive.</p>
-<h2>Why classification instead of regressing the real number?</h2>
-<p>Consider a robot facing an obstacle. It can dodge left ($a=-1$) or right ($a=+1$), each 50% of the time in the data.</p>
-<ul>
-<li><strong>MSE regression</strong> learns the mean: $\tfrac12(-1)+\tfrac12(+1)=0$, which drives straight into the obstacle.</li>
-<li><strong>Classification over bins</strong> puts high probability on two bins (left and right) and low probability in the middle. Sampling then yields one valid direction.</li>
-</ul>
-<p>So tokenization is not only a trick to reuse LLMs. It also lets the model represent several equally valid options (a multi-modal distribution).</p>
-<h2>The price to pay (leading to the next stage)</h2>
+<h2>1. The problem: real numbers out of a word picker</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is what one token stands for: a single value, or a piece of the chunk's overall shape." class="dg-natural" width="659" height="304" viewBox="0 0 659 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Regression head</text><rect class="dg-box" x="134" y="22" width="96" height="38"/><text class="dg-t" x="182" y="45" text-anchor="middle">Features</text><path class="dg-a" d="M230 41 H262"/><rect class="dg-badbox" x="264" y="14" width="208" height="54"/><text class="dg-t" x="368" y="37" text-anchor="middle">One number per dimension</text><text class="dg-s" x="368" y="53" text-anchor="middle">squared error averages modes</text><path class="dg-a" d="M472 41 H504"/><rect class="dg-box" x="506" y="22" width="96" height="38"/><text class="dg-t" x="554" y="45" text-anchor="middle">Action</text><text class="dg-note dg-red" x="134.0" y="86">✗ left + right demos give "straight ahead"</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Binning</text><rect class="dg-box" x="134" y="120" width="102" height="38"/><text class="dg-t" x="185" y="143" text-anchor="middle">Each value</text><path class="dg-a" d="M236 139 H268"/><rect class="dg-badbox" x="270" y="112" width="239" height="54"/><text class="dg-t" x="389" y="135" text-anchor="middle">One token per value per step</text><text class="dg-s" x="389" y="151" text-anchor="middle">256 bins</text><path class="dg-a" d="M509 139 H541"/><rect class="dg-box" x="543" y="120" width="102" height="38"/><text class="dg-t" x="594" y="143" text-anchor="middle">H×D tokens</text><text class="dg-note dg-red" x="134.0" y="184">✗ 350 tokens per second at 50 Hz, 7-D</text><text class="dg-lab dg-green" x="14" y="241">FAST</text><rect class="dg-box" x="134" y="218" width="110" height="38"/><text class="dg-t" x="189" y="241" text-anchor="middle">Whole chunk</text><path class="dg-a" d="M244 237 H276"/><rect class="dg-key" x="278" y="210" width="140" height="54"/><text class="dg-t" x="348" y="233" text-anchor="middle">DCT, round, BPE</text><text class="dg-s" x="348" y="249" text-anchor="middle">compress first</text><path class="dg-a" d="M418 237 H450"/><rect class="dg-box" x="452" y="210" width="135" height="54"/><text class="dg-t" x="519" y="233" text-anchor="middle"></text><text class="dg-s" x="519" y="249" text-anchor="middle">30 tokens per arm</text><text class="dg-note dg-green" x="134.0" y="282">✓ fewer, more informative tokens</text></svg><figcaption>The change is what one token stands for: a single value, or a piece of the chunk's overall shape.</figcaption></figure>
+<h2>2. The two pipelines</h2>
+<figure class="diagram"><svg role="img" aria-label="Top: binning gives one token per value per step. Bottom: FAST transforms the chunk into frequencies, zeroes the small ones and lets BPE merge what is left." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TWO WAYS TO TURN A 1-SECOND ACTION CHUNK INTO TOKENS</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">Action chunk</text><text class="dg-s" x="105" y="86" text-anchor="middle">H steps x D dimensions</text>
+<rect class="dg-badbox" x="250" y="44" width="200" height="60"/><text class="dg-t" x="350" y="68" text-anchor="middle">Binning, per value</text><text class="dg-s" x="350" y="86" text-anchor="middle">256 bins each</text>
+<rect class="dg-badbox" x="510" y="44" width="200" height="60"/><text class="dg-t" x="610" y="68" text-anchor="middle">H x D tokens</text><text class="dg-s" x="610" y="86" text-anchor="middle">50 Hz, 7-D: 350 tokens</text>
+<path class="dg-a" d="M190 74 H250"/><path class="dg-a" d="M450 74 H510"/>
+<text class="dg-note dg-red" x="730" y="70">neighbouring tokens nearly equal:</text><text class="dg-note dg-red" x="730" y="88">little new information each</text>
+<text class="dg-h" x="20" y="150">FAST (01/2025)</text>
+<rect class="dg-box" x="20" y="166" width="140" height="60"/><text class="dg-t" x="90" y="190" text-anchor="middle">Normalise</text><text class="dg-s" x="90" y="208" text-anchor="middle">1st-99th pct to [-1,1]</text>
+<rect class="dg-key" x="190" y="166" width="140" height="60"/><text class="dg-t" x="260" y="190" text-anchor="middle">DCT per dim</text><text class="dg-s" x="260" y="208" text-anchor="middle">time to frequency</text>
+<rect class="dg-key" x="360" y="166" width="140" height="60"/><text class="dg-t" x="430" y="190" text-anchor="middle">Scale + round</text><text class="dg-s" x="430" y="208" text-anchor="middle">small terms become 0</text>
+<rect class="dg-box" x="530" y="166" width="150" height="60"/><text class="dg-t" x="605" y="190" text-anchor="middle">Flatten</text><text class="dg-s" x="605" y="208" text-anchor="middle">low frequencies first</text>
+<rect class="dg-key" x="710" y="166" width="120" height="60"/><text class="dg-t" x="770" y="190" text-anchor="middle">BPE</text><text class="dg-s" x="770" y="208" text-anchor="middle">squash zeros</text>
+<rect class="dg-box" x="860" y="166" width="100" height="60"/><text class="dg-t" x="910" y="190" text-anchor="middle">~30</text><text class="dg-s" x="910" y="208" text-anchor="middle">tokens per arm</text>
+<path class="dg-a" d="M160 196 H190"/><path class="dg-a" d="M330 196 H360"/><path class="dg-a" d="M500 196 H530"/><path class="dg-a" d="M680 196 H710"/><path class="dg-a" d="M830 196 H860"/>
+<text class="dg-l" x="20" y="262">a smooth motion has its energy in a few low frequencies, so most rounded coefficients are 0</text>
+<text class="dg-l" x="20" y="284">the token count follows the complexity of the motion, not the control rate</text>
+</svg><figcaption>Top: binning gives one token per value per step. Bottom: FAST transforms the chunk into frequencies, zeroes the small ones and lets BPE merge what is left.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Binning (OpenVLA)</th>
+<th>FAST</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normalise</td>
+<td>bins spread uniformly between the 1st and 99th percentile of each dimension</td>
+<td>1st and 99th percentile mapped to $[-1, 1]$</td>
+</tr>
+<tr>
+<td>Transform</td>
+<td>none</td>
+<td>DCT of each dimension over the chunk</td>
+</tr>
+<tr>
+<td>Quantise</td>
+<td>value to bin index, 256 bins</td>
+<td>multiply by a scale $\gamma$ and round</td>
+</tr>
+<tr>
+<td>Into the vocabulary</td>
+<td>overwrite 256 rarely used tokens of the Llama tokenizer</td>
+<td>BPE trained on action data, flattened with low frequencies first</td>
+</tr>
+<tr>
+<td>Tokens per chunk</td>
+<td>$H \times D$</td>
+<td>about 30 per arm in the paper's datasets</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Tokens for a one-second action chunk. The binning count is my arithmetic; FAST's is the paper's statement that it needs roughly 30 tokens per chunk per arm." class="dg-natural" width="716" height="72" viewBox="0 0 716 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="256" y="23" text-anchor="end">Binning, 50 Hz × 7 dimensions</text><rect class="dg-bar" x="266" y="10" width="313" height="18"/><text class="dg-barval" x="587" y="23">350 tokens</text><text class="dg-barlabel" x="256" y="53" text-anchor="end">FAST, one arm (paper's rough figure)</text><rect class="dg-key" x="266" y="40" width="27" height="18"/><text class="dg-barval" x="301" y="53">30 tokens</text></svg><figcaption>Tokens for a one-second action chunk. The binning count is my arithmetic; FAST's is the paper's statement that it needs roughly 30 tokens per chunk per arm.</figcaption></figure>
+<div class="calc">
+<p>Calculation card 1: binning</p>
+<p><strong>What and why.</strong> Turn one action value into a token and back, to see the size of the rounding error.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a$</td>
+<td>action value, range $[-0.1, 0.1]$ m</td>
+<td>input</td>
+<td>0.027</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>number of bins</td>
+<td>constant</td>
+<td>10 (OpenVLA uses 256)</td>
+</tr>
+<tr>
+<td>$\Delta$</td>
+<td>bin width</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$b$</td>
+<td>bin index, the token</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a$</td>
+<td>decoded value, the bin centre</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\Delta = \frac{a_{max} - a_{min}}{K}, \qquad b = \left\lfloor \frac{a - a_{min}}{\Delta} \right\rfloor, \qquad \hat a = a_{min} + (b + 0.5)\,\Delta$$</p>
+<p><strong>Steps</strong></p>
 <ol>
-<li><strong>Order between bins is lost.</strong> Cross-entropy treats bin 6 and bin 7 as two completely different labels. Guessing 7 when the answer is 6 is penalised exactly as much as guessing 0, although physically they are much closer.</li>
-<li><strong>Sequences get long.</strong> Each step costs 7 tokens. A robot controlled at 50 Hz over a 1-second chunk of 50 steps needs $50\times 7=350$ tokens, heavy for $O(N^2)$ attention.</li>
-<li><strong>Redundant tokens.</strong> At high frequency $a_t \approx a_{t-1}$, so the next token is almost predictable from the previous one, and each token carries very little new information.</li>
+<li>$\Delta = 0.2 / 10 = 0.02$.</li>
+<li>$b = \lfloor (0.027 + 0.1) / 0.02 \rfloor = \lfloor 6.35 \rfloor = 6$.</li>
+<li>$\hat a = -0.1 + 6.5 \times 0.02 = 0.03$; error $= 0.003$.</li>
 </ol>
-<p>Carry forward: binning solves the "continuous vs discrete" contradiction but creates long, redundant sequences. The next idea, FAST, borrows from JPEG: compress the trajectory first (DCT and quantisation), then merge frequent patterns with BPE, the same algorithm text tokenizers use, but trained on action data.</p>
-<p><strong>Check question:</strong> with $K=10$ bins on $[-0.1, 0.1]$, which bin does the action $a=-0.095$ fall into, what does it decode to, and what is the error?</p>
+<p><strong>Result.</strong> 0.027 m becomes token 6 and comes back as 0.03 m.</p>
+<p><strong>Why it matters.</strong> The error is at most $\Delta/2$: 0.01 m with 10 bins, about 0.0004 m with 256. Values outside the range are clipped to the first or last bin, otherwise $a = 0.1$ would give $b = 10$, a bin that does not exist.</p>
+</div>
+<h2>3. Why binning breaks at high frequency</h2>
+<p>A language model learns by predicting the next token from the previous ones, so it learns most from tokens it could not have guessed. At 5 Hz the next action value differs clearly from the last one. At 50 Hz a smooth motion changes ten times less per step, so the next token is nearly a copy of the previous one. The FAST paper shows exactly this on a toy task: as the sampling rate grows, a binning model ends up "simply copying the first action". Squared-error regression does not have this problem, but it has the averaging problem from <a href="imitation-learning.html">imitation learning</a>.</p>
+<div class="calc">
+<p>Calculation card 2: compressing a chunk with the DCT</p>
+<p><strong>What and why.</strong> Take a smooth 4-step motion of one dimension, move it to frequencies, round, and rebuild it. It shows why most coefficients vanish.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_0 \dots a_3$</td>
+<td>normalised action values over 4 steps</td>
+<td>input</td>
+<td>0.1, 0.2, 0.3, 0.4</td>
+</tr>
+<tr>
+<td>$C_k$</td>
+<td>DCT coefficient $k$ ($k = 0$ is the average level)</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\gamma$</td>
+<td>scale before rounding</td>
+<td>constant</td>
+<td>10 (illustrative)</td>
+</tr>
+<tr>
+<td>$\bar C_k$</td>
+<td>rounded coefficient, what BPE sees</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (orthonormal DCT-II, $N = 4$)</p>
+<p>$$C_k = s_k \sum_{n=0}^{N-1} a_n \cos\!\Big(\frac{\pi(2n+1)k}{2N}\Big),\quad s_0 = \sqrt{1/N},\ s_{k&gt;0} = \sqrt{2/N}, \qquad \bar C_k = \mathrm{round}(\gamma C_k)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$C_0 = 0.5 \times (0.1 + 0.2 + 0.3 + 0.4) = 0.5$.</li>
+<li>$C_1 = 0.707 \times (0.1 \times 0.924 + 0.2 \times 0.383 - 0.3 \times 0.383 - 0.4 \times 0.924) = 0.707 \times (-0.315) = -0.223$.</li>
+<li>$C_2 = 0$ exactly, and $C_3 = -0.016$.</li>
+<li>Round $\gamma C$: $(5,\ -2.23,\ 0,\ -0.16) \to (5,\ -2,\ 0,\ 0)$.</li>
+<li>Rebuild from $(0.5, -0.2, 0, 0)$: $(0.119,\ 0.196,\ 0.304,\ 0.381)$, at most 0.019 from the original.</li>
+</ol>
+<p><strong>Result.</strong> Four values became two non-zero integers, and the motion comes back within 0.02.</p>
+<p><strong>Why it matters.</strong> A smooth motion puts almost all its energy in the lowest frequencies, so after rounding most coefficients are zero, and BPE packs runs of zeros into few tokens. Doubling the control rate adds more high-frequency coefficients, which are mostly zero, so the token count barely changes. The scale $\gamma$ trades token count against reconstruction error.</p>
+</div>
+<h2>4. What carries over</h2>
+<ul>
+<li>Autoregressive VLAs (RT-2, OpenVLA, π0-FAST) need some action tokenizer; flow-matching VLAs such as π0 skip it and output continuous values (<a href="flowmatching.html">flow matching</a>).</li>
+<li>The reason to classify over bins rather than regress is still valid: a softmax over bins can put weight on both "left" and "right".</li>
+<li>FAST flattens low frequencies of all dimensions first, so the model commits to the overall shape of the motion before the details. The paper found this gives more stable rollouts.</li>
+</ul>
+<p><strong>Carry forward:</strong> tokens of text, images and actions now form one sequence. The mechanism that lets each token use the others is <a href="attention.html">attention</a>.</p>
+<p><strong>Check question:</strong> With $K = 10$ bins on $[-0.1, 0.1]$, which bin does $a = -0.095$ fall in, what does it decode to, and what is the error?</p>
 <details>
 <summary>Answer</summary>
-<p>$b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. The bin covers $[-0.1,-0.08)$ with centre $-0.09$, so it decodes to $\hat a=-0.09$ and the error is $0.005$, within the bound $\Delta/2=0.01$.</p>
+<p>$b = \lfloor (-0.095 + 0.1)/0.02 \rfloor = \lfloor 0.25 \rfloor = 0$. Bin 0 covers $[-0.1, -0.08)$ with centre $-0.09$, so $\hat a = -0.09$ and the error is $0.005$, within $\Delta/2 = 0.01$.</p>
 </details>
     </div>
     <div data-vi>
 <div class="tldr">
-<p><strong>ĐƯỢC DÙNG BỞI</strong> RT-2 (07/2023), OpenVLA (06/2024): 256 thùng mỗi chiều hành động</p>
-<p><strong>VẤN ĐỀ</strong> LLM chọn chữ trong một từ điển hữu hạn; hành động robot là số thực.</p>
-<p><strong>Ý TƯỞNG</strong> Chia mỗi chiều hành động thành $K$ thùng bằng nhau; mỗi thùng là một token. Hành động 7 chiều thành 7 token.</p>
-<p><strong>CÁI GIÁ</strong> Sai số tối đa $\Delta/2$; 7 token mỗi bước; cross-entropy quên rằng thùng 6 nằm cạnh thùng 7.</p>
-<p><strong>TIẾP THEO</strong> FAST nén quỹ đạo trước (DCT), rồi mới dùng BPE.</p>
+<p><strong>PAPER</strong> Cách chia bin dùng trong RT-2 (07/2023) và OpenVLA, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024. FAST, <a href="https://arxiv.org/abs/2501.09747">arXiv 2501.09747</a> · 01/2025</p>
+<p><strong>VẤN ĐỀ</strong> Mô hình ngôn ngữ mỗi lần xuất một token từ một từ điển hữu hạn. Hành động robot, ví dụ dời tay kẹp 0,03 m, là một số thực.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Một đầu hồi quy xuất một số cho mỗi chiều và, khi học bằng sai số bình phương, lấy trung bình các demo đúng nhưng khác nhau. Chia bin đơn giản sửa được điều đó, nhưng ở tần số điều khiển cao nó sinh ra hàng trăm token gần như giống hệt nhau cho mỗi chunk; FAST báo cáo rằng OpenVLA chạy tốt trên dữ liệu tần số thấp nhưng khó khớp bộ DROID tần số cao hơn.</p>
+<p><strong>Ý TƯỞNG</strong> Chia bin: cắt khoảng giá trị của mỗi chiều thành $K$ bin và dùng chỉ số bin làm token. FAST: nén cả chunk trước (DCT theo từng chiều, nhân hệ số rồi làm tròn, sau đó BPE), để số token theo độ phức tạp của chuyển động.</p>
+<p><strong>KẾT QUẢ</strong> FAST sinh khoảng 30 token cho mỗi chunk một giây mỗi cánh tay, bất kể tần số điều khiển. π0-FAST trong paper cần ít hơn 5 lần giờ GPU để huấn luyện so với π0 dùng flow matching.</p>
 </div>
-<h2>Cái đau cần chữa</h2>
-<p>LLM sinh token bằng softmax trên từ điển hữu hạn, nghĩa là đầu ra là một biến <strong>rời rạc</strong>. Còn hành động robot (ví dụ dịch tay máy $\Delta x = 0.03$ m) là số <strong>liên tục</strong>.</p>
-<p>Ảnh thì dễ vì chỉ là đầu vào. Hành động thì mô hình phải nói ra. Vậy làm sao để một mô hình chỉ biết "chọn một chữ trong từ điển" điều khiển được số thực?</p>
-<h2>Ý tưởng: biến số thực thành "chữ" bằng cách chia thùng (bin)</h2>
-<p>Giống như làm tròn điểm thi: thay vì điểm thật 7.43, ta chỉ nói "điểm thuộc khoảng 7 đến 8". Ta chia đoạn giá trị thành các thùng bằng nhau, mỗi thùng là một chữ.</p>
-<h3>Làm tay một ví dụ</h3>
-<p>Giả sử $\Delta x$ chỉ nằm trong $[-0.1,\, 0.1]$ mét, ta chia thành $K=10$ thùng cho dễ nhìn (OpenVLA dùng $K=256$).</p>
-<p>Bề rộng mỗi thùng:</p>
-<p>$$
-\Delta = \frac{0.1-(-0.1)}{10} = 0.02
-$$</p>
-<p><strong>Mã hóa</strong> (số thực $\to$ chỉ số thùng):</p>
-<p>$$
-b = \left\lfloor \frac{a-(-0.1)}{\Delta} \right\rfloor
-$$</p>
-<p>Với $a = 0.03$:</p>
-<p>$$
-b = \left\lfloor \frac{0.03+0.1}{0.02} \right\rfloor = \lfloor 6.5 \rfloor = 6
-$$</p>
-<p>Thùng số 6 phủ khoảng $[0.02,\, 0.04)$. Chỉ số $b=6$ chính là token: một "chữ" trong từ điển.</p>
-<p><strong>Giải mã</strong> (chỉ số $\to$ số thực): lấy tâm thùng:</p>
-<p>$$
-\hat a = -0.1 + (6+0.5)\times 0.02 = 0.03
-$$</p>
-<p>Ở ví dụ này khớp đúng vì $0.03$ tình cờ nằm giữa thùng. Thử $a=0.027$: vẫn rơi vào thùng 6 (vì $\lfloor 6.35 \rfloor = 6$), giải mã ra $0.03$, sai lệch $0.003$.</p>
-<p>Sai số tối đa luôn là nửa bề rộng thùng:</p>
-<p>$$
-|a-\hat a| \le \frac{\Delta}{2} = 0.01
-$$</p>
-<p>Muốn chính xác hơn thì tăng $K$. Với $K=256$, $\Delta = 0.2/256 \approx 0.00078$, sai số tối đa $\approx 0.0004$ m, tức dưới nửa milimét.</p>
-<p>Thực tế khoảng giá trị không đặt bằng tay. OpenVLA chia đều 256 thùng giữa phân vị 1% và 99% của từng chiều hành động trong dữ liệu huấn luyện, để vài giá trị ngoại lai không chiếm mất thùng. Giá trị nằm ngoài khoảng bị kẹp vào thùng đầu hoặc thùng cuối; nếu không, công thức trên cho $b=10$ với $a=0.1$, một thùng không tồn tại.</p>
-<h2>Nối vào LLM như thế nào?</h2>
-<p>Mỗi thùng được gán một token trong từ điển (OpenVLA ghi đè 256 token ít dùng của tokenizer Llama). Một hành động 7 chiều trở thành 7 token liên tiếp:</p>
-<p>$$
-a=(\Delta x,\Delta y,\Delta z,\Delta\phi,\Delta\theta,\Delta\psi,g)\;\to\;(b_1,b_2,\dots,b_7)
-$$</p>
-<p>Mô hình sinh từng token một, y hệt sinh câu văn:</p>
-<p>$$
-\pi(a \mid \text{ảnh},\text{lệnh}) = \prod_{j=1}^{7} p(b_j \mid \text{ảnh},\text{lệnh},b_{&lt;j})
-$$</p>
-<p>Và loss vẫn là cross-entropy. Toàn bộ máy móc của LLM dùng lại nguyên xi, không cần sửa kiến trúc. Đó là lý do cách này hấp dẫn.</p>
-<h2>Vì sao chọn phân loại mà không hồi quy số thực trực tiếp?</h2>
-<p>Hãy xét một tình huống: robot gặp vật cản, có thể né trái ($a=-1$) hoặc phải ($a=+1$), mỗi hướng 50% trong dữ liệu.</p>
-<ul>
-<li><strong>Hồi quy MSE</strong> học giá trị trung bình: $\tfrac12(-1)+\tfrac12(+1)=0$, tức đi thẳng vào vật cản.</li>
-<li><strong>Phân loại trên thùng</strong> cho xác suất cao ở hai thùng (trái và phải), thấp ở giữa. Khi lấy mẫu sẽ ra một hướng hợp lệ.</li>
-</ul>
-<p>Vậy token hóa không chỉ là mẹo để dùng LLM, mà còn cho mô hình biểu diễn được nhiều phương án đều hợp lý (phân phối đa đỉnh).</p>
-<h2>Cái giá phải trả (dẫn sang bài sau)</h2>
+<h2>1. Vấn đề: lấy số thực ra từ một cỗ máy chọn chữ</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở chỗ một token đại diện cho gì: một giá trị đơn lẻ, hay một phần hình dạng tổng thể của chunk." class="dg-natural" width="693" height="304" viewBox="0 0 693 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Đầu hồi quy</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Đặc trưng</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="295" height="54"/><text class="dg-t" x="401" y="37" text-anchor="middle">Một số mỗi chiều</text><text class="dg-s" x="401" y="53" text-anchor="middle">sai số bình phương lấy trung bình các mode</text><path class="dg-a" d="M549 41 H581"/><rect class="dg-box" x="583" y="22" width="96" height="38"/><text class="dg-t" x="631" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="124" y="86">✗ demo trái + demo phải thành "đi thẳng"</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Chia bin</text><rect class="dg-box" x="124" y="120" width="117" height="38"/><text class="dg-t" x="183" y="143" text-anchor="middle">Từng giá trị</text><path class="dg-a" d="M241 139 H273"/><rect class="dg-badbox" x="275" y="112" width="254" height="54"/><text class="dg-t" x="402" y="135" text-anchor="middle">Mỗi giá trị mỗi bước một token</text><text class="dg-s" x="402" y="151" text-anchor="middle">256 bin</text><path class="dg-a" d="M529 139 H561"/><rect class="dg-box" x="563" y="120" width="96" height="38"/><text class="dg-t" x="611" y="143" text-anchor="middle">H×D token</text><text class="dg-note dg-red" x="124" y="184">✗ 350 token mỗi giây ở 50 Hz, 7 chiều</text><text class="dg-lab dg-green" x="14" y="241">FAST</text><rect class="dg-box" x="124" y="218" width="96" height="38"/><text class="dg-t" x="172" y="241" text-anchor="middle">Cả chunk</text><path class="dg-a" d="M220 237 H252"/><rect class="dg-key" x="254" y="210" width="163" height="54"/><text class="dg-t" x="335" y="233" text-anchor="middle">DCT, làm tròn, BPE</text><text class="dg-s" x="335" y="249" text-anchor="middle">nén trước</text><path class="dg-a" d="M417 237 H449"/><rect class="dg-box" x="451" y="210" width="128" height="54"/><text class="dg-t" x="515" y="233" text-anchor="middle"></text><text class="dg-s" x="515" y="249" text-anchor="middle">30 token mỗi tay</text><text class="dg-note dg-green" x="124" y="282">✓ ít token hơn, mỗi token nhiều thông tin hơn</text></svg><figcaption>Thay đổi nằm ở chỗ một token đại diện cho gì: một giá trị đơn lẻ, hay một phần hình dạng tổng thể của chunk.</figcaption></figure>
+<h2>2. Hai quy trình</h2>
+<figure class="diagram"><svg role="img" aria-label="Trên: chia bin cho mỗi giá trị mỗi bước một token. Dưới: FAST đổi chunk sang tần số, xóa các hệ số nhỏ và để BPE gộp phần còn lại." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TWO WAYS TO TURN A 1-SECOND ACTION CHUNK INTO TOKENS</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">Action chunk</text><text class="dg-s" x="105" y="86" text-anchor="middle">H steps x D dimensions</text>
+<rect class="dg-badbox" x="250" y="44" width="200" height="60"/><text class="dg-t" x="350" y="68" text-anchor="middle">Binning, per value</text><text class="dg-s" x="350" y="86" text-anchor="middle">256 bins each</text>
+<rect class="dg-badbox" x="510" y="44" width="200" height="60"/><text class="dg-t" x="610" y="68" text-anchor="middle">H x D tokens</text><text class="dg-s" x="610" y="86" text-anchor="middle">50 Hz, 7-D: 350 tokens</text>
+<path class="dg-a" d="M190 74 H250"/><path class="dg-a" d="M450 74 H510"/>
+<text class="dg-note dg-red" x="730" y="70">neighbouring tokens nearly equal:</text><text class="dg-note dg-red" x="730" y="88">little new information each</text>
+<text class="dg-h" x="20" y="150">FAST (01/2025)</text>
+<rect class="dg-box" x="20" y="166" width="140" height="60"/><text class="dg-t" x="90" y="190" text-anchor="middle">Normalise</text><text class="dg-s" x="90" y="208" text-anchor="middle">1st-99th pct to [-1,1]</text>
+<rect class="dg-key" x="190" y="166" width="140" height="60"/><text class="dg-t" x="260" y="190" text-anchor="middle">DCT per dim</text><text class="dg-s" x="260" y="208" text-anchor="middle">time to frequency</text>
+<rect class="dg-key" x="360" y="166" width="140" height="60"/><text class="dg-t" x="430" y="190" text-anchor="middle">Scale + round</text><text class="dg-s" x="430" y="208" text-anchor="middle">small terms become 0</text>
+<rect class="dg-box" x="530" y="166" width="150" height="60"/><text class="dg-t" x="605" y="190" text-anchor="middle">Flatten</text><text class="dg-s" x="605" y="208" text-anchor="middle">low frequencies first</text>
+<rect class="dg-key" x="710" y="166" width="120" height="60"/><text class="dg-t" x="770" y="190" text-anchor="middle">BPE</text><text class="dg-s" x="770" y="208" text-anchor="middle">squash zeros</text>
+<rect class="dg-box" x="860" y="166" width="100" height="60"/><text class="dg-t" x="910" y="190" text-anchor="middle">~30</text><text class="dg-s" x="910" y="208" text-anchor="middle">tokens per arm</text>
+<path class="dg-a" d="M160 196 H190"/><path class="dg-a" d="M330 196 H360"/><path class="dg-a" d="M500 196 H530"/><path class="dg-a" d="M680 196 H710"/><path class="dg-a" d="M830 196 H860"/>
+<text class="dg-l" x="20" y="262">a smooth motion has its energy in a few low frequencies, so most rounded coefficients are 0</text>
+<text class="dg-l" x="20" y="284">the token count follows the complexity of the motion, not the control rate</text>
+</svg><figcaption>Trên: chia bin cho mỗi giá trị mỗi bước một token. Dưới: FAST đổi chunk sang tần số, xóa các hệ số nhỏ và để BPE gộp phần còn lại.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Chia bin (OpenVLA)</th>
+<th>FAST</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chuẩn hóa</td>
+<td>các bin trải đều giữa phân vị 1 và 99 của mỗi chiều</td>
+<td>phân vị 1 và 99 ánh xạ về $[-1, 1]$</td>
+</tr>
+<tr>
+<td>Biến đổi</td>
+<td>không có</td>
+<td>DCT của từng chiều trên cả chunk</td>
+</tr>
+<tr>
+<td>Lượng tử hóa</td>
+<td>giá trị thành chỉ số bin, 256 bin</td>
+<td>nhân với hệ số $\gamma$ rồi làm tròn</td>
+</tr>
+<tr>
+<td>Vào từ điển</td>
+<td>ghi đè 256 token ít dùng của tokenizer Llama</td>
+<td>BPE huấn luyện trên dữ liệu hành động, duỗi phẳng với tần số thấp trước</td>
+</tr>
+<tr>
+<td>Số token mỗi chunk</td>
+<td>$H \times D$</td>
+<td>khoảng 30 mỗi tay trong các bộ dữ liệu của paper</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Số token cho một chunk hành động một giây. Số của chia bin là phép tính của mình; số của FAST là nhận định của paper rằng nó cần khoảng 30 token mỗi chunk mỗi tay." class="dg-natural" width="710" height="72" viewBox="0 0 710 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="250" y="23" text-anchor="end">Chia bin, 50 Hz × 7 chiều</text><rect class="dg-bar" x="260" y="10" width="313" height="18"/><text class="dg-barval" x="581" y="23">350 token</text><text class="dg-barlabel" x="250" y="53" text-anchor="end">FAST, một tay (số xấp xỉ của paper)</text><rect class="dg-key" x="260" y="40" width="27" height="18"/><text class="dg-barval" x="294" y="53">30 token</text></svg><figcaption>Số token cho một chunk hành động một giây. Số của chia bin là phép tính của mình; số của FAST là nhận định của paper rằng nó cần khoảng 30 token mỗi chunk mỗi tay.</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay 1: chia bin</p>
+<p><strong>Tính gì và vì sao.</strong> Biến một giá trị hành động thành token rồi giải ngược lại, để thấy sai số làm tròn lớn cỡ nào.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a$</td>
+<td>giá trị hành động, khoảng $[-0{,}1;\ 0{,}1]$ m</td>
+<td>input</td>
+<td>0,027</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>số bin</td>
+<td>hằng số</td>
+<td>10 (OpenVLA dùng 256)</td>
+</tr>
+<tr>
+<td>$\Delta$</td>
+<td>độ rộng bin</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$b$</td>
+<td>chỉ số bin, tức token</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\hat a$</td>
+<td>giá trị giải mã, tâm của bin</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\Delta = \frac{a_{max} - a_{min}}{K}, \qquad b = \left\lfloor \frac{a - a_{min}}{\Delta} \right\rfloor, \qquad \hat a = a_{min} + (b + 0{,}5)\,\Delta$$</p>
+<p><strong>Từng bước</strong></p>
 <ol>
-<li><strong>Mất thứ tự giữa các thùng.</strong> Cross-entropy coi thùng 6 và thùng 7 là hai nhãn khác nhau hoàn toàn. Đoán thùng 7 khi đáp án là 6 bị phạt bằng đúng mức đoán thùng 0, dù về vật lý chúng gần nhau hơn rất nhiều.</li>
-<li><strong>Dãy quá dài.</strong> Mỗi bước tốn 7 token. Robot điều khiển ở 50 Hz, một đoạn 1 giây gồm 50 bước sẽ là $50\times 7=350$ token, nặng cho attention $O(N^2)$.</li>
-<li><strong>Token dư thừa.</strong> Ở tần số cao, $a_t \approx a_{t-1}$, nên token tiếp theo gần như đoán được ngay từ token trước, và mỗi token mang rất ít thông tin mới.</li>
+<li>$\Delta = 0{,}2 / 10 = 0{,}02$.</li>
+<li>$b = \lfloor (0{,}027 + 0{,}1) / 0{,}02 \rfloor = \lfloor 6{,}35 \rfloor = 6$.</li>
+<li>$\hat a = -0{,}1 + 6{,}5 \times 0{,}02 = 0{,}03$; sai số $= 0{,}003$.</li>
 </ol>
-<p>Mang theo sang chặng sau: cách chia thùng đơn giản giải được mâu thuẫn "liên tục vs rời rạc", nhưng tạo ra dãy dài và dư thừa. Ý tưởng tiếp theo, FAST, mượn từ JPEG: nén quỹ đạo trước (DCT và lượng tử hóa) rồi gộp các mẫu hay gặp bằng BPE, cùng thuật toán với tokenizer văn bản nhưng được huấn luyện trên dữ liệu hành động.</p>
-<p><strong>Câu kiểm tra:</strong> với $K=10$ thùng trên $[-0.1,0.1]$, hành động $a=-0.095$ rơi vào thùng số mấy, giải mã ra bao nhiêu, và sai số là bao nhiêu?</p>
+<p><strong>Kết quả.</strong> 0,027 m thành token 6 và quay về thành 0,03 m.</p>
+<p><strong>Ý nghĩa.</strong> Sai số tối đa là $\Delta/2$: 0,01 m với 10 bin, khoảng 0,0004 m với 256 bin. Giá trị ngoài khoảng bị kẹp về bin đầu hoặc cuối, nếu không thì $a = 0{,}1$ sẽ cho $b = 10$, một bin không tồn tại.</p>
+</div>
+<h2>3. Vì sao chia bin gãy ở tần số cao</h2>
+<p>Mô hình ngôn ngữ học bằng cách đoán token kế tiếp từ các token trước, nên nó học được nhiều nhất từ những token mà nó không đoán trước được. Ở 5 Hz, giá trị hành động kế tiếp khác rõ so với giá trị trước. Ở 50 Hz, một chuyển động mượt thay đổi ít hơn mười lần mỗi bước, nên token kế tiếp gần như là bản sao của token trước. Paper FAST cho thấy đúng điều này trên một bài toán đồ chơi: khi tần số lấy mẫu tăng, mô hình chia bin cuối cùng "chỉ chép lại hành động đầu tiên". Hồi quy sai số bình phương không gặp vấn đề này, nhưng lại gặp vấn đề lấy trung bình ở bài <a href="imitation-learning.html">imitation learning</a>.</p>
+<div class="calc">
+<p>Thẻ tính tay 2: nén một chunk bằng DCT</p>
+<p><strong>Tính gì và vì sao.</strong> Lấy một chuyển động mượt 4 bước của một chiều, đổi sang tần số, làm tròn, rồi dựng lại. Phép tính cho thấy vì sao phần lớn hệ số biến mất.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a_0 \dots a_3$</td>
+<td>giá trị hành động đã chuẩn hóa qua 4 bước</td>
+<td>input</td>
+<td>0,1; 0,2; 0,3; 0,4</td>
+</tr>
+<tr>
+<td>$C_k$</td>
+<td>hệ số DCT thứ $k$ ($k = 0$ là mức trung bình)</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\gamma$</td>
+<td>hệ số nhân trước khi làm tròn</td>
+<td>hằng số</td>
+<td>10 (minh họa)</td>
+</tr>
+<tr>
+<td>$\bar C_k$</td>
+<td>hệ số đã làm tròn, thứ BPE nhìn thấy</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (DCT-II trực chuẩn, $N = 4$)</p>
+<p>$$C_k = s_k \sum_{n=0}^{N-1} a_n \cos\!\Big(\frac{\pi(2n+1)k}{2N}\Big),\quad s_0 = \sqrt{1/N},\ s_{k&gt;0} = \sqrt{2/N}, \qquad \bar C_k = \mathrm{round}(\gamma C_k)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$C_0 = 0{,}5 \times (0{,}1 + 0{,}2 + 0{,}3 + 0{,}4) = 0{,}5$.</li>
+<li>$C_1 = 0{,}707 \times (0{,}1 \times 0{,}924 + 0{,}2 \times 0{,}383 - 0{,}3 \times 0{,}383 - 0{,}4 \times 0{,}924) = 0{,}707 \times (-0{,}315) = -0{,}223$.</li>
+<li>$C_2 = 0$ chính xác, và $C_3 = -0{,}016$.</li>
+<li>Làm tròn $\gamma C$: $(5;\ -2{,}23;\ 0;\ -0{,}16) \to (5;\ -2;\ 0;\ 0)$.</li>
+<li>Dựng lại từ $(0{,}5;\ -0{,}2;\ 0;\ 0)$: $(0{,}119;\ 0{,}196;\ 0{,}304;\ 0{,}381)$, lệch tối đa 0,019 so với ban đầu.</li>
+</ol>
+<p><strong>Kết quả.</strong> Bốn giá trị thành hai số nguyên khác 0, và chuyển động quay về với sai lệch dưới 0,02.</p>
+<p><strong>Ý nghĩa.</strong> Một chuyển động mượt dồn gần hết năng lượng vào các tần số thấp nhất, nên sau khi làm tròn phần lớn hệ số bằng 0, và BPE gói các dãy số 0 thành rất ít token. Tăng gấp đôi tần số điều khiển chỉ thêm các hệ số tần số cao, mà phần lớn bằng 0, nên số token hầu như không đổi. Hệ số $\gamma$ đánh đổi giữa số token và sai số dựng lại.</p>
+</div>
+<h2>4. Những gì mang sang được</h2>
+<ul>
+<li>VLA tự hồi quy (RT-2, OpenVLA, π0-FAST) cần một tokenizer hành động nào đó; VLA flow matching như π0 bỏ qua bước này và xuất giá trị liên tục (<a href="flowmatching.html">flow matching</a>).</li>
+<li>Lý do phân loại trên bin thay vì hồi quy vẫn đúng: softmax trên các bin có thể đặt trọng số lên cả "trái" lẫn "phải".</li>
+<li>FAST duỗi phẳng tần số thấp của mọi chiều trước, nên mô hình chốt hình dạng tổng thể của chuyển động trước rồi mới tới chi tiết. Paper thấy cách này cho các lượt chạy ổn định hơn.</li>
+</ul>
+<p><strong>Mang theo:</strong> token chữ, ảnh và hành động giờ thành một dãy. Cơ chế cho mỗi token dùng thông tin của các token khác là <a href="attention.html">attention</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với $K = 10$ bin trên $[-0{,}1;\ 0{,}1]$, giá trị $a = -0{,}095$ rơi vào bin nào, giải mã ra bao nhiêu, và sai số là bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>
-<p>$b=\lfloor(-0.095+0.1)/0.02\rfloor=\lfloor 0.25\rfloor=0$. Thùng này phủ $[-0.1,-0.08)$, tâm là $-0.09$, nên giải mã ra $\hat a=-0.09$ và sai số là $0.005$, nằm trong giới hạn $\Delta/2=0.01$.</p>
+<p>$b = \lfloor (-0{,}095 + 0{,}1)/0{,}02 \rfloor = \lfloor 0{,}25 \rfloor = 0$. Bin 0 phủ $[-0{,}1;\ -0{,}08)$ với tâm $-0{,}09$, nên $\hat a = -0{,}09$ và sai số là $0{,}005$, nằm trong $\Delta/2 = 0{,}01$.</p>
 </details>
     </div>
   </article>

@@ -1,0 +1,16 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">MANY BODIES, ONE MODEL: WHAT HAS TO BE MADE THE SAME</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="46"/><text class="dg-t" x="110" y="64" text-anchor="middle">UR5e + gripper</text><text class="dg-s" x="110" y="80" text-anchor="middle">7-D action, 2 cameras</text>
+<rect class="dg-ext" x="20" y="100" width="180" height="46"/><text class="dg-t" x="110" y="120" text-anchor="middle">two 6-DoF arms</text><text class="dg-s" x="110" y="136" text-anchor="middle">14-D action, 3 cameras</text>
+<rect class="dg-ext" x="20" y="156" width="180" height="46"/><text class="dg-t" x="110" y="176" text-anchor="middle">mobile, two arms</text><text class="dg-s" x="110" y="192" text-anchor="middle">16 or 17-D action</text>
+<rect class="dg-ext" x="20" y="212" width="180" height="46"/><text class="dg-t" x="110" y="232" text-anchor="middle">open datasets</text><text class="dg-s" x="110" y="248" text-anchor="middle">2-10 Hz, 1-2 cameras</text>
+<rect class="dg-key" x="260" y="44" width="210" height="46"/><text class="dg-t" x="365" y="64" text-anchor="middle">one data format</text><text class="dg-s" x="365" y="80" text-anchor="middle">same fields, same units</text>
+<rect class="dg-key" x="260" y="100" width="210" height="46"/><text class="dg-t" x="365" y="120" text-anchor="middle">pad to the largest body</text><text class="dg-s" x="365" y="136" text-anchor="middle">zeros + mask missing cameras</text>
+<rect class="dg-key" x="260" y="156" width="210" height="46"/><text class="dg-t" x="365" y="176" text-anchor="middle">normalise per dataset</text><text class="dg-s" x="365" y="192" text-anchor="middle">each robot's own statistics</text>
+<rect class="dg-key" x="260" y="212" width="210" height="46"/><text class="dg-t" x="365" y="232" text-anchor="middle">re-weight the mixture</text><text class="dg-s" x="365" y="248" text-anchor="middle">big datasets down-weighted</text>
+<path class="dg-a" d="M200 67 H260"/><path class="dg-a" d="M200 123 H260"/><path class="dg-a" d="M200 179 H260"/><path class="dg-a" d="M200 235 H260"/>
+<rect class="dg-box" x="540" y="100" width="190" height="102"/><text class="dg-t" x="635" y="140" text-anchor="middle">one policy</text><text class="dg-s" x="635" y="160" text-anchor="middle">shared backbone</text><text class="dg-s" x="635" y="176" text-anchor="middle">(+ per-body input/output layers)</text>
+<path class="dg-a" d="M470 67 H505 V130 H540"/><path class="dg-a" d="M470 151 H540"/><path class="dg-a" d="M470 179 H540"/><path class="dg-a" d="M470 235 H505 V190 H540"/>
+<rect class="dg-box" x="790" y="100" width="170" height="102"/><text class="dg-t" x="875" y="140" text-anchor="middle">fine-tune</text><text class="dg-s" x="875" y="160" text-anchor="middle">on your robot</text><text class="dg-s" x="875" y="176" text-anchor="middle">small dataset</text>
+<path class="dg-a" d="M730 151 H790"/>
+</svg>

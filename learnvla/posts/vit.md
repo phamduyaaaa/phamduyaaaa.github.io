@@ -3,239 +3,187 @@ slug: vit
 date: 2026-10-18
 title_en: "ViT: When an Image Becomes Tokens"
 title_vi: "ViT: Ảnh trở thành token"
-excerpt_en: "How a Transformer, which eats a sequence of vectors, can read an image grid: patches, flattening, linear projection and position embeddings, worked by hand on a 4×4 image."
-excerpt_vi: Transformer ăn một dãy vector, còn ảnh là một lưới số. Cắt patch, duỗi phẳng, chiếu tuyến tính và cộng mã vị trí, tính tay trên ảnh 4×4.
+excerpt_en: "A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image."
+excerpt_vi: "Transformer đọc một dãy, ảnh là một lưới, và mỗi pixel một token thì quá nhiều. ViT cắt ảnh thành patch, chiếu từng patch và cộng một vector vị trí. Tính tay trên ảnh 4×4."
 tags: [VLA, Foundations, ViT, Transformer]
 ---
 
 :::en
 <div class="tldr" markdown="1">
-**PAPER** ViT, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
+**PAPER** Dosovitskiy et al., *An Image is Worth 16x16 Words*, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
 
-**PROBLEM** A Transformer reads a sequence of vectors; an image is a grid. One token per pixel gives 50,176 tokens and about 2.5 billion attention pairs for a 224×224 image.
+**PROBLEM** A Transformer reads a sequence of vectors; an image is a grid. One token per pixel of a 224×224 image gives 50,176 tokens and about 2.5 billion attention pairs per layer.
 
-**IDEA** Cut the image into patches, flatten each, project it linearly to a vector, and add a position vector.
+**WHAT FAILED BEFORE** Vision was ruled by convolutional networks (CNNs). Attention was used with them or to replace some of their parts, keeping the CNN structure. Applying attention to every pixel was too expensive.
 
-**RESULT** A 224×224 image becomes 256 tokens (14×14 patches) that a Transformer, and later a VLA, can attend over.
+**IDEA** Cut the image into patches, flatten each patch, project it linearly to a vector of size $d$, add a position vector, and feed the sequence to a standard Transformer.
 
-**KEY POINT** Without position embeddings the model cannot tell left from right.
+**RESULT** Pre-trained on ImageNet-21k or JFT-300M, the best model reaches 88.55% on ImageNet. Trained on ImageNet alone, ViT ends a few points *below* ResNets of similar size. VLAs inherit pretrained ViT-style encoders, for example SigLIP in PaliGemma and π0.
 </div>
 
-## The pain to cure
+## 1. The problem: a grid is not a sequence
 
-A Transformer eats a sequence of vectors. An image is a grid of numbers. How do we turn the grid into a sequence without losing anything important?
+[[flow]]
+- Before~One token per pixel | 224×224 image > !50,176 tokens~2.5 billion pairs per layer! > Transformer | too expensive
+- Before~CNN | Image > !Convolutions~locality built in! > Features | strong on small data, but a separate architecture from language
++ ViT | Image > *Patches + projection~256 tokens* > *+ position* > Transformer | the same machine as for text
+[[/flow]] The change is the unit: a patch, not a pixel. A lone pixel means almost nothing, like a single letter.
 
-## Step 1: The naive try, one token per pixel
+## 2. The pipeline
 
-A $4 \times 4$ grayscale image has 16 pixels, so 16 tokens. That sounds fine. But attention compares every pair of tokens, so it costs $N^2$.
+[[fig:vit]] Cut, flatten, project, add position, then plain self-attention. In code, "cut and project" is one convolution whose kernel size and stride both equal the patch size.
 
-| Image size | Tokens (one per pixel) | Pairs $N^2$ |
-|---|---|---|
-| $4 \times 4$ | 16 | 256 |
-| $224 \times 224$ | 50,176 | $\approx 2.5 \times 10^9$ |
+| Step | Input | Output | Why |
+|---|---|---|---|
+| Cut into patches | $H \times W$ image | $N = (H/P)(W/P)$ patches of $P \times P$ | fewer, more meaningful pieces |
+| Flatten | one $P \times P \times 3$ patch | vector of $3P^2$ numbers | a fixed order keeps pixel positions inside the patch |
+| Linear projection $W_p$ | $3P^2$ numbers | vector of size $d$ | each column of $W_p$ is a learned template (edge, colour, texture) |
+| Add position | patch vector | vector + $\mathrm{pos}_i$ | attention itself is blind to order |
+| Transformer | $N$ vectors | $N$ contextual vectors | patches exchange information |
 
-Every layer and every head would have to compute that many pairs: not feasible. Also, a lone pixel means almost nothing, like a single letter standing by itself.
+[[bars:tokens]] One token per pixel=50176; 16×16 patches (original ViT)=196; *14×14 patches (SigLIP, PaliGemma)=256* || Tokens for a 224×224 image. Patches cut the count by about 200×, and attention pairs by about 40,000×.
 
-## Step 2: Group pixels into patches (the ViT idea, 2020)
+<div class="calc" markdown="1">
+Calculation card
 
-Cut the image into square cells and treat each cell as a "word". For a $4 \times 4$ image with $2 \times 2$ patches:
+**What and why.** Follow one tiny image all the way to tokens: a 4×4 grayscale image, 2×2 patches, $d = 2$. It shows that projection is pattern matching and that the position vector is what tells the patches apart.
 
-$$
-\begin{pmatrix} 1&2&5&6\\ 3&4&7&8\\ 9&0&3&2\\ 1&8&4&6 \end{pmatrix}
-\Rightarrow
-\underbrace{\begin{pmatrix}1&2\\3&4\end{pmatrix}}_{A}\;
-\underbrace{\begin{pmatrix}5&6\\7&8\end{pmatrix}}_{B}\;
-\underbrace{\begin{pmatrix}9&0\\1&8\end{pmatrix}}_{C}\;
-\underbrace{\begin{pmatrix}3&2\\4&6\end{pmatrix}}_{D}
-$$
+| Symbol | Meaning | Type | Example |
+|---|---|---|---|
+| $p_A$ | patch A flattened row by row | input | $(1, 2, 3, 4)$ |
+| $W_p$ | projection, $4 \times 2$ (toy values) | weights | columns $(1,0,1,0)$ and $(0,1,0,1)$ |
+| $\mathrm{pos}_A,\ \mathrm{pos}_B$ | position vectors (toy values) | weights | $(0,0)$, $(1,0)$ |
+| $z_A$ | patch embedding | output | – |
+| $\tilde z_A$ | embedding with position | output | – |
 
-(The numbers are made up for illustration.) 16 tokens become 4, and the number of pairs drops from 256 to 16. For a real $224 \times 224$ image with $14 \times 14$ patches, we get 256 tokens. (The original ViT used $16 \times 16$ patches, giving 196 tokens; encoders common in VLAs, such as SigLIP So400m/14, use $14 \times 14$.)
+The image (made-up numbers) and its four patches:
 
-## Step 3: Flatten (reshape)
+$$\begin{pmatrix} 1&2&5&6\\ 3&4&7&8\\ 9&0&3&2\\ 1&8&4&6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\ B=\begin{pmatrix}5&6\\7&8\end{pmatrix},\ C=\begin{pmatrix}9&0\\1&8\end{pmatrix},\ D=\begin{pmatrix}3&2\\4&6\end{pmatrix}$$
 
-Each $2 \times 2$ patch is read row by row into a 4-dimensional vector:
+**Formula**
 
-$$
-p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
-$$
+$$z = p\,W_p, \qquad \tilde z_i = z_i + \mathrm{pos}_i$$
 
-This only rearranges the numbers and loses no information: the position of a pixel inside the patch is kept by the fixed order of the 4 coordinates.
+**Steps**
 
-## Step 4: Linear projection to an embedding vector
+1. Flatten: $p_A = (1,2,3,4)$, $p_B = (5,6,7,8)$, $p_C = (9,0,1,8)$, $p_D = (3,2,4,6)$.
+2. Project A: first column adds entries 1 and 3, second adds 2 and 4: $z_A = (1+3,\ 2+4) = (4, 6)$. Likewise $z_B = (12, 14)$, $z_C = (10, 8)$, $z_D = (7, 8)$.
+3. Add position with $\mathrm{pos} = (0,0), (1,0), (0,1), (1,1)$ for A, B, C, D: $\tilde z_A = (4,6)$, $\tilde z_B = (13,14)$, $\tilde z_C = (10,9)$, $\tilde z_D = (8,9)$.
 
-Each token needs a dimension $d$ that we choose (here $d=2$). We use a learned matrix $W_p$ of size $4 \times 2$:
+**Result.** Sixteen pixels became four tokens of size 2, and each token now carries both *what* (the projection) and *where* (the position).
 
-$$
-z = p\,W_p
-$$
+**Why it matters.** Without step 3, swapping patches A and D would only swap two vectors in the set; attention, which treats its inputs as a set, would give the same answers. For a robot that must know whether the cup is left or right of the gripper, that is fatal. (The original ViT simply numbers the patches $0 \dots N-1$ and learns one vector per number; the toy uses column and row to make the idea visible.)
+</div>
 
-Pick a toy $W_p = \begin{pmatrix}1&0\\0&1\\1&0\\0&1\end{pmatrix}$. For patch A:
+## 3. The price of having no built-in assumptions
 
-$$
-z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
-$$
+A convolution assumes two things before seeing any data: nearby pixels belong together (locality), and a pattern means the same thing wherever it appears (weight sharing). ViT assumes neither; it has to learn them. That is why it trails ResNets when trained on ImageNet alone and overtakes them only with much more data. The paper's words: "large scale training trumps inductive bias".
 
-Likewise $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.
+For a VLA this has a practical consequence. Nobody trains the image encoder from robot data alone; it comes pretrained on hundreds of millions of image–text pairs ([contrastive learning](contrastive-learning.html)), and the robot data only adapts it.
 
-**Meaning:** each column of $W_p$ is a $2\times 2$ "template", and $z$ is how well the patch matches each template (a dot product). This is pattern matching: $W_p$ learns filters for edges, colour and texture. It resembles the lookup $E$ that turns a word into a vector, except that patches have no dictionary (there are endlessly many possible patches), so we use a projection instead of a table lookup. And $W_p$ is learned by gradient like any other matrix. In code, cutting patches and projecting them is usually one convolution whose kernel size and stride both equal the patch size.
+## 4. In VLA
 
-## Step 5: The big problem, attention is blind to order
+- PaliGemma, used by π0, encodes a 224×224 image with SigLIP So400m/14 into 256 tokens; with two or three cameras, images are most of the sequence.
+- The [CLS] token that the original ViT adds for classification is usually dropped; all patch tokens go to the language model.
+- Tactile images from gel sensors ([GelSight](gelsight.html)) are images too, so the same patch encoder can read them, as in TaF-VLA.
 
-Recall the remaining weakness from the attention stage: shuffle the tokens and the output is just shuffled the same way. For images, that means the original image and one cut into 4 pieces and randomly reordered give the same set of representations. The model does not know that "A is in the top-left corner".
+**Carry forward:** a ViT trained only to classify knows categories, not language. Encoders that a language model can talk to are trained by matching images with captions: [contrastive learning](contrastive-learning.html).
 
-For a robot this is a disaster, because the core task is where things are.
-
-## Step 6: Add position embeddings
-
-Give each position a vector $\mathrm{pos}_i$ (learned, also randomly initialised then trained) and add it to the token:
-
-$$
-\tilde z_i = z_i + \mathrm{pos}_i
-$$
-
-Toy example: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (column, row). Then:
-
-$$
-\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
-$$
-
-Now each token carries both content (what the patch looks like) and coordinates (where it is). Permuting tokens changes the result, because each token is already labelled with its position.
-
-The toy uses 2D (column, row) coordinates to make the idea visible. The original ViT simply numbers the patches $0, 1, \dots, N-1$ and learns one vector per number; the authors found 2D-aware variants gave no significant gain.
-
-## Step 7: From here on it is pure Transformer
-
-The four vectors $\tilde z_A,\dots,\tilde z_D$ enter exactly the attention mechanism: $q,k,v$, softmax, mixing. Image tokens look at each other just like text tokens. A "cup handle" patch pulls in information from the surrounding patches to become the representation of "cup". (The original ViT also prepends a learned [CLS] token to summarise the image for classification; VLAs usually drop it and pass all patch tokens to the language model.)
-
-## Summary of the flow
-
-$$
-\text{image (grid)} \xrightarrow{\text{cut}} \text{patches} \xrightarrow{\text{flatten}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{contextual tokens}
-$$
-
-Carry forward: the image is now continuous tokens used only as **input**, and nothing has to be generated. Actions are different: the robot must produce them. That tension is what the next stage resolves (see [Tokenizer & Action Tokenization](action-tokenization.html)).
-
-**Check question:** if we drop step 6 (no pos), which two images give the same set of representations, and what trouble does the robot get into?
+**Check question:** A 448×448 image is cut into 14×14 patches. How many tokens is that, and how many attention pairs per layer?
 
 <details markdown="1">
 <summary>Answer</summary>
 
-the original image and a version cut into patches and shuffled (for example a cup that fits inside one patch, on the left versus on the right) give the same set of representations. The robot cannot tell whether an object is to the left or right of its hand, so it does not know which way to move.
+$448 / 14 = 32$, so $32 \times 32 = 1024$ tokens and $1024^2 = 1{,}048{,}576$ pairs: four times the tokens of a 224×224 image, sixteen times the pairs.
 </details>
 :::
 
 :::vi
 <div class="tldr" markdown="1">
-**PAPER** ViT, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
+**PAPER** Dosovitskiy và cộng sự, *An Image is Worth 16x16 Words*, [arXiv 2010.11929](https://arxiv.org/abs/2010.11929) · 10/2020
 
-**VẤN ĐỀ** Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention.
+**VẤN ĐỀ** Transformer đọc một dãy vector; ảnh là một lưới. Mỗi pixel một token thì ảnh 224×224 thành 50.176 token và khoảng 2,5 tỉ cặp attention mỗi lớp.
 
-**Ý TƯỞNG** Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector, rồi cộng một vector vị trí.
+**PAPER TRƯỚC HỎNG Ở ĐÂU** Thị giác máy do mạng tích chập (CNN) thống trị. Attention được dùng kèm CNN hoặc thay một vài bộ phận của nó, vẫn giữ cấu trúc CNN. Áp attention lên từng pixel thì quá tốn.
 
-**KẾT QUẢ** Ảnh 224×224 thành 256 token (patch 14×14) để Transformer, và sau này là VLA, chú ý qua lại.
+**Ý TƯỞNG** Cắt ảnh thành patch, duỗi phẳng từng patch, chiếu tuyến tính thành vector cỡ $d$, cộng một vector vị trí, rồi đưa cả dãy vào một Transformer bình thường.
 
-**ĐIỂM CỐT LÕI** Không có mã vị trí, mô hình không phân biệt được trái với phải.
+**KẾT QUẢ** Pretrain trên ImageNet-21k hoặc JFT-300M, mô hình tốt nhất đạt 88,55% trên ImageNet. Chỉ huấn luyện trên ImageNet thì ViT kém ResNet cùng cỡ vài điểm. VLA thừa hưởng các bộ mã hóa kiểu ViT đã pretrain, ví dụ SigLIP trong PaliGemma và π0.
 </div>
 
-## Cái đau cần chữa
+## 1. Vấn đề: lưới không phải là dãy
 
-Transformer ăn một dãy vector. Ảnh lại là một lưới số. Làm sao biến lưới thành dãy mà không mất thứ gì quan trọng?
+[[flow]]
+- Trước~Mỗi pixel một token | Ảnh 224×224 > !50.176 token~2,5 tỉ cặp mỗi lớp! > Transformer | quá tốn
+- Trước~CNN | Ảnh > !Tích chập~tính cục bộ cài sẵn! > Đặc trưng | mạnh khi ít dữ liệu, nhưng là kiến trúc tách biệt với ngôn ngữ
++ ViT | Ảnh > *Patch + phép chiếu~256 token* > *+ vị trí* > Transformer | cùng một cỗ máy như với chữ
+[[/flow]] Thay đổi nằm ở đơn vị: một patch chứ không phải một pixel. Một pixel đứng riêng gần như không nói gì, như một chữ cái đứng một mình.
 
-## Bước 1: Thử cách ngây thơ nhất, mỗi pixel một token
+## 2. Quy trình
 
-Ảnh $4 \times 4$ thang xám có 16 pixel, tức 16 token. Nghe ổn. Nhưng attention so mọi cặp token, nên tốn $N^2$.
+[[fig:vit]] Cắt, duỗi phẳng, chiếu, cộng vị trí, rồi self-attention bình thường. Trong code, "cắt và chiếu" là một phép tích chập có kích thước kernel và bước nhảy đều bằng cỡ patch.
 
-| Kích thước ảnh | Số token (mỗi pixel) | Số cặp $N^2$ |
-|---|---|---|
-| $4 \times 4$ | 16 | 256 |
-| $224 \times 224$ | 50,176 | $\approx 2.5 \times 10^9$ |
+| Bước | Input | Output | Vì sao |
+|---|---|---|---|
+| Cắt patch | ảnh $H \times W$ | $N = (H/P)(W/P)$ patch cỡ $P \times P$ | ít mảnh hơn, mỗi mảnh có nghĩa hơn |
+| Duỗi phẳng | một patch $P \times P \times 3$ | vector $3P^2$ số | thứ tự cố định giữ vị trí pixel bên trong patch |
+| Chiếu tuyến tính $W_p$ | $3P^2$ số | vector cỡ $d$ | mỗi cột của $W_p$ là một khuôn mẫu học được (cạnh, màu, kết cấu) |
+| Cộng vị trí | vector patch | vector + $\mathrm{pos}_i$ | bản thân attention không biết thứ tự |
+| Transformer | $N$ vector | $N$ vector có ngữ cảnh | các patch trao đổi thông tin |
 
-Mỗi lớp, mỗi head đều phải tính chừng đó cặp: không khả thi. Thêm nữa, một pixel đơn lẻ gần như vô nghĩa, như một chữ cái đứng riêng.
+[[bars:token]] Mỗi pixel một token=50176; Patch 16×16 (ViT gốc)=196; *Patch 14×14 (SigLIP, PaliGemma)=256* || Số token của ảnh 224×224. Patch giảm số token khoảng 200 lần và số cặp attention khoảng 40.000 lần.
 
-## Bước 2: Gom pixel thành patch (ý tưởng của ViT, 2020)
+<div class="calc" markdown="1">
+Thẻ tính tay
 
-Chia ảnh thành các ô vuông, mỗi ô là một "từ". Với ảnh $4 \times 4$ và patch $2 \times 2$:
+**Tính gì và vì sao.** Đi theo một ảnh tí hon tới tận token: ảnh xám 4×4, patch 2×2, $d = 2$. Phép tính cho thấy phép chiếu là so khớp khuôn mẫu, và vector vị trí là thứ giúp phân biệt các patch.
 
-$$
-\begin{pmatrix} 1&2&5&6\\ 3&4&7&8\\ 9&0&3&2\\ 1&8&4&6 \end{pmatrix}
-\Rightarrow
-\underbrace{\begin{pmatrix}1&2\\3&4\end{pmatrix}}_{A}\;
-\underbrace{\begin{pmatrix}5&6\\7&8\end{pmatrix}}_{B}\;
-\underbrace{\begin{pmatrix}9&0\\1&8\end{pmatrix}}_{C}\;
-\underbrace{\begin{pmatrix}3&2\\4&6\end{pmatrix}}_{D}
-$$
+| Ký hiệu | Nghĩa | Loại | Ví dụ |
+|---|---|---|---|
+| $p_A$ | patch A duỗi phẳng theo hàng | input | $(1, 2, 3, 4)$ |
+| $W_p$ | phép chiếu $4 \times 2$ (giá trị minh họa) | trọng số | các cột $(1,0,1,0)$ và $(0,1,0,1)$ |
+| $\mathrm{pos}_A,\ \mathrm{pos}_B$ | vector vị trí (giá trị minh họa) | trọng số | $(0,0)$, $(1,0)$ |
+| $z_A$ | embedding của patch | output | – |
+| $\tilde z_A$ | embedding có vị trí | output | – |
 
-(Số bịa để minh họa.) Từ 16 token còn 4 token, và số cặp giảm từ 256 xuống 16. Với ảnh thật $224 \times 224$, patch $14 \times 14$ cho 256 token. (ViT gốc dùng patch $16 \times 16$ nên ra 196 token; các encoder hay dùng trong VLA như SigLIP So400m/14 dùng $14 \times 14$.)
+Ảnh (số bịa để minh họa) và bốn patch của nó:
 
-## Bước 3: Duỗi phẳng (reshape)
+$$\begin{pmatrix} 1&2&5&6\\ 3&4&7&8\\ 9&0&3&2\\ 1&8&4&6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\ B=\begin{pmatrix}5&6\\7&8\end{pmatrix},\ C=\begin{pmatrix}9&0\\1&8\end{pmatrix},\ D=\begin{pmatrix}3&2\\4&6\end{pmatrix}$$
 
-Mỗi patch $2 \times 2$ đọc theo hàng thành vector 4 chiều:
+**Công thức**
 
-$$
-p_A=(1,2,3,4),\; p_B=(5,6,7,8),\; p_C=(9,0,1,8),\; p_D=(3,2,4,6)
-$$
+$$z = p\,W_p, \qquad \tilde z_i = z_i + \mathrm{pos}_i$$
 
-Đây chỉ là sắp lại các con số, không mất thông tin gì: vị trí pixel trong patch được giữ bởi thứ tự cố định của 4 tọa độ.
+**Từng bước**
 
-## Bước 4: Chiếu tuyến tính thành vector embedding
+1. Duỗi phẳng: $p_A = (1,2,3,4)$, $p_B = (5,6,7,8)$, $p_C = (9,0,1,8)$, $p_D = (3,2,4,6)$.
+2. Chiếu A: cột thứ nhất cộng phần tử 1 và 3, cột thứ hai cộng 2 và 4: $z_A = (1+3,\ 2+4) = (4, 6)$. Tương tự $z_B = (12, 14)$, $z_C = (10, 8)$, $z_D = (7, 8)$.
+3. Cộng vị trí với $\mathrm{pos} = (0,0), (1,0), (0,1), (1,1)$ cho A, B, C, D: $\tilde z_A = (4,6)$, $\tilde z_B = (13,14)$, $\tilde z_C = (10,9)$, $\tilde z_D = (8,9)$.
 
-Ta cần mỗi token có số chiều $d$ do ta chọn (ở đây $d=2$). Dùng ma trận học được $W_p$ cỡ $4 \times 2$:
+**Kết quả.** Mười sáu pixel thành bốn token cỡ 2, và mỗi token giờ mang cả *cái gì* (phép chiếu) lẫn *ở đâu* (vị trí).
 
-$$
-z = p\,W_p
-$$
+**Ý nghĩa.** Không có bước 3, đổi chỗ patch A và D chỉ làm đổi chỗ hai vector trong tập; attention, vốn xử lý đầu vào như một tập hợp, sẽ cho cùng câu trả lời. Với robot cần biết cái cốc nằm bên trái hay bên phải tay kẹp, đó là lỗi chết người. (ViT gốc chỉ đánh số các patch $0 \dots N-1$ và học một vector cho mỗi số; ví dụ tí hon dùng cột và hàng để thấy rõ ý tưởng.)
+</div>
 
-Chọn đồ chơi $W_p = \begin{pmatrix}1&0\\0&1\\1&0\\0&1\end{pmatrix}$. Khi đó với patch A:
+## 3. Cái giá của việc không giả định gì sẵn
 
-$$
-z_A = (1,2,3,4)\,W_p = (1+3,\; 2+4) = (4,\,6)
-$$
+Một phép tích chập giả định hai điều trước khi thấy dữ liệu: các pixel gần nhau thuộc về nhau (tính cục bộ), và một hoa văn có cùng ý nghĩa dù xuất hiện ở đâu (chia sẻ trọng số). ViT không giả định điều nào; nó phải tự học. Vì thế nó thua ResNet khi chỉ huấn luyện trên ImageNet và chỉ vượt lên khi có nhiều dữ liệu hơn hẳn. Lời của paper: "huấn luyện quy mô lớn thắng thiên kiến quy nạp".
 
-Tương tự $z_B=(12,14)$, $z_C=(10,8)$, $z_D=(7,8)$.
+Với VLA, điều này có hệ quả thực tế. Không ai huấn luyện bộ mã hóa ảnh chỉ bằng dữ liệu robot; nó được pretrain sẵn trên hàng trăm triệu cặp ảnh–chú thích ([contrastive learning](contrastive-learning.html)), và dữ liệu robot chỉ để thích nghi nó.
 
-**Ý nghĩa:** mỗi cột của $W_p$ là một "mẫu" cỡ $2\times 2$, và $z$ chính là độ khớp của patch với từng mẫu (tích vô hướng). Đây là so khớp mẫu: $W_p$ học ra các bộ lọc cạnh, màu, kết cấu. Nó giống phép tra bảng $E$ biến từ thành vector, chỉ khác là patch không có từ điển (vô số patch có thể có), nên ta dùng phép chiếu thay cho tra bảng. Đồng thời $W_p$ cũng học bằng gradient như mọi ma trận khác. Trong code, bước cắt patch và chiếu thường gộp thành một lớp tích chập có kernel và stride đều bằng kích thước patch.
+## 4. Trong VLA
 
-## Bước 5: Vấn đề lớn, attention mù thứ tự
+- PaliGemma, mà π0 dùng, mã hóa ảnh 224×224 bằng SigLIP So400m/14 thành 256 token; với hai hoặc ba camera, ảnh chiếm phần lớn dãy.
+- Token [CLS] mà ViT gốc thêm để phân loại thường bị bỏ; mọi token patch đều được đưa vào mô hình ngôn ngữ.
+- Ảnh xúc giác từ cảm biến gel ([GelSight](gelsight.html)) cũng là ảnh, nên cùng bộ mã hóa patch đọc được chúng, như trong TaF-VLA.
 
-Nhớ lại điểm yếu còn lại từ chặng attention: tráo các token thì kết quả chỉ tráo theo. Với ảnh, nghĩa là ảnh gốc và ảnh bị cắt 4 mảnh rồi xáo ngẫu nhiên cho ra cùng một tập biểu diễn. Mô hình không biết "A ở góc trên trái".
+**Mang theo:** một ViT chỉ học phân loại thì biết các lớp đồ vật chứ không biết ngôn ngữ. Bộ mã hóa mà mô hình ngôn ngữ "nói chuyện" được thì được huấn luyện bằng cách ghép ảnh với chú thích: [contrastive learning](contrastive-learning.html).
 
-Với robot đây là thảm họa, vì nhiệm vụ cốt lõi là vật ở đâu.
-
-## Bước 6: Cộng mã vị trí
-
-Cho mỗi vị trí một vector $\mathrm{pos}_i$ (học được, cũng khởi tạo ngẫu nhiên rồi học) và cộng vào token:
-
-$$
-\tilde z_i = z_i + \mathrm{pos}_i
-$$
-
-Ví dụ đồ chơi: $\mathrm{pos}_A=(0,0)$, $\mathrm{pos}_B=(1,0)$, $\mathrm{pos}_C=(0,1)$, $\mathrm{pos}_D=(1,1)$ (tọa độ cột, hàng). Khi đó:
-
-$$
-\tilde z_A=(4,6),\quad \tilde z_B=(13,14),\quad \tilde z_C=(10,9),\quad \tilde z_D=(8,9)
-$$
-
-Giờ token vừa mang nội dung (patch trông thế nào) vừa mang tọa độ (nó nằm đâu). Hoán vị token sẽ làm thay đổi kết quả, vì mỗi token đã gắn nhãn vị trí.
-
-Ví dụ đồ chơi dùng tọa độ 2D (cột, hàng) cho dễ thấy. ViT gốc chỉ đánh số patch $0, 1, \dots, N-1$ và học một vector cho mỗi số; tác giả thấy các biến thể biết cấu trúc 2D không tốt hơn đáng kể.
-
-## Bước 7: Từ đây trở đi là Transformer thuần túy
-
-Bốn vector $\tilde z_A,\dots,\tilde z_D$ vào đúng cơ chế attention: $q,k,v$, softmax, trộn. Token ảnh cũng nhìn nhau như token chữ. Patch "quai cốc" hút thông tin từ patch xung quanh để thành biểu diễn "cốc". (ViT gốc còn thêm một token [CLS] học được ở đầu dãy để tóm tắt ảnh cho bài toán phân loại; VLA thường bỏ token này và đưa toàn bộ token patch cho mô hình ngôn ngữ.)
-
-## Tóm tắt dòng chảy
-
-$$
-\text{ảnh (lưới)} \xrightarrow{\text{cắt}} \text{patch} \xrightarrow{\text{duỗi phẳng}} p_i \xrightarrow{W_p} z_i \xrightarrow{+\mathrm{pos}} \tilde z_i \xrightarrow{\text{attention}} \text{token có ngữ cảnh}
-$$
-
-Mang theo sang chặng sau: ảnh giờ là token liên tục, chỉ làm **đầu vào**, không cần sinh ra. Còn hành động thì khác: robot phải sinh chúng. Đó là mâu thuẫn mà bài tiếp theo giải quyết (xem [Tokenizer & Action Tokenization](action-tokenization.html)).
-
-**Câu kiểm tra:** nếu bỏ bước 6 (không cộng pos), hai ảnh nào sẽ cho cùng một tập biểu diễn, và robot sẽ gặp rắc rối gì?
+**Câu kiểm tra:** Ảnh 448×448 cắt thành patch 14×14. Được bao nhiêu token, và bao nhiêu cặp attention mỗi lớp?
 
 <details markdown="1">
 <summary>Đáp án</summary>
 
-ảnh gốc và ảnh bị cắt patch rồi xáo trộn (ví dụ cốc nằm gọn trong một patch, ở bên trái so với bên phải) cho cùng một tập biểu diễn. Robot không phân biệt được vật nằm bên trái hay bên phải tay mình, nên không biết phải di chuyển về hướng nào.
+$448 / 14 = 32$, nên $32 \times 32 = 1024$ token và $1024^2 = 1{.}048{.}576$ cặp: gấp bốn lần số token của ảnh 224×224, gấp mười sáu lần số cặp.
 </details>
 :::

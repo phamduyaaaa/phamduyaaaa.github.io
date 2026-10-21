@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR WAYS TO ADAPT A PRETRAINED BACKBONE (shaded = trained)</text>
+<rect class="dg-grp" x="20" y="44" width="220" height="200"/><text class="dg-t" x="130" y="66" text-anchor="middle">Full fine-tuning</text>
+<rect class="dg-key" x="40" y="80" width="180" height="40"/><text class="dg-s" x="130" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="40" y="130" width="180" height="40"/><text class="dg-s" x="130" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="40" y="180" width="180" height="40"/><text class="dg-s" x="130" y="204" text-anchor="middle">output / action head</text>
+<rect class="dg-grp" x="260" y="44" width="220" height="200"/><text class="dg-t" x="370" y="66" text-anchor="middle">Last layer only</text>
+<rect class="dg-box" x="280" y="80" width="180" height="40"/><text class="dg-s" x="370" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-box" x="280" y="130" width="180" height="40"/><text class="dg-s" x="370" y="154" text-anchor="middle">language model, frozen</text>
+<rect class="dg-key" x="280" y="180" width="180" height="40"/><text class="dg-s" x="370" y="204" text-anchor="middle">last layer + embeddings</text>
+<rect class="dg-grp" x="500" y="44" width="220" height="200"/><text class="dg-t" x="610" y="66" text-anchor="middle">Frozen vision</text>
+<rect class="dg-box" x="520" y="80" width="180" height="40"/><text class="dg-s" x="610" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="520" y="130" width="180" height="40"/><text class="dg-s" x="610" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="520" y="180" width="180" height="40"/><text class="dg-s" x="610" y="204" text-anchor="middle">head</text>
+<rect class="dg-grp" x="740" y="44" width="220" height="200"/><text class="dg-t" x="850" y="66" text-anchor="middle">LoRA</text>
+<rect class="dg-box" x="760" y="80" width="130" height="40"/><text class="dg-s" x="825" y="104" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="80" width="45" height="40"/><text class="dg-s" x="917" y="104" text-anchor="middle">BA</text>
+<rect class="dg-box" x="760" y="130" width="130" height="40"/><text class="dg-s" x="825" y="154" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="130" width="45" height="40"/><text class="dg-s" x="917" y="154" text-anchor="middle">BA</text>
+<rect class="dg-key" x="760" y="180" width="180" height="40"/><text class="dg-s" x="850" y="204" text-anchor="middle">head</text>
+<text class="dg-l" x="20" y="276">OpenVLA, same tasks: full 69.7%, last layer only 30.3%, frozen vision 47.0%, LoRA rank 32: 68.2% with 1.4% of the weights trained</text>
+</svg>

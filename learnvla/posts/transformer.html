@@ -60,7 +60,7 @@
     <div class="post-meta-row">
       <span class="post-meta-date">18 Oct 2026</span>
       <span class="post-meta-sep">·</span>
-      <span class="post-meta-read">3 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
     </div>
 
     <h1 data-en>Transformer: Attention Without Recurrence</h1>
@@ -79,7 +79,7 @@
 <p><strong>PROBLEM</strong> Sequence models must connect distant tokens and train fast on big data.</p>
 <p><strong>WHAT FAILED BEFORE</strong> Recurrent networks (LSTM, GRU) process token $t$ only after token $t-1$. Training cannot be parallelised along the sequence, and information between two far tokens must pass through many steps. Attention was used, but only on top of the RNN.</p>
 <p><strong>IDEA</strong> Drop the recurrence. Use self-attention to mix tokens, a feed-forward layer per token, residual connections and layer norm, and add position information because attention itself has no order.</p>
-<p><strong>RESULT</strong> 28.4 BLEU on WMT14 English→German (the paper's headline), with far less training cost than recurrent models. Every VLA backbone since is a Transformer.</p>
+<p><strong>RESULT</strong> 28.4 BLEU on WMT14 English→German (the paper's headline), with far less training cost than recurrent models. Every VLA on this site is built on Transformers.</p>
 </div>
 <h2>1. The problem: sequential and far apart</h2>
 <figure class="diagram flow"><svg role="img" aria-label="The change is that the n tokens are processed together and any two are connected directly." class="dg-natural" width="652" height="206" viewBox="0 0 652 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">RNN / LSTM</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Token 1</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="135" height="54"/><text class="dg-t" x="321" y="37" text-anchor="middle">Token 2</text><text class="dg-s" x="321" y="53" text-anchor="middle">waits for token 1</text><path class="dg-a" d="M389 41 H421"/><rect class="dg-badbox" x="423" y="14" width="154" height="54"/><text class="dg-t" x="500" y="37" text-anchor="middle">Token n</text><text class="dg-s" x="500" y="53" text-anchor="middle">n steps from token 1</text><text class="dg-note dg-red" x="124" y="86">✗ cannot parallelise; long path</text><text class="dg-lab dg-green" x="14" y="143">Transformer</text><rect class="dg-box" x="124" y="120" width="102" height="38"/><text class="dg-t" x="175" y="143" text-anchor="middle">All tokens</text><path class="dg-a" d="M226 139 H258"/><rect class="dg-key" x="260" y="112" width="173" height="54"/><text class="dg-t" x="347" y="135" text-anchor="middle">Self-attention</text><text class="dg-s" x="347" y="151" text-anchor="middle">every pair in one layer</text><path class="dg-a" d="M433 139 H465"/><rect class="dg-box" x="467" y="120" width="170" height="38"/><text class="dg-t" x="552" y="143" text-anchor="middle">All outputs at once</text><text class="dg-note dg-green" x="124" y="184">✓ path length 1</text></svg><figcaption>The change is that the n tokens are processed together and any two are connected directly.</figcaption></figure>
@@ -134,6 +134,13 @@
 </tbody>
 </table>
 <p>The base model in the paper: $d = 512$, 8 heads, feed-forward width 2048, 6 layers.</p>
+<p><strong>Why each piece is there, from first principles.</strong></p>
+<ul>
+<li><em>Feed-forward.</em> Attention outputs a weighted average of value vectors, so on its own it only mixes what is already there. The per-token MLP, with its nonlinearity, is where a token's vector is actually transformed; it holds most of the block's parameters ($2 \times 512 \times 2048 \approx 2.1$M per layer in the base model, against $4 \times 512^2 \approx 1.0$M for the four attention projections).</li>
+<li><em>Residual.</em> Each sublayer adds a correction to its input instead of replacing it: $x + f(x)$. If $f$ starts near zero, the stack starts near the identity, and the gradient always has a direct path back through the "$+x$". This is what lets dozens of layers train.</li>
+<li><em>Layer norm.</em> Rescales each token vector to zero mean and unit spread so that sums of many corrections do not drift in size. (The 2017 paper normalised after the residual; most modern models normalise before the sublayer, which trains more stably.)</li>
+<li><em>Masks.</em> An attention mask decides who may look at whom. A <em>causal</em> mask lets token $i$ see only tokens $\le i$, which is what makes next-token generation possible. VLAs use block masks: in π0 image and text tokens see each other, and the action tokens see everything before them, but the prefix never sees the actions.</li>
+</ul>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Why is self-attention better than a recurrent layer for long sequences with fast hardware? Compare the cost of a layer and the path between positions (the paper's Table 1).</p>
@@ -189,7 +196,7 @@
 <li>A VLA puts image tokens, text tokens and action tokens in one sequence; one Transformer lets them all attend to each other.</li>
 <li>Variants you will meet: decoder-only (next-token prediction, e.g. language models), encoder (ViT), and the action expert of π0, a smaller Transformer that reads the VLM's tokens.</li>
 </ul>
-<p><strong>Carry forward:</strong> a Transformer is a general sequence machine. Next, how to make it <em>generate continuous actions</em>: <a href="flowmatching.html">Flow matching</a>.</p>
+<p><strong>Carry forward:</strong> a Transformer is a general sequence machine. When there are two different sequences, say the VLM's tokens and the action tokens, one needs a way to read the other: <a href="cross-attention.html">cross-attention</a>.</p>
 <p><strong>Check question:</strong> $n = 1024$, $d = 512$. Which is cheaper per layer, attention or RNN?</p>
 <details>
 <summary>Answer</summary>
@@ -202,7 +209,7 @@
 <p><strong>VẤN ĐỀ</strong> Mô hình chuỗi phải nối các token xa nhau và huấn luyện nhanh trên dữ liệu lớn.</p>
 <p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Mạng hồi quy (LSTM, GRU) chỉ xử lý token $t$ sau khi xong token $t-1$. Không song song hóa được theo chiều chuỗi, và thông tin giữa hai token xa phải đi qua nhiều bước. Attention đã được dùng, nhưng chỉ đặt trên RNN.</p>
 <p><strong>Ý TƯỞNG</strong> Bỏ hồi quy. Dùng self-attention để trộn token, một lớp feed-forward cho từng token, kết nối residual và layer norm, cộng thêm thông tin vị trí vì bản thân attention không biết thứ tự.</p>
-<p><strong>KẾT QUẢ</strong> 28,4 BLEU trên WMT14 Anh→Đức (số nổi bật của paper), với chi phí huấn luyện thấp hơn nhiều so với mô hình hồi quy. Mọi backbone VLA từ đó đều là Transformer.</p>
+<p><strong>KẾT QUẢ</strong> 28,4 BLEU trên WMT14 Anh→Đức (số nổi bật của paper), với chi phí huấn luyện thấp hơn nhiều so với mô hình hồi quy. Mọi VLA trên trang này đều xây trên Transformer.</p>
 </div>
 <h2>1. Vấn đề: tuần tự và cách xa nhau</h2>
 <figure class="diagram flow"><svg role="img" aria-label="Thay đổi là n token được xử lý cùng lúc và hai token bất kỳ nối trực tiếp với nhau." class="dg-natural" width="633" height="206" viewBox="0 0 633 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">RNN / LSTM</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Token 1</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="96" height="54"/><text class="dg-t" x="302" y="37" text-anchor="middle">Token 2</text><text class="dg-s" x="302" y="53" text-anchor="middle">chờ token 1</text><path class="dg-a" d="M350 41 H382"/><rect class="dg-badbox" x="384" y="14" width="148" height="54"/><text class="dg-t" x="458" y="37" text-anchor="middle">Token n</text><text class="dg-s" x="458" y="53" text-anchor="middle">cách token 1 n bước</text><text class="dg-note dg-red" x="124" y="86">✗ không song song được; đường đi dài</text><text class="dg-lab dg-green" x="14" y="143">Transformer</text><rect class="dg-box" x="124" y="120" width="96" height="38"/><text class="dg-t" x="172" y="143" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 139 H252"/><rect class="dg-key" x="254" y="112" width="160" height="54"/><text class="dg-t" x="334" y="135" text-anchor="middle">Self-attention</text><text class="dg-s" x="334" y="151" text-anchor="middle">mọi cặp trong một lớp</text><path class="dg-a" d="M414 139 H446"/><rect class="dg-box" x="448" y="120" width="170" height="38"/><text class="dg-t" x="534" y="143" text-anchor="middle">Mọi đầu ra cùng lúc</text><text class="dg-note dg-green" x="124" y="184">✓ đường đi dài 1</text></svg><figcaption>Thay đổi là n token được xử lý cùng lúc và hai token bất kỳ nối trực tiếp với nhau.</figcaption></figure>
@@ -257,6 +264,13 @@
 </tbody>
 </table>
 <p>Mô hình base trong paper: $d = 512$, 8 đầu, độ rộng feed-forward 2048, 6 lớp.</p>
+<p><strong>Vì sao mỗi mảnh có mặt, nghĩ từ gốc.</strong></p>
+<ul>
+<li><em>Feed-forward.</em> Attention xuất ra trung bình có trọng số của các vector value, nên tự nó chỉ trộn những gì đã có. MLP áp cho từng token, với hàm phi tuyến, mới là nơi vector của token thật sự được biến đổi; nó giữ phần lớn tham số của khối ($2 \times 512 \times 2048 \approx 2{,}1$ triệu mỗi lớp trong mô hình base, so với $4 \times 512^2 \approx 1{,}0$ triệu cho bốn phép chiếu của attention).</li>
+<li><em>Residual.</em> Mỗi lớp con cộng một phần hiệu chỉnh vào đầu vào thay vì thay thế nó: $x + f(x)$. Nếu $f$ khởi đầu gần 0 thì cả chồng khởi đầu gần phép đồng nhất, và gradient luôn có đường đi thẳng về qua "$+x$". Nhờ vậy hàng chục lớp mới huấn luyện được.</li>
+<li><em>Layer norm.</em> Co giãn mỗi vector token về trung bình 0 và độ trải bằng 1, để tổng của nhiều lần hiệu chỉnh không trôi về độ lớn. (Paper 2017 chuẩn hóa sau residual; phần lớn mô hình hiện nay chuẩn hóa trước lớp con, huấn luyện ổn định hơn.)</li>
+<li><em>Mask.</em> Mask của attention quyết định ai được nhìn ai. Mask <em>nhân quả</em> chỉ cho token $i$ thấy các token $\le i$, đó là điều làm việc sinh token kế tiếp khả thi. VLA dùng mask theo khối: trong π0, token ảnh và chữ thấy nhau, token hành động thấy mọi thứ đứng trước, nhưng phần tiền tố không bao giờ thấy hành động.</li>
+</ul>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Vì sao self-attention tốt hơn lớp hồi quy với chuỗi dài trên phần cứng nhanh? So chi phí một lớp và đường đi giữa các vị trí (Bảng 1 của paper).</p>
@@ -312,7 +326,7 @@
 <li>VLA đặt token ảnh, token chữ và token hành động vào một chuỗi; một Transformer cho chúng chú ý lẫn nhau.</li>
 <li>Các biến thể sẽ gặp: decoder-only (dự đoán token kế tiếp, như mô hình ngôn ngữ), encoder (ViT), và action expert của π0, một Transformer nhỏ đọc token của VLM.</li>
 </ul>
-<p><strong>Mang theo:</strong> Transformer là cỗ máy chuỗi tổng quát. Tiếp theo: làm sao để nó <em>sinh hành động liên tục</em>: <a href="flowmatching.html">Flow matching</a>.</p>
+<p><strong>Mang theo:</strong> Transformer là cỗ máy chuỗi tổng quát. Khi có hai chuỗi khác nhau, ví dụ token của VLM và token hành động, cần một cách để chuỗi này đọc chuỗi kia: <a href="cross-attention.html">cross-attention</a>.</p>
 <p><strong>Câu hỏi kiểm tra:</strong> $n = 1024$, $d = 512$. Mỗi lớp, attention hay RNN rẻ hơn?</p>
 <details>
 <summary>Đáp án</summary>

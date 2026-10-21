@@ -72,7 +72,9 @@ The id is just a row number. A table $E$ of shape (vocabulary size $V$) × ($d$)
 
 Example with $V = 5$, $d = 3$: ids $[2, 4]$ pick rows 2 and 4 of $E$ and give a $2 \times 3$ matrix. No arithmetic, only lookup.
 
-**Carry forward:** a sequence of vectors still has no way for tokens to talk to each other. That is [Attention](attention.html).
+Why is a lookup enough? Write the id as a one-hot vector (all zeros, a 1 at position $i$). Multiplying that one-hot vector by $E$ selects row $i$. So an embedding table is exactly a linear layer applied to a one-hot input; it is stored as a table only because multiplying by a vector of zeros would be wasteful. The table is trained by the same gradients as everything else, so ids that behave alike end up with nearby rows.
+
+**Carry forward:** text and image tokens are only read. Actions must also be *written* by the model, which needs its own tokenizer: [action tokenization](action-tokenization.html).
 
 **Check question:** $a = -0.5$, $K = 256$. What is $i$?
 
@@ -147,7 +149,9 @@ Id chỉ là số thứ tự hàng. Một bảng $E$ kích thước (cỡ từ v
 
 Ví dụ $V = 5$, $d = 3$: các id $[2, 4]$ lấy hàng 2 và 4 của $E$, cho ma trận $2 \times 3$. Không có phép tính, chỉ tra bảng.
 
-**Mang theo:** một chuỗi vector vẫn chưa cho các token nói chuyện với nhau. Đó là [Attention](attention.html).
+Vì sao tra bảng là đủ? Viết id thành vector one-hot (toàn số 0, có một số 1 ở vị trí $i$). Nhân vector one-hot đó với $E$ thì lấy ra đúng hàng $i$. Vậy bảng embedding chính là một lớp tuyến tính áp lên đầu vào one-hot; người ta lưu nó dạng bảng chỉ vì nhân với một vector toàn số 0 thì phí công. Bảng được học bằng cùng gradient như mọi thứ khác, nên những id có hành vi giống nhau sẽ có các hàng gần nhau.
+
+**Mang theo:** token chữ và token ảnh chỉ được đọc. Hành động thì mô hình phải *viết* ra, nên cần tokenizer riêng: [action tokenization](action-tokenization.html).
 
 **Câu hỏi kiểm tra:** $a = -0{,}5$, $K = 256$. $i$ bằng bao nhiêu?
 

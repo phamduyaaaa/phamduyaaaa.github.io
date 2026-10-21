@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A wrist F/T sensor, joint torques, a pressure array and a gel camera all say something about contact, but not the same thing. Where each one sits, what it reports, and two worked corrections a policy needs: removing the tool's weight, and estimating force from joint torques.">
+<title>Force and Tactile Sensing: What Each Sensor Actually Measures · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Force and Tactile Sensing: What Each Sensor Actually Measures">
+<meta property="og:description" content="A wrist F/T sensor, joint torques, a pressure array and a gel camera all say something about contact, but not the same thing. Where each one sits, what it reports, and two worked corrections a policy needs: removing the tool's weight, and estimating force from joint torques.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Force and Tactile Sensing: What Each Sensor Actually Measures</h1>
+    <h1 data-vi>Cảm biến lực và xúc giác: Mỗi cảm biến thực sự đo được gì</h1>
+
+    <p class="post-excerpt-lead" data-en>A wrist F/T sensor, joint torques, a pressure array and a gel camera all say something about contact, but not the same thing. Where each one sits, what it reports, and two worked corrections a policy needs: removing the tool's weight, and estimating force from joint torques.</p>
+    <p class="post-excerpt-lead" data-vi>Cảm biến F/T ở cổ tay, mô-men khớp, mảng áp suất và camera gel đều nói gì đó về tiếp xúc, nhưng không giống nhau. Mỗi loại nằm ở đâu, báo về gì, và tính tay hai hiệu chỉnh mà chính sách cần: trừ trọng lượng dụng cụ, và ước lượng lực từ mô-men khớp.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Sensors</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>CONCEPT</strong> Force and tactile sensing for manipulation. Sensor-by-sensor comparison of the force-VLA papers in <a href="survey-force-sensing.html">Survey 2</a>; the gel sensor in detail in <a href="gelsight.html">GelSight</a></p>
+<p><strong>PROBLEM</strong> A force-aware policy is only as good as the force signal it reads. The same contact looks different to a wrist sensor, to the joint motors and to a fingertip.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The usual errors are not in the network but in the signal: reading the tool's weight as contact force, mixing frames, zeroing the sensor once and then tilting the tool, or treating an estimate from motor current as if it were a calibrated sensor.</p>
+<p><strong>IDEA</strong> Know what each sensor reports and in which frame, and give the policy a cleaned signal: bias removed, tool weight compensated for the current orientation, in a stated frame, normalised, and often as a short history.</p>
+<p><strong>RESULT</strong> Every force paper on this site makes one of these choices: wrist F/T (ForceVLA, Facet-0, CR-VLA-Force), joint torque from motor current (TA-VLA), estimated external force (FWBC-VLA), gel tactile images (TaF-VLA, VLA-Touch), pressure arrays (HapticVLA, TaF-VLA's training rig).</p>
+</div>
+<h2>1. The problem: one contact, four different readings</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is treating the force signal as a measurement with a model, not as a number to paste into the state." class="dg-natural" width="745" height="290" viewBox="0 0 745 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Raw wrist reading</text><rect class="dg-box" x="179" y="22" width="102" height="38"/><text class="dg-t" x="230" y="45" text-anchor="middle">F/T sensor</text><path class="dg-a" d="M281 41 H313"/><rect class="dg-badbox" x="315" y="14" width="239" height="54"/><text class="dg-t" x="434" y="37" text-anchor="middle">Tool weight + bias + contact</text><text class="dg-s" x="434" y="53" text-anchor="middle">mixed together</text><path class="dg-a" d="M554 41 H586"/><rect class="dg-box" x="588" y="22" width="96" height="38"/><text class="dg-t" x="636" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="178.8" y="86">✗ "force" changes when the tool tilts</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Motor current as force</text><rect class="dg-box" x="179" y="120" width="96" height="38"/><text class="dg-t" x="227" y="143" text-anchor="middle">Currents</text><path class="dg-a" d="M275 139 H307"/><rect class="dg-badbox" x="309" y="112" width="208" height="54"/><text class="dg-t" x="413" y="135" text-anchor="middle">Friction and model error</text><text class="dg-s" x="413" y="151" text-anchor="middle">read as contact</text><path class="dg-a" d="M517 139 H549"/><rect class="dg-box" x="551" y="120" width="96" height="38"/><text class="dg-t" x="599" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="178.8" y="184">✗ noisy, biased estimate</text><text class="dg-lab dg-green" x="14" y="234">Cleaned signal</text><rect class="dg-box" x="179" y="211" width="96" height="38"/><text class="dg-t" x="227" y="234" text-anchor="middle">Sensor</text><path class="dg-a" d="M275 230 H307"/><rect class="dg-key" x="309" y="211" width="292" height="38"/><text class="dg-t" x="455" y="234" text-anchor="middle">Bias, gravity, frame, normalisation</text><path class="dg-a" d="M601 230 H633"/><rect class="dg-box" x="635" y="211" width="96" height="38"/><text class="dg-t" x="683" y="234" text-anchor="middle">Policy</text><text class="dg-note dg-green" x="178.8" y="268">✓ force that means contact</text></svg><figcaption>The change is treating the force signal as a measurement with a model, not as a number to paste into the state.</figcaption></figure>
+<h2>2. The sensors</h2>
+<figure class="diagram"><svg role="img" aria-label="From base to fingertip: cheaper and already present near the base, richer and more fragile near the fingertip." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">WHERE FORCE CAN BE MEASURED, FROM THE BASE TO THE FINGERTIP</text>
+<rect class="dg-box" x="20" y="60" width="210" height="96"/><text class="dg-t" x="125" y="84" text-anchor="middle">joints</text><text class="dg-s" x="125" y="104" text-anchor="middle">torque sensors or motor current</text><text class="dg-s" x="125" y="120" text-anchor="middle">force estimated by tau = J^T F</text><text class="dg-s" x="125" y="136" text-anchor="middle">no extra hardware; friction errs</text>
+<rect class="dg-key" x="260" y="60" width="210" height="96"/><text class="dg-t" x="365" y="84" text-anchor="middle">wrist F/T sensor</text><text class="dg-s" x="365" y="104" text-anchor="middle">6 numbers: Fx Fy Fz Tx Ty Tz</text><text class="dg-s" x="365" y="120" text-anchor="middle">fast; includes tool weight</text><text class="dg-s" x="365" y="136" text-anchor="middle">cannot tell where contact is</text>
+<rect class="dg-box" x="500" y="60" width="210" height="96"/><text class="dg-t" x="605" y="84" text-anchor="middle">pressure / taxel arrays</text><text class="dg-s" x="605" y="104" text-anchor="middle">piezoresistive, capacitive</text><text class="dg-s" x="605" y="120" text-anchor="middle">a coarse map, e.g. 12 x 12</text><text class="dg-s" x="605" y="136" text-anchor="middle">where and how hard</text>
+<rect class="dg-key" x="740" y="60" width="220" height="96"/><text class="dg-t" x="850" y="84" text-anchor="middle">vision-based tactile</text><text class="dg-s" x="850" y="104" text-anchor="middle">gel + camera (GelSight)</text><text class="dg-s" x="850" y="120" text-anchor="middle">fine shape, slip, ~30 Hz</text><text class="dg-s" x="850" y="136" text-anchor="middle">force must be inferred</text>
+<path class="dg-a" d="M230 108 H260"/><path class="dg-a" d="M470 108 H500"/><path class="dg-a" d="M710 108 H740"/>
+<text class="dg-l" x="20" y="186">closer to the base: cheaper, already there, less precise about the contact</text>
+<text class="dg-l" x="520" y="186">closer to the fingertip: richer contact, more fragile</text>
+<rect class="dg-badbox" x="20" y="220" width="440" height="70"/><text class="dg-t" x="240" y="246" text-anchor="middle">common mistakes</text><text class="dg-s" x="240" y="266" text-anchor="middle">reading the tool's weight as contact force; forgetting the frame;</text><text class="dg-s" x="240" y="282" text-anchor="middle">zeroing once and then tilting the tool</text>
+<rect class="dg-box" x="500" y="220" width="460" height="70"/><text class="dg-t" x="730" y="246" text-anchor="middle">what a policy should receive</text><text class="dg-s" x="730" y="266" text-anchor="middle">gravity-compensated, bias-free wrench in a known frame,</text><text class="dg-s" x="730" y="282" text-anchor="middle">normalised, often as a short history window</text>
+</svg><figcaption>From base to fingertip: cheaper and already present near the base, richer and more fragile near the fingertip.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>What it reports</th>
+<th>Typical rate</th>
+<th>Strength</th>
+<th>Weakness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joint torque / motor current</td>
+<td>one torque per joint</td>
+<td>the robot's control rate</td>
+<td>no extra hardware</td>
+<td>friction, gear losses; contact force must be estimated</td>
+</tr>
+<tr>
+<td>Wrist 6-axis F/T</td>
+<td>3 forces + 3 torques at the wrist</td>
+<td>hundreds of Hz or more (ForceVLA2's: 300 Hz)</td>
+<td>direct, calibrated; some arms, such as Universal Robots' e-Series, have one in the tool flange</td>
+<td>total wrench only: cannot say where on the tool the contact is</td>
+</tr>
+<tr>
+<td>Pressure / taxel array</td>
+<td>a coarse map of normal pressure (TaF-VLA's rig: 12×12)</td>
+<td>moderate</td>
+<td>shows where contact is</td>
+<td>coarse, mostly normal force only</td>
+</tr>
+<tr>
+<td>Vision-based tactile (gel)</td>
+<td>an image of the deformed gel</td>
+<td>about 30 Hz (GelSight, TaF-VLA)</td>
+<td>fine shape, texture, slip</td>
+<td>force must be inferred; gels wear</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Two corrections a force-aware policy depends on. First, removing the tool's weight from a wrist reading, and what happens if the tool tilts after zeroing. Second, estimating contact force from joint torques with the Jacobian, on the same two-link arm as in <a href="proprioception.html">proprioception</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$m$</td>
+<td>mass of tool + gripper below the sensor</td>
+<td>constant</td>
+<td>0.5 kg</td>
+</tr>
+<tr>
+<td>$F_z^{meas}$</td>
+<td>wrist reading along the sensor's $z$ axis, pointing down</td>
+<td>input</td>
+<td>13.0 N</td>
+</tr>
+<tr>
+<td>$\phi$</td>
+<td>tilt of the tool from vertical</td>
+<td>input</td>
+<td>30°</td>
+</tr>
+<tr>
+<td>$J$</td>
+<td>Jacobian of the arm at $\theta = (30°, 45°)$</td>
+<td>derived</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$F$</td>
+<td>force the tool applies, $(F_x, F_y)$</td>
+<td>input</td>
+<td>$(0, -10)$ N</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>joint torques that balance $F$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formulas</strong></p>
+<p>$$F_z^{contact} = F_z^{meas} - m g \cos\phi, \qquad \tau = J^\top F$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Tool weight: $0.5 \times 9.81 = 4.905$ N. With the tool vertical, $F_z^{contact} = 13.0 - 4.905 = 8.1$ N.</li>
+<li>If the sensor was zeroed with the tool vertical and the tool then tilts 30°, the weight along $z$ becomes $4.905 \times \cos 30° = 4.25$ N, so a "zeroed" sensor shows $4.25 - 4.905 = -0.66$ N with no contact at all.</li>
+<li>Jacobian at $(30°, 45°)$ with links 0.4 m and 0.3 m: $J = \begin{pmatrix} -0.490 &amp; -0.290 \\ 0.424 &amp; 0.078 \end{pmatrix}$.</li>
+<li>Pressing down with 10 N: $\tau_1 = 0.424 \times (-10) = -4.24$ N·m, $\tau_2 = 0.078 \times (-10) = -0.78$ N·m.</li>
+</ol>
+<p><strong>Result.</strong> The contact force is 8.1 N, not 13 N; a 30° tilt after zeroing fakes 0.66 N; and a 10 N push shows up as 4.24 and 0.78 N·m at the two joints.</p>
+<p><strong>Why it matters.</strong> Step 2 is why policies see force "drift" while moving in free air, which a learned model can mistake for contact. Steps 3–4 run backwards in torque-based methods: measure $\tau$, subtract what gravity and motion explain, and solve for $F$. At joint 2 a 10 N contact is only 0.78 N·m, so a little friction in that joint is a large force error, which is why torque-based estimates are noisier than a wrist sensor.</p>
+</div>
+<h2>3. What the force papers choose</h2>
+<ul>
+<li><strong>Wrist F/T:</strong> ForceVLA, ForceVLA2, Facet-0 (10-sample wrench window), CR-VLA-Force (UR5e with a 6-DoF F/T sensor). The most direct option for a single arm with a parallel gripper.</li>
+<li><strong>Joint torque, no extra sensor:</strong> TA-VLA estimates torque from motor current; FWBC-VLA estimates the external wrench for a whole wheel-legged body.</li>
+<li><strong>Touch at the fingertips:</strong> TaF-VLA and VLA-Touch use gel images; HapticVLA uses 10×10 tactile maps during training only; FACT uses fingertip force on dexterous hands.</li>
+<li><strong>No sensor at run time:</strong> FD-VLA and HapticVLA keep the sensor for training and remove it with <a href="distillation.html">distillation</a>.</li>
+</ul>
+<p><strong>Carry forward:</strong> measuring force is half the story. The other half is what the low-level controller does with a force, and why a stiff position controller against a rigid part ends in a protective stop: <a href="contact-rich-control.html">contact-rich control</a>.</p>
+<p><strong>Check question:</strong> The tool is tilted 60° from vertical. With $m = 0.5$ kg, what does its weight contribute along the sensor's $z$ axis?</p>
+<details>
+<summary>Answer</summary>
+<p>$4.905 \times \cos 60° = 4.905 \times 0.5 = 2.45$ N. If the sensor was zeroed vertical, it would show $2.45 - 4.905 = -2.45$ N with no contact.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>KHÁI NIỆM</strong> Cảm biến lực và xúc giác cho thao tác. So sánh từng loại cảm biến trong các paper VLA lực ở <a href="survey-force-sensing.html">Survey 2</a>; cảm biến gel chi tiết ở <a href="gelsight.html">GelSight</a></p>
+<p><strong>VẤN ĐỀ</strong> Một chính sách nhận biết lực chỉ tốt bằng tín hiệu lực mà nó đọc. Cùng một tiếp xúc trông khác nhau với cảm biến cổ tay, với động cơ khớp và với đầu ngón tay.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Lỗi thường gặp không nằm ở mạng mà ở tín hiệu: đọc trọng lượng dụng cụ thành lực tiếp xúc, trộn các hệ tọa độ, đặt 0 cho cảm biến một lần rồi nghiêng dụng cụ, hoặc coi một ước lượng từ dòng điện động cơ như thể đó là cảm biến đã hiệu chuẩn.</p>
+<p><strong>Ý TƯỞNG</strong> Biết mỗi cảm biến báo về gì và trong hệ tọa độ nào, và đưa cho chính sách một tín hiệu đã làm sạch: bỏ độ lệch, bù trọng lượng dụng cụ theo hướng hiện tại, trong một hệ tọa độ đã nêu, đã chuẩn hóa, và thường là một lịch sử ngắn.</p>
+<p><strong>KẾT QUẢ</strong> Mọi bài lực trên trang này đều chọn một trong các phương án sau: F/T cổ tay (ForceVLA, Facet-0, CR-VLA-Force), mô-men khớp từ dòng điện động cơ (TA-VLA), lực ngoài ước lượng (FWBC-VLA), ảnh xúc giác gel (TaF-VLA, VLA-Touch), mảng áp suất (HapticVLA, thiết bị huấn luyện của TaF-VLA).</p>
+</div>
+<h2>1. Vấn đề: một tiếp xúc, bốn cách đọc</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở việc coi tín hiệu lực là một phép đo có mô hình, chứ không phải một con số dán vào trạng thái." class="dg-natural" width="829" height="290" viewBox="0 0 829 290" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Số đọc cổ tay thô</text><rect class="dg-box" x="198" y="22" width="117" height="38"/><text class="dg-t" x="257" y="45" text-anchor="middle">Cảm biến F/T</text><path class="dg-a" d="M315 41 H347"/><rect class="dg-badbox" x="349" y="14" width="330" height="54"/><text class="dg-t" x="514" y="37" text-anchor="middle">Trọng lượng dụng cụ + độ lệch + tiếp xúc</text><text class="dg-s" x="514" y="53" text-anchor="middle">trộn lẫn</text><path class="dg-a" d="M679 41 H711"/><rect class="dg-box" x="713" y="22" width="102" height="38"/><text class="dg-t" x="764" y="45" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="198.0" y="86">✗ "lực" đổi khi dụng cụ nghiêng</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Dòng điện động cơ làm lực</text><rect class="dg-box" x="198" y="120" width="96" height="38"/><text class="dg-t" x="246" y="143" text-anchor="middle">Dòng điện</text><path class="dg-a" d="M294 139 H326"/><rect class="dg-badbox" x="328" y="112" width="208" height="54"/><text class="dg-t" x="432" y="135" text-anchor="middle">Ma sát và sai số mô hình</text><text class="dg-s" x="432" y="151" text-anchor="middle">bị đọc thành tiếp xúc</text><path class="dg-a" d="M536 139 H568"/><rect class="dg-box" x="570" y="120" width="102" height="38"/><text class="dg-t" x="621" y="143" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="198.0" y="184">✗ ước lượng nhiễu, lệch</text><text class="dg-lab dg-green" x="14" y="234">Tín hiệu đã làm sạch</text><rect class="dg-box" x="198" y="211" width="96" height="38"/><text class="dg-t" x="246" y="234" text-anchor="middle">Cảm biến</text><path class="dg-a" d="M294 230 H326"/><rect class="dg-key" x="328" y="211" width="330" height="38"/><text class="dg-t" x="493" y="234" text-anchor="middle">Độ lệch, trọng lực, hệ tọa độ, chuẩn hóa</text><path class="dg-a" d="M658 230 H690"/><rect class="dg-box" x="692" y="211" width="102" height="38"/><text class="dg-t" x="743" y="234" text-anchor="middle">Chính sách</text><text class="dg-note dg-green" x="198.0" y="268">✓ lực mang nghĩa tiếp xúc</text></svg><figcaption>Thay đổi nằm ở việc coi tín hiệu lực là một phép đo có mô hình, chứ không phải một con số dán vào trạng thái.</figcaption></figure>
+<h2>2. Các cảm biến</h2>
+<figure class="diagram"><svg role="img" aria-label="Từ đế tới đầu ngón: gần đế thì rẻ hơn và có sẵn, gần đầu ngón thì giàu thông tin hơn và dễ hỏng hơn." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">WHERE FORCE CAN BE MEASURED, FROM THE BASE TO THE FINGERTIP</text>
+<rect class="dg-box" x="20" y="60" width="210" height="96"/><text class="dg-t" x="125" y="84" text-anchor="middle">joints</text><text class="dg-s" x="125" y="104" text-anchor="middle">torque sensors or motor current</text><text class="dg-s" x="125" y="120" text-anchor="middle">force estimated by tau = J^T F</text><text class="dg-s" x="125" y="136" text-anchor="middle">no extra hardware; friction errs</text>
+<rect class="dg-key" x="260" y="60" width="210" height="96"/><text class="dg-t" x="365" y="84" text-anchor="middle">wrist F/T sensor</text><text class="dg-s" x="365" y="104" text-anchor="middle">6 numbers: Fx Fy Fz Tx Ty Tz</text><text class="dg-s" x="365" y="120" text-anchor="middle">fast; includes tool weight</text><text class="dg-s" x="365" y="136" text-anchor="middle">cannot tell where contact is</text>
+<rect class="dg-box" x="500" y="60" width="210" height="96"/><text class="dg-t" x="605" y="84" text-anchor="middle">pressure / taxel arrays</text><text class="dg-s" x="605" y="104" text-anchor="middle">piezoresistive, capacitive</text><text class="dg-s" x="605" y="120" text-anchor="middle">a coarse map, e.g. 12 x 12</text><text class="dg-s" x="605" y="136" text-anchor="middle">where and how hard</text>
+<rect class="dg-key" x="740" y="60" width="220" height="96"/><text class="dg-t" x="850" y="84" text-anchor="middle">vision-based tactile</text><text class="dg-s" x="850" y="104" text-anchor="middle">gel + camera (GelSight)</text><text class="dg-s" x="850" y="120" text-anchor="middle">fine shape, slip, ~30 Hz</text><text class="dg-s" x="850" y="136" text-anchor="middle">force must be inferred</text>
+<path class="dg-a" d="M230 108 H260"/><path class="dg-a" d="M470 108 H500"/><path class="dg-a" d="M710 108 H740"/>
+<text class="dg-l" x="20" y="186">closer to the base: cheaper, already there, less precise about the contact</text>
+<text class="dg-l" x="520" y="186">closer to the fingertip: richer contact, more fragile</text>
+<rect class="dg-badbox" x="20" y="220" width="440" height="70"/><text class="dg-t" x="240" y="246" text-anchor="middle">common mistakes</text><text class="dg-s" x="240" y="266" text-anchor="middle">reading the tool's weight as contact force; forgetting the frame;</text><text class="dg-s" x="240" y="282" text-anchor="middle">zeroing once and then tilting the tool</text>
+<rect class="dg-box" x="500" y="220" width="460" height="70"/><text class="dg-t" x="730" y="246" text-anchor="middle">what a policy should receive</text><text class="dg-s" x="730" y="266" text-anchor="middle">gravity-compensated, bias-free wrench in a known frame,</text><text class="dg-s" x="730" y="282" text-anchor="middle">normalised, often as a short history window</text>
+</svg><figcaption>Từ đế tới đầu ngón: gần đế thì rẻ hơn và có sẵn, gần đầu ngón thì giàu thông tin hơn và dễ hỏng hơn.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Cảm biến</th>
+<th>Báo về gì</th>
+<th>Tần số điển hình</th>
+<th>Điểm mạnh</th>
+<th>Điểm yếu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mô-men khớp / dòng điện động cơ</td>
+<td>một mô-men cho mỗi khớp</td>
+<td>tần số điều khiển của robot</td>
+<td>không cần phần cứng thêm</td>
+<td>ma sát, tổn hao hộp số; lực tiếp xúc phải ước lượng</td>
+</tr>
+<tr>
+<td>F/T 6 trục ở cổ tay</td>
+<td>3 lực + 3 mô-men tại cổ tay</td>
+<td>vài trăm Hz trở lên (của ForceVLA2: 300 Hz)</td>
+<td>trực tiếp, đã hiệu chuẩn; một số cánh tay, như dòng e-Series của Universal Robots, có sẵn một cái ở mặt bích dụng cụ</td>
+<td>chỉ có wrench tổng: không biết tiếp xúc nằm ở đâu trên dụng cụ</td>
+</tr>
+<tr>
+<td>Mảng áp suất / taxel</td>
+<td>bản đồ thô của áp suất pháp tuyến (thiết bị của TaF-VLA: 12×12)</td>
+<td>trung bình</td>
+<td>cho biết tiếp xúc ở đâu</td>
+<td>thô, chủ yếu chỉ có lực pháp tuyến</td>
+</tr>
+<tr>
+<td>Xúc giác dùng camera (gel)</td>
+<td>ảnh của lớp gel bị biến dạng</td>
+<td>khoảng 30 Hz (GelSight, TaF-VLA)</td>
+<td>hình dạng tinh, kết cấu, trượt</td>
+<td>lực phải suy ra; gel bị mòn</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hai hiệu chỉnh mà một chính sách nhận biết lực phụ thuộc vào. Thứ nhất, trừ trọng lượng dụng cụ khỏi số đọc cổ tay, và chuyện gì xảy ra nếu dụng cụ nghiêng sau khi đặt 0. Thứ hai, ước lượng lực tiếp xúc từ mô-men khớp bằng Jacobian, trên cùng cánh tay hai khâu như ở bài <a href="proprioception.html">proprioception</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$m$</td>
+<td>khối lượng dụng cụ + tay kẹp bên dưới cảm biến</td>
+<td>hằng số</td>
+<td>0,5 kg</td>
+</tr>
+<tr>
+<td>$F_z^{meas}$</td>
+<td>số đọc cổ tay theo trục $z$ của cảm biến, chĩa xuống</td>
+<td>input</td>
+<td>13,0 N</td>
+</tr>
+<tr>
+<td>$\phi$</td>
+<td>góc nghiêng của dụng cụ so với phương thẳng đứng</td>
+<td>input</td>
+<td>30°</td>
+</tr>
+<tr>
+<td>$J$</td>
+<td>Jacobian của cánh tay tại $\theta = (30°, 45°)$</td>
+<td>suy ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$F$</td>
+<td>lực dụng cụ tác dụng, $(F_x, F_y)$</td>
+<td>input</td>
+<td>$(0, -10)$ N</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>mô-men khớp cân bằng với $F$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$F_z^{contact} = F_z^{meas} - m g \cos\phi, \qquad \tau = J^\top F$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Trọng lượng dụng cụ: $0{,}5 \times 9{,}81 = 4{,}905$ N. Khi dụng cụ thẳng đứng, $F_z^{contact} = 13{,}0 - 4{,}905 = 8{,}1$ N.</li>
+<li>Nếu cảm biến được đặt 0 khi dụng cụ thẳng đứng rồi dụng cụ nghiêng 30°, trọng lượng theo $z$ còn $4{,}905 \times \cos 30° = 4{,}25$ N, nên một cảm biến "đã đặt 0" hiện $4{,}25 - 4{,}905 = -0{,}66$ N dù không có tiếp xúc nào.</li>
+<li>Jacobian tại $(30°, 45°)$ với các khâu 0,4 m và 0,3 m: $J = \begin{pmatrix} -0{,}490 &amp; -0{,}290 \\ 0{,}424 &amp; 0{,}078 \end{pmatrix}$.</li>
+<li>Ấn xuống với 10 N: $\tau_1 = 0{,}424 \times (-10) = -4{,}24$ N·m, $\tau_2 = 0{,}078 \times (-10) = -0{,}78$ N·m.</li>
+</ol>
+<p><strong>Kết quả.</strong> Lực tiếp xúc là 8,1 N chứ không phải 13 N; nghiêng 30° sau khi đặt 0 tạo ra 0,66 N giả; và một lực ấn 10 N hiện ra là 4,24 và 0,78 N·m ở hai khớp.</p>
+<p><strong>Ý nghĩa.</strong> Bước 2 là lý do chính sách thấy lực "trôi" khi di chuyển trong không khí, điều mà một mô hình học có thể nhầm là tiếp xúc. Bước 3–4 được chạy ngược trong các phương pháp dựa trên mô-men: đo $\tau$, trừ đi phần mà trọng lực và chuyển động giải thích được, rồi giải ra $F$. Ở khớp 2, một tiếp xúc 10 N chỉ là 0,78 N·m, nên một chút ma sát ở khớp đó đã là sai số lực lớn, đó là lý do ước lượng từ mô-men nhiễu hơn cảm biến cổ tay.</p>
+</div>
+<h2>3. Các paper lực chọn gì</h2>
+<ul>
+<li><strong>F/T cổ tay:</strong> ForceVLA, ForceVLA2, Facet-0 (cửa sổ wrench 10 mẫu), CR-VLA-Force (UR5e với cảm biến F/T 6 bậc). Lựa chọn trực tiếp nhất cho một cánh tay đơn với tay kẹp song song.</li>
+<li><strong>Mô-men khớp, không cần cảm biến thêm:</strong> TA-VLA ước lượng mô-men từ dòng điện động cơ; FWBC-VLA ước lượng wrench ngoài cho cả thân robot chân-bánh.</li>
+<li><strong>Xúc giác ở đầu ngón:</strong> TaF-VLA và VLA-Touch dùng ảnh gel; HapticVLA chỉ dùng bản đồ xúc giác 10×10 khi huấn luyện; FACT dùng lực đầu ngón trên bàn tay khéo léo.</li>
+<li><strong>Không có cảm biến khi chạy:</strong> FD-VLA và HapticVLA giữ cảm biến cho huấn luyện rồi bỏ nó bằng <a href="distillation.html">distillation</a>.</li>
+</ul>
+<p><strong>Mang theo:</strong> đo được lực mới là một nửa câu chuyện. Nửa còn lại là bộ điều khiển mức thấp làm gì với một lực, và vì sao một bộ điều khiển vị trí cứng ép vào chi tiết cứng sẽ kết thúc bằng một lần dừng bảo vệ: <a href="contact-rich-control.html">điều khiển giàu tiếp xúc</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Dụng cụ nghiêng 60° so với phương thẳng đứng. Với $m = 0{,}5$ kg, trọng lượng của nó đóng góp bao nhiêu theo trục $z$ của cảm biến?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$4{,}905 \times \cos 60° = 4{,}905 \times 0{,}5 = 2{,}45$ N. Nếu cảm biến đã được đặt 0 ở tư thế thẳng đứng, nó sẽ hiện $2{,}45 - 4{,}905 = -2{,}45$ N dù không có tiếp xúc.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

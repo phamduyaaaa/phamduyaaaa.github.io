@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A VLA starts from a pretrained backbone. Retraining all of it costs memory; freezing it costs accuracy. LoRA learns a small low-rank correction instead. OpenVLA's own comparison, and the parameter count of LoRA worked by hand.">
+<title>Backbone and Fine-Tuning: How Much of a Pretrained Model to Retrain · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Backbone and Fine-Tuning: How Much of a Pretrained Model to Retrain">
+<meta property="og:description" content="A VLA starts from a pretrained backbone. Retraining all of it costs memory; freezing it costs accuracy. LoRA learns a small low-rank correction instead. OpenVLA's own comparison, and the parameter count of LoRA worked by hand.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Backbone and Fine-Tuning: How Much of a Pretrained Model to Retrain</h1>
+    <h1 data-vi>Backbone và fine-tuning: Huấn luyện lại bao nhiêu phần của mô hình đã pretrain</h1>
+
+    <p class="post-excerpt-lead" data-en>A VLA starts from a pretrained backbone. Retraining all of it costs memory; freezing it costs accuracy. LoRA learns a small low-rank correction instead. OpenVLA's own comparison, and the parameter count of LoRA worked by hand.</p>
+    <p class="post-excerpt-lead" data-vi>VLA khởi đầu từ một backbone đã pretrain. Huấn luyện lại toàn bộ thì tốn bộ nhớ; đóng băng thì mất độ chính xác. LoRA học một phần hiệu chỉnh hạng thấp nhỏ thay vào đó. So sánh của chính OpenVLA, và tính tay số tham số của LoRA.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Foundations</span><span class="pill">Fine-tuning</span><span class="pill">LoRA</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> LoRA, <a href="https://arxiv.org/abs/2106.09685">arXiv 2106.09685</a> · 06/2021. Fine-tuning comparison in OpenVLA, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024</p>
+<p><strong>PROBLEM</strong> A VLA has billions of parameters learned from internet data. Adapting it to your robot and task means changing some of them, with limited GPUs and maybe 50 to 150 demonstrations.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Full fine-tuning updates every weight: for the 7B OpenVLA that took 163.3 GB of GPU memory, split over two GPUs. Freezing most of the model is cheap but loses accuracy: in OpenVLA's test, training only the last layer reached 30.3% and freezing the vision encoder 47.0%, against 69.7% for full fine-tuning.</p>
+<p><strong>IDEA</strong> Keep every pretrained matrix $W$ frozen and learn a correction $\Delta W = BA$ of low rank $r$. Only $A$ and $B$ are trained, and they can be merged into $W$ afterwards, so inference is unchanged.</p>
+<p><strong>RESULT</strong> In OpenVLA, LoRA with rank 32 reached 68.2%, close to full fine-tuning, training 97.6M parameters (1.4%) in 59.7 GB. The openpi README lists more than 22.5 GB of GPU memory for LoRA fine-tuning of π0.5 against more than 70 GB for full fine-tuning.</p>
+</div>
+<h2>1. The problem: retrain everything, or nothing?</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the assumption that the *update* needed for a new task is simple, even if the model is not." class="dg-natural" width="757" height="276" viewBox="0 0 757 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Before</text><text class="dg-lab dg-red" x="14" y="46">Full fine-tuning</text><rect class="dg-box" x="147" y="15" width="132" height="38"/><text class="dg-t" x="213" y="38" text-anchor="middle">All 7B weights</text><path class="dg-a" d="M279 34 H311"/><rect class="dg-badbox" x="313" y="15" width="300" height="38"/><text class="dg-t" x="463" y="38" text-anchor="middle">Gradients + optimiser state for each</text><path class="dg-a" d="M613 34 H645"/><rect class="dg-box" x="647" y="15" width="96" height="38"/><text class="dg-t" x="695" y="38" text-anchor="middle">Model</text><text class="dg-note dg-red" x="146.8" y="72">✗ 163.3 GB for OpenVLA, two GPUs</text><text class="dg-lab dg-red" x="14" y="116">Before</text><text class="dg-lab dg-red" x="14" y="130">Freeze most of it</text><rect class="dg-box" x="147" y="99" width="170" height="38"/><text class="dg-t" x="232" y="122" text-anchor="middle">Only the last layer</text><path class="dg-a" d="M317 118 H349"/><rect class="dg-badbox" x="351" y="99" width="231" height="38"/><text class="dg-t" x="467" y="122" text-anchor="middle">Visual features never adapt</text><path class="dg-a" d="M582 118 H614"/><rect class="dg-box" x="616" y="99" width="96" height="38"/><text class="dg-t" x="664" y="122" text-anchor="middle">Model</text><text class="dg-note dg-red" x="146.8" y="156">✗ 30.3%</text><text class="dg-lab dg-green" x="14" y="213">LoRA</text><rect class="dg-box" x="147" y="190" width="96" height="38"/><text class="dg-t" x="195" y="213" text-anchor="middle">Frozen W</text><path class="dg-a" d="M243 209 H275"/><rect class="dg-key" x="277" y="182" width="148" height="54"/><text class="dg-t" x="351" y="205" text-anchor="middle">Learn BA, rank r</text><text class="dg-s" x="351" y="221" text-anchor="middle">1.4% of weights</text><path class="dg-a" d="M424 209 H456"/><rect class="dg-box" x="458" y="190" width="96" height="38"/><text class="dg-t" x="506" y="213" text-anchor="middle">Model</text><text class="dg-note dg-green" x="146.8" y="254">✓ 68.2%, 59.7 GB</text></svg><figcaption>The change is the assumption that the *update* needed for a new task is simple, even if the model is not.</figcaption></figure>
+<h2>2. Words and choices</h2>
+<figure class="diagram"><svg role="img" aria-label="Which parts are trained in four common recipes. Shaded boxes are trained; in LoRA the frozen matrices get a small trained side path." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR WAYS TO ADAPT A PRETRAINED BACKBONE (shaded = trained)</text>
+<rect class="dg-grp" x="20" y="44" width="220" height="200"/><text class="dg-t" x="130" y="66" text-anchor="middle">Full fine-tuning</text>
+<rect class="dg-key" x="40" y="80" width="180" height="40"/><text class="dg-s" x="130" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="40" y="130" width="180" height="40"/><text class="dg-s" x="130" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="40" y="180" width="180" height="40"/><text class="dg-s" x="130" y="204" text-anchor="middle">output / action head</text>
+<rect class="dg-grp" x="260" y="44" width="220" height="200"/><text class="dg-t" x="370" y="66" text-anchor="middle">Last layer only</text>
+<rect class="dg-box" x="280" y="80" width="180" height="40"/><text class="dg-s" x="370" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-box" x="280" y="130" width="180" height="40"/><text class="dg-s" x="370" y="154" text-anchor="middle">language model, frozen</text>
+<rect class="dg-key" x="280" y="180" width="180" height="40"/><text class="dg-s" x="370" y="204" text-anchor="middle">last layer + embeddings</text>
+<rect class="dg-grp" x="500" y="44" width="220" height="200"/><text class="dg-t" x="610" y="66" text-anchor="middle">Frozen vision</text>
+<rect class="dg-box" x="520" y="80" width="180" height="40"/><text class="dg-s" x="610" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="520" y="130" width="180" height="40"/><text class="dg-s" x="610" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="520" y="180" width="180" height="40"/><text class="dg-s" x="610" y="204" text-anchor="middle">head</text>
+<rect class="dg-grp" x="740" y="44" width="220" height="200"/><text class="dg-t" x="850" y="66" text-anchor="middle">LoRA</text>
+<rect class="dg-box" x="760" y="80" width="130" height="40"/><text class="dg-s" x="825" y="104" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="80" width="45" height="40"/><text class="dg-s" x="917" y="104" text-anchor="middle">BA</text>
+<rect class="dg-box" x="760" y="130" width="130" height="40"/><text class="dg-s" x="825" y="154" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="130" width="45" height="40"/><text class="dg-s" x="917" y="154" text-anchor="middle">BA</text>
+<rect class="dg-key" x="760" y="180" width="180" height="40"/><text class="dg-s" x="850" y="204" text-anchor="middle">head</text>
+<text class="dg-l" x="20" y="276">OpenVLA, same tasks: full 69.7%, last layer only 30.3%, frozen vision 47.0%, LoRA rank 32: 68.2% with 1.4% of the weights trained</text>
+</svg><figcaption>Which parts are trained in four common recipes. Shaded boxes are trained; in LoRA the frozen matrices get a small trained side path.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>the pretrained part that turns inputs into features (here the VLM: vision encoder + language model)</td>
+</tr>
+<tr>
+<td>Head</td>
+<td>the small part that turns features into the output (action tokens, or an action expert)</td>
+</tr>
+<tr>
+<td>Frozen</td>
+<td>weights not updated; no gradients or optimiser state needed for them</td>
+</tr>
+<tr>
+<td>Full fine-tuning</td>
+<td>update everything, starting from the pretrained values</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td>freeze $W$, train $A$ ($r \times d_{in}$) and $B$ ($d_{out} \times r$); $B$ starts at zero, so training starts exactly at the pretrained model</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="OpenVLA fine-tuning strategies on the same Franka tasks, mean success over 33 rollouts each (paper's Table 1; standard errors about ±7 points)." class="dg-natural" width="578" height="162" viewBox="0 0 578 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">Last layer only</text><rect class="dg-bar" x="128" y="10" width="109" height="18"/><text class="dg-barval" x="245" y="23">30.3%</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">Frozen vision</text><rect class="dg-bar" x="128" y="40" width="169" height="18"/><text class="dg-barval" x="306" y="53">47%</text><text class="dg-barlabel" x="118" y="83" text-anchor="end">Sandwich</text><rect class="dg-bar" x="128" y="70" width="224" height="18"/><text class="dg-barval" x="360" y="83">62.1%</text><text class="dg-barlabel" x="118" y="113" text-anchor="end">LoRA rank 32</text><rect class="dg-bar" x="128" y="100" width="246" height="18"/><text class="dg-barval" x="382" y="113">68.2%</text><text class="dg-barlabel" x="118" y="143" text-anchor="end">Full fine-tuning</text><rect class="dg-key" x="128" y="130" width="251" height="18"/><text class="dg-barval" x="387" y="143">69.7%</text></svg><figcaption>OpenVLA fine-tuning strategies on the same Franka tasks, mean success over 33 rollouts each (paper's Table 1; standard errors about ±7 points).</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> How many numbers does LoRA train for one square layer, compared with full fine-tuning? And why does a rank-1 correction already change the layer's output?</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d$</td>
+<td>layer width (input = output)</td>
+<td>constant</td>
+<td>2048 (Gemma-2B)</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>LoRA rank</td>
+<td>constant</td>
+<td>16</td>
+</tr>
+<tr>
+<td>$N_{full}$</td>
+<td>trainable numbers, full fine-tuning</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$N_{LoRA}$</td>
+<td>trainable numbers, LoRA</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$W' = W + BA, \qquad N_{full} = d^2, \qquad N_{LoRA} = r\,d + d\,r = 2rd$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$N_{full} = 2048^2 = 4{,}194{,}304$.</li>
+<li>$N_{LoRA} = 2 \times 16 \times 2048 = 65{,}536$.</li>
+<li>Ratio: $65{,}536 / 4{,}194{,}304 = 1.56\%$.</li>
+<li>Tiny rank-1 example, $d = 2$: $B = (1, 0)^\top$, $A = (0.5,\ 0.5)$ give $BA = \begin{pmatrix}0.5 &amp; 0.5\\ 0 &amp; 0\end{pmatrix}$. For an input $x = (2, 2)$, $BAx = (2, 0)$: a full 2×2 correction built from one column and one row. At $d = 2048$, rank 1 trains 4,096 numbers instead of 4.2 million.</li>
+</ol>
+<p><strong>Result.</strong> One layer trains 65,536 numbers instead of 4.2 million, 1.56%; across OpenVLA's linear layers the paper reports 1.4%.</p>
+<p><strong>Why it matters.</strong> Memory during training is dominated not by the weights but by what each <em>trained</em> weight needs: its gradient and the optimiser's running statistics. Freezing $W$ removes those for 98% of the model. The bet is that adapting to a new robot is a low-rank change, and OpenVLA's numbers suggest it mostly is.</p>
+</div>
+<h2>3. What to freeze in a VLA</h2>
+<ul>
+<li><strong>Do not freeze the eyes blindly.</strong> OpenVLA's frozen-vision and last-layer-only runs did worst; the authors conclude that "adaptation of the visual features to the target scene is crucial".</li>
+<li><strong>Freezing protects knowledge.</strong> A frozen VLM cannot forget its internet knowledge while it learns actions. Several force papers on this site freeze the VLM and train only a new part: FIRe tunes the action head and then freezes the whole VLA; Facet-0 freezes the vision-language backbone during refinement; TaF-VLA freezes its pretrained touch adapter.</li>
+<li><strong>New modalities enter through new parts.</strong> ForceVLA and CR-VLA-Force add a force module next to the backbone instead of retraining it to read force, which is also how they avoid overwriting what it knows (<a href="moe.html">MoE</a>).</li>
+</ul>
+<p><strong>Carry forward:</strong> adding a module "next to" the backbone often means a mixture of experts. What that is, and how a router picks experts: <a href="moe.html">MoE</a>.</p>
+<p><strong>Check question:</strong> A layer with $d_{in} = 1152$ and $d_{out} = 2048$ gets LoRA with $r = 8$. How many numbers are trained, and what fraction of the full matrix is that?</p>
+<details>
+<summary>Answer</summary>
+<p>$A$ is $8 \times 1152 = 9{,}216$, $B$ is $2048 \times 8 = 16{,}384$; total $25{,}600$. The full matrix has $1152 \times 2048 = 2{,}359{,}296$, so $25{,}600 / 2{,}359{,}296 = 1.09\%$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> LoRA, <a href="https://arxiv.org/abs/2106.09685">arXiv 2106.09685</a> · 06/2021. So sánh các cách fine-tune trong OpenVLA, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024</p>
+<p><strong>VẤN ĐỀ</strong> VLA có hàng tỉ tham số học từ dữ liệu internet. Thích nghi nó với robot và tác vụ của bạn nghĩa là đổi một phần trong số đó, với số GPU có hạn và có lẽ chỉ 50 tới 150 demo.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Fine-tune toàn bộ cập nhật mọi trọng số: với OpenVLA 7 tỉ tham số, việc đó cần 163,3 GB bộ nhớ GPU, chia trên hai GPU. Đóng băng phần lớn mô hình thì rẻ nhưng mất độ chính xác: trong thử nghiệm của OpenVLA, chỉ huấn luyện lớp cuối đạt 30,3% và đóng băng bộ mã hóa ảnh đạt 47,0%, so với 69,7% khi fine-tune toàn bộ.</p>
+<p><strong>Ý TƯỞNG</strong> Giữ đóng băng mọi ma trận đã pretrain $W$ và học một phần hiệu chỉnh $\Delta W = BA$ có hạng thấp $r$. Chỉ $A$ và $B$ được huấn luyện, và có thể gộp vào $W$ sau đó, nên lúc suy luận không đổi gì.</p>
+<p><strong>KẾT QUẢ</strong> Trong OpenVLA, LoRA hạng 32 đạt 68,2%, gần bằng fine-tune toàn bộ, chỉ huấn luyện 97,6 triệu tham số (1,4%) với 59,7 GB. README của openpi ghi cần hơn 22,5 GB bộ nhớ GPU để fine-tune π0.5 bằng LoRA, so với hơn 70 GB khi fine-tune toàn bộ.</p>
+</div>
+<h2>1. Vấn đề: huấn luyện lại tất cả, hay không gì cả?</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở giả định rằng *phần cập nhật* cần cho một tác vụ mới là đơn giản, dù bản thân mô hình không đơn giản." class="dg-natural" width="839" height="276" viewBox="0 0 839 276" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Trước</text><text class="dg-lab dg-red" x="14" y="46">Fine-tune toàn bộ</text><rect class="dg-box" x="153" y="15" width="148" height="38"/><text class="dg-t" x="227" y="38" text-anchor="middle">Cả 7 tỉ trọng số</text><path class="dg-a" d="M301 34 H333"/><rect class="dg-badbox" x="335" y="15" width="360" height="38"/><text class="dg-t" x="515" y="38" text-anchor="middle">Gradient + trạng thái optimizer cho từng cái</text><path class="dg-a" d="M695 34 H727"/><rect class="dg-box" x="729" y="15" width="96" height="38"/><text class="dg-t" x="777" y="38" text-anchor="middle">Mô hình</text><text class="dg-note dg-red" x="153.2" y="72">✗ 163,3 GB với OpenVLA, hai GPU</text><text class="dg-lab dg-red" x="14" y="116">Trước</text><text class="dg-lab dg-red" x="14" y="130">Đóng băng phần lớn</text><rect class="dg-box" x="153" y="99" width="117" height="38"/><text class="dg-t" x="212" y="122" text-anchor="middle">Chỉ lớp cuối</text><path class="dg-a" d="M270 118 H302"/><rect class="dg-badbox" x="304" y="99" width="353" height="38"/><text class="dg-t" x="481" y="122" text-anchor="middle">Đặc trưng thị giác không bao giờ thích nghi</text><path class="dg-a" d="M657 118 H689"/><rect class="dg-box" x="691" y="99" width="96" height="38"/><text class="dg-t" x="739" y="122" text-anchor="middle">Mô hình</text><text class="dg-note dg-red" x="153.2" y="156">✗ 30,3%</text><text class="dg-lab dg-green" x="14" y="213">LoRA</text><rect class="dg-box" x="153" y="190" width="110" height="38"/><text class="dg-t" x="208" y="213" text-anchor="middle">W đóng băng</text><path class="dg-a" d="M263 209 H295"/><rect class="dg-key" x="297" y="182" width="132" height="54"/><text class="dg-t" x="363" y="205" text-anchor="middle">Học BA, hạng r</text><text class="dg-s" x="363" y="221" text-anchor="middle">1,4% trọng số</text><path class="dg-a" d="M429 209 H461"/><rect class="dg-box" x="463" y="190" width="96" height="38"/><text class="dg-t" x="511" y="213" text-anchor="middle">Mô hình</text><text class="dg-note dg-green" x="153.2" y="254">✓ 68,2%, 59,7 GB</text></svg><figcaption>Thay đổi nằm ở giả định rằng *phần cập nhật* cần cho một tác vụ mới là đơn giản, dù bản thân mô hình không đơn giản.</figcaption></figure>
+<h2>2. Thuật ngữ và lựa chọn</h2>
+<figure class="diagram"><svg role="img" aria-label="Bộ phận nào được huấn luyện trong bốn công thức phổ biến. Ô tô màu là được huấn luyện; ở LoRA, các ma trận đóng băng có thêm một đường phụ nhỏ được huấn luyện." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR WAYS TO ADAPT A PRETRAINED BACKBONE (shaded = trained)</text>
+<rect class="dg-grp" x="20" y="44" width="220" height="200"/><text class="dg-t" x="130" y="66" text-anchor="middle">Full fine-tuning</text>
+<rect class="dg-key" x="40" y="80" width="180" height="40"/><text class="dg-s" x="130" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="40" y="130" width="180" height="40"/><text class="dg-s" x="130" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="40" y="180" width="180" height="40"/><text class="dg-s" x="130" y="204" text-anchor="middle">output / action head</text>
+<rect class="dg-grp" x="260" y="44" width="220" height="200"/><text class="dg-t" x="370" y="66" text-anchor="middle">Last layer only</text>
+<rect class="dg-box" x="280" y="80" width="180" height="40"/><text class="dg-s" x="370" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-box" x="280" y="130" width="180" height="40"/><text class="dg-s" x="370" y="154" text-anchor="middle">language model, frozen</text>
+<rect class="dg-key" x="280" y="180" width="180" height="40"/><text class="dg-s" x="370" y="204" text-anchor="middle">last layer + embeddings</text>
+<rect class="dg-grp" x="500" y="44" width="220" height="200"/><text class="dg-t" x="610" y="66" text-anchor="middle">Frozen vision</text>
+<rect class="dg-box" x="520" y="80" width="180" height="40"/><text class="dg-s" x="610" y="104" text-anchor="middle">vision encoder</text>
+<rect class="dg-key" x="520" y="130" width="180" height="40"/><text class="dg-s" x="610" y="154" text-anchor="middle">language model</text>
+<rect class="dg-key" x="520" y="180" width="180" height="40"/><text class="dg-s" x="610" y="204" text-anchor="middle">head</text>
+<rect class="dg-grp" x="740" y="44" width="220" height="200"/><text class="dg-t" x="850" y="66" text-anchor="middle">LoRA</text>
+<rect class="dg-box" x="760" y="80" width="130" height="40"/><text class="dg-s" x="825" y="104" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="80" width="45" height="40"/><text class="dg-s" x="917" y="104" text-anchor="middle">BA</text>
+<rect class="dg-box" x="760" y="130" width="130" height="40"/><text class="dg-s" x="825" y="154" text-anchor="middle">W frozen</text><rect class="dg-key" x="895" y="130" width="45" height="40"/><text class="dg-s" x="917" y="154" text-anchor="middle">BA</text>
+<rect class="dg-key" x="760" y="180" width="180" height="40"/><text class="dg-s" x="850" y="204" text-anchor="middle">head</text>
+<text class="dg-l" x="20" y="276">OpenVLA, same tasks: full 69.7%, last layer only 30.3%, frozen vision 47.0%, LoRA rank 32: 68.2% with 1.4% of the weights trained</text>
+</svg><figcaption>Bộ phận nào được huấn luyện trong bốn công thức phổ biến. Ô tô màu là được huấn luyện; ở LoRA, các ma trận đóng băng có thêm một đường phụ nhỏ được huấn luyện.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>phần đã pretrain biến đầu vào thành đặc trưng (ở đây là VLM: bộ mã hóa ảnh + mô hình ngôn ngữ)</td>
+</tr>
+<tr>
+<td>Head</td>
+<td>phần nhỏ biến đặc trưng thành đầu ra (token hành động, hoặc một action expert)</td>
+</tr>
+<tr>
+<td>Đóng băng</td>
+<td>trọng số không được cập nhật; không cần gradient hay trạng thái optimizer cho chúng</td>
+</tr>
+<tr>
+<td>Fine-tune toàn bộ</td>
+<td>cập nhật mọi thứ, xuất phát từ giá trị đã pretrain</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td>đóng băng $W$, huấn luyện $A$ ($r \times d_{in}$) và $B$ ($d_{out} \times r$); $B$ khởi đầu bằng 0, nên việc huấn luyện xuất phát đúng tại mô hình đã pretrain</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Các chiến lược fine-tune OpenVLA trên cùng các tác vụ Franka, thành công trung bình qua 33 lượt mỗi cách (Bảng 1 của paper; sai số chuẩn khoảng ±7 điểm)." class="dg-natural" width="585" height="162" viewBox="0 0 585 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">Chỉ lớp cuối</text><rect class="dg-bar" x="135" y="10" width="109" height="18"/><text class="dg-barval" x="252" y="23">30,3%</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">Đóng băng ảnh</text><rect class="dg-bar" x="135" y="40" width="169" height="18"/><text class="dg-barval" x="312" y="53">47%</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">Sandwich</text><rect class="dg-bar" x="135" y="70" width="224" height="18"/><text class="dg-barval" x="367" y="83">62,1%</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">LoRA hạng 32</text><rect class="dg-bar" x="135" y="100" width="246" height="18"/><text class="dg-barval" x="389" y="113">68,2%</text><text class="dg-barlabel" x="125" y="143" text-anchor="end">Fine-tune toàn bộ</text><rect class="dg-key" x="135" y="130" width="251" height="18"/><text class="dg-barval" x="394" y="143">69,7%</text></svg><figcaption>Các chiến lược fine-tune OpenVLA trên cùng các tác vụ Franka, thành công trung bình qua 33 lượt mỗi cách (Bảng 1 của paper; sai số chuẩn khoảng ±7 điểm).</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> LoRA huấn luyện bao nhiêu con số cho một lớp vuông, so với fine-tune toàn bộ? Và vì sao một hiệu chỉnh hạng 1 đã đổi được đầu ra của lớp?</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$d$</td>
+<td>độ rộng lớp (vào = ra)</td>
+<td>hằng số</td>
+<td>2048 (Gemma-2B)</td>
+</tr>
+<tr>
+<td>$r$</td>
+<td>hạng LoRA</td>
+<td>hằng số</td>
+<td>16</td>
+</tr>
+<tr>
+<td>$N_{full}$</td>
+<td>số con số được huấn luyện, fine-tune toàn bộ</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$N_{LoRA}$</td>
+<td>số con số được huấn luyện, LoRA</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$W' = W + BA, \qquad N_{full} = d^2, \qquad N_{LoRA} = r\,d + d\,r = 2rd$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>$N_{full} = 2048^2 = 4.194.304$.</li>
+<li>$N_{LoRA} = 2 \times 16 \times 2048 = 65.536$.</li>
+<li>Tỉ lệ: $65.536 / 4.194.304 = 1{,}56\%$.</li>
+<li>Ví dụ hạng 1 tí hon, $d = 2$: $B = (1, 0)^\top$, $A = (0{,}5;\ 0{,}5)$ cho $BA = \begin{pmatrix}0{,}5 &amp; 0{,}5\\ 0 &amp; 0\end{pmatrix}$. Với đầu vào $x = (2, 2)$, $BAx = (2, 0)$: một phần hiệu chỉnh 2×2 đầy đủ dựng từ một cột và một hàng. Với $d = 2048$, hạng 1 chỉ huấn luyện 4.096 số thay vì 4,2 triệu.</li>
+</ol>
+<p><strong>Kết quả.</strong> Một lớp huấn luyện 65.536 số thay vì 4,2 triệu, tức 1,56%; trên mọi lớp tuyến tính của OpenVLA paper báo cáo 1,4%.</p>
+<p><strong>Ý nghĩa.</strong> Bộ nhớ khi huấn luyện không chủ yếu nằm ở trọng số mà ở những thứ mỗi trọng số <em>được huấn luyện</em> cần: gradient của nó và các thống kê chạy của optimizer. Đóng băng $W$ bỏ được những thứ đó cho 98% mô hình. Ván cược ở đây là thích nghi với một robot mới chỉ là một thay đổi hạng thấp, và số liệu của OpenVLA cho thấy phần lớn là vậy.</p>
+</div>
+<h2>3. Nên đóng băng gì trong VLA</h2>
+<ul>
+<li><strong>Đừng đóng băng đôi mắt một cách mù quáng.</strong> Hai cách đóng băng ảnh và chỉ huấn luyện lớp cuối của OpenVLA cho kết quả tệ nhất; các tác giả kết luận "việc thích nghi đặc trưng thị giác với khung cảnh mới là thiết yếu".</li>
+<li><strong>Đóng băng bảo vệ kiến thức.</strong> VLM đóng băng không thể quên kiến thức internet trong khi học hành động. Một số bài lực trên trang này đóng băng VLM và chỉ huấn luyện phần mới: FIRe tinh chỉnh đầu hành động rồi đóng băng cả VLA; Facet-0 đóng băng backbone thị giác-ngôn ngữ khi tinh chỉnh; TaF-VLA đóng băng adapter xúc giác đã pretrain.</li>
+<li><strong>Phương thức mới đi vào qua bộ phận mới.</strong> ForceVLA và CR-VLA-Force thêm một mô-đun lực cạnh backbone thay vì huấn luyện lại backbone để đọc lực, cũng là cách chúng tránh ghi đè lên những gì nó đã biết (<a href="moe.html">MoE</a>).</li>
+</ul>
+<p><strong>Mang theo:</strong> thêm một mô-đun "cạnh" backbone thường có nghĩa là một mixture of experts. Đó là gì, và router chọn expert ra sao: <a href="moe.html">MoE</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Một lớp có $d_{in} = 1152$ và $d_{out} = 2048$ được gắn LoRA với $r = 8$. Có bao nhiêu con số được huấn luyện, và chiếm bao nhiêu phần của ma trận đầy đủ?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$A$ là $8 \times 1152 = 9.216$, $B$ là $2048 \times 8 = 16.384$; tổng $25.600$. Ma trận đầy đủ có $1152 \times 2048 = 2.359.296$, nên $25.600 / 2.359.296 = 1{,}09\%$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

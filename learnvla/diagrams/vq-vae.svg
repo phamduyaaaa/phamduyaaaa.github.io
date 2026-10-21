@@ -1,0 +1,11 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">ENCODE, SNAP TO THE NEAREST CODE, DECODE</text>
+<rect class="dg-ext" x="20" y="100" width="140" height="56"/><text class="dg-t" x="90" y="124" text-anchor="middle">signal x</text><text class="dg-s" x="90" y="142" text-anchor="middle">image, force window</text>
+<rect class="dg-box" x="200" y="100" width="140" height="56"/><text class="dg-t" x="270" y="124" text-anchor="middle">encoder</text><text class="dg-s" x="270" y="142" text-anchor="middle">z_e = (0.9, 0.2)</text>
+<rect class="dg-key" x="390" y="60" width="200" height="136"/><text class="dg-t" x="490" y="84" text-anchor="middle">codebook</text>
+<text class="dg-s" x="490" y="110" text-anchor="middle">e1 = (1, 0)   dist^2 0.05  chosen</text><text class="dg-s" x="490" y="132" text-anchor="middle">e2 = (0, 1)   dist^2 1.45</text><text class="dg-s" x="490" y="154" text-anchor="middle">e3 = (0.5, 0.5)  dist^2 0.25</text><text class="dg-s" x="490" y="180" text-anchor="middle">token = index 1</text>
+<rect class="dg-box" x="640" y="100" width="140" height="56"/><text class="dg-t" x="710" y="124" text-anchor="middle">decoder</text><text class="dg-s" x="710" y="142" text-anchor="middle">reads z_q = e1</text>
+<rect class="dg-ext" x="820" y="100" width="140" height="56"/><text class="dg-t" x="890" y="124" text-anchor="middle">reconstruction</text><text class="dg-s" x="890" y="142" text-anchor="middle">compared with x</text>
+<path class="dg-a" d="M160 128 H200"/><path class="dg-a" d="M340 128 H390"/><path class="dg-a" d="M590 128 H640"/><path class="dg-a" d="M780 128 H820"/>
+<path class="dg-ad" d="M710 156 V230 H270 V156"/><text class="dg-l" x="300" y="250">backward pass: the gradient skips the snap and is copied straight to the encoder</text>
+</svg>
