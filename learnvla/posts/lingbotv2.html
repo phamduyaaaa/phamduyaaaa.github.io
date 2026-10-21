@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="LingBot-VLA 2.0 (Robbyant / Ant Group) pre-trains on ~60,000 hours (50,000 h of robot data from 20 configurations plus 10,000 h of human egocentric video), adds head, waist, base and hand degrees of freedom, a sparse MoE action expert, and distils depth and video-future features into the VLM. On nine GM-100 tasks it reaches 66.2 progress / 34.4% success, ahead of π0.5 (59.1 / 32.2).">
+<title>LingBot-VLA 2.0: 60,000 Hours, Whole-Body Actions and Predicted Futures · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="LingBot-VLA 2.0: 60,000 Hours, Whole-Body Actions and Predicted Futures">
+<meta property="og:description" content="LingBot-VLA 2.0 (Robbyant / Ant Group) pre-trains on ~60,000 hours (50,000 h of robot data from 20 configurations plus 10,000 h of human egocentric video), adds head, waist, base and hand degrees of freedom, a sparse MoE action expert, and distils depth and video-future features into the VLM. On nine GM-100 tasks it reaches 66.2 progress / 34.4% success, ahead of π0.5 (59.1 / 32.2).">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>LingBot-VLA 2.0: 60,000 Hours, Whole-Body Actions and Predicted Futures</h1>
+    <h1 data-vi>LingBot-VLA 2.0: 60.000 giờ, hành động toàn thân và dự đoán tương lai</h1>
+
+    <p class="post-excerpt-lead" data-en>LingBot-VLA 2.0 (Robbyant / Ant Group) pre-trains on ~60,000 hours (50,000 h of robot data from 20 configurations plus 10,000 h of human egocentric video), adds head, waist, base and hand degrees of freedom, a sparse MoE action expert, and distils depth and video-future features into the VLM. On nine GM-100 tasks it reaches 66.2 progress / 34.4% success, ahead of π0.5 (59.1 / 32.2).</p>
+    <p class="post-excerpt-lead" data-vi>LingBot-VLA 2.0 (Robbyant / Ant Group) tiền huấn luyện trên ~60.000 giờ (50.000 giờ dữ liệu robot từ 20 cấu hình cộng 10.000 giờ video người góc nhìn thứ nhất), thêm bậc tự do cho đầu, eo, đế và bàn tay, một action expert MoE thưa, và chưng cất đặc trưng độ sâu và tương lai video vào VLM. Trên chín tác vụ GM-100 nó đạt 66,2 tiến độ / 34,4% thành công, hơn π0.5 (59,1 / 32,2).</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">LingBot</span><span class="pill">MoE</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Robbyant (Ant Group), <em>From Foundation to Application: Improving VLA Models in Practice</em> (LingBot-VLA 2.0), <a href="https://arxiv.org/abs/2607.06403">arXiv 2607.06403</a> · 07/2026. Weights on Hugging Face (Apache-2.0).</p>
+<p><strong>PROBLEM</strong> Move a VLA from benchmark results to robots in use: many embodiments, whole-body robots (heads, waists, mobile bases, dexterous hands), and scenes that change while the robot acts.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper's diagnosis of its own first version and of similar VLAs: limited data coverage across tasks and bodies; action spaces built for two arms only; and VLMs that encode the current frame well but do not model how the scene will evolve. It notes that image features such as DINOv3 capture geometry but "not the causal temporal dynamics required for robotic control".</p>
+<p><strong>IDEA</strong> Three changes. (1) Data: a rebuilt pipeline and ~60,000 hours (50,000 h robot, 20 configurations; 10,000 h egocentric human video with hands lifted to 3D). (2) Action space: whole-body degrees of freedom, and a token-level sparse MoE in the action expert with loss-free load balancing. (3) Predictive dynamics: two learnable queries (now and one chunk ahead) distilled from a depth teacher and a new causal video teacher, DINO-Video.</p>
+<p><strong>RESULT</strong> GM-100, nine tasks, generalist setting, Agilex Cobot Magic: 66.2 progress / 34.4% success vs π0.5 59.1 / 32.2 and LingBot-VLA 1.0 58.2 / 30.0. Galaxea R1 Pro: 34.6 / 15.6 vs π0.5 27.4 / 8.9. Long-horizon mobile tasks: ahead of π0.5 in and out of distribution.</p>
+</div>
+<h2>1. The problem: from lab VLA to deployed whole-body robot</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is spread across data, action space and an auxiliary objective, rather than one new block." class="dg-natural" width="1000" height="206" viewBox="0 0 1000 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">LingBot-VLA 1.0 / π0.5</text><rect class="dg-box" x="179" y="22" width="125" height="38"/><text class="dg-t" x="241" y="45" text-anchor="middle">Dual-arm data</text><path class="dg-a" d="M304 41 H336"/><rect class="dg-badbox" x="338" y="14" width="224" height="54"/><text class="dg-t" x="450" y="37" text-anchor="middle">Current-frame VLM</text><text class="dg-s" x="450" y="53" text-anchor="middle">arms only, no future prediction</text><path class="dg-a" d="M562 41 H594"/><rect class="dg-box" x="596" y="22" width="148" height="38"/><text class="dg-t" x="670" y="45" text-anchor="middle">Bimanual actions</text><text class="dg-note dg-red" x="178.8" y="86">✗ gaps on bodies, scenes and timing</text><text class="dg-lab dg-green" x="14" y="143">LingBot-VLA 2.0</text><rect class="dg-box" x="179" y="120" width="239" height="38"/><text class="dg-t" x="298" y="143" text-anchor="middle">60,000 h robot + human video</text><path class="dg-a" d="M418 139 H450"/><rect class="dg-key" x="452" y="112" width="338" height="54"/><text class="dg-t" x="620" y="135" text-anchor="middle">Future query distilled from depth + video</text><text class="dg-s" x="620" y="151" text-anchor="middle">sparse MoE action expert</text><path class="dg-a" d="M789 139 H821"/><rect class="dg-box" x="823" y="120" width="163" height="38"/><text class="dg-t" x="905" y="143" text-anchor="middle">Whole-body actions</text><text class="dg-note dg-green" x="178.8" y="184">✓ head, waist, base, hands</text></svg><figcaption>The change is spread across data, action space and an auxiliary objective, rather than one new block.</figcaption></figure>
+<h2>2. Architecture and data</h2>
+<figure class="diagram"><svg role="img" aria-label="Two queries appended to the VLM tokens are trained to match a depth teacher and a video teacher, for the current frame and the frame one chunk ahead; the action expert uses sparse MoE layers." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">LINGBOT-VLA 2.0: MORE DATA, MORE DEGREES OF FREEDOM, AND A FUTURE TO PREDICT</text>
+<rect class="dg-ext" x="20" y="44" width="220" height="100"/><text class="dg-t" x="130" y="68" text-anchor="middle">~60,000 h pre-training</text><text class="dg-s" x="130" y="90" text-anchor="middle">50,000 h robot data,</text><text class="dg-s" x="130" y="106" text-anchor="middle">20 robot configurations</text><text class="dg-s" x="130" y="122" text-anchor="middle">+ 10,000 h egocentric human video</text>
+<rect class="dg-box" x="20" y="160" width="220" height="100"/><text class="dg-t" x="130" y="184" text-anchor="middle">data pipeline</text><text class="dg-s" x="130" y="206" text-anchor="middle">VLM splits videos into subtasks;</text><text class="dg-s" x="130" y="222" text-anchor="middle">human hands lifted to 3D via</text><text class="dg-s" x="130" y="238" text-anchor="middle">SLAM + hand pose (MANO)</text>
+<rect class="dg-key" x="290" y="44" width="230" height="216"/><text class="dg-t" x="405" y="72" text-anchor="middle">VLM backbone</text><text class="dg-s" x="405" y="94" text-anchor="middle">images + instruction</text><text class="dg-s" x="405" y="126" text-anchor="middle">+ two learnable queries:</text><text class="dg-s" x="405" y="142" text-anchor="middle">Q_t (now), Q_t+T (future)</text><text class="dg-s" x="405" y="176" text-anchor="middle">distilled from teachers:</text><text class="dg-s" x="405" y="192" text-anchor="middle">LingBot-Depth (geometry)</text><text class="dg-s" x="405" y="208" text-anchor="middle">DINO-Video (temporal)</text>
+<rect class="dg-key" x="570" y="44" width="200" height="216"/><text class="dg-t" x="670" y="72" text-anchor="middle">action expert</text><text class="dg-s" x="670" y="94" text-anchor="middle">token-level sparse MoE</text><text class="dg-s" x="670" y="110" text-anchor="middle">in its FFN layers</text><text class="dg-s" x="670" y="142" text-anchor="middle">loss-free load balancing:</text><text class="dg-s" x="670" y="158" text-anchor="middle">router biases, no extra</text><text class="dg-s" x="670" y="174" text-anchor="middle">balancing loss</text>
+<rect class="dg-box" x="810" y="44" width="150" height="216"/><text class="dg-t" x="885" y="72" text-anchor="middle">action space</text><text class="dg-s" x="885" y="94" text-anchor="middle">two arms +</text><text class="dg-s" x="885" y="110" text-anchor="middle">head, waist,</text><text class="dg-s" x="885" y="126" text-anchor="middle">mobile base,</text><text class="dg-s" x="885" y="142" text-anchor="middle">dexterous hands</text>
+<path class="dg-a" d="M240 94 H290"/><path class="dg-a" d="M240 210 H290"/><path class="dg-a" d="M520 152 H570"/><path class="dg-a" d="M770 152 H810"/>
+<text class="dg-l" x="20" y="296">the future query is trained to match the teachers' features of the frame one chunk ahead</text>
+</svg><figcaption>Two queries appended to the VLM tokens are trained to match a depth teacher and a video teacher, for the current frame and the frame one chunk ahead; the action expert uses sparse MoE layers.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>LingBot-VLA 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot data</td>
+<td>~50,000 h, 20 robot configurations, standardised into a unified action representation</td>
+</tr>
+<tr>
+<td>Human data</td>
+<td>~10,000 h egocentric video; SLAM for camera poses, hand pose estimation (MANO), hand trajectories in world frame, quality filtering</td>
+</tr>
+<tr>
+<td>Annotation</td>
+<td>a VLM (Qwen3.6-27B) segments each video into subtasks, writes instructions and assigns an atomic action label</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>token-level sparse MoE in the FFN branch; auxiliary-loss-free load balancing with router bias updates</td>
+</tr>
+<tr>
+<td>Predictive dynamics</td>
+<td>queries $Q_t$, $Q_{t+T}$ ($T$ = chunk size) distilled from LingBot-Depth and DINO-Video</td>
+</tr>
+<tr>
+<td>DINO-Video</td>
+<td>built on DINOv3 with causal temporal attention: a step's feature depends only on current and past frames</td>
+</tr>
+</tbody>
+</table>
+<p>Two connections to the foundation posts: the MoE balancing replaces the auxiliary loss of <a href="moe.html">MoE</a> with a bias that is nudged after each step towards under-used experts, and the future query is a form of <a href="distillation.html">distillation</a> where the teachers are perception models, not a bigger policy.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> On GM-100 (Cobot Magic) LingBot-VLA 2.0 averages 34.4% success and π0.5 32.2%. Is a 2.2-point gap over nine tasks meaningful? (Assumption: 10 trials per task, which fits the table, where every success value is a multiple of 10; the paper does not state it for this table.)</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>total trials</td>
+<td>input</td>
+<td>$9 \times 10 = 90$</td>
+</tr>
+<tr>
+<td>$k$</td>
+<td>successes</td>
+<td>input</td>
+<td>LingBot: $0.344 \times 90 \approx 31$; π0.5: $0.322 \times 90 \approx 29$</td>
+</tr>
+<tr>
+<td>CI</td>
+<td>Wilson 95% interval</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (Wilson)</p>
+<p>$$\frac{\hat p + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>LingBot: $\hat p = 31/90 = 0.344$ → interval 25.4% to 44.7%.</li>
+<li>π0.5: $\hat p = 29/90 = 0.322$ → interval 23.5% to 42.4%.</li>
+<li>The intervals overlap almost entirely.</li>
+</ol>
+<p><strong>Result.</strong> The success-rate gap is about 2 successes out of 90; it does not separate the two models.</p>
+<p><strong>Why it matters.</strong> Per task the picture is mixed: π0.5 is far ahead on block sorting (60% vs 0%) and tool packing (30% vs 0%), LingBot-VLA 2.0 far ahead on retrieving a keychain (100% vs 20%). The progress score, which counts sub-steps, separates them more (66.2 vs 59.1), and on the second robot (Galaxea R1 Pro) the gap is larger. Read the average together with the per-task table.</p>
+</div>
+<h2>3. Results</h2>
+<table>
+<thead>
+<tr>
+<th>GM-100, 9 tasks, average (Table 5)</th>
+<th>GR00T N1.7</th>
+<th>π0.5</th>
+<th>LingBot 1.0</th>
+<th>LingBot 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cobot Magic, progress / success</td>
+<td>36.3 / 17.8</td>
+<td>59.1 / 32.2</td>
+<td>58.2 / 30.0</td>
+<td>66.2 / 34.4</td>
+</tr>
+<tr>
+<td>Galaxea R1 Pro, progress / success</td>
+<td>16.4 / 5.6</td>
+<td>27.4 / 8.9</td>
+<td>32.7 / 15.6</td>
+<td>34.6 / 15.6</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Long-horizon mobile (15 trials per setting)</th>
+<th>LingBot 2.0</th>
+<th>π0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Astribot S1, fridge sorting, in-domain</td>
+<td>77.1 / 60.0</td>
+<td>65.3 / 46.7</td>
+</tr>
+<tr>
+<td>same, out-of-distribution</td>
+<td>37.0 / 13.3</td>
+<td>30.3 / 6.7</td>
+</tr>
+<tr>
+<td>Cobot Magic-ARX X5, stove cleaning, in-domain</td>
+<td>84.3 / 66.7</td>
+<td>79.9 / 60.0</td>
+</tr>
+<tr>
+<td>same, out-of-distribution</td>
+<td>67.5 / 40.0</td>
+<td>62.5 / 33.3</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The paper itself points out that several tasks show partial progress but fail at the final placement or release step, and that the gap between the two robots shows embodiment-specific factors (kinematics, cameras, action-space alignment) are still hard.</li>
+<li>Under matched <em>active</em> parameters, the sparse MoE model reached lower training loss and lower validation action error on GM-100 than the dense one.</li>
+</ul>
+<h2>4. Caveats</h2>
+<ul>
+<li>Checked against the full text: data sizes, pipeline, MoE and distillation design, Tables 5 and 6, stated limitations.</li>
+<li>I did not find the exact VLM backbone and total parameter count in the text I read; the Hugging Face model card lists a 6B checkpoint.</li>
+<li>Trials per task for Table 5 are my assumption (see the calculation card).</li>
+<li>Like the other generalist VLAs here, it has no force input; the GM-100 tasks are judged by vision-defined steps.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="gm-100.html">GM-100</a> explains the progress and success scores used here. <a href="gr00t-n1.html">GR00T N1</a> also turns human video into training signal, with latent actions instead of reconstructed 3D hands.</p>
+<p><strong>Check question:</strong> on a task with 10 trials, model A succeeds 7 times and model B 5 times. Using the normal approximation, are their 95% intervals overlapping?</p>
+<details>
+<summary>Answer</summary>
+<p>A: $0.7 \pm 1.96\sqrt{0.21/10} = 0.7 \pm 0.28$ → 0.42 to 0.98. B: $0.5 \pm 1.96\sqrt{0.25/10} = 0.5 \pm 0.31$ → 0.19 to 0.81. Yes, they overlap widely; 10 trials cannot separate 70% from 50%.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Robbyant (Ant Group), <em>From Foundation to Application: Improving VLA Models in Practice</em> (LingBot-VLA 2.0), <a href="https://arxiv.org/abs/2607.06403">arXiv 2607.06403</a> · 07/2026. Trọng số trên Hugging Face (Apache-2.0).</p>
+<p><strong>VẤN ĐỀ</strong> Đưa VLA từ kết quả benchmark tới robot được dùng thật: nhiều thân robot, robot toàn thân (đầu, eo, đế di động, bàn tay khéo), và cảnh thay đổi trong lúc robot làm.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper chẩn đoán phiên bản đầu của chính họ và các VLA tương tự: dữ liệu phủ chưa đủ rộng về tác vụ và thân robot; không gian hành động chỉ làm cho hai tay; và VLM mã hóa tốt khung hiện tại nhưng không mô hình hóa cảnh sẽ diễn biến ra sao. Paper lưu ý đặc trưng ảnh như DINOv3 nắm được hình học nhưng "không nắm được động lực học thời gian nhân quả mà điều khiển robot cần".</p>
+<p><strong>Ý TƯỞNG</strong> Ba thay đổi. (1) Dữ liệu: dựng lại quy trình và ~60.000 giờ (50.000 giờ robot, 20 cấu hình; 10.000 giờ video người góc nhìn thứ nhất với bàn tay được dựng lại trong 3D). (2) Không gian hành động: bậc tự do toàn thân, và MoE thưa theo token trong action expert với cân bằng tải không cần loss phụ. (3) Động lực học dự đoán: hai query học được (hiện tại và một chunk sau) được chưng cất từ một mô hình độ sâu và một mô hình video nhân quả mới, DINO-Video.</p>
+<p><strong>KẾT QUẢ</strong> GM-100, chín tác vụ, chế độ tổng quát, Agilex Cobot Magic: 66,2 tiến độ / 34,4% thành công so với π0.5 59,1 / 32,2 và LingBot-VLA 1.0 58,2 / 30,0. Galaxea R1 Pro: 34,6 / 15,6 so với π0.5 27,4 / 8,9. Tác vụ di động tầm dài: hơn π0.5 cả trong lẫn ngoài phân phối.</p>
+</div>
+<h2>1. Vấn đề: từ VLA trong lab tới robot toàn thân triển khai thật</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi trải đều trên dữ liệu, không gian hành động và một mục tiêu phụ, chứ không phải một khối mới." class="dg-natural" width="1038" height="206" viewBox="0 0 1038 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">LingBot-VLA 1.0 / π0.5</text><rect class="dg-box" x="179" y="22" width="140" height="38"/><text class="dg-t" x="249" y="45" text-anchor="middle">Dữ liệu hai tay</text><path class="dg-a" d="M319 41 H351"/><rect class="dg-badbox" x="353" y="14" width="250" height="54"/><text class="dg-t" x="478" y="37" text-anchor="middle">VLM chỉ nhìn khung hiện tại</text><text class="dg-s" x="478" y="53" text-anchor="middle">chỉ có tay, không dự đoán tương lai</text><path class="dg-a" d="M603 41 H635"/><rect class="dg-box" x="637" y="22" width="155" height="38"/><text class="dg-t" x="714" y="45" text-anchor="middle">Hành động hai tay</text><text class="dg-note dg-red" x="178.8" y="86">✗ hụt về thân robot, cảnh và thời gian</text><text class="dg-lab dg-green" x="14" y="143">LingBot-VLA 2.0</text><rect class="dg-box" x="179" y="120" width="254" height="38"/><text class="dg-t" x="306" y="143" text-anchor="middle">60.000 giờ robot + video người</text><path class="dg-a" d="M433 139 H465"/><rect class="dg-key" x="467" y="112" width="353" height="54"/><text class="dg-t" x="643" y="135" text-anchor="middle">Query tương lai chưng cất từ độ sâu + video</text><text class="dg-s" x="643" y="151" text-anchor="middle">action expert MoE thưa</text><path class="dg-a" d="M820 139 H852"/><rect class="dg-box" x="854" y="120" width="170" height="38"/><text class="dg-t" x="939" y="143" text-anchor="middle">Hành động toàn thân</text><text class="dg-note dg-green" x="178.8" y="184">✓ đầu, eo, đế, bàn tay</text></svg><figcaption>Thay đổi trải đều trên dữ liệu, không gian hành động và một mục tiêu phụ, chứ không phải một khối mới.</figcaption></figure>
+<h2>2. Kiến trúc và dữ liệu</h2>
+<figure class="diagram"><svg role="img" aria-label="Hai query nối thêm vào token của VLM được học để khớp với một mô hình độ sâu và một mô hình video, cho khung hiện tại và khung sau một chunk; action expert dùng các lớp MoE thưa." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">LINGBOT-VLA 2.0: NHIỀU DỮ LIỆU HƠN, NHIỀU BẬC TỰ DO HƠN, VÀ DỰ ĐOÁN TƯƠNG LAI</text>
+<rect class="dg-ext" x="20" y="44" width="220" height="100"/><text class="dg-t" x="130" y="68" text-anchor="middle">~60.000 giờ tiền huấn luyện</text><text class="dg-s" x="130" y="90" text-anchor="middle">50.000 giờ dữ liệu robot,</text><text class="dg-s" x="130" y="106" text-anchor="middle">20 cấu hình robot</text><text class="dg-s" x="130" y="122" text-anchor="middle">+ 10.000 giờ video người</text>
+<rect class="dg-box" x="20" y="160" width="220" height="100"/><text class="dg-t" x="130" y="184" text-anchor="middle">quy trình dữ liệu</text><text class="dg-s" x="130" y="206" text-anchor="middle">VLM chia video thành tác vụ con;</text><text class="dg-s" x="130" y="222" text-anchor="middle">bàn tay người dựng lại 3D</text><text class="dg-s" x="130" y="238" text-anchor="middle">qua SLAM + tư thế tay (MANO)</text>
+<rect class="dg-key" x="290" y="44" width="230" height="216"/><text class="dg-t" x="405" y="72" text-anchor="middle">VLM backbone</text><text class="dg-s" x="405" y="94" text-anchor="middle">ảnh + câu lệnh</text><text class="dg-s" x="405" y="126" text-anchor="middle">+ hai query học được:</text><text class="dg-s" x="405" y="142" text-anchor="middle">Q_t (hiện tại), Q_t+T (tương lai)</text><text class="dg-s" x="405" y="176" text-anchor="middle">chưng cất từ các thầy:</text><text class="dg-s" x="405" y="192" text-anchor="middle">LingBot-Depth (hình học)</text><text class="dg-s" x="405" y="208" text-anchor="middle">DINO-Video (thời gian)</text>
+<rect class="dg-key" x="570" y="44" width="200" height="216"/><text class="dg-t" x="670" y="72" text-anchor="middle">action expert</text><text class="dg-s" x="670" y="94" text-anchor="middle">MoE thưa theo token</text><text class="dg-s" x="670" y="110" text-anchor="middle">trong các lớp FFN</text><text class="dg-s" x="670" y="142" text-anchor="middle">cân bằng tải không loss:</text><text class="dg-s" x="670" y="158" text-anchor="middle">bias của router, không</text><text class="dg-s" x="670" y="174" text-anchor="middle">cần loss cân bằng</text>
+<rect class="dg-box" x="810" y="44" width="150" height="216"/><text class="dg-t" x="885" y="72" text-anchor="middle">không gian hành động</text><text class="dg-s" x="885" y="94" text-anchor="middle">hai tay +</text><text class="dg-s" x="885" y="110" text-anchor="middle">đầu, eo,</text><text class="dg-s" x="885" y="126" text-anchor="middle">đế di động,</text><text class="dg-s" x="885" y="142" text-anchor="middle">bàn tay khéo</text>
+<path class="dg-a" d="M240 94 H290"/><path class="dg-a" d="M240 210 H290"/><path class="dg-a" d="M520 152 H570"/><path class="dg-a" d="M770 152 H810"/>
+<text class="dg-l" x="20" y="296">query tương lai được học để khớp đặc trưng của các thầy ở khung sau một chunk</text>
+</svg><figcaption>Hai query nối thêm vào token của VLM được học để khớp với một mô hình độ sâu và một mô hình video, cho khung hiện tại và khung sau một chunk; action expert dùng các lớp MoE thưa.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>LingBot-VLA 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu robot</td>
+<td>~50.000 giờ, 20 cấu hình robot, chuẩn hóa về một biểu diễn hành động chung</td>
+</tr>
+<tr>
+<td>Dữ liệu người</td>
+<td>~10.000 giờ video góc nhìn thứ nhất; SLAM để lấy tư thế camera, ước lượng tư thế bàn tay (MANO), quỹ đạo tay trong hệ thế giới, lọc chất lượng</td>
+</tr>
+<tr>
+<td>Gán nhãn</td>
+<td>một VLM (Qwen3.6-27B) chia mỗi video thành tác vụ con, viết câu lệnh và gán nhãn hành động nguyên tử</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>MoE thưa theo token ở nhánh FFN; cân bằng tải không cần loss phụ, cập nhật bias của router</td>
+</tr>
+<tr>
+<td>Động lực học dự đoán</td>
+<td>query $Q_t$, $Q_{t+T}$ ($T$ = kích thước chunk) chưng cất từ LingBot-Depth và DINO-Video</td>
+</tr>
+<tr>
+<td>DINO-Video</td>
+<td>xây trên DINOv3 với attention thời gian nhân quả: đặc trưng ở một bước chỉ phụ thuộc khung hiện tại và quá khứ</td>
+</tr>
+</tbody>
+</table>
+<p>Hai mối nối với các bài nền tảng: cách cân bằng MoE thay loss phụ của <a href="moe.html">MoE</a> bằng một bias được đẩy dần sau mỗi bước về phía expert ít được dùng, và query tương lai là một dạng <a href="distillation.html">chưng cất</a> trong đó thầy là mô hình tri giác, không phải một policy lớn hơn.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Trên GM-100 (Cobot Magic) LingBot-VLA 2.0 trung bình 34,4% thành công, π0.5 32,2%. Chênh 2,2 điểm trên chín tác vụ có ý nghĩa không? (Giả định: 10 lượt mỗi tác vụ, khớp với bảng vì mọi giá trị thành công đều là bội của 10; paper không nêu rõ cho bảng này.)</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n$</td>
+<td>tổng số lượt</td>
+<td>đầu vào</td>
+<td>$9 \times 10 = 90$</td>
+</tr>
+<tr>
+<td>$k$</td>
+<td>số lần thành công</td>
+<td>đầu vào</td>
+<td>LingBot: $0{,}344 \times 90 \approx 31$; π0.5: $0{,}322 \times 90 \approx 29$</td>
+</tr>
+<tr>
+<td>CI</td>
+<td>khoảng Wilson 95%</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (Wilson)</p>
+<p>$$\frac{\hat p + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>LingBot: $\hat p = 31/90 = 0{,}344$ → khoảng 25,4% tới 44,7%.</li>
+<li>π0.5: $\hat p = 29/90 = 0{,}322$ → khoảng 23,5% tới 42,4%.</li>
+<li>Hai khoảng chồng lên nhau gần hết.</li>
+</ol>
+<p><strong>Kết quả.</strong> Chênh lệch tỉ lệ thành công chỉ khoảng 2 lần thành công trên 90; nó không tách được hai mô hình.</p>
+<p><strong>Vì sao quan trọng.</strong> Theo từng tác vụ thì bức tranh lẫn lộn: π0.5 hơn xa ở xếp khối (60% so với 0%) và đóng gói dụng cụ (30% so với 0%), LingBot-VLA 2.0 hơn xa ở lấy chùm chìa khóa (100% so với 20%). Điểm tiến độ, đếm từng bước con, tách hai mô hình rõ hơn (66,2 so với 59,1), và trên robot thứ hai (Galaxea R1 Pro) khoảng cách lớn hơn. Hãy đọc con số trung bình cùng với bảng từng tác vụ.</p>
+</div>
+<h2>3. Kết quả</h2>
+<table>
+<thead>
+<tr>
+<th>GM-100, 9 tác vụ, trung bình (Bảng 5)</th>
+<th>GR00T N1.7</th>
+<th>π0.5</th>
+<th>LingBot 1.0</th>
+<th>LingBot 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cobot Magic, tiến độ / thành công</td>
+<td>36,3 / 17,8</td>
+<td>59,1 / 32,2</td>
+<td>58,2 / 30,0</td>
+<td>66,2 / 34,4</td>
+</tr>
+<tr>
+<td>Galaxea R1 Pro, tiến độ / thành công</td>
+<td>16,4 / 5,6</td>
+<td>27,4 / 8,9</td>
+<td>32,7 / 15,6</td>
+<td>34,6 / 15,6</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Di động tầm dài (15 lượt mỗi chế độ)</th>
+<th>LingBot 2.0</th>
+<th>π0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Astribot S1, xếp đồ vào tủ lạnh, trong phân phối</td>
+<td>77,1 / 60,0</td>
+<td>65,3 / 46,7</td>
+</tr>
+<tr>
+<td>như trên, ngoài phân phối</td>
+<td>37,0 / 13,3</td>
+<td>30,3 / 6,7</td>
+</tr>
+<tr>
+<td>Cobot Magic-ARX X5, lau bếp, trong phân phối</td>
+<td>84,3 / 66,7</td>
+<td>79,9 / 60,0</td>
+</tr>
+<tr>
+<td>như trên, ngoài phân phối</td>
+<td>67,5 / 40,0</td>
+<td>62,5 / 33,3</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Chính paper chỉ ra nhiều tác vụ có tiến triển từng phần nhưng hỏng ở bước đặt hoặc thả cuối cùng, và khoảng cách giữa hai robot cho thấy các yếu tố riêng của từng thân (động học, camera, khớp không gian hành động) vẫn còn khó.</li>
+<li>Với số tham số <em>hoạt động</em> bằng nhau, mô hình MoE thưa đạt loss huấn luyện thấp hơn và sai số hành động kiểm định trên GM-100 thấp hơn mô hình dày đặc.</li>
+</ul>
+<h2>4. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: kích thước dữ liệu, quy trình, thiết kế MoE và chưng cất, Bảng 5 và 6, các giới hạn paper tự nêu.</li>
+<li>Mình không tìm thấy tên backbone VLM chính xác và tổng số tham số trong phần đã đọc; model card trên Hugging Face ghi checkpoint 6B.</li>
+<li>Số lượt mỗi tác vụ ở Bảng 5 là giả định của mình (xem thẻ tính tay).</li>
+<li>Như các VLA tổng quát khác ở đây, nó không có đầu vào lực; tác vụ GM-100 được chấm theo các bước định nghĩa bằng mắt.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="gm-100.html">GM-100</a> giải thích điểm tiến độ và thành công dùng ở đây. <a href="gr00t-n1.html">GR00T N1</a> cũng biến video người thành tín hiệu huấn luyện, nhưng bằng latent action thay vì dựng lại bàn tay 3D.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> ở một tác vụ 10 lượt, mô hình A thành công 7 lần, mô hình B 5 lần. Dùng xấp xỉ chuẩn, khoảng 95% của chúng có chồng nhau không?</p>
+<details>
+<summary>Đáp án</summary>
+<p>A: $0{,}7 \pm 1{,}96\sqrt{0{,}21/10} = 0{,}7 \pm 0{,}28$ → 0,42 tới 0,98. B: $0{,}5 \pm 1{,}96\sqrt{0{,}25/10} = 0{,}5 \pm 0{,}31$ → 0,19 tới 0,81. Có, chồng nhau rộng; 10 lượt không tách được 70% với 50%.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

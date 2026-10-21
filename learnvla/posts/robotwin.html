@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RoboTwin 2.0 lets a multimodal LLM write and repair expert programs for 50 dual-arm tasks in simulation, on five robot bodies including a UR5. Its benchmark trains on 50 clean demos and tests clean and randomised scenes: π0 falls from 46.4% to 16.3%, and the best clean policy (DP3) falls to 5%.">
+<title>RoboTwin: Generated Bimanual Data and a Clean-vs-Randomised Benchmark · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="RoboTwin: Generated Bimanual Data and a Clean-vs-Randomised Benchmark">
+<meta property="og:description" content="RoboTwin 2.0 lets a multimodal LLM write and repair expert programs for 50 dual-arm tasks in simulation, on five robot bodies including a UR5. Its benchmark trains on 50 clean demos and tests clean and randomised scenes: π0 falls from 46.4% to 16.3%, and the best clean policy (DP3) falls to 5%.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>RoboTwin: Generated Bimanual Data and a Clean-vs-Randomised Benchmark</h1>
+    <h1 data-vi>RoboTwin: Dữ liệu hai tay sinh tự động và benchmark sạch so với ngẫu nhiên hóa</h1>
+
+    <p class="post-excerpt-lead" data-en>RoboTwin 2.0 lets a multimodal LLM write and repair expert programs for 50 dual-arm tasks in simulation, on five robot bodies including a UR5. Its benchmark trains on 50 clean demos and tests clean and randomised scenes: π0 falls from 46.4% to 16.3%, and the best clean policy (DP3) falls to 5%.</p>
+    <p class="post-excerpt-lead" data-vi>RoboTwin 2.0 để một LLM đa phương thức viết và sửa chương trình chuyên gia cho 50 tác vụ hai tay trong mô phỏng, trên năm thân robot gồm cả UR5. Benchmark học trên 50 demo sạch và thử ở cảnh sạch lẫn ngẫu nhiên hóa: π0 rơi từ 46,4% xuống 16,3%, còn policy tốt nhất ở cảnh sạch (DP3) rơi xuống 5%.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Benchmark</span><span class="pill">RoboTwin</span><span class="pill">Bimanual</span><span class="pill">Simulation</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> Mu et al., <em>RoboTwin: Dual-Arm Robot Benchmark with Generative Digital Twins</em>, <a href="https://arxiv.org/abs/2409.02920">arXiv 2409.02920</a> · 09/2024 (early version). Chen et al., <em>RoboTwin 2.0: A Scalable Data Generator and Benchmark with Strong Domain Randomization for Robust Bimanual Robotic Manipulation</em>, <a href="https://arxiv.org/abs/2506.18088">arXiv 2506.18088</a> · 06/2025.</p>
+<p><strong>PROBLEM</strong> Two-arm tasks (handover, lifting a pot, stacking bowls) need a lot of demonstrations, and real two-arm teleoperation is slow and expensive.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Scripted data generators in simulation depend on hand-written heuristics per task and on privileged state, and their scenes are clean, so policies trained on them overfit to one look. RoboTwin 1.0 already built digital twins from 2D images with generative 3D models and generated expert data with an LLM, but its scenes lacked variety and its grasps did not adapt to different arms.</p>
+<p><strong>IDEA (2.0)</strong> A 731-object library with manipulation labels; a multimodal LLM that writes the expert program for a task, runs it in simulation, reads the execution log and images, and repairs it; structured randomisation on five axes (clutter, lighting, background, table height, language); embodiment-aware grasps for five dual-arm robots.</p>
+<p><strong>RESULT</strong> 50 tasks, over 100,000 expert trajectories. On the benchmark (50 clean demos per task, 100 rollouts), pre-trained VLAs hold up best when the scene is randomised: π0 46.4% → 16.3%, RDT 34.5% → 13.7%, while DP3 drops from 55.2% to 5.0%.</p>
+</div>
+<h2>1. The problem: clean training scenes, messy test scenes</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is to make generation cheap enough that variety can be added everywhere, and to test on that variety." class="dg-natural" width="714" height="206" viewBox="0 0 714 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Clean sim data</text><rect class="dg-box" x="128" y="22" width="178" height="38"/><text class="dg-t" x="217" y="45" text-anchor="middle">Hand-scripted expert</text><path class="dg-a" d="M306 41 H338"/><rect class="dg-badbox" x="340" y="14" width="231" height="54"/><text class="dg-t" x="455" y="37" text-anchor="middle">Clean scene</text><text class="dg-s" x="455" y="53" text-anchor="middle">one table, one light, no clutter</text><path class="dg-a" d="M570 41 H602"/><rect class="dg-box" x="604" y="22" width="96" height="38"/><text class="dg-t" x="652" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ high clean score, collapses with clutter</text><text class="dg-lab dg-green" x="14" y="143">RoboTwin 2.0</text><rect class="dg-box" x="128" y="112" width="163" height="54"/><text class="dg-t" x="209" y="135" text-anchor="middle">LLM-written expert</text><text class="dg-s" x="209" y="151" text-anchor="middle">repaired in the loop</text><path class="dg-a" d="M290 139 H322"/><rect class="dg-key" x="324" y="112" width="212" height="54"/><text class="dg-t" x="430" y="135" text-anchor="middle">Randomised scenes</text><text class="dg-s" x="430" y="151" text-anchor="middle">clutter, light, height, words</text><path class="dg-a" d="M536 139 H568"/><rect class="dg-box" x="570" y="120" width="96" height="38"/><text class="dg-t" x="618" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ trained and tested on variation</text></svg><figcaption>The change is to make generation cheap enough that variety can be added everywhere, and to test on that variety.</figcaption></figure>
+<h2>2. Generator and benchmark</h2>
+<figure class="diagram"><svg role="img" aria-label="The generator turns a task description into a working expert program, randomises scenes and adapts grasps to each robot. The benchmark trains on clean demos and tests under both conditions." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">ROBOTWIN 2.0: GENERATE BIMANUAL DEMOS IN SIMULATION, THEN TEST CLEAN AND RANDOMISED</text>
+<rect class="dg-ext" x="20" y="44" width="200" height="74"/><text class="dg-t" x="120" y="68" text-anchor="middle">RoboTwin-OD</text><text class="dg-s" x="120" y="88" text-anchor="middle">731 objects, 147 categories</text><text class="dg-s" x="120" y="104" text-anchor="middle">with grasp / place labels</text>
+<rect class="dg-key" x="260" y="44" width="220" height="74"/><text class="dg-t" x="370" y="68" text-anchor="middle">expert code by an MLLM</text><text class="dg-s" x="370" y="88" text-anchor="middle">run in sim, read logs + images,</text><text class="dg-s" x="370" y="104" text-anchor="middle">repair the program, repeat</text>
+<rect class="dg-box" x="520" y="44" width="200" height="74"/><text class="dg-t" x="620" y="68" text-anchor="middle">domain randomisation</text><text class="dg-s" x="620" y="88" text-anchor="middle">clutter, lighting, background,</text><text class="dg-s" x="620" y="104" text-anchor="middle">table height, instructions</text>
+<rect class="dg-box" x="760" y="44" width="200" height="74"/><text class="dg-t" x="860" y="68" text-anchor="middle">5 dual-arm bodies</text><text class="dg-s" x="860" y="88" text-anchor="middle">Aloha-AgileX, ARX-X5,</text><text class="dg-s" x="860" y="104" text-anchor="middle">Franka, Piper, UR5</text>
+<path class="dg-a" d="M220 81 H260"/><path class="dg-a" d="M480 81 H520"/><path class="dg-a" d="M720 81 H760"/>
+<rect class="dg-box" x="20" y="170" width="300" height="74"/><text class="dg-t" x="170" y="194" text-anchor="middle">train: 50 clean demos per task</text><text class="dg-s" x="170" y="214" text-anchor="middle">single-task, Aloha-AgileX,</text><text class="dg-s" x="170" y="230" text-anchor="middle">50 tasks</text>
+<rect class="dg-box" x="370" y="150" width="270" height="52"/><text class="dg-t" x="505" y="172" text-anchor="middle">Easy: 100 clean rollouts</text><text class="dg-s" x="505" y="190" text-anchor="middle">same conditions as training</text>
+<rect class="dg-badbox" x="370" y="212" width="270" height="52"/><text class="dg-t" x="505" y="234" text-anchor="middle">Hard: 100 randomised rollouts</text><text class="dg-s" x="505" y="252" text-anchor="middle">clutter, light, texture, height</text>
+<rect class="dg-key" x="690" y="170" width="270" height="74"/><text class="dg-t" x="825" y="194" text-anchor="middle">average over 50 tasks</text><text class="dg-s" x="825" y="214" text-anchor="middle">Pi0 46.4 → 16.3,  DP3 55.2 → 5.0</text><text class="dg-s" x="825" y="230" text-anchor="middle">RDT 34.5 → 13.7  (Easy → Hard, %)</text>
+<path class="dg-a" d="M320 196 H345 V176 H370"/><path class="dg-a" d="M345 196 V238 H370"/><path class="dg-a" d="M640 176 H665 V207 H690"/><path class="dg-a" style="marker-end:none" d="M640 238 H665 V207"/>
+<path class="dg-a" d="M370 118 V136 H170 V170"/>
+<text class="dg-l" x="20" y="296">the same generator also supplies randomised synthetic data for training, which is how it is meant to close the gap</text>
+</svg><figcaption>The generator turns a task description into a working expert program, randomises scenes and adapts grasps to each robot. The benchmark trains on clean demos and tests under both conditions.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>What it is</th>
+<th>Number</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RoboTwin-OD</td>
+<td>annotated object library</td>
+<td>731 instances, 147 categories</td>
+</tr>
+<tr>
+<td>Expert code generation</td>
+<td>MLLM writes code, runs it, reads logs and images, repairs</td>
+<td>success of generated programs 71.3% with multimodal feedback vs 47.4% for 1.0's one-shot code (10 tasks)</td>
+</tr>
+<tr>
+<td>Embodiments</td>
+<td>dual-arm platforms</td>
+<td>Aloha-AgileX, ARX-X5, Franka, Piper, UR5</td>
+</tr>
+<tr>
+<td>Benchmark protocol</td>
+<td>single-task, Aloha-AgileX</td>
+<td>50 tasks, 50 clean demos each, 100 rollouts Easy + 100 Hard</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Easy (%)</th>
+<th>Hard (%)</th>
+<th>Drop (points)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP3</td>
+<td>55.2</td>
+<td>5.0</td>
+<td>50.2</td>
+</tr>
+<tr>
+<td>π0</td>
+<td>46.4</td>
+<td>16.3</td>
+<td>30.1</td>
+</tr>
+<tr>
+<td>RDT</td>
+<td>34.5</td>
+<td>13.7</td>
+<td>20.8</td>
+</tr>
+<tr>
+<td>ACT</td>
+<td>29.7</td>
+<td>1.7</td>
+<td>28.0</td>
+</tr>
+<tr>
+<td>DP</td>
+<td>28.0</td>
+<td>0.6</td>
+<td>27.4</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Average success over 50 tasks (RoboTwin 2.0, Table 5). The best clean policy is not the most robust one." class="dg-natural" width="523" height="192" viewBox="0 0 523 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="63" y="23" text-anchor="end">DP3 Easy</text><rect class="dg-bar" x="73" y="10" width="199" height="18"/><text class="dg-barval" x="280" y="23">55.2%</text><text class="dg-barlabel" x="63" y="53" text-anchor="end">DP3 Hard</text><rect class="dg-bar" x="73" y="40" width="18" height="18"/><text class="dg-barval" x="99" y="53">5%</text><text class="dg-barlabel" x="63" y="83" text-anchor="end">π0 Easy</text><rect class="dg-key" x="73" y="70" width="167" height="18"/><text class="dg-barval" x="248" y="83">46.4%</text><text class="dg-barlabel" x="63" y="113" text-anchor="end">π0 Hard</text><rect class="dg-key" x="73" y="100" width="59" height="18"/><text class="dg-barval" x="140" y="113">16.3%</text><text class="dg-barlabel" x="63" y="143" text-anchor="end">RDT Easy</text><rect class="dg-bar" x="73" y="130" width="124" height="18"/><text class="dg-barval" x="205" y="143">34.5%</text><text class="dg-barlabel" x="63" y="173" text-anchor="end">RDT Hard</text><rect class="dg-bar" x="73" y="160" width="49" height="18"/><text class="dg-barval" x="131" y="173">13.7%</text></svg><figcaption>Average success over 50 tasks (RoboTwin 2.0, Table 5). The best clean policy is not the most robust one.</figcaption></figure>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Is "best on Easy" the same as "best on Hard"? Compute how much of its clean score each policy keeps when the scene is randomised.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$E$</td>
+<td>Easy success (%)</td>
+<td>input</td>
+<td>π0 46.4</td>
+</tr>
+<tr>
+<td>$H$</td>
+<td>Hard success (%)</td>
+<td>input</td>
+<td>π0 16.3</td>
+</tr>
+<tr>
+<td>$\Delta$</td>
+<td>absolute drop</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\rho$</td>
+<td>retention $H/E$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\Delta = E - H, \qquad \rho = \frac{H}{E}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>π0: $\Delta = 46.4 - 16.3 = 30.1$; $\rho = 16.3 / 46.4 = 0.351$.</li>
+<li>RDT: $\Delta = 20.8$; $\rho = 13.7 / 34.5 = 0.397$.</li>
+<li>DP3: $\Delta = 50.2$; $\rho = 5.0 / 55.2 = 0.091$.</li>
+<li>Order on Easy: DP3 &gt; π0 &gt; RDT. Order on Hard: π0 &gt; RDT &gt; DP3.</li>
+</ol>
+<p><strong>Result.</strong> The two VLAs keep 35–40% of their clean score; DP3 keeps 9%. The ranking flips.</p>
+<p><strong>Why it matters.</strong> A benchmark with only clean scenes would have picked DP3. The paper reads the gap as evidence that VLA pre-training gives priors that survive visual change, and still calls robustness the main open problem.</p>
+</div>
+<h2>3. Synthetic data for real robots</h2>
+<p>The point of the generator is training data, not only scores. On a real dual-arm setup, the paper mixes 1,000 randomised synthetic trajectories with 10 real demos and reports a 367% relative improvement over the 10-demo baseline; training on synthetic data alone gives a 228% relative gain. "Relative" means the new success rate is 4.67× (or 3.28×) the baseline, which matters when the baseline is low.</p>
+<p>RoboTwin 1.0 (09/2024) was smaller: a real-plus-twin dataset on the AgileX COBOT Magic platform (four arms, four RealSense D435 cameras) and a few tasks scored with DP3, for example "Empty Cup Place" rising from 10% with 10 demos to 96% with 50.</p>
+<h2>4. For a UR10e reader</h2>
+<ul>
+<li>UR5 is one of the five embodiments, so the generator can produce UR-style arm data, but only in dual-arm configurations and only in simulation.</li>
+<li>The randomisation is visual and geometric. Contact force is not part of the benchmark; a policy that crushes the bottle while lifting it still counts as a success.</li>
+</ul>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full RoboTwin 2.0 text (object library, code-generation table, embodiments, protocol, Table 5 averages, the 367% and 228% claims) and the RoboTwin 1.0 PDF.</li>
+<li>I did not read the real-robot table in full; the relative gains are quoted from the abstract.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="simplerenv.html">SimplerEnv</a> uses simulation to <em>rank</em> real-trained policies; RoboTwin uses it to <em>produce</em> training data. <a href="gm-100.html">GM-100</a> moves the whole evaluation onto real robots.</p>
+<p><strong>Check question:</strong> a policy scores 60% Easy and 12% Hard; another 45% Easy and 18% Hard. Compute both retentions and say which you would deploy in a cluttered kitchen.</p>
+<details>
+<summary>Answer</summary>
+<p>$\rho_1 = 12/60 = 0.20$; $\rho_2 = 18/45 = 0.40$. The second: it is better on Hard (18% vs 12%), which is closer to the kitchen, and it loses less to variation.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Mu và cộng sự, <em>RoboTwin: Dual-Arm Robot Benchmark with Generative Digital Twins</em>, <a href="https://arxiv.org/abs/2409.02920">arXiv 2409.02920</a> · 09/2024 (bản đầu). Chen và cộng sự, <em>RoboTwin 2.0: A Scalable Data Generator and Benchmark with Strong Domain Randomization for Robust Bimanual Robotic Manipulation</em>, <a href="https://arxiv.org/abs/2506.18088">arXiv 2506.18088</a> · 06/2025.</p>
+<p><strong>VẤN ĐỀ</strong> Tác vụ hai tay (chuyền vật, nhấc nồi, xếp bát) cần rất nhiều demo, mà điều khiển từ xa hai tay thật thì chậm và tốn kém.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Bộ sinh dữ liệu viết kịch bản tay trong mô phỏng phụ thuộc vào luật viết riêng cho từng tác vụ và vào trạng thái đặc quyền, và cảnh của chúng sạch, nên policy học từ đó bị khớp quá vào một kiểu nhìn. RoboTwin 1.0 đã dựng bản sao số từ ảnh 2D bằng mô hình 3D sinh tạo và sinh dữ liệu chuyên gia bằng LLM, nhưng cảnh còn thiếu đa dạng và cách gắp không thích nghi theo từng loại tay.</p>
+<p><strong>Ý TƯỞNG (2.0)</strong> Thư viện 731 vật có nhãn thao tác; một LLM đa phương thức viết chương trình chuyên gia cho tác vụ, chạy trong mô phỏng, đọc log thực thi và ảnh, rồi sửa; ngẫu nhiên hóa có cấu trúc theo năm trục (vật lộn xộn, ánh sáng, nền, chiều cao bàn, ngôn ngữ); cách gắp theo từng thân robot cho năm robot hai tay.</p>
+<p><strong>KẾT QUẢ</strong> 50 tác vụ, hơn 100.000 quỹ đạo chuyên gia. Trên benchmark (50 demo sạch mỗi tác vụ, 100 lượt chạy), VLA đã tiền huấn luyện chịu đựng tốt nhất khi cảnh bị ngẫu nhiên hóa: π0 46,4% → 16,3%, RDT 34,5% → 13,7%, còn DP3 rơi từ 55,2% xuống 5,0%.</p>
+</div>
+<h2>1. Vấn đề: học ở cảnh sạch, thử ở cảnh lộn xộn</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là làm việc sinh dữ liệu đủ rẻ để thêm đa dạng ở mọi nơi, và thử trên chính sự đa dạng đó." class="dg-natural" width="787" height="206" viewBox="0 0 787 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Dữ liệu mô phỏng sạch</text><rect class="dg-box" x="172" y="22" width="170" height="38"/><text class="dg-t" x="258" y="45" text-anchor="middle">Chuyên gia viết tay</text><path class="dg-a" d="M343 41 H375"/><rect class="dg-badbox" x="377" y="14" width="224" height="54"/><text class="dg-t" x="489" y="37" text-anchor="middle">Cảnh sạch</text><text class="dg-s" x="489" y="53" text-anchor="middle">một bàn, một đèn, không đồ thừa</text><path class="dg-a" d="M601 41 H633"/><rect class="dg-box" x="635" y="22" width="96" height="38"/><text class="dg-t" x="683" y="45" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="172.4" y="86">✗ điểm sạch cao, sụp khi có đồ lộn xộn</text><text class="dg-lab dg-green" x="14" y="143">RoboTwin 2.0</text><rect class="dg-box" x="172" y="112" width="193" height="54"/><text class="dg-t" x="269" y="135" text-anchor="middle">Chuyên gia do LLM viết</text><text class="dg-s" x="269" y="151" text-anchor="middle">sửa trong vòng lặp</text><path class="dg-a" d="M366 139 H398"/><rect class="dg-key" x="400" y="112" width="244" height="54"/><text class="dg-t" x="521" y="135" text-anchor="middle">Cảnh ngẫu nhiên</text><text class="dg-s" x="521" y="151" text-anchor="middle">đồ thừa, ánh sáng, độ cao, câu chữ</text><path class="dg-a" d="M643 139 H675"/><rect class="dg-box" x="677" y="120" width="96" height="38"/><text class="dg-t" x="725" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-green" x="172.4" y="184">✓ học và thử trên sự đa dạng</text></svg><figcaption>Thay đổi là làm việc sinh dữ liệu đủ rẻ để thêm đa dạng ở mọi nơi, và thử trên chính sự đa dạng đó.</figcaption></figure>
+<h2>2. Bộ sinh và benchmark</h2>
+<figure class="diagram"><svg role="img" aria-label="Bộ sinh biến mô tả tác vụ thành chương trình chuyên gia chạy được, ngẫu nhiên hóa cảnh và chỉnh cách gắp theo từng robot. Benchmark học trên demo sạch và thử ở cả hai điều kiện." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">ROBOTWIN 2.0: SINH DEMO HAI TAY TRONG MÔ PHỎNG, RỒI THỬ CẢNH SẠCH VÀ NGẪU NHIÊN</text>
+<rect class="dg-ext" x="20" y="44" width="200" height="74"/><text class="dg-t" x="120" y="68" text-anchor="middle">RoboTwin-OD</text><text class="dg-s" x="120" y="88" text-anchor="middle">731 vật, 147 loại</text><text class="dg-s" x="120" y="104" text-anchor="middle">kèm nhãn gắp / đặt</text>
+<rect class="dg-key" x="260" y="44" width="220" height="74"/><text class="dg-t" x="370" y="68" text-anchor="middle">code chuyên gia do MLLM viết</text><text class="dg-s" x="370" y="88" text-anchor="middle">chạy mô phỏng, đọc log + ảnh,</text><text class="dg-s" x="370" y="104" text-anchor="middle">sửa chương trình, lặp lại</text>
+<rect class="dg-box" x="520" y="44" width="200" height="74"/><text class="dg-t" x="620" y="68" text-anchor="middle">ngẫu nhiên hóa miền</text><text class="dg-s" x="620" y="88" text-anchor="middle">đồ lộn xộn, ánh sáng, nền,</text><text class="dg-s" x="620" y="104" text-anchor="middle">độ cao bàn, câu lệnh</text>
+<rect class="dg-box" x="760" y="44" width="200" height="74"/><text class="dg-t" x="860" y="68" text-anchor="middle">5 thân hai tay</text><text class="dg-s" x="860" y="88" text-anchor="middle">Aloha-AgileX, ARX-X5,</text><text class="dg-s" x="860" y="104" text-anchor="middle">Franka, Piper, UR5</text>
+<path class="dg-a" d="M220 81 H260"/><path class="dg-a" d="M480 81 H520"/><path class="dg-a" d="M720 81 H760"/>
+<rect class="dg-box" x="20" y="170" width="300" height="74"/><text class="dg-t" x="170" y="194" text-anchor="middle">học: 50 demo sạch mỗi tác vụ</text><text class="dg-s" x="170" y="214" text-anchor="middle">một tác vụ, Aloha-AgileX,</text><text class="dg-s" x="170" y="230" text-anchor="middle">50 tác vụ</text>
+<rect class="dg-box" x="370" y="150" width="270" height="52"/><text class="dg-t" x="505" y="172" text-anchor="middle">Easy: 100 lượt cảnh sạch</text><text class="dg-s" x="505" y="190" text-anchor="middle">cùng điều kiện lúc học</text>
+<rect class="dg-badbox" x="370" y="212" width="270" height="52"/><text class="dg-t" x="505" y="234" text-anchor="middle">Hard: 100 lượt ngẫu nhiên</text><text class="dg-s" x="505" y="252" text-anchor="middle">lộn xộn, ánh sáng, vân, độ cao</text>
+<rect class="dg-key" x="690" y="170" width="270" height="74"/><text class="dg-t" x="825" y="194" text-anchor="middle">trung bình 50 tác vụ</text><text class="dg-s" x="825" y="214" text-anchor="middle">Pi0 46,4 → 16,3;  DP3 55,2 → 5,0</text><text class="dg-s" x="825" y="230" text-anchor="middle">RDT 34,5 → 13,7  (Easy → Hard, %)</text>
+<path class="dg-a" d="M320 196 H345 V176 H370"/><path class="dg-a" d="M345 196 V238 H370"/><path class="dg-a" d="M640 176 H665 V207 H690"/><path class="dg-a" style="marker-end:none" d="M640 238 H665 V207"/>
+<path class="dg-a" d="M370 118 V136 H170 V170"/>
+<text class="dg-l" x="20" y="296">cùng bộ sinh này cũng cấp dữ liệu tổng hợp ngẫu nhiên để học, đó là cách nó định thu hẹp khoảng cách</text>
+</svg><figcaption>Bộ sinh biến mô tả tác vụ thành chương trình chuyên gia chạy được, ngẫu nhiên hóa cảnh và chỉnh cách gắp theo từng robot. Benchmark học trên demo sạch và thử ở cả hai điều kiện.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Là gì</th>
+<th>Con số</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RoboTwin-OD</td>
+<td>thư viện vật có chú thích</td>
+<td>731 vật, 147 loại</td>
+</tr>
+<tr>
+<td>Sinh code chuyên gia</td>
+<td>MLLM viết code, chạy, đọc log và ảnh, sửa</td>
+<td>tỉ lệ chương trình chạy đúng 71,3% với phản hồi đa phương thức so với 47,4% của code một lần của bản 1.0 (10 tác vụ)</td>
+</tr>
+<tr>
+<td>Thân robot</td>
+<td>nền tảng hai tay</td>
+<td>Aloha-AgileX, ARX-X5, Franka, Piper, UR5</td>
+</tr>
+<tr>
+<td>Quy trình benchmark</td>
+<td>một tác vụ, Aloha-AgileX</td>
+<td>50 tác vụ, 50 demo sạch mỗi tác vụ, 100 lượt Easy + 100 lượt Hard</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Easy (%)</th>
+<th>Hard (%)</th>
+<th>Giảm (điểm)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP3</td>
+<td>55,2</td>
+<td>5,0</td>
+<td>50,2</td>
+</tr>
+<tr>
+<td>π0</td>
+<td>46,4</td>
+<td>16,3</td>
+<td>30,1</td>
+</tr>
+<tr>
+<td>RDT</td>
+<td>34,5</td>
+<td>13,7</td>
+<td>20,8</td>
+</tr>
+<tr>
+<td>ACT</td>
+<td>29,7</td>
+<td>1,7</td>
+<td>28,0</td>
+</tr>
+<tr>
+<td>DP</td>
+<td>28,0</td>
+<td>0,6</td>
+<td>27,4</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên 50 tác vụ (RoboTwin 2.0, Bảng 5). Policy tốt nhất ở cảnh sạch không phải policy bền nhất." class="dg-natural" width="523" height="192" viewBox="0 0 523 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="63" y="23" text-anchor="end">DP3 Easy</text><rect class="dg-bar" x="73" y="10" width="199" height="18"/><text class="dg-barval" x="280" y="23">55,2%</text><text class="dg-barlabel" x="63" y="53" text-anchor="end">DP3 Hard</text><rect class="dg-bar" x="73" y="40" width="18" height="18"/><text class="dg-barval" x="99" y="53">5%</text><text class="dg-barlabel" x="63" y="83" text-anchor="end">π0 Easy</text><rect class="dg-key" x="73" y="70" width="167" height="18"/><text class="dg-barval" x="248" y="83">46,4%</text><text class="dg-barlabel" x="63" y="113" text-anchor="end">π0 Hard</text><rect class="dg-key" x="73" y="100" width="59" height="18"/><text class="dg-barval" x="140" y="113">16,3%</text><text class="dg-barlabel" x="63" y="143" text-anchor="end">RDT Easy</text><rect class="dg-bar" x="73" y="130" width="124" height="18"/><text class="dg-barval" x="205" y="143">34,5%</text><text class="dg-barlabel" x="63" y="173" text-anchor="end">RDT Hard</text><rect class="dg-bar" x="73" y="160" width="49" height="18"/><text class="dg-barval" x="131" y="173">13,7%</text></svg><figcaption>Thành công trung bình trên 50 tác vụ (RoboTwin 2.0, Bảng 5). Policy tốt nhất ở cảnh sạch không phải policy bền nhất.</figcaption></figure>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> "Tốt nhất ở Easy" có phải là "tốt nhất ở Hard"? Tính xem mỗi policy giữ lại bao nhiêu phần điểm sạch khi cảnh bị ngẫu nhiên hóa.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$E$</td>
+<td>thành công Easy (%)</td>
+<td>đầu vào</td>
+<td>π0 46,4</td>
+</tr>
+<tr>
+<td>$H$</td>
+<td>thành công Hard (%)</td>
+<td>đầu vào</td>
+<td>π0 16,3</td>
+</tr>
+<tr>
+<td>$\Delta$</td>
+<td>mức giảm tuyệt đối</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$\rho$</td>
+<td>tỉ lệ giữ lại $H/E$</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\Delta = E - H, \qquad \rho = \frac{H}{E}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>π0: $\Delta = 46{,}4 - 16{,}3 = 30{,}1$; $\rho = 16{,}3 / 46{,}4 = 0{,}351$.</li>
+<li>RDT: $\Delta = 20{,}8$; $\rho = 13{,}7 / 34{,}5 = 0{,}397$.</li>
+<li>DP3: $\Delta = 50{,}2$; $\rho = 5{,}0 / 55{,}2 = 0{,}091$.</li>
+<li>Thứ tự ở Easy: DP3 &gt; π0 &gt; RDT. Thứ tự ở Hard: π0 &gt; RDT &gt; DP3.</li>
+</ol>
+<p><strong>Kết quả.</strong> Hai VLA giữ lại 35–40% điểm sạch; DP3 giữ 9%. Thứ hạng bị đảo.</p>
+<p><strong>Vì sao quan trọng.</strong> Một benchmark chỉ có cảnh sạch sẽ chọn DP3. Paper đọc khoảng chênh này như bằng chứng rằng tiền huấn luyện VLA cho tri thức nền sống sót qua thay đổi hình ảnh, nhưng vẫn coi độ bền là bài toán mở chính.</p>
+</div>
+<h2>3. Dữ liệu tổng hợp cho robot thật</h2>
+<p>Mục đích của bộ sinh là dữ liệu huấn luyện, không chỉ là điểm số. Trên một bộ hai tay thật, paper trộn 1.000 quỹ đạo tổng hợp đã ngẫu nhiên hóa với 10 demo thật và báo cáo cải thiện tương đối 367% so với baseline 10 demo; chỉ học trên dữ liệu tổng hợp cho mức tăng tương đối 228%. "Tương đối" nghĩa là tỉ lệ thành công mới bằng 4,67 lần (hoặc 3,28 lần) baseline, điều này quan trọng khi baseline thấp.</p>
+<p>RoboTwin 1.0 (09/2024) nhỏ hơn: bộ dữ liệu thật cộng bản sao số trên nền tảng AgileX COBOT Magic (bốn tay, bốn camera RealSense D435) và vài tác vụ chấm bằng DP3, ví dụ "Empty Cup Place" tăng từ 10% với 10 demo lên 96% với 50 demo.</p>
+<h2>4. Với người dùng UR10e</h2>
+<ul>
+<li>UR5 là một trong năm thân robot, nên bộ sinh tạo được dữ liệu kiểu tay UR, nhưng chỉ ở cấu hình hai tay và chỉ trong mô phỏng.</li>
+<li>Ngẫu nhiên hóa là về hình ảnh và hình học. Lực tiếp xúc không nằm trong benchmark; một policy bóp méo chai khi nhấc vẫn được tính là thành công.</li>
+</ul>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn RoboTwin 2.0 (thư viện vật, bảng sinh code, các thân robot, quy trình, trung bình ở Bảng 5, các con số 367% và 228%) và PDF của RoboTwin 1.0.</li>
+<li>Mình chưa đọc hết bảng robot thật; các mức tăng tương đối được trích từ abstract.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="simplerenv.html">SimplerEnv</a> dùng mô phỏng để <em>xếp hạng</em> policy học từ dữ liệu thật; RoboTwin dùng nó để <em>sản xuất</em> dữ liệu huấn luyện. <a href="gm-100.html">GM-100</a> chuyển toàn bộ việc đánh giá lên robot thật.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> một policy đạt 60% Easy và 12% Hard; policy khác đạt 45% Easy và 18% Hard. Tính tỉ lệ giữ lại của cả hai và nói bạn sẽ triển khai cái nào trong một căn bếp bừa bộn.</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\rho_1 = 12/60 = 0{,}20$; $\rho_2 = 18/45 = 0{,}40$. Cái thứ hai: nó tốt hơn ở Hard (18% so với 12%), gần với căn bếp hơn, và mất ít hơn khi có biến đổi.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

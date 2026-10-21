@@ -1,0 +1,15 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">ROBOTWIN 2.0: GENERATE BIMANUAL DEMOS IN SIMULATION, THEN TEST CLEAN AND RANDOMISED</text>
+<rect class="dg-ext" x="20" y="44" width="200" height="74"/><text class="dg-t" x="120" y="68" text-anchor="middle">RoboTwin-OD</text><text class="dg-s" x="120" y="88" text-anchor="middle">731 objects, 147 categories</text><text class="dg-s" x="120" y="104" text-anchor="middle">with grasp / place labels</text>
+<rect class="dg-key" x="260" y="44" width="220" height="74"/><text class="dg-t" x="370" y="68" text-anchor="middle">expert code by an MLLM</text><text class="dg-s" x="370" y="88" text-anchor="middle">run in sim, read logs + images,</text><text class="dg-s" x="370" y="104" text-anchor="middle">repair the program, repeat</text>
+<rect class="dg-box" x="520" y="44" width="200" height="74"/><text class="dg-t" x="620" y="68" text-anchor="middle">domain randomisation</text><text class="dg-s" x="620" y="88" text-anchor="middle">clutter, lighting, background,</text><text class="dg-s" x="620" y="104" text-anchor="middle">table height, instructions</text>
+<rect class="dg-box" x="760" y="44" width="200" height="74"/><text class="dg-t" x="860" y="68" text-anchor="middle">5 dual-arm bodies</text><text class="dg-s" x="860" y="88" text-anchor="middle">Aloha-AgileX, ARX-X5,</text><text class="dg-s" x="860" y="104" text-anchor="middle">Franka, Piper, UR5</text>
+<path class="dg-a" d="M220 81 H260"/><path class="dg-a" d="M480 81 H520"/><path class="dg-a" d="M720 81 H760"/>
+<rect class="dg-box" x="20" y="170" width="300" height="74"/><text class="dg-t" x="170" y="194" text-anchor="middle">train: 50 clean demos per task</text><text class="dg-s" x="170" y="214" text-anchor="middle">single-task, Aloha-AgileX,</text><text class="dg-s" x="170" y="230" text-anchor="middle">50 tasks</text>
+<rect class="dg-box" x="370" y="150" width="270" height="52"/><text class="dg-t" x="505" y="172" text-anchor="middle">Easy: 100 clean rollouts</text><text class="dg-s" x="505" y="190" text-anchor="middle">same conditions as training</text>
+<rect class="dg-badbox" x="370" y="212" width="270" height="52"/><text class="dg-t" x="505" y="234" text-anchor="middle">Hard: 100 randomised rollouts</text><text class="dg-s" x="505" y="252" text-anchor="middle">clutter, light, texture, height</text>
+<rect class="dg-key" x="690" y="170" width="270" height="74"/><text class="dg-t" x="825" y="194" text-anchor="middle">average over 50 tasks</text><text class="dg-s" x="825" y="214" text-anchor="middle">Pi0 46.4 → 16.3,  DP3 55.2 → 5.0</text><text class="dg-s" x="825" y="230" text-anchor="middle">RDT 34.5 → 13.7  (Easy → Hard, %)</text>
+<path class="dg-a" d="M320 196 H345 V176 H370"/><path class="dg-a" d="M345 196 V238 H370"/><path class="dg-a" d="M640 176 H665 V207 H690"/><path class="dg-a" style="marker-end:none" d="M640 238 H665 V207"/>
+<path class="dg-a" d="M370 118 V136 H170 V170"/>
+<text class="dg-l" x="20" y="296">the same generator also supplies randomised synthetic data for training, which is how it is meant to close the gap</text>
+</svg>

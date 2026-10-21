@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SMOLVLA: NỬA VLM NHỎ + ACTION EXPERT NHẸ, CHẠY BẤT ĐỒNG BỘ</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="64"/><text class="dg-t" x="105" y="68" text-anchor="middle">ảnh</text><text class="dg-s" x="105" y="88" text-anchor="middle">ảnh tổng, 64 token mỗi ảnh</text>
+<rect class="dg-ext" x="20" y="116" width="170" height="64"/><text class="dg-t" x="105" y="140" text-anchor="middle">câu lệnh + trạng thái</text><text class="dg-s" x="105" y="160" text-anchor="middle">chiếu tuyến tính</text>
+<rect class="dg-key" x="220" y="44" width="240" height="136"/><text class="dg-t" x="340" y="72" text-anchor="middle">SmolVLM-2</text><text class="dg-s" x="340" y="94" text-anchor="middle">SigLIP + SmolLM2</text><text class="dg-s" x="340" y="118" text-anchor="middle">chỉ chạy nửa đầu</text><text class="dg-s" x="340" y="134" text-anchor="middle">số lớp LLM (N = L/2)</text><text class="dg-s" x="340" y="158" text-anchor="middle">không chia ô ảnh</text>
+<rect class="dg-key" x="500" y="44" width="240" height="136"/><text class="dg-t" x="620" y="72" text-anchor="middle">action expert</text><text class="dg-s" x="620" y="94" text-anchor="middle">rộng 0,75 x VLM</text><text class="dg-s" x="620" y="118" text-anchor="middle">lớp cross-attention</text><text class="dg-s" x="620" y="134" text-anchor="middle">xen kẽ với self-attention</text><text class="dg-s" x="620" y="150" text-anchor="middle">nhân quả; flow matching</text>
+<rect class="dg-box" x="780" y="44" width="180" height="136"/><text class="dg-t" x="870" y="72" text-anchor="middle">chunk 50</text><text class="dg-s" x="870" y="94" text-anchor="middle">vào hàng đợi hành động</text><text class="dg-s" x="870" y="118" text-anchor="middle">tổng 0,45B</text>
+<path class="dg-a" d="M190 76 H220"/><path class="dg-a" d="M190 148 H220"/><path class="dg-a" d="M460 112 H500"/><path class="dg-a" d="M740 112 H780"/>
+<text class="dg-h" x="20" y="218">SUY LUẬN BẤT ĐỒNG BỘ</text>
+<rect class="dg-box" x="20" y="232" width="280" height="60"/><text class="dg-t" x="160" y="256" text-anchor="middle">RobotClient</text><text class="dg-s" x="160" y="276" text-anchor="middle">lấy một hành động mỗi bước</text>
+<rect class="dg-key" x="350" y="232" width="280" height="60"/><text class="dg-t" x="490" y="256" text-anchor="middle">hàng đợi dưới g · n ?</text><text class="dg-s" x="490" y="276" text-anchor="middle">gửi quan sát mới</text>
+<rect class="dg-box" x="680" y="232" width="280" height="60"/><text class="dg-t" x="820" y="256" text-anchor="middle">PolicyServer (GPU)</text><text class="dg-s" x="820" y="276" text-anchor="middle">trả chunk, gộp vào hàng đợi</text>
+<path class="dg-a" d="M300 262 H350"/><path class="dg-a" d="M630 262 H680"/><path class="dg-ad" d="M820 292 V312 H160 V292"/>
+</svg>

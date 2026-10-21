@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SmolVLA cuts a VLA down to 0.45B parameters: a small VLM with only half its layers used, 64 tokens per image, and a light flow-matching expert that alternates cross- and self-attention. Pre-trained on 22.9K community episodes, it scores 87.3% on LIBERO and beats π0 (3.5B) on real SO-100 tasks; asynchronous inference finishes tasks about 30% faster.">
+<title>SmolVLA: A 0.45B VLA Trained on Community Data · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="SmolVLA: A 0.45B VLA Trained on Community Data">
+<meta property="og:description" content="SmolVLA cuts a VLA down to 0.45B parameters: a small VLM with only half its layers used, 64 tokens per image, and a light flow-matching expert that alternates cross- and self-attention. Pre-trained on 22.9K community episodes, it scores 87.3% on LIBERO and beats π0 (3.5B) on real SO-100 tasks; asynchronous inference finishes tasks about 30% faster.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>SmolVLA: A 0.45B VLA Trained on Community Data</h1>
+    <h1 data-vi>SmolVLA: VLA 0,45B học trên dữ liệu cộng đồng</h1>
+
+    <p class="post-excerpt-lead" data-en>SmolVLA cuts a VLA down to 0.45B parameters: a small VLM with only half its layers used, 64 tokens per image, and a light flow-matching expert that alternates cross- and self-attention. Pre-trained on 22.9K community episodes, it scores 87.3% on LIBERO and beats π0 (3.5B) on real SO-100 tasks; asynchronous inference finishes tasks about 30% faster.</p>
+    <p class="post-excerpt-lead" data-vi>SmolVLA thu nhỏ VLA còn 0,45B tham số: một VLM nhỏ chỉ dùng nửa số lớp, 64 token mỗi ảnh, và một expert flow matching nhẹ xen kẽ cross- và self-attention. Tiền huấn luyện trên 22,9K episode cộng đồng, nó đạt 87,3% trên LIBERO và thắng π0 (3,5B) trên tác vụ SO-100 thật; suy luận bất đồng bộ làm xong tác vụ nhanh hơn khoảng 30%.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">SmolVLA</span><span class="pill">LeRobot</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Shukor, Aubakirova, Capuano et al. (Hugging Face), <em>SmolVLA: A vision-language-action model for affordable and efficient robotics</em>, <a href="https://arxiv.org/abs/2506.01844">arXiv 2506.01844</a> · 06/2025</p>
+<p><strong>PROBLEM</strong> A VLA that a person can train on one GPU and run on a consumer GPU or even a CPU, for low-cost arms.</p>
+<p><strong>WHAT FAILED BEFORE</strong> VLAs had billions of parameters (OpenVLA 7B, π0 3.3B) and were trained on large datasets collected by labs and companies, so training and deployment needed expensive hardware. Running chunks synchronously (finish a chunk, then think) leaves the robot blind while it waits for the next chunk.</p>
+<p><strong>IDEA</strong> Shrink every part: SmolVLM-2 as backbone with only the first half of its LLM layers used, no image tiling (64 tokens per frame), an action expert at 0.75× the VLM width whose layers alternate cross-attention to the VLM and causal self-attention, chunks of 50. Pre-train on 481 community datasets from the Hugging Face hub (22.9K episodes) with VLM-cleaned instructions. Add an asynchronous inference stack.</p>
+<p><strong>RESULT</strong> 0.45B parameters. LIBERO 87.3% average (π0 3.3B: 86.0%), Meta-World 57.3% (π0: 47.9%). Real SO-100: 78.3% vs π0 61.7% and ACT 48.3%. Asynchronous inference: same success, 9.7 s instead of 13.75 s per task.</p>
+</div>
+<h2>1. The problem: VLAs need a lab's hardware</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is a set of efficiency choices, each tested in an ablation, plus training only on community-collected data." class="dg-natural" width="778" height="206" viewBox="0 0 778 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0 / OpenVLA</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">3–7B VLM</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="231" height="54"/><text class="dg-t" x="370" y="37" text-anchor="middle">Large model, large lab data</text><text class="dg-s" x="370" y="53" text-anchor="middle">expensive GPUs to train and run</text><path class="dg-a" d="M485 41 H517"/><rect class="dg-box" x="519" y="22" width="96" height="38"/><text class="dg-t" x="567" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ out of reach for hobby and small-lab arms</text><text class="dg-lab dg-green" x="14" y="143">SmolVLA</text><rect class="dg-box" x="124" y="120" width="224" height="38"/><text class="dg-t" x="236" y="143" text-anchor="middle">0.45B, half the VLM layers</text><path class="dg-a" d="M348 139 H380"/><rect class="dg-key" x="382" y="112" width="246" height="54"/><text class="dg-t" x="505" y="135" text-anchor="middle">Light expert, 64 tokens/image</text><text class="dg-s" x="505" y="151" text-anchor="middle">community data, async queue</text><path class="dg-a" d="M628 139 H660"/><rect class="dg-box" x="662" y="120" width="102" height="38"/><text class="dg-t" x="713" y="143" text-anchor="middle">SO-100 arm</text><text class="dg-note dg-green" x="124" y="184">✓ one GPU to train, CPU-capable inference</text></svg><figcaption>The change is a set of efficiency choices, each tested in an ablation, plus training only on community-collected data.</figcaption></figure>
+<h2>2. Architecture and training</h2>
+<figure class="diagram"><svg role="img" aria-label="Half of a small VLM produces features; a light expert reads them through interleaved cross-attention and denoises a chunk of 50 actions; an action queue decouples thinking from acting." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SMOLVLA: HALF A SMALL VLM + A LIGHT ACTION EXPERT, RUN ASYNCHRONOUSLY</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="64"/><text class="dg-t" x="105" y="68" text-anchor="middle">images</text><text class="dg-s" x="105" y="88" text-anchor="middle">global view, 64 tokens each</text>
+<rect class="dg-ext" x="20" y="116" width="170" height="64"/><text class="dg-t" x="105" y="140" text-anchor="middle">instruction + state</text><text class="dg-s" x="105" y="160" text-anchor="middle">state via a linear layer</text>
+<rect class="dg-key" x="220" y="44" width="240" height="136"/><text class="dg-t" x="340" y="72" text-anchor="middle">SmolVLM-2</text><text class="dg-s" x="340" y="94" text-anchor="middle">SigLIP + SmolLM2</text><text class="dg-s" x="340" y="118" text-anchor="middle">only the first half of the</text><text class="dg-s" x="340" y="134" text-anchor="middle">LLM layers is run (N = L/2)</text><text class="dg-s" x="340" y="158" text-anchor="middle">no image tiling</text>
+<rect class="dg-key" x="500" y="44" width="240" height="136"/><text class="dg-t" x="620" y="72" text-anchor="middle">action expert</text><text class="dg-s" x="620" y="94" text-anchor="middle">width 0.75 x VLM width</text><text class="dg-s" x="620" y="118" text-anchor="middle">cross-attention layers</text><text class="dg-s" x="620" y="134" text-anchor="middle">interleaved with causal</text><text class="dg-s" x="620" y="150" text-anchor="middle">self-attention; flow matching</text>
+<rect class="dg-box" x="780" y="44" width="180" height="136"/><text class="dg-t" x="870" y="72" text-anchor="middle">chunk of 50</text><text class="dg-s" x="870" y="94" text-anchor="middle">into an action queue</text><text class="dg-s" x="870" y="118" text-anchor="middle">0.45B total</text>
+<path class="dg-a" d="M190 76 H220"/><path class="dg-a" d="M190 148 H220"/><path class="dg-a" d="M460 112 H500"/><path class="dg-a" d="M740 112 H780"/>
+<text class="dg-h" x="20" y="218">ASYNCHRONOUS INFERENCE</text>
+<rect class="dg-box" x="20" y="232" width="280" height="60"/><text class="dg-t" x="160" y="256" text-anchor="middle">RobotClient</text><text class="dg-s" x="160" y="276" text-anchor="middle">pops one action per control step</text>
+<rect class="dg-key" x="350" y="232" width="280" height="60"/><text class="dg-t" x="490" y="256" text-anchor="middle">queue below g · n ?</text><text class="dg-s" x="490" y="276" text-anchor="middle">send a new observation</text>
+<rect class="dg-box" x="680" y="232" width="280" height="60"/><text class="dg-t" x="820" y="256" text-anchor="middle">PolicyServer (GPU)</text><text class="dg-s" x="820" y="276" text-anchor="middle">returns a chunk, merged in the queue</text>
+<path class="dg-a" d="M300 262 H350"/><path class="dg-a" d="M630 262 H680"/><path class="dg-ad" d="M820 292 V312 H160 V292"/>
+</svg><figcaption>Half of a small VLM produces features; a light expert reads them through interleaved cross-attention and denoises a chunk of 50 actions; an action queue decouples thinking from acting.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>SmolVLA</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>SmolVLM-2 (SigLIP + SmolLM2)</td>
+<td>small VLM built for multi-image input</td>
+</tr>
+<tr>
+<td>Layers used</td>
+<td>features up to layer $N = L/2$</td>
+<td>roughly halves the cost of LLM and expert; best features are not always in the last layer</td>
+</tr>
+<tr>
+<td>Visual tokens</td>
+<td>global image only, pixel shuffle → 64 per frame</td>
+<td>no tiling, faster</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>width $0.75 \times d$; cross-attention and causal self-attention layers interleaved</td>
+<td>lighter than π0's expert; ablated against pure self-attention</td>
+</tr>
+<tr>
+<td>Objective</td>
+<td>flow matching, $\tau$ from a Beta distribution</td>
+<td>ablation: better than regression</td>
+</tr>
+<tr>
+<td>Chunk</td>
+<td>$n = 50$</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>481 community datasets, 22.9K episodes, 10.6M frames; instructions re-written by Qwen2.5-VL-3B; camera names normalised</td>
+<td>about 10× less data than prior art</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> In asynchronous mode the client asks for a new chunk when the queue falls below a fraction $g$ of the chunk. If $g$ is too small, the queue runs empty before the new chunk arrives. The paper gives the condition $g \ge \mathbb{E}[\ell_S] / (\Delta t \, n)$.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\ell_S$</td>
+<td>server inference latency</td>
+<td>input</td>
+<td>100 ms, then 500 ms (illustrative)</td>
+</tr>
+<tr>
+<td>$\Delta t$</td>
+<td>control period</td>
+<td>input</td>
+<td>33 ms (30 fps, paper)</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>chunk size</td>
+<td>input</td>
+<td>50</td>
+</tr>
+<tr>
+<td>$g$</td>
+<td>minimum queue threshold</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$g \ge \frac{\ell_S}{\Delta t \cdot n}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Chunk length in time: $\Delta t \cdot n = 33 \times 50 = 1{,}650$ ms.</li>
+<li>$\ell_S = 100$ ms: $g \ge 100 / 1650 = 0.061$, so ask when about 3 actions are left.</li>
+<li>$\ell_S = 500$ ms (e.g. a CPU): $g \ge 500 / 1650 = 0.303$, so ask when about 15 actions are left.</li>
+</ol>
+<p><strong>Result.</strong> A fast GPU can wait until the last 6% of the chunk; a slow device must ask with 30% left.</p>
+<p><strong>Why it matters.</strong> A larger $g$ means fresher observations but more inference calls. The threshold lets the same policy run on a GPU server or a slow edge device without the robot ever stopping to wait.</p>
+</div>
+<h2>3. Results</h2>
+<table>
+<thead>
+<tr>
+<th>LIBERO (from Table 2)</th>
+<th>Spatial</th>
+<th>Object</th>
+<th>Goal</th>
+<th>Long</th>
+<th>Avg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenVLA (7B)</td>
+<td>84.7</td>
+<td>88.4</td>
+<td>79.2</td>
+<td>53.7</td>
+<td>76.5</td>
+</tr>
+<tr>
+<td>π0 (3.3B, robot pre-trained)</td>
+<td>90</td>
+<td>86</td>
+<td>95</td>
+<td>73</td>
+<td>86.0</td>
+</tr>
+<tr>
+<td>SmolVLA (0.45B)</td>
+<td>90</td>
+<td>96</td>
+<td>92</td>
+<td>71</td>
+<td>87.3</td>
+</tr>
+<tr>
+<td>SmolVLA (2.25B)</td>
+<td>93</td>
+<td>94</td>
+<td>91</td>
+<td>77</td>
+<td>88.75</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="Real SO-100, average of pick-place, stacking and sorting (Table 3)." class="dg-natural" width="572" height="102" viewBox="0 0 572 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="112" y="23" text-anchor="end">ACT single-task</text><rect class="dg-bar" x="122" y="10" width="174" height="18"/><text class="dg-barval" x="303" y="23">48.3%</text><text class="dg-barlabel" x="112" y="53" text-anchor="end">π0 3.5B</text><rect class="dg-bar" x="122" y="40" width="222" height="18"/><text class="dg-barval" x="352" y="53">61.7%</text><text class="dg-barlabel" x="112" y="83" text-anchor="end">SmolVLA 0.45B</text><rect class="dg-key" x="122" y="70" width="282" height="18"/><text class="dg-barval" x="411" y="83">78.3%</text></svg><figcaption>Real SO-100, average of pick-place, stacking and sorting (Table 3).</figcaption></figure>
+<ul>
+<li><strong>Pre-training and multi-task matter:</strong> on SO-100, single-task SmolVLA 40%, multi-task without community pre-training 51.7%, with it 78.3% (Table 5).</li>
+<li><strong>Asynchronous inference:</strong> same success rate; 9.7 s vs 13.75 s per task (about 30% faster); in a fixed time, 19 pick-and-place cycles vs 9.</li>
+<li><strong>Cost:</strong> compared with π0, about 40% faster to train and 6× less memory.</li>
+<li>The LIBERO protocol here is 10 trials per task; see <a href="libero.html">LIBERO</a> for why the 1–2 point gaps in this table are within noise.</li>
+</ul>
+<h2>4. For a UR10e reader</h2>
+<p>SmolVLA is the cheapest way to try a VLA end to end, and LeRobot supports it directly. It was built and tested on low-cost arms (SO-100/101) with position control and no force input, so for contact work on a UR10e it is a starting backbone, not a solution: the force entry points in the <a href="survey-force-map.html">force survey</a> apply to it just as to π0.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: architecture choices, data statistics, Tables 2–5, asynchronous results, the threshold condition.</li>
+<li>The latencies in the calculation card are illustrative.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="lingbotv2.html">LingBot-VLA 2.0</a> goes in the opposite direction, with 60,000 hours of data and more degrees of freedom.</p>
+<p><strong>Check question:</strong> with $\Delta t = 20$ ms, $n = 30$ and $\ell_S = 240$ ms, what is the smallest safe $g$, and how many actions are left in the queue at that moment?</p>
+<details>
+<summary>Answer</summary>
+<p>$g \ge 240 / (20 \times 30) = 0.4$; $0.4 \times 30 = 12$ actions left.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Shukor, Aubakirova, Capuano và cộng sự (Hugging Face), <em>SmolVLA: A vision-language-action model for affordable and efficient robotics</em>, <a href="https://arxiv.org/abs/2506.01844">arXiv 2506.01844</a> · 06/2025</p>
+<p><strong>VẤN ĐỀ</strong> Một VLA mà một người có thể huấn luyện trên một GPU và chạy trên GPU phổ thông, thậm chí CPU, cho các tay máy giá rẻ.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> VLA có hàng tỉ tham số (OpenVLA 7B, π0 3,3B) và học trên bộ dữ liệu lớn do lab và công ty thu, nên huấn luyện và triển khai cần phần cứng đắt tiền. Chạy chunk đồng bộ (chạy hết chunk rồi mới nghĩ) khiến robot "mù" trong lúc chờ chunk kế.</p>
+<p><strong>Ý TƯỞNG</strong> Thu nhỏ mọi phần: backbone SmolVLM-2 chỉ dùng nửa đầu số lớp LLM, không chia ô ảnh (64 token mỗi khung), action expert rộng 0,75 lần VLM với các lớp xen kẽ cross-attention tới VLM và self-attention nhân quả, chunk 50. Tiền huấn luyện trên 481 bộ dữ liệu cộng đồng từ Hugging Face hub (22,9K episode) với câu lệnh được VLM làm sạch. Thêm hệ thống suy luận bất đồng bộ.</p>
+<p><strong>KẾT QUẢ</strong> 0,45B tham số. LIBERO trung bình 87,3% (π0 3,3B: 86,0%), Meta-World 57,3% (π0: 47,9%). SO-100 thật: 78,3% so với π0 61,7% và ACT 48,3%. Suy luận bất đồng bộ: cùng tỉ lệ thành công, 9,7 s thay vì 13,75 s mỗi tác vụ.</p>
+</div>
+<h2>1. Vấn đề: VLA cần phần cứng của phòng lab</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là một loạt lựa chọn về hiệu quả, mỗi cái đều được kiểm tra bằng ablation, cộng với việc chỉ học trên dữ liệu cộng đồng thu thập." class="dg-natural" width="769" height="206" viewBox="0 0 769 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0 / OpenVLA</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">VLM 3–7B</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="239" height="54"/><text class="dg-t" x="373" y="37" text-anchor="middle">Mô hình lớn, dữ liệu lab lớn</text><text class="dg-s" x="373" y="53" text-anchor="middle">GPU đắt để học và chạy</text><path class="dg-a" d="M493 41 H525"/><rect class="dg-box" x="527" y="22" width="96" height="38"/><text class="dg-t" x="575" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ ngoài tầm với tay máy nghiệp dư và lab nhỏ</text><text class="dg-lab dg-green" x="14" y="143">SmolVLA</text><rect class="dg-box" x="124" y="120" width="186" height="38"/><text class="dg-t" x="217" y="143" text-anchor="middle">0,45B, nửa số lớp VLM</text><path class="dg-a" d="M310 139 H342"/><rect class="dg-key" x="344" y="112" width="276" height="54"/><text class="dg-t" x="481" y="135" text-anchor="middle">Expert nhẹ, 64 token/ảnh</text><text class="dg-s" x="481" y="151" text-anchor="middle">dữ liệu cộng đồng, hàng đợi bất đồng bộ</text><path class="dg-a" d="M619 139 H651"/><rect class="dg-box" x="653" y="120" width="102" height="38"/><text class="dg-t" x="704" y="143" text-anchor="middle">Tay SO-100</text><text class="dg-note dg-green" x="124" y="184">✓ một GPU để học, suy luận chạy được trên CPU</text></svg><figcaption>Thay đổi là một loạt lựa chọn về hiệu quả, mỗi cái đều được kiểm tra bằng ablation, cộng với việc chỉ học trên dữ liệu cộng đồng thu thập.</figcaption></figure>
+<h2>2. Kiến trúc và huấn luyện</h2>
+<figure class="diagram"><svg role="img" aria-label="Nửa đầu của một VLM nhỏ tạo đặc trưng; một expert nhẹ đọc chúng qua cross-attention xen kẽ và khử nhiễu một chunk 50 hành động; hàng đợi hành động tách việc nghĩ khỏi việc làm." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SMOLVLA: NỬA VLM NHỎ + ACTION EXPERT NHẸ, CHẠY BẤT ĐỒNG BỘ</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="64"/><text class="dg-t" x="105" y="68" text-anchor="middle">ảnh</text><text class="dg-s" x="105" y="88" text-anchor="middle">ảnh tổng, 64 token mỗi ảnh</text>
+<rect class="dg-ext" x="20" y="116" width="170" height="64"/><text class="dg-t" x="105" y="140" text-anchor="middle">câu lệnh + trạng thái</text><text class="dg-s" x="105" y="160" text-anchor="middle">chiếu tuyến tính</text>
+<rect class="dg-key" x="220" y="44" width="240" height="136"/><text class="dg-t" x="340" y="72" text-anchor="middle">SmolVLM-2</text><text class="dg-s" x="340" y="94" text-anchor="middle">SigLIP + SmolLM2</text><text class="dg-s" x="340" y="118" text-anchor="middle">chỉ chạy nửa đầu</text><text class="dg-s" x="340" y="134" text-anchor="middle">số lớp LLM (N = L/2)</text><text class="dg-s" x="340" y="158" text-anchor="middle">không chia ô ảnh</text>
+<rect class="dg-key" x="500" y="44" width="240" height="136"/><text class="dg-t" x="620" y="72" text-anchor="middle">action expert</text><text class="dg-s" x="620" y="94" text-anchor="middle">rộng 0,75 x VLM</text><text class="dg-s" x="620" y="118" text-anchor="middle">lớp cross-attention</text><text class="dg-s" x="620" y="134" text-anchor="middle">xen kẽ với self-attention</text><text class="dg-s" x="620" y="150" text-anchor="middle">nhân quả; flow matching</text>
+<rect class="dg-box" x="780" y="44" width="180" height="136"/><text class="dg-t" x="870" y="72" text-anchor="middle">chunk 50</text><text class="dg-s" x="870" y="94" text-anchor="middle">vào hàng đợi hành động</text><text class="dg-s" x="870" y="118" text-anchor="middle">tổng 0,45B</text>
+<path class="dg-a" d="M190 76 H220"/><path class="dg-a" d="M190 148 H220"/><path class="dg-a" d="M460 112 H500"/><path class="dg-a" d="M740 112 H780"/>
+<text class="dg-h" x="20" y="218">SUY LUẬN BẤT ĐỒNG BỘ</text>
+<rect class="dg-box" x="20" y="232" width="280" height="60"/><text class="dg-t" x="160" y="256" text-anchor="middle">RobotClient</text><text class="dg-s" x="160" y="276" text-anchor="middle">lấy một hành động mỗi bước</text>
+<rect class="dg-key" x="350" y="232" width="280" height="60"/><text class="dg-t" x="490" y="256" text-anchor="middle">hàng đợi dưới g · n ?</text><text class="dg-s" x="490" y="276" text-anchor="middle">gửi quan sát mới</text>
+<rect class="dg-box" x="680" y="232" width="280" height="60"/><text class="dg-t" x="820" y="256" text-anchor="middle">PolicyServer (GPU)</text><text class="dg-s" x="820" y="276" text-anchor="middle">trả chunk, gộp vào hàng đợi</text>
+<path class="dg-a" d="M300 262 H350"/><path class="dg-a" d="M630 262 H680"/><path class="dg-ad" d="M820 292 V312 H160 V292"/>
+</svg><figcaption>Nửa đầu của một VLM nhỏ tạo đặc trưng; một expert nhẹ đọc chúng qua cross-attention xen kẽ và khử nhiễu một chunk 50 hành động; hàng đợi hành động tách việc nghĩ khỏi việc làm.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>SmolVLA</th>
+<th>Tác dụng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>SmolVLM-2 (SigLIP + SmolLM2)</td>
+<td>VLM nhỏ làm cho đầu vào nhiều ảnh</td>
+</tr>
+<tr>
+<td>Số lớp dùng</td>
+<td>đặc trưng tới lớp $N = L/2$</td>
+<td>giảm khoảng một nửa chi phí LLM và expert; đặc trưng tốt nhất không phải lúc nào cũng ở lớp cuối</td>
+</tr>
+<tr>
+<td>Token ảnh</td>
+<td>chỉ ảnh tổng, pixel shuffle → 64 mỗi khung</td>
+<td>không chia ô, nhanh hơn</td>
+</tr>
+<tr>
+<td>Action expert</td>
+<td>rộng $0{,}75 \times d$; xen kẽ lớp cross-attention và self-attention nhân quả</td>
+<td>nhẹ hơn expert của π0; có ablation so với chỉ self-attention</td>
+</tr>
+<tr>
+<td>Mục tiêu</td>
+<td>flow matching, $\tau$ lấy từ phân phối Beta</td>
+<td>ablation: tốt hơn hồi quy</td>
+</tr>
+<tr>
+<td>Chunk</td>
+<td>$n = 50$</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>481 bộ dữ liệu cộng đồng, 22,9K episode, 10,6M khung; câu lệnh được Qwen2.5-VL-3B viết lại; chuẩn hóa tên camera</td>
+<td>ít hơn khoảng 10 lần so với các công trình trước</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Ở chế độ bất đồng bộ, client xin chunk mới khi hàng đợi còn dưới một tỉ lệ $g$ của chunk. Nếu $g$ quá nhỏ, hàng đợi cạn trước khi chunk mới tới. Paper đưa ra điều kiện $g \ge \mathbb{E}[\ell_S] / (\Delta t \, n)$.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\ell_S$</td>
+<td>độ trễ suy luận ở server</td>
+<td>đầu vào</td>
+<td>100 ms, rồi 500 ms (minh họa)</td>
+</tr>
+<tr>
+<td>$\Delta t$</td>
+<td>chu kỳ điều khiển</td>
+<td>đầu vào</td>
+<td>33 ms (30 khung/s, paper)</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>kích thước chunk</td>
+<td>đầu vào</td>
+<td>50</td>
+</tr>
+<tr>
+<td>$g$</td>
+<td>ngưỡng hàng đợi tối thiểu</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$g \ge \frac{\ell_S}{\Delta t \cdot n}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Độ dài chunk theo thời gian: $\Delta t \cdot n = 33 \times 50 = 1.650$ ms.</li>
+<li>$\ell_S = 100$ ms: $g \ge 100 / 1650 = 0{,}061$, tức xin khi còn khoảng 3 hành động.</li>
+<li>$\ell_S = 500$ ms (vd. trên CPU): $g \ge 500 / 1650 = 0{,}303$, tức xin khi còn khoảng 15 hành động.</li>
+</ol>
+<p><strong>Kết quả.</strong> GPU nhanh có thể chờ tới 6% cuối chunk; thiết bị chậm phải xin khi còn 30%.</p>
+<p><strong>Vì sao quan trọng.</strong> $g$ lớn hơn nghĩa là quan sát mới hơn nhưng gọi suy luận nhiều hơn. Ngưỡng này cho phép cùng một policy chạy trên GPU server hay thiết bị biên chậm mà robot không bao giờ phải dừng lại chờ.</p>
+</div>
+<h2>3. Kết quả</h2>
+<table>
+<thead>
+<tr>
+<th>LIBERO (từ Bảng 2)</th>
+<th>Spatial</th>
+<th>Object</th>
+<th>Goal</th>
+<th>Long</th>
+<th>TB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenVLA (7B)</td>
+<td>84,7</td>
+<td>88,4</td>
+<td>79,2</td>
+<td>53,7</td>
+<td>76,5</td>
+</tr>
+<tr>
+<td>π0 (3,3B, tiền huấn luyện robot)</td>
+<td>90</td>
+<td>86</td>
+<td>95</td>
+<td>73</td>
+<td>86,0</td>
+</tr>
+<tr>
+<td>SmolVLA (0,45B)</td>
+<td>90</td>
+<td>96</td>
+<td>92</td>
+<td>71</td>
+<td>87,3</td>
+</tr>
+<tr>
+<td>SmolVLA (2,25B)</td>
+<td>93</td>
+<td>94</td>
+<td>91</td>
+<td>77</td>
+<td>88,75</td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram compact"><svg role="img" aria-label="SO-100 thật, trung bình gắp-đặt, xếp chồng và phân loại (Bảng 3)." class="dg-natural" width="565" height="102" viewBox="0 0 565 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="105" y="23" text-anchor="end">ACT một tác vụ</text><rect class="dg-bar" x="115" y="10" width="174" height="18"/><text class="dg-barval" x="296" y="23">48,3%</text><text class="dg-barlabel" x="105" y="53" text-anchor="end">π0 3,5B</text><rect class="dg-bar" x="115" y="40" width="222" height="18"/><text class="dg-barval" x="345" y="53">61,7%</text><text class="dg-barlabel" x="105" y="83" text-anchor="end">SmolVLA 0,45B</text><rect class="dg-key" x="115" y="70" width="282" height="18"/><text class="dg-barval" x="404" y="83">78,3%</text></svg><figcaption>SO-100 thật, trung bình gắp-đặt, xếp chồng và phân loại (Bảng 3).</figcaption></figure>
+<ul>
+<li><strong>Tiền huấn luyện và đa tác vụ quan trọng:</strong> trên SO-100, SmolVLA một tác vụ 40%, đa tác vụ không tiền huấn luyện cộng đồng 51,7%, có tiền huấn luyện 78,3% (Bảng 5).</li>
+<li><strong>Suy luận bất đồng bộ:</strong> cùng tỉ lệ thành công; 9,7 s so với 13,75 s mỗi tác vụ (nhanh hơn khoảng 30%); trong cùng thời gian cố định, 19 vòng gắp-đặt so với 9.</li>
+<li><strong>Chi phí:</strong> so với π0, huấn luyện nhanh hơn khoảng 40% và tốn ít bộ nhớ hơn 6 lần.</li>
+<li>Quy trình LIBERO ở đây là 10 lượt mỗi tác vụ; xem <a href="libero.html">LIBERO</a> để biết vì sao chênh 1–2 điểm trong bảng này nằm trong nhiễu.</li>
+</ul>
+<h2>4. Với người dùng UR10e</h2>
+<p>SmolVLA là cách rẻ nhất để thử một VLA từ đầu tới cuối, và LeRobot hỗ trợ nó trực tiếp. Nó được dựng và thử trên tay máy giá rẻ (SO-100/101) với điều khiển vị trí và không có đầu vào lực, nên với công việc tiếp xúc trên UR10e nó là backbone khởi đầu, không phải lời giải: các điểm đưa lực vào trong <a href="survey-force-map.html">survey về lực</a> áp dụng cho nó y như cho π0.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: các lựa chọn kiến trúc, thống kê dữ liệu, Bảng 2–5, kết quả bất đồng bộ, điều kiện ngưỡng.</li>
+<li>Độ trễ trong thẻ tính tay là minh họa.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="lingbotv2.html">LingBot-VLA 2.0</a> đi theo hướng ngược lại, với 60.000 giờ dữ liệu và nhiều bậc tự do hơn.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> với $\Delta t = 20$ ms, $n = 30$ và $\ell_S = 240$ ms, $g$ an toàn nhỏ nhất là bao nhiêu, và lúc đó hàng đợi còn bao nhiêu hành động?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$g \ge 240 / (20 \times 30) = 0{,}4$; $0{,}4 \times 30 = 12$ hành động.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

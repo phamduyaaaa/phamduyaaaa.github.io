@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Octo is a 27M/93M transformer policy pre-trained on 800k Open X-Embodiment episodes, with a diffusion action head. Its block-wise attention lets you add a new sensor (a wrist F/T sensor for 1.5 mm peg insertion) or a new action space at fine-tuning time, with ~100 demos and about 5 hours on one GPU.">
+<title>Octo: An Open Generalist Policy You Can Re-wire When Fine-tuning · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Octo: An Open Generalist Policy You Can Re-wire When Fine-tuning">
+<meta property="og:description" content="Octo is a 27M/93M transformer policy pre-trained on 800k Open X-Embodiment episodes, with a diffusion action head. Its block-wise attention lets you add a new sensor (a wrist F/T sensor for 1.5 mm peg insertion) or a new action space at fine-tuning time, with ~100 demos and about 5 hours on one GPU.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Octo: An Open Generalist Policy You Can Re-wire When Fine-tuning</h1>
+    <h1 data-vi>Octo: Policy tổng quát mã mở, nối lại được khi fine-tune</h1>
+
+    <p class="post-excerpt-lead" data-en>Octo is a 27M/93M transformer policy pre-trained on 800k Open X-Embodiment episodes, with a diffusion action head. Its block-wise attention lets you add a new sensor (a wrist F/T sensor for 1.5 mm peg insertion) or a new action space at fine-tuning time, with ~100 demos and about 5 hours on one GPU.</p>
+    <p class="post-excerpt-lead" data-vi>Octo là policy transformer 27M/93M tiền huấn luyện trên 800k episode Open X-Embodiment, với đầu ra hành động dạng diffusion. Attention theo khối cho phép thêm cảm biến mới (cảm biến F/T cổ tay cho lắp chốt dung sai 1,5 mm) hoặc không gian hành động mới lúc fine-tune, với khoảng 100 demo và khoảng 5 giờ trên một GPU.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">Octo</span><span class="pill">Generalist policy</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Octo Model Team (Ghosh, Walke, Pertsch, Black, Mees et al.), <em>Octo: An Open-Source Generalist Robot Policy</em>, <a href="https://arxiv.org/abs/2405.12213">arXiv 2405.12213</a> · 05/2024</p>
+<p><strong>PROBLEM</strong> A pre-trained robot policy is only useful if a lab can adapt it to <em>its</em> robot: other cameras, other sensors, other action spaces, with a small dataset and modest compute.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Earlier generalist robot policies fixed their inputs and outputs: models built from a pre-trained visual backbone fused with an MLP head "lock in the type and order of inputs", so a new sensor or action space means re-initialising much of the model. The best openly available one, RT-1-X, also supports only language instructions, and none released a full training pipeline.</p>
+<p><strong>IDEA</strong> A "transformer-first" policy: light tokenizers (t5-base for language, a shallow CNN for images), one transformer with <em>block-wise</em> masked attention, <em>readout</em> tokens that only read, and a diffusion head that outputs an action chunk. New inputs or heads can be added at fine-tuning time because nothing else depends on their position.</p>
+<p><strong>RESULT</strong> Pre-trained on 800k episodes from 25 OXE datasets. Zero-shot: 29% higher success than RT-1-X on average, similar to RT-2-X (55B). Fine-tuned on 6 new setups with ~100 demos each: 72% average vs 20% from scratch and 15% for VC-1, including 70% on a 1.5 mm peg insertion that uses a wrist force/torque sensor.</p>
+</div>
+<h2>1. The problem: a policy you cannot re-wire is hard to reuse</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the layout: inputs are separate token groups and outputs are separate readouts, so they can be added or removed." class="dg-natural" width="784" height="206" viewBox="0 0 784 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Fixed-input policy</text><rect class="dg-box" x="153" y="22" width="254" height="38"/><text class="dg-t" x="280" y="45" text-anchor="middle">Pre-trained encoder + MLP head</text><path class="dg-a" d="M407 41 H439"/><rect class="dg-badbox" x="441" y="14" width="192" height="54"/><text class="dg-t" x="537" y="37" text-anchor="middle">Inputs locked</text><text class="dg-s" x="537" y="53" text-anchor="middle">new sensor = re-initialise</text><path class="dg-a" d="M634 41 H666"/><rect class="dg-box" x="668" y="22" width="102" height="38"/><text class="dg-t" x="719" y="45" text-anchor="middle">Your robot</text><text class="dg-note dg-red" x="153.2" y="86">✗ train from scratch on your data</text><text class="dg-lab dg-green" x="14" y="143">Octo</text><rect class="dg-box" x="153" y="120" width="148" height="38"/><text class="dg-t" x="227" y="143" text-anchor="middle">Tokens per input</text><path class="dg-a" d="M301 139 H333"/><rect class="dg-key" x="335" y="112" width="246" height="54"/><text class="dg-t" x="458" y="135" text-anchor="middle">Block-wise masked transformer</text><text class="dg-s" x="458" y="151" text-anchor="middle">readout tokens + diffusion head</text><path class="dg-a" d="M581 139 H613"/><rect class="dg-box" x="615" y="120" width="102" height="38"/><text class="dg-t" x="666" y="143" text-anchor="middle">Your robot</text><text class="dg-note dg-green" x="153.2" y="184">✓ add F/T tokens or a new head, fine-tune with ~100 demos</text></svg><figcaption>The change is the layout: inputs are separate token groups and outputs are separate readouts, so they can be added or removed.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="Each input becomes its own group of tokens. Observation tokens attend causally to earlier steps and to the task; readout tokens only read. A small diffusion head turns the readout embedding into an action chunk." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OCTO: TOKENS IN, READOUT TOKENS OUT, HEADS THAT CAN BE SWAPPED</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="56"/><text class="dg-t" x="110" y="68" text-anchor="middle">language</text><text class="dg-s" x="110" y="86" text-anchor="middle">t5-base, 16 tokens</text>
+<rect class="dg-ext" x="20" y="110" width="180" height="56"/><text class="dg-t" x="110" y="134" text-anchor="middle">or goal image</text><text class="dg-s" x="110" y="152" text-anchor="middle">shallow CNN, patches</text>
+<rect class="dg-ext" x="20" y="176" width="180" height="56"/><text class="dg-t" x="110" y="200" text-anchor="middle">camera images</text><text class="dg-s" x="110" y="218" text-anchor="middle">2 frames of history</text>
+<rect class="dg-badbox" x="20" y="242" width="180" height="56"/><text class="dg-t" x="110" y="266" text-anchor="middle">+ F/T (fine-tune)</text><text class="dg-s" x="110" y="284" text-anchor="middle">new tokenizer, masked</text>
+<rect class="dg-key" x="260" y="80" width="260" height="150"/><text class="dg-t" x="390" y="110" text-anchor="middle">Transformer backbone</text><text class="dg-s" x="390" y="132" text-anchor="middle">Octo-Base: 12 layers, width 768</text><text class="dg-s" x="390" y="150" text-anchor="middle">block-wise mask: observations</text><text class="dg-s" x="390" y="166" text-anchor="middle">see task + earlier steps;</text><text class="dg-s" x="390" y="182" text-anchor="middle">missing inputs fully masked</text><text class="dg-s" x="390" y="206" text-anchor="middle">readout tokens only read</text>
+<rect class="dg-box" x="580" y="80" width="190" height="70"/><text class="dg-t" x="675" y="106" text-anchor="middle">diffusion head</text><text class="dg-s" x="675" y="126" text-anchor="middle">3-layer MLP, DDPM</text><text class="dg-s" x="675" y="142" text-anchor="middle">→ action chunk</text>
+<rect class="dg-badbox" x="580" y="170" width="190" height="60"/><text class="dg-t" x="675" y="196" text-anchor="middle">new head</text><text class="dg-s" x="675" y="216" text-anchor="middle">e.g. 14-D joints (ALOHA)</text>
+<rect class="dg-box" x="810" y="80" width="150" height="70"/><text class="dg-t" x="885" y="106" text-anchor="middle">robot</text><text class="dg-s" x="885" y="126" text-anchor="middle">EE deltas, or</text><text class="dg-s" x="885" y="142" text-anchor="middle">a new action space</text>
+<path class="dg-a" d="M200 72 H230 V150 H260"/><path class="dg-a" style="marker-end:none" d="M200 138 H230"/><path class="dg-a" style="marker-end:none" d="M200 204 H230 V160"/><path class="dg-ad" d="M200 270 H240 V200 H260"/>
+<path class="dg-a" d="M520 115 H580"/><path class="dg-ad" d="M520 200 H580"/><path class="dg-a" d="M770 115 H810"/>
+<text class="dg-l" x="580" y="270">dashed: added at fine-tuning time, with ~100 demos,</text>
+<text class="dg-l" x="580" y="288">without re-initialising the backbone</text>
+</svg><figcaption>Each input becomes its own group of tokens. Observation tokens attend causally to earlier steps and to the task; readout tokens only read. A small diffusion head turns the readout embedding into an action chunk.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Octo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>pre-trained t5-base (111M) → 16 tokens; or a goal image instead</td>
+</tr>
+<tr>
+<td>Images</td>
+<td>shallow CNN, split into patches (as in ViT); 2 frames of history</td>
+</tr>
+<tr>
+<td>Backbone</td>
+<td>Octo-Small 12 layers, width 384, 27M; Octo-Base 12 layers, width 768, 93M</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>block-wise: observation tokens see the task and the same or earlier steps; tokens of missing inputs are fully masked</td>
+</tr>
+<tr>
+<td>Readout tokens</td>
+<td>attend to everything before them, nothing attends to them (like BERT's [CLS])</td>
+</tr>
+<tr>
+<td>Action head</td>
+<td>3-layer MLP (hidden 256) trained with the DDPM objective, predicts a chunk</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>25 curated OXE datasets, 800k episodes, re-weighted for size and diversity</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>ViT-B sized model: 300k steps, batch 2048, 14 h on a TPU v4-128 pod; fine-tuning ~5 h on one 24 GB A5000</td>
+</tr>
+</tbody>
+</table>
+<p>Lessons the paper lists that recur on this site: action chunking helped (temporal ensembling added nothing on top); <strong>adding proprioception generally made policies worse</strong>, which the authors attribute to causal confusion between state and future actions (the <a href="proprioception.html">copycat problem</a>); diffusion beat MSE and discretised heads.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> To fine-tune Octo on a robot with a wrist F/T sensor, a new tokenizer turns the 6-number wrench into a token of the backbone's width. How many new parameters is that, compared with the whole model? (Illustrative: one linear layer per reading; the paper does not spell out its F/T tokenizer.)</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$k$</td>
+<td>numbers per F/T reading</td>
+<td>input</td>
+<td>6 ($F_x, F_y, F_z, T_x, T_y, T_z$)</td>
+</tr>
+<tr>
+<td>$D$</td>
+<td>backbone width</td>
+<td>input</td>
+<td>768 (Octo-Base)</td>
+</tr>
+<tr>
+<td>$P_{new}$</td>
+<td>parameters of the new tokenizer</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>Octo-Base parameters</td>
+<td>input</td>
+<td>93M</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$P_{new} = k \times D + D$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Weights: $6 \times 768 = 4{,}608$.</li>
+<li>Bias: $768$.</li>
+<li>$P_{new} = 5{,}376$.</li>
+<li>Share: $5{,}376 / 93{,}000{,}000 \approx 0.006\%$.</li>
+</ol>
+<p><strong>Result.</strong> About 5.4K new parameters on a 93M model.</p>
+<p><strong>Why it matters.</strong> The new token is tiny, so everything rests on the pre-trained backbone learning to <em>use</em> it from ~100 demos. That is why the block-wise mask matters: the force token can be added without disturbing what the other tokens attend to, and without re-initialising anything.</p>
+</div>
+<h2>3. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Average over six fine-tuning setups, ~100 demos each, 20 trials per setup (Table I)." class="dg-natural" width="516" height="102" viewBox="0 0 516 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Scratch</text><rect class="dg-bar" x="66" y="10" width="72" height="18"/><text class="dg-barval" x="146" y="23">20%</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">VC-1</text><rect class="dg-bar" x="66" y="40" width="54" height="18"/><text class="dg-barval" x="128" y="53">15%</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Octo</text><rect class="dg-key" x="66" y="70" width="259" height="18"/><text class="dg-barval" x="334" y="83">72%</text></svg><figcaption>Average over six fine-tuning setups, ~100 demos each, 20 trials per setup (Table I).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Fine-tuning setup (20 trials each)</th>
+<th>Scratch</th>
+<th>VC-1</th>
+<th>Octo</th>
+<th>What is new</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Berkeley Insertion</td>
+<td>10%</td>
+<td>5%</td>
+<td>70%</td>
+<td>F/T observation</td>
+</tr>
+<tr>
+<td>Stanford Coffee</td>
+<td>45%</td>
+<td>0%</td>
+<td>75%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>CMU Baking</td>
+<td>25%</td>
+<td>30%</td>
+<td>50%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Berkeley Pick-Up</td>
+<td>0%</td>
+<td>0%</td>
+<td>60%</td>
+<td>joint-position actions</td>
+</tr>
+<tr>
+<td>Berkeley Coke</td>
+<td>20%</td>
+<td>10%</td>
+<td>100%</td>
+<td>new robot</td>
+</tr>
+<tr>
+<td>Berkeley Bimanual</td>
+<td>20%</td>
+<td>50%</td>
+<td>80%</td>
+<td>14-D joint actions, two arms</td>
+</tr>
+</tbody>
+</table>
+<p>The insertion task is the one closest to contact-rich work: insert a pre-grasped peg into a slot with <strong>1.5 mm tolerance</strong>, searching through contact. The policy sees one side camera, the end-effector twist and the <strong>end-effector force/torque</strong>, and outputs end-effector twists at 5 Hz, which a 1 kHz impedance controller tracks. Fine-tuning data: 100 human demos from the FMB dataset.</p>
+<h2>4. For a UR10e reader</h2>
+<p>This is the most direct "generalist + F/T sensor" recipe among the classic VLA-era papers: a UR-type arm is in the pre-training mix (the Berkeley UR5 dataset is 1.5% of it) and the paper ran zero-shot evaluations on a UR5. The insertion setup maps onto a UR10e with its built-in F/T sensor: wrench in, twist or pose delta out, a compliant low-level controller underneath. Two warnings from the paper itself: proprioceptive inputs can cause copycat behaviour, and Octo has no VLM, so its language understanding is limited to what t5 embeddings and robot data give.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: architecture table, data mix, training compute, Table I, the insertion setup and the "what did not work" list.</li>
+<li>The tokenizer in the calculation card is an illustration; read the released code for the actual F/T tokenizer before re-using it.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="openvla.html">OpenVLA</a> answers Octo's weak spot by putting a 7B VLM in front; <a href="pi0.html">π0</a> keeps Octo's continuous action head idea but uses flow matching on top of a VLM.</p>
+<p><strong>Check question:</strong> Octo-Small has width 384. How many parameters does a linear tokenizer for a 6-D wrench plus a 1-D gripper width (7 numbers) add?</p>
+<details>
+<summary>Answer</summary>
+<p>$7 \times 384 + 384 = 2{,}688 + 384 = 3{,}072$ parameters.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Octo Model Team (Ghosh, Walke, Pertsch, Black, Mees và cộng sự), <em>Octo: An Open-Source Generalist Robot Policy</em>, <a href="https://arxiv.org/abs/2405.12213">arXiv 2405.12213</a> · 05/2024</p>
+<p><strong>VẤN ĐỀ</strong> Một policy robot tiền huấn luyện chỉ có ích nếu một lab chỉnh được nó cho robot <em>của họ</em>: camera khác, cảm biến khác, không gian hành động khác, với bộ dữ liệu nhỏ và tài nguyên tính toán vừa phải.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các policy robot tổng quát trước đó cố định đầu vào và đầu ra: mô hình ghép backbone thị giác tiền huấn luyện với đầu MLP "khóa cứng loại và thứ tự đầu vào", nên thêm cảm biến hay không gian hành động mới là phải khởi tạo lại phần lớn mô hình. Policy mở tốt nhất lúc đó, RT-1-X, cũng chỉ nhận câu lệnh ngôn ngữ, và không ai công bố toàn bộ quy trình huấn luyện.</p>
+<p><strong>Ý TƯỞNG</strong> Một policy "transformer là chính": tokenizer nhẹ (t5-base cho ngôn ngữ, CNN nông cho ảnh), một transformer với attention có mask <em>theo khối</em>, các token <em>readout</em> chỉ đọc, và một đầu diffusion xuất ra chunk hành động. Đầu vào hay đầu ra mới thêm được lúc fine-tune vì không phần nào khác phụ thuộc vào vị trí của chúng.</p>
+<p><strong>KẾT QUẢ</strong> Tiền huấn luyện trên 800k episode từ 25 bộ OXE. Không fine-tune: thành công cao hơn RT-1-X trung bình 29%, tương đương RT-2-X (55B). Fine-tune trên 6 bộ mới với khoảng 100 demo mỗi bộ: trung bình 72% so với 20% khi học từ đầu và 15% với VC-1, gồm 70% ở bài lắp chốt dung sai 1,5 mm dùng cảm biến lực/mô-men cổ tay.</p>
+</div>
+<h2>1. Vấn đề: policy không nối lại được thì khó tái sử dụng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là cách bố trí: đầu vào là các nhóm token riêng, đầu ra là các readout riêng, nên thêm hay bớt được." class="dg-natural" width="861" height="206" viewBox="0 0 861 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Policy đầu vào cố định</text><rect class="dg-box" x="179" y="22" width="277" height="38"/><text class="dg-t" x="317" y="45" text-anchor="middle">Encoder tiền huấn luyện + đầu MLP</text><path class="dg-a" d="M456 41 H488"/><rect class="dg-badbox" x="490" y="14" width="199" height="54"/><text class="dg-t" x="589" y="37" text-anchor="middle">Đầu vào bị khóa</text><text class="dg-s" x="589" y="53" text-anchor="middle">cảm biến mới = khởi tạo lại</text><path class="dg-a" d="M688 41 H720"/><rect class="dg-box" x="722" y="22" width="125" height="38"/><text class="dg-t" x="785" y="45" text-anchor="middle">Robot của bạn</text><text class="dg-note dg-red" x="178.8" y="86">✗ học lại từ đầu trên dữ liệu của bạn</text><text class="dg-lab dg-green" x="14" y="143">Octo</text><rect class="dg-box" x="179" y="120" width="224" height="38"/><text class="dg-t" x="291" y="143" text-anchor="middle">Mỗi đầu vào một nhóm token</text><path class="dg-a" d="M402 139 H434"/><rect class="dg-key" x="436" y="112" width="224" height="54"/><text class="dg-t" x="548" y="135" text-anchor="middle">Transformer mask theo khối</text><text class="dg-s" x="548" y="151" text-anchor="middle">token readout + đầu diffusion</text><path class="dg-a" d="M660 139 H692"/><rect class="dg-box" x="694" y="120" width="125" height="38"/><text class="dg-t" x="756" y="143" text-anchor="middle">Robot của bạn</text><text class="dg-note dg-green" x="178.8" y="184">✓ thêm token F/T hoặc đầu mới, fine-tune với ~100 demo</text></svg><figcaption>Thay đổi là cách bố trí: đầu vào là các nhóm token riêng, đầu ra là các readout riêng, nên thêm hay bớt được.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Mỗi đầu vào thành một nhóm token riêng. Token quan sát chú ý nhân quả tới các bước trước và tới tác vụ; token readout chỉ đọc. Một đầu diffusion nhỏ biến embedding của readout thành chunk hành động." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OCTO: TOKEN VÀO, TOKEN READOUT RA, ĐẦU RA THAY ĐƯỢC</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="56"/><text class="dg-t" x="110" y="68" text-anchor="middle">ngôn ngữ</text><text class="dg-s" x="110" y="86" text-anchor="middle">t5-base, 16 token</text>
+<rect class="dg-ext" x="20" y="110" width="180" height="56"/><text class="dg-t" x="110" y="134" text-anchor="middle">hoặc ảnh đích</text><text class="dg-s" x="110" y="152" text-anchor="middle">CNN nông, chia ô</text>
+<rect class="dg-ext" x="20" y="176" width="180" height="56"/><text class="dg-t" x="110" y="200" text-anchor="middle">ảnh camera</text><text class="dg-s" x="110" y="218" text-anchor="middle">lịch sử 2 khung</text>
+<rect class="dg-badbox" x="20" y="242" width="180" height="56"/><text class="dg-t" x="110" y="266" text-anchor="middle">+ F/T (khi fine-tune)</text><text class="dg-s" x="110" y="284" text-anchor="middle">tokenizer mới, có mask</text>
+<rect class="dg-key" x="260" y="80" width="260" height="150"/><text class="dg-t" x="390" y="110" text-anchor="middle">Transformer backbone</text><text class="dg-s" x="390" y="132" text-anchor="middle">Octo-Base: 12 lớp, rộng 768</text><text class="dg-s" x="390" y="150" text-anchor="middle">mask theo khối: quan sát</text><text class="dg-s" x="390" y="166" text-anchor="middle">thấy tác vụ + bước trước;</text><text class="dg-s" x="390" y="182" text-anchor="middle">đầu vào thiếu bị che hết</text><text class="dg-s" x="390" y="206" text-anchor="middle">token readout chỉ đọc</text>
+<rect class="dg-box" x="580" y="80" width="190" height="70"/><text class="dg-t" x="675" y="106" text-anchor="middle">đầu diffusion</text><text class="dg-s" x="675" y="126" text-anchor="middle">3-layer MLP, DDPM</text><text class="dg-s" x="675" y="142" text-anchor="middle">→ chunk hành động</text>
+<rect class="dg-badbox" x="580" y="170" width="190" height="60"/><text class="dg-t" x="675" y="196" text-anchor="middle">đầu mới</text><text class="dg-s" x="675" y="216" text-anchor="middle">vd. khớp 14 chiều (ALOHA)</text>
+<rect class="dg-box" x="810" y="80" width="150" height="70"/><text class="dg-t" x="885" y="106" text-anchor="middle">robot</text><text class="dg-s" x="885" y="126" text-anchor="middle">delta EE, hoặc</text><text class="dg-s" x="885" y="142" text-anchor="middle">không gian hành động mới</text>
+<path class="dg-a" d="M200 72 H230 V150 H260"/><path class="dg-a" style="marker-end:none" d="M200 138 H230"/><path class="dg-a" style="marker-end:none" d="M200 204 H230 V160"/><path class="dg-ad" d="M200 270 H240 V200 H260"/>
+<path class="dg-a" d="M520 115 H580"/><path class="dg-ad" d="M520 200 H580"/><path class="dg-a" d="M770 115 H810"/>
+<text class="dg-l" x="580" y="270">nét đứt: thêm lúc fine-tune, với ~100 demo,</text>
+<text class="dg-l" x="580" y="288">không khởi tạo lại backbone</text>
+</svg><figcaption>Mỗi đầu vào thành một nhóm token riêng. Token quan sát chú ý nhân quả tới các bước trước và tới tác vụ; token readout chỉ đọc. Một đầu diffusion nhỏ biến embedding của readout thành chunk hành động.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Octo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ngôn ngữ</td>
+<td>t5-base đã tiền huấn luyện (111M) → 16 token; hoặc thay bằng ảnh đích</td>
+</tr>
+<tr>
+<td>Ảnh</td>
+<td>CNN nông, cắt thành ô (như ViT); lịch sử 2 khung</td>
+</tr>
+<tr>
+<td>Backbone</td>
+<td>Octo-Small 12 lớp, rộng 384, 27M; Octo-Base 12 lớp, rộng 768, 93M</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>theo khối: token quan sát thấy tác vụ và các bước cùng lúc hoặc trước đó; token của đầu vào không có thì bị che hoàn toàn</td>
+</tr>
+<tr>
+<td>Token readout</td>
+<td>chú ý tới mọi thứ trước nó, không gì chú ý tới nó (giống [CLS] của BERT)</td>
+</tr>
+<tr>
+<td>Đầu hành động</td>
+<td>MLP 3 lớp (ẩn 256) học bằng mục tiêu DDPM, dự đoán một chunk</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>25 bộ OXE chọn lọc, 800k episode, cân lại theo kích thước và độ đa dạng</td>
+</tr>
+<tr>
+<td>Huấn luyện</td>
+<td>cỡ ViT-B: 300k bước, batch 2048, 14 giờ trên TPU v4-128; fine-tune ~5 giờ trên một A5000 24 GB</td>
+</tr>
+</tbody>
+</table>
+<p>Những bài học paper liệt kê mà trang này gặp lại nhiều lần: action chunking có ích (temporal ensembling không thêm gì); <strong>thêm cảm thụ bản thể thường làm policy tệ hơn</strong>, tác giả cho là do nhầm lẫn nhân quả giữa trạng thái và hành động tương lai (<a href="proprioception.html">bài toán copycat</a>); diffusion thắng đầu MSE và đầu rời rạc.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Để fine-tune Octo cho robot có cảm biến F/T cổ tay, một tokenizer mới biến wrench 6 số thành một token có độ rộng của backbone. Nó thêm bao nhiêu tham số so với toàn mô hình? (Minh họa: một lớp tuyến tính cho mỗi lần đọc; paper không mô tả chi tiết tokenizer F/T.)</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$k$</td>
+<td>số giá trị mỗi lần đọc F/T</td>
+<td>đầu vào</td>
+<td>6 ($F_x, F_y, F_z, T_x, T_y, T_z$)</td>
+</tr>
+<tr>
+<td>$D$</td>
+<td>độ rộng backbone</td>
+<td>đầu vào</td>
+<td>768 (Octo-Base)</td>
+</tr>
+<tr>
+<td>$P_{new}$</td>
+<td>tham số của tokenizer mới</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$P$</td>
+<td>tham số Octo-Base</td>
+<td>đầu vào</td>
+<td>93M</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$P_{new} = k \times D + D$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Trọng số: $6 \times 768 = 4.608$.</li>
+<li>Bias: $768$.</li>
+<li>$P_{new} = 5.376$.</li>
+<li>Tỉ lệ: $5.376 / 93.000.000 \approx 0{,}006\%$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Khoảng 5,4K tham số mới trên mô hình 93M.</p>
+<p><strong>Vì sao quan trọng.</strong> Token mới rất nhỏ, nên mọi thứ dựa vào việc backbone đã tiền huấn luyện học cách <em>dùng</em> nó từ khoảng 100 demo. Vì vậy mask theo khối quan trọng: token lực được thêm vào mà không làm xáo trộn những gì các token khác đang chú ý, và không phải khởi tạo lại gì.</p>
+</div>
+<h2>3. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Trung bình trên sáu bộ fine-tune, ~100 demo mỗi bộ, 20 lượt thử mỗi bộ (Bảng I)." class="dg-natural" width="537" height="102" viewBox="0 0 537 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="77" y="23" text-anchor="end">Học từ đầu</text><rect class="dg-bar" x="87" y="10" width="72" height="18"/><text class="dg-barval" x="167" y="23">20%</text><text class="dg-barlabel" x="77" y="53" text-anchor="end">VC-1</text><rect class="dg-bar" x="87" y="40" width="54" height="18"/><text class="dg-barval" x="149" y="53">15%</text><text class="dg-barlabel" x="77" y="83" text-anchor="end">Octo</text><rect class="dg-key" x="87" y="70" width="259" height="18"/><text class="dg-barval" x="354" y="83">72%</text></svg><figcaption>Trung bình trên sáu bộ fine-tune, ~100 demo mỗi bộ, 20 lượt thử mỗi bộ (Bảng I).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ fine-tune (20 lượt mỗi bộ)</th>
+<th>Từ đầu</th>
+<th>VC-1</th>
+<th>Octo</th>
+<th>Cái gì mới</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Berkeley Insertion</td>
+<td>10%</td>
+<td>5%</td>
+<td>70%</td>
+<td>quan sát F/T</td>
+</tr>
+<tr>
+<td>Stanford Coffee</td>
+<td>45%</td>
+<td>0%</td>
+<td>75%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>CMU Baking</td>
+<td>25%</td>
+<td>30%</td>
+<td>50%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Berkeley Pick-Up</td>
+<td>0%</td>
+<td>0%</td>
+<td>60%</td>
+<td>hành động vị trí khớp</td>
+</tr>
+<tr>
+<td>Berkeley Coke</td>
+<td>20%</td>
+<td>10%</td>
+<td>100%</td>
+<td>robot mới</td>
+</tr>
+<tr>
+<td>Berkeley Bimanual</td>
+<td>20%</td>
+<td>50%</td>
+<td>80%</td>
+<td>hành động khớp 14 chiều, hai tay</td>
+</tr>
+</tbody>
+</table>
+<p>Bài lắp chốt là bài gần với công việc nhiều tiếp xúc nhất: cắm một chốt đã kẹp sẵn vào khe với <strong>dung sai 1,5 mm</strong>, dò tìm bằng tiếp xúc. Policy thấy một camera bên, twist của đầu cuối và <strong>lực/mô-men ở đầu cuối</strong>, và xuất twist đầu cuối ở 5 Hz, được một bộ điều khiển trở kháng 1 kHz bám theo. Dữ liệu fine-tune: 100 demo người từ bộ FMB.</p>
+<h2>4. Với người dùng UR10e</h2>
+<p>Đây là công thức "policy tổng quát + cảm biến F/T" trực tiếp nhất trong các paper VLA kinh điển: tay kiểu UR có trong dữ liệu tiền huấn luyện (bộ Berkeley UR5 chiếm 1,5%) và paper có đánh giá không fine-tune trên UR5. Bài lắp chốt ánh xạ thẳng lên UR10e với cảm biến F/T tích hợp: wrench vào, twist hoặc delta tư thế ra, bên dưới là một bộ điều khiển mềm. Hai cảnh báo từ chính paper: đầu vào cảm thụ bản thể có thể gây hành vi copycat, và Octo không có VLM, nên khả năng hiểu ngôn ngữ chỉ giới hạn ở những gì embedding t5 và dữ liệu robot cho.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: bảng kiến trúc, tỉ lệ dữ liệu, tài nguyên huấn luyện, Bảng I, thiết lập bài lắp chốt và danh sách "những gì chưa hiệu quả".</li>
+<li>Tokenizer trong thẻ tính tay chỉ là minh họa; đọc mã đã công bố để biết tokenizer F/T thật trước khi dùng lại.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="openvla.html">OpenVLA</a> bù điểm yếu của Octo bằng cách đặt một VLM 7B phía trước; <a href="pi0.html">π0</a> giữ ý tưởng đầu hành động liên tục của Octo nhưng dùng flow matching trên nền một VLM.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> Octo-Small rộng 384. Một tokenizer tuyến tính cho wrench 6 chiều cộng độ mở tay kẹp 1 chiều (7 số) thêm bao nhiêu tham số?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$7 \times 384 + 384 = 2.688 + 384 = 3.072$ tham số.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

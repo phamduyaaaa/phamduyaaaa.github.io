@@ -1,0 +1,15 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">GR00T N1: VLM CHẬM (HỆ 2) + DiT FLOW MATCHING NHANH (HỆ 1), ADAPTER MỖI ROBOT</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">ảnh + chữ</text><text class="dg-s" x="105" y="88" text-anchor="middle">224px, 64 token/khung</text>
+<rect class="dg-key" x="220" y="44" width="250" height="60"/><text class="dg-t" x="345" y="68" text-anchor="middle">Hệ 2: VLM Eagle-2</text><text class="dg-s" x="345" y="88" text-anchor="middle">SigLIP-2 + SmolLM2, 1.34B, 10 Hz</text>
+<rect class="dg-box" x="500" y="44" width="210" height="60"/><text class="dg-t" x="605" y="68" text-anchor="middle">đặc trưng lớp 12</text><text class="dg-s" x="605" y="88" text-anchor="middle">lớp giữa, không phải lớp cuối</text>
+<path class="dg-a" d="M190 74 H220"/><path class="dg-a" d="M470 74 H500"/>
+<rect class="dg-ext" x="20" y="150" width="170" height="60"/><text class="dg-t" x="105" y="174" text-anchor="middle">trạng thái robot q</text><text class="dg-s" x="105" y="194" text-anchor="middle">số chiều bất kỳ</text>
+<rect class="dg-box" x="220" y="150" width="170" height="60"/><text class="dg-t" x="305" y="174" text-anchor="middle">mã hóa trạng thái</text><text class="dg-s" x="305" y="194" text-anchor="middle">mỗi thân một MLP</text>
+<rect class="dg-ext" x="20" y="226" width="170" height="60"/><text class="dg-t" x="105" y="250" text-anchor="middle">chunk nhiễu</text><text class="dg-s" x="105" y="270" text-anchor="middle">H = 16 hành động</text>
+<rect class="dg-box" x="220" y="226" width="170" height="60"/><text class="dg-t" x="305" y="250" text-anchor="middle">mã hóa hành động</text><text class="dg-s" x="305" y="270" text-anchor="middle">mỗi thân một MLP</text>
+<rect class="dg-key" x="430" y="150" width="280" height="136"/><text class="dg-t" x="570" y="178" text-anchor="middle">Hệ 1: DiT</text><text class="dg-s" x="570" y="200" text-anchor="middle">self-attention trên trạng thái + hành động,</text><text class="dg-s" x="570" y="216" text-anchor="middle">cross-attention tới đặc trưng VLM</text><text class="dg-s" x="570" y="240" text-anchor="middle">flow matching, K = 4 bước Euler</text><text class="dg-s" x="570" y="256" text-anchor="middle">63,9 ms mỗi chunk trên L40</text>
+<rect class="dg-box" x="750" y="150" width="210" height="136"/><text class="dg-t" x="855" y="178" text-anchor="middle">giải mã hành động</text><text class="dg-s" x="855" y="200" text-anchor="middle">mỗi thân một cái</text><text class="dg-s" x="855" y="230" text-anchor="middle">hành động ở 120 Hz</text><text class="dg-s" x="855" y="246" text-anchor="middle">tay, bàn tay, người máy</text>
+<path class="dg-a" d="M190 180 H220"/><path class="dg-a" d="M190 256 H220"/><path class="dg-a" d="M390 180 H430"/><path class="dg-a" d="M390 256 H430"/><path class="dg-a" d="M605 104 V150"/><path class="dg-a" d="M710 218 H750"/>
+<text class="dg-l" x="20" y="316">dữ liệu không có hành động (video người, video sinh) được gán nhãn bằng VQ-VAE latent action hoặc mô hình động lực học ngược</text>
+</svg>

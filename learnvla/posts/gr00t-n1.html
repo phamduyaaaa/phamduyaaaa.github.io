@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="NVIDIA's GR00T N1 pairs a 10 Hz vision-language model (System 2) with a 120 Hz flow-matching diffusion transformer (System 1) and per-robot adapters. It fills the gap in robot data with human videos and generated videos labelled by latent actions. On a real GR-1 humanoid, it reaches 76.8% vs 46.4% for Diffusion Policy, and 42.6% with only 10% of the data.">
+<title>GR00T N1: A Dual-System VLA Trained on a Data Pyramid · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="GR00T N1: A Dual-System VLA Trained on a Data Pyramid">
+<meta property="og:description" content="NVIDIA's GR00T N1 pairs a 10 Hz vision-language model (System 2) with a 120 Hz flow-matching diffusion transformer (System 1) and per-robot adapters. It fills the gap in robot data with human videos and generated videos labelled by latent actions. On a real GR-1 humanoid, it reaches 76.8% vs 46.4% for Diffusion Policy, and 42.6% with only 10% of the data.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>GR00T N1: A Dual-System VLA Trained on a Data Pyramid</h1>
+    <h1 data-vi>GR00T N1: VLA hai hệ thống học trên kim tự tháp dữ liệu</h1>
+
+    <p class="post-excerpt-lead" data-en>NVIDIA's GR00T N1 pairs a 10 Hz vision-language model (System 2) with a 120 Hz flow-matching diffusion transformer (System 1) and per-robot adapters. It fills the gap in robot data with human videos and generated videos labelled by latent actions. On a real GR-1 humanoid, it reaches 76.8% vs 46.4% for Diffusion Policy, and 42.6% with only 10% of the data.</p>
+    <p class="post-excerpt-lead" data-vi>GR00T N1 của NVIDIA ghép một mô hình thị giác-ngôn ngữ 10 Hz (Hệ 2) với một diffusion transformer flow matching 120 Hz (Hệ 1) và adapter riêng cho từng robot. Nó bù thiếu hụt dữ liệu robot bằng video người và video sinh ra, gắn nhãn bằng latent action. Trên người máy GR-1 thật, nó đạt 76,8% so với 46,4% của Diffusion Policy, và 42,6% khi chỉ có 10% dữ liệu.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">GR00T</span><span class="pill">Humanoid</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> NVIDIA, <em>GR00T N1: An Open Foundation Model for Generalist Humanoid Robots</em>, <a href="https://arxiv.org/abs/2503.14734">arXiv 2503.14734</a> · 03/2025</p>
+<p><strong>PROBLEM</strong> A foundation model for humanoids and other robots, where each body has different sensors, degrees of freedom and control modes, and real teleoperation data is scarce.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper calls the robot data landscape "an archipelago of data islands": each robot's data has its own embodiment, so there is no Internet-scale robot dataset. Human videos and generated videos are plentiful but have no action labels, so standard VLA training cannot use them.</p>
+<p><strong>IDEA</strong> A dual-system model: System 2, a pre-trained VLM (Eagle-2, 1.34B) running at 10 Hz; System 1, a diffusion transformer trained with flow matching that cross-attends to the VLM's features and outputs 16-step action chunks at 120 Hz. Per-embodiment MLP encoders and decoders handle different state and action sizes. Train on a "data pyramid": web data and human videos at the base, simulation and generated ("neural") trajectories in the middle, real robot data on top. Action-less data gets labels from a latent-action VQ-VAE or an inverse dynamics model.</p>
+<p><strong>RESULT</strong> 2.2B parameters, ~50,000 H100 hours of pre-training, weights released. In simulation with 100 demos per task: 45.0% average vs 33.4% for Diffusion Policy. On a real GR-1 humanoid: 76.8% vs 46.4%, and 42.6% with 10% of the data (DP: 10.2%).</p>
+</div>
+<h2>1. The problem: every robot is a data island</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is to make action-less and other-body data usable: give it pseudo-actions, and keep body-specific parts in small adapters." class="dg-natural" width="882" height="206" viewBox="0 0 882 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Per-robot data</text><rect class="dg-box" x="128" y="22" width="163" height="38"/><text class="dg-t" x="209" y="45" text-anchor="middle">Teleop on one body</text><path class="dg-a" d="M290 41 H322"/><rect class="dg-badbox" x="324" y="14" width="160" height="54"/><text class="dg-t" x="405" y="37" text-anchor="middle">Data islands</text><text class="dg-s" x="405" y="53" text-anchor="middle">no actions for videos</text><path class="dg-a" d="M485 41 H517"/><rect class="dg-box" x="519" y="22" width="117" height="38"/><text class="dg-t" x="577" y="45" text-anchor="middle">Small policy</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ little data per body, no use for human video</text><text class="dg-lab dg-green" x="14" y="143">GR00T N1</text><rect class="dg-box" x="128" y="120" width="345" height="38"/><text class="dg-t" x="300" y="143" text-anchor="middle">Web + human video + sim + generated + real</text><path class="dg-a" d="M473 139 H505"/><rect class="dg-key" x="507" y="112" width="231" height="54"/><text class="dg-t" x="622" y="135" text-anchor="middle">Latent actions / IDM labels</text><text class="dg-s" x="622" y="151" text-anchor="middle">per-body adapters</text><path class="dg-a" d="M738 139 H770"/><rect class="dg-box" x="772" y="120" width="96" height="38"/><text class="dg-t" x="820" y="143" text-anchor="middle">One model</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ pre-train on the pyramid, post-train per robot</text></svg><figcaption>The change is to make action-less and other-body data usable: give it pseudo-actions, and keep body-specific parts in small adapters.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The VLM runs slowly and is read through cross-attention; the DiT denoises state + action tokens fast; small MLPs adapt the model to each body." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">GR00T N1: SLOW VLM (SYSTEM 2) + FAST FLOW-MATCHING DiT (SYSTEM 1), PER-ROBOT ADAPTERS</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">images + text</text><text class="dg-s" x="105" y="88" text-anchor="middle">224px, 64 tokens/frame</text>
+<rect class="dg-key" x="220" y="44" width="250" height="60"/><text class="dg-t" x="345" y="68" text-anchor="middle">System 2: Eagle-2 VLM</text><text class="dg-s" x="345" y="88" text-anchor="middle">SigLIP-2 + SmolLM2, 1.34B, 10 Hz</text>
+<rect class="dg-box" x="500" y="44" width="210" height="60"/><text class="dg-t" x="605" y="68" text-anchor="middle">layer-12 features</text><text class="dg-s" x="605" y="88" text-anchor="middle">middle layer, not the last</text>
+<path class="dg-a" d="M190 74 H220"/><path class="dg-a" d="M470 74 H500"/>
+<rect class="dg-ext" x="20" y="150" width="170" height="60"/><text class="dg-t" x="105" y="174" text-anchor="middle">robot state q</text><text class="dg-s" x="105" y="194" text-anchor="middle">any dimension</text>
+<rect class="dg-box" x="220" y="150" width="170" height="60"/><text class="dg-t" x="305" y="174" text-anchor="middle">state encoder</text><text class="dg-s" x="305" y="194" text-anchor="middle">one MLP per body</text>
+<rect class="dg-ext" x="20" y="226" width="170" height="60"/><text class="dg-t" x="105" y="250" text-anchor="middle">noisy chunk</text><text class="dg-s" x="105" y="270" text-anchor="middle">H = 16 actions</text>
+<rect class="dg-box" x="220" y="226" width="170" height="60"/><text class="dg-t" x="305" y="250" text-anchor="middle">action encoder</text><text class="dg-s" x="305" y="270" text-anchor="middle">one MLP per body</text>
+<rect class="dg-key" x="430" y="150" width="280" height="136"/><text class="dg-t" x="570" y="178" text-anchor="middle">System 1: DiT</text><text class="dg-s" x="570" y="200" text-anchor="middle">self-attention on state + actions,</text><text class="dg-s" x="570" y="216" text-anchor="middle">cross-attention to VLM features</text><text class="dg-s" x="570" y="240" text-anchor="middle">flow matching, K = 4 Euler steps</text><text class="dg-s" x="570" y="256" text-anchor="middle">63.9 ms per chunk on an L40</text>
+<rect class="dg-box" x="750" y="150" width="210" height="136"/><text class="dg-t" x="855" y="178" text-anchor="middle">action decoder</text><text class="dg-s" x="855" y="200" text-anchor="middle">one per body</text><text class="dg-s" x="855" y="230" text-anchor="middle">actions at 120 Hz</text><text class="dg-s" x="855" y="246" text-anchor="middle">arm, hands, humanoid</text>
+<path class="dg-a" d="M190 180 H220"/><path class="dg-a" d="M190 256 H220"/><path class="dg-a" d="M390 180 H430"/><path class="dg-a" d="M390 256 H430"/><path class="dg-a" d="M605 104 V150"/><path class="dg-a" d="M710 218 H750"/>
+<text class="dg-l" x="20" y="316">action-less data (human videos, generated videos) gets labels from a latent-action VQ-VAE or an inverse dynamics model</text>
+</svg><figcaption>The VLM runs slowly and is read through cross-attention; the DiT denoises state + action tokens fast; small MLPs adapt the model to each body.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>GR00T-N1-2B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System 2 (VLM)</td>
+<td>Eagle-2: SigLIP-2 image encoder + SmolLM2; 224×224 images, pixel shuffle → 64 tokens per frame; 1.34B; features from the 12th LLM layer (faster and better than the last layer)</td>
+</tr>
+<tr>
+<td>System 1 (DiT)</td>
+<td>flow matching; self-attention over state + noisy actions, cross-attention to VLM tokens; $H = 16$; $K = 4$ Euler steps</td>
+</tr>
+<tr>
+<td>Adapters</td>
+<td>one MLP state encoder, action encoder and action decoder per embodiment</td>
+</tr>
+<tr>
+<td>Timing</td>
+<td>VLM 10 Hz on an L40; actions at 120 Hz; 63.9 ms to sample a 16-action chunk (bf16, L40)</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>2.2B parameters</td>
+</tr>
+<tr>
+<td>Pre-training</td>
+<td>up to 1,024 GPUs per model; ~50,000 H100 hours</td>
+</tr>
+<tr>
+<td>Fine-tuning</td>
+<td>one A6000 enough when tuning adapters + DiT (batch up to 200)</td>
+</tr>
+</tbody>
+</table>
+<p>Compared with <a href="pi0.html">π0</a>: both use a VLM plus a flow-matching action module. π0's expert shares attention layers with the VLM; GR00T's DiT is a separate network reading the VLM through cross-attention (see <a href="cross-attention.html">cross-attention</a>), so the two can run at different rates.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Can System 1 keep up with 120 Hz control? Compare how long a chunk lasts on the robot with how long it takes to compute.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$H$</td>
+<td>actions per chunk</td>
+<td>input</td>
+<td>16</td>
+</tr>
+<tr>
+<td>$f$</td>
+<td>control rate</td>
+<td>input</td>
+<td>120 Hz</td>
+</tr>
+<tr>
+<td>$t_{inf}$</td>
+<td>time to sample one chunk</td>
+<td>input</td>
+<td>63.9 ms (paper, L40)</td>
+</tr>
+<tr>
+<td>$T_{chunk}$</td>
+<td>time the chunk covers</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>share of that time spent computing</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$T_{chunk} = \frac{H}{f}, \qquad u = \frac{t_{inf}}{T_{chunk}}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$T_{chunk} = 16 / 120 = 0.1333$ s $= 133.3$ ms.</li>
+<li>$u = 63.9 / 133.3 = 0.48$.</li>
+<li>With $K = 4$ Euler steps, each denoising step costs at most $63.9 / 4 \approx 16$ ms (the VLM pass is included in the 63.9 ms, so the real per-step cost is lower).</li>
+</ol>
+<p><strong>Result.</strong> One chunk covers 133 ms and takes 64 ms to compute: the GPU is busy about half the time.</p>
+<p><strong>Why it matters.</strong> The next chunk can be computed while the current one is running, so the robot never waits. With $K = 10$ steps, as in π0, the same arithmetic would leave much less margin; few-step flow matching is what makes 120 Hz feasible.</p>
+</div>
+<h2>3. The data pyramid</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Source</th>
+<th>How actions are obtained</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base</td>
+<td>web data (in VLM pre-training), open human egocentric videos</td>
+<td>latent actions from a VQ-VAE trained on frame pairs</td>
+</tr>
+<tr>
+<td>Middle</td>
+<td>simulation trajectories; "neural trajectories" from fine-tuned video generation models</td>
+<td>simulation: real actions; generated videos: latent actions or an inverse dynamics model (IDM)</td>
+</tr>
+<tr>
+<td>Top</td>
+<td>real teleoperation on the target robots</td>
+<td>real actions</td>
+</tr>
+</tbody>
+</table>
+<p>Neural trajectories multiplied the in-house teleoperation data about 10×, from 88 hours to 827 hours, with counterfactual scenes and new instructions.</p>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Real GR-1 humanoid, average over four task groups (Table 3)." class="dg-natural" width="565" height="132" viewBox="0 0 565 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="105" y="23" text-anchor="end">DP 10% data</text><rect class="dg-bar" x="115" y="10" width="37" height="18"/><text class="dg-barval" x="159" y="23">10.2%</text><text class="dg-barlabel" x="105" y="53" text-anchor="end">GR00T 10% data</text><rect class="dg-key" x="115" y="40" width="153" height="18"/><text class="dg-barval" x="276" y="53">42.6%</text><text class="dg-barlabel" x="105" y="83" text-anchor="end">DP full</text><rect class="dg-bar" x="115" y="70" width="167" height="18"/><text class="dg-barval" x="290" y="83">46.4%</text><text class="dg-barlabel" x="105" y="113" text-anchor="end">GR00T full</text><rect class="dg-key" x="115" y="100" width="276" height="18"/><text class="dg-barval" x="399" y="113">76.8%</text></svg><figcaption>Real GR-1 humanoid, average over four task groups (Table 3).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Simulation, 100 demos per task (Table 2)</th>
+<th>RoboCasa</th>
+<th>DexMG</th>
+<th>GR-1</th>
+<th>Average</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BC Transformer</td>
+<td>26.3%</td>
+<td>53.9%</td>
+<td>16.1%</td>
+<td>26.4%</td>
+</tr>
+<tr>
+<td>Diffusion Policy</td>
+<td>25.6%</td>
+<td>56.1%</td>
+<td>32.7%</td>
+<td>33.4%</td>
+</tr>
+<tr>
+<td>GR00T-N1-2B</td>
+<td>32.1%</td>
+<td>66.5%</td>
+<td>50.0%</td>
+<td>45.0%</td>
+</tr>
+</tbody>
+</table>
+<p>Real-world task groups: pick-and-place, articulated objects, industrial, bimanual coordination; 10 trials per task. With 10% of the data GR00T is only 3.8 points below Diffusion Policy trained on all of it.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: architecture sizes and rates, $H$, $K$, the 12th-layer choice, compute, data pyramid, Tables 2 and 3.</li>
+<li>The paper notes that the benefit of pre-training shrinks when the fine-tuning dataset is large.</li>
+<li>GR00T is the backbone of <a href="fire.html">FIRe</a> on this site (a residual policy on top of a frozen GR00T).</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="smolvla.html">SmolVLA</a> uses the same "read a middle layer of a small VLM" idea at 0.45B; <a href="lingbotv2.html">LingBot-VLA 2.0</a> also pre-trains on human egocentric video.</p>
+<p><strong>Check question:</strong> a policy outputs chunks of $H = 8$ actions at 60 Hz and needs 90 ms per chunk. Can it keep up without waiting?</p>
+<details>
+<summary>Answer</summary>
+<p>$T_{chunk} = 8/60 = 133$ ms; $u = 90/133 = 0.68$. Yes, if the next chunk is computed while the current one runs; the margin is smaller than GR00T's.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> NVIDIA, <em>GR00T N1: An Open Foundation Model for Generalist Humanoid Robots</em>, <a href="https://arxiv.org/abs/2503.14734">arXiv 2503.14734</a> · 03/2025</p>
+<p><strong>VẤN ĐỀ</strong> Một mô hình nền cho người máy và các robot khác, trong đó mỗi thân robot có cảm biến, số bậc tự do và chế độ điều khiển khác nhau, còn dữ liệu điều khiển từ xa thật thì khan hiếm.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper gọi bức tranh dữ liệu robot là "một quần đảo các hòn đảo dữ liệu": dữ liệu của mỗi robot gắn với thân riêng của nó, nên không có bộ dữ liệu robot cỡ Internet. Video người và video sinh ra thì nhiều nhưng không có nhãn hành động, nên cách học VLA thông thường không dùng được.</p>
+<p><strong>Ý TƯỞNG</strong> Mô hình hai hệ: Hệ 2 là một VLM đã tiền huấn luyện (Eagle-2, 1,34B) chạy 10 Hz; Hệ 1 là một diffusion transformer học bằng flow matching, cross-attention tới đặc trưng của VLM và xuất chunk 16 bước ở 120 Hz. Bộ mã hóa và giải mã MLP riêng cho từng thân robot xử lý kích thước trạng thái và hành động khác nhau. Học trên một "kim tự tháp dữ liệu": dữ liệu web và video người ở đáy, quỹ đạo mô phỏng và quỹ đạo sinh ra ("neural") ở giữa, dữ liệu robot thật ở đỉnh. Dữ liệu không có hành động được gắn nhãn bằng VQ-VAE latent action hoặc mô hình động lực học ngược.</p>
+<p><strong>KẾT QUẢ</strong> 2,2B tham số, khoảng 50.000 giờ H100 cho tiền huấn luyện, trọng số được công bố. Trong mô phỏng với 100 demo mỗi tác vụ: trung bình 45,0% so với 33,4% của Diffusion Policy. Trên người máy GR-1 thật: 76,8% so với 46,4%, và 42,6% khi chỉ dùng 10% dữ liệu (DP: 10,2%).</p>
+</div>
+<h2>1. Vấn đề: mỗi robot là một hòn đảo dữ liệu</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là làm cho dữ liệu không có hành động và dữ liệu thân khác dùng được: gán hành động giả cho nó, và giữ phần riêng của mỗi thân trong các adapter nhỏ." class="dg-natural" width="982" height="206" viewBox="0 0 982 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Dữ liệu riêng từng robot</text><rect class="dg-box" x="192" y="22" width="254" height="38"/><text class="dg-t" x="319" y="45" text-anchor="middle">Điều khiển từ xa trên một thân</text><path class="dg-a" d="M446 41 H478"/><rect class="dg-badbox" x="480" y="14" width="180" height="54"/><text class="dg-t" x="569" y="37" text-anchor="middle">Đảo dữ liệu</text><text class="dg-s" x="569" y="53" text-anchor="middle">video không có hành động</text><path class="dg-a" d="M659 41 H691"/><rect class="dg-box" x="693" y="22" width="102" height="38"/><text class="dg-t" x="744" y="45" text-anchor="middle">Policy nhỏ</text><text class="dg-note dg-red" x="191.60000000000002" y="86">✗ ít dữ liệu mỗi thân, không dùng được video người</text><text class="dg-lab dg-green" x="14" y="143">GR00T N1</text><rect class="dg-box" x="192" y="120" width="391" height="38"/><text class="dg-t" x="387" y="143" text-anchor="middle">Web + video người + mô phỏng + video sinh + thật</text><path class="dg-a" d="M582 139 H614"/><rect class="dg-key" x="616" y="112" width="208" height="54"/><text class="dg-t" x="721" y="135" text-anchor="middle">Nhãn latent action / IDM</text><text class="dg-s" x="721" y="151" text-anchor="middle">adapter riêng mỗi thân</text><path class="dg-a" d="M825 139 H857"/><rect class="dg-box" x="859" y="120" width="110" height="38"/><text class="dg-t" x="914" y="143" text-anchor="middle">Một mô hình</text><text class="dg-note dg-green" x="191.60000000000002" y="184">✓ tiền huấn luyện trên kim tự tháp, hậu huấn luyện từng robot</text></svg><figcaption>Thay đổi là làm cho dữ liệu không có hành động và dữ liệu thân khác dùng được: gán hành động giả cho nó, và giữ phần riêng của mỗi thân trong các adapter nhỏ.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="VLM chạy chậm và được đọc qua cross-attention; DiT khử nhiễu token trạng thái + hành động thật nhanh; các MLP nhỏ thích nghi mô hình cho từng thân." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">GR00T N1: VLM CHẬM (HỆ 2) + DiT FLOW MATCHING NHANH (HỆ 1), ADAPTER MỖI ROBOT</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">ảnh + chữ</text><text class="dg-s" x="105" y="88" text-anchor="middle">224px, 64 token/khung</text>
+<rect class="dg-key" x="220" y="44" width="250" height="60"/><text class="dg-t" x="345" y="68" text-anchor="middle">Hệ 2: VLM Eagle-2</text><text class="dg-s" x="345" y="88" text-anchor="middle">SigLIP-2 + SmolLM2, 1.34B, 10 Hz</text>
+<rect class="dg-box" x="500" y="44" width="210" height="60"/><text class="dg-t" x="605" y="68" text-anchor="middle">đặc trưng lớp 12</text><text class="dg-s" x="605" y="88" text-anchor="middle">lớp giữa, không phải lớp cuối</text>
+<path class="dg-a" d="M190 74 H220"/><path class="dg-a" d="M470 74 H500"/>
+<rect class="dg-ext" x="20" y="150" width="170" height="60"/><text class="dg-t" x="105" y="174" text-anchor="middle">trạng thái robot q</text><text class="dg-s" x="105" y="194" text-anchor="middle">số chiều bất kỳ</text>
+<rect class="dg-box" x="220" y="150" width="170" height="60"/><text class="dg-t" x="305" y="174" text-anchor="middle">mã hóa trạng thái</text><text class="dg-s" x="305" y="194" text-anchor="middle">mỗi thân một MLP</text>
+<rect class="dg-ext" x="20" y="226" width="170" height="60"/><text class="dg-t" x="105" y="250" text-anchor="middle">chunk nhiễu</text><text class="dg-s" x="105" y="270" text-anchor="middle">H = 16 hành động</text>
+<rect class="dg-box" x="220" y="226" width="170" height="60"/><text class="dg-t" x="305" y="250" text-anchor="middle">mã hóa hành động</text><text class="dg-s" x="305" y="270" text-anchor="middle">mỗi thân một MLP</text>
+<rect class="dg-key" x="430" y="150" width="280" height="136"/><text class="dg-t" x="570" y="178" text-anchor="middle">Hệ 1: DiT</text><text class="dg-s" x="570" y="200" text-anchor="middle">self-attention trên trạng thái + hành động,</text><text class="dg-s" x="570" y="216" text-anchor="middle">cross-attention tới đặc trưng VLM</text><text class="dg-s" x="570" y="240" text-anchor="middle">flow matching, K = 4 bước Euler</text><text class="dg-s" x="570" y="256" text-anchor="middle">63,9 ms mỗi chunk trên L40</text>
+<rect class="dg-box" x="750" y="150" width="210" height="136"/><text class="dg-t" x="855" y="178" text-anchor="middle">giải mã hành động</text><text class="dg-s" x="855" y="200" text-anchor="middle">mỗi thân một cái</text><text class="dg-s" x="855" y="230" text-anchor="middle">hành động ở 120 Hz</text><text class="dg-s" x="855" y="246" text-anchor="middle">tay, bàn tay, người máy</text>
+<path class="dg-a" d="M190 180 H220"/><path class="dg-a" d="M190 256 H220"/><path class="dg-a" d="M390 180 H430"/><path class="dg-a" d="M390 256 H430"/><path class="dg-a" d="M605 104 V150"/><path class="dg-a" d="M710 218 H750"/>
+<text class="dg-l" x="20" y="316">dữ liệu không có hành động (video người, video sinh) được gán nhãn bằng VQ-VAE latent action hoặc mô hình động lực học ngược</text>
+</svg><figcaption>VLM chạy chậm và được đọc qua cross-attention; DiT khử nhiễu token trạng thái + hành động thật nhanh; các MLP nhỏ thích nghi mô hình cho từng thân.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>GR00T-N1-2B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hệ 2 (VLM)</td>
+<td>Eagle-2: bộ mã hóa ảnh SigLIP-2 + SmolLM2; ảnh 224×224, pixel shuffle → 64 token mỗi khung; 1,34B; đặc trưng lấy từ lớp LLM thứ 12 (nhanh hơn và tốt hơn lớp cuối)</td>
+</tr>
+<tr>
+<td>Hệ 1 (DiT)</td>
+<td>flow matching; self-attention trên trạng thái + hành động nhiễu, cross-attention tới token VLM; $H = 16$; $K = 4$ bước Euler</td>
+</tr>
+<tr>
+<td>Adapter</td>
+<td>mỗi thân một MLP mã hóa trạng thái, mã hóa hành động và giải mã hành động</td>
+</tr>
+<tr>
+<td>Thời gian</td>
+<td>VLM 10 Hz trên L40; hành động 120 Hz; 63,9 ms để lấy mẫu một chunk 16 hành động (bf16, L40)</td>
+</tr>
+<tr>
+<td>Tổng</td>
+<td>2,2B tham số</td>
+</tr>
+<tr>
+<td>Tiền huấn luyện</td>
+<td>tới 1.024 GPU cho một mô hình; ~50.000 giờ H100</td>
+</tr>
+<tr>
+<td>Fine-tune</td>
+<td>một A6000 là đủ khi chỉnh adapter + DiT (batch tới 200)</td>
+</tr>
+</tbody>
+</table>
+<p>So với <a href="pi0.html">π0</a>: cả hai dùng VLM cộng một mô-đun hành động flow matching. Expert của π0 dùng chung các lớp attention với VLM; DiT của GR00T là một mạng riêng đọc VLM qua cross-attention (xem <a href="cross-attention.html">cross-attention</a>), nên hai phần chạy được ở tần số khác nhau.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hệ 1 có theo kịp điều khiển 120 Hz không? So thời gian một chunk kéo dài trên robot với thời gian để tính nó.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$H$</td>
+<td>số hành động mỗi chunk</td>
+<td>đầu vào</td>
+<td>16</td>
+</tr>
+<tr>
+<td>$f$</td>
+<td>tần số điều khiển</td>
+<td>đầu vào</td>
+<td>120 Hz</td>
+</tr>
+<tr>
+<td>$t_{inf}$</td>
+<td>thời gian lấy mẫu một chunk</td>
+<td>đầu vào</td>
+<td>63,9 ms (paper, L40)</td>
+</tr>
+<tr>
+<td>$T_{chunk}$</td>
+<td>thời gian chunk bao phủ</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$u$</td>
+<td>tỉ lệ thời gian dành để tính</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$T_{chunk} = \frac{H}{f}, \qquad u = \frac{t_{inf}}{T_{chunk}}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$T_{chunk} = 16 / 120 = 0{,}1333$ s $= 133{,}3$ ms.</li>
+<li>$u = 63{,}9 / 133{,}3 = 0{,}48$.</li>
+<li>Với $K = 4$ bước Euler, mỗi bước khử nhiễu tốn tối đa $63{,}9 / 4 \approx 16$ ms (lượt qua VLM đã nằm trong 63,9 ms, nên chi phí thật mỗi bước thấp hơn).</li>
+</ol>
+<p><strong>Kết quả.</strong> Một chunk bao phủ 133 ms và tốn 64 ms để tính: GPU bận khoảng một nửa thời gian.</p>
+<p><strong>Vì sao quan trọng.</strong> Chunk kế tiếp được tính trong lúc chunk hiện tại đang chạy, nên robot không phải chờ. Với $K = 10$ bước như π0, cùng phép tính đó sẽ để lại ít dư địa hơn nhiều; flow matching ít bước là thứ làm 120 Hz khả thi.</p>
+</div>
+<h2>3. Kim tự tháp dữ liệu</h2>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Nguồn</th>
+<th>Lấy hành động thế nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đáy</td>
+<td>dữ liệu web (trong tiền huấn luyện VLM), video người góc nhìn thứ nhất mở</td>
+<td>latent action từ một VQ-VAE học trên cặp khung hình</td>
+</tr>
+<tr>
+<td>Giữa</td>
+<td>quỹ đạo mô phỏng; "quỹ đạo neural" từ mô hình sinh video đã fine-tune</td>
+<td>mô phỏng: hành động thật; video sinh: latent action hoặc mô hình động lực học ngược (IDM)</td>
+</tr>
+<tr>
+<td>Đỉnh</td>
+<td>điều khiển từ xa thật trên robot đích</td>
+<td>hành động thật</td>
+</tr>
+</tbody>
+</table>
+<p>Quỹ đạo neural nhân dữ liệu điều khiển từ xa nội bộ lên khoảng 10 lần, từ 88 giờ lên 827 giờ, với cảnh giả định và câu lệnh mới.</p>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Người máy GR-1 thật, trung bình trên bốn nhóm tác vụ (Bảng 3)." class="dg-natural" width="585" height="132" viewBox="0 0 585 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">DP 10% dữ liệu</text><rect class="dg-bar" x="135" y="10" width="37" height="18"/><text class="dg-barval" x="180" y="23">10,2%</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">GR00T 10% dữ liệu</text><rect class="dg-key" x="135" y="40" width="153" height="18"/><text class="dg-barval" x="297" y="53">42,6%</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">DP đầy đủ</text><rect class="dg-bar" x="135" y="70" width="167" height="18"/><text class="dg-barval" x="310" y="83">46,4%</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">GR00T đầy đủ</text><rect class="dg-key" x="135" y="100" width="276" height="18"/><text class="dg-barval" x="420" y="113">76,8%</text></svg><figcaption>Người máy GR-1 thật, trung bình trên bốn nhóm tác vụ (Bảng 3).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Mô phỏng, 100 demo mỗi tác vụ (Bảng 2)</th>
+<th>RoboCasa</th>
+<th>DexMG</th>
+<th>GR-1</th>
+<th>Trung bình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BC Transformer</td>
+<td>26,3%</td>
+<td>53,9%</td>
+<td>16,1%</td>
+<td>26,4%</td>
+</tr>
+<tr>
+<td>Diffusion Policy</td>
+<td>25,6%</td>
+<td>56,1%</td>
+<td>32,7%</td>
+<td>33,4%</td>
+</tr>
+<tr>
+<td>GR00T-N1-2B</td>
+<td>32,1%</td>
+<td>66,5%</td>
+<td>50,0%</td>
+<td>45,0%</td>
+</tr>
+</tbody>
+</table>
+<p>Nhóm tác vụ thật: gắp-đặt, vật có khớp, công nghiệp, phối hợp hai tay; 10 lượt mỗi tác vụ. Với 10% dữ liệu, GR00T chỉ kém Diffusion Policy học trên toàn bộ dữ liệu 3,8 điểm.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: kích thước và tần số các phần, $H$, $K$, lựa chọn lớp thứ 12, tài nguyên tính toán, kim tự tháp dữ liệu, Bảng 2 và 3.</li>
+<li>Paper lưu ý lợi ích của tiền huấn luyện giảm dần khi bộ dữ liệu fine-tune lớn.</li>
+<li>GR00T là backbone của <a href="fire.html">FIRe</a> trên trang này (một policy residual trên GR00T đóng băng).</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="smolvla.html">SmolVLA</a> dùng cùng ý "đọc lớp giữa của một VLM nhỏ" ở cỡ 0,45B; <a href="lingbotv2.html">LingBot-VLA 2.0</a> cũng tiền huấn luyện trên video người góc nhìn thứ nhất.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> một policy xuất chunk $H = 8$ hành động ở 60 Hz và cần 90 ms mỗi chunk. Nó có theo kịp mà không phải chờ không?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$T_{chunk} = 8/60 = 133$ ms; $u = 90/133 = 0{,}68$. Có, nếu chunk kế được tính trong lúc chunk hiện tại đang chạy; dư địa nhỏ hơn GR00T.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

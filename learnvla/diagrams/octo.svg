@@ -1,0 +1,15 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OCTO: TOKENS IN, READOUT TOKENS OUT, HEADS THAT CAN BE SWAPPED</text>
+<rect class="dg-ext" x="20" y="44" width="180" height="56"/><text class="dg-t" x="110" y="68" text-anchor="middle">language</text><text class="dg-s" x="110" y="86" text-anchor="middle">t5-base, 16 tokens</text>
+<rect class="dg-ext" x="20" y="110" width="180" height="56"/><text class="dg-t" x="110" y="134" text-anchor="middle">or goal image</text><text class="dg-s" x="110" y="152" text-anchor="middle">shallow CNN, patches</text>
+<rect class="dg-ext" x="20" y="176" width="180" height="56"/><text class="dg-t" x="110" y="200" text-anchor="middle">camera images</text><text class="dg-s" x="110" y="218" text-anchor="middle">2 frames of history</text>
+<rect class="dg-badbox" x="20" y="242" width="180" height="56"/><text class="dg-t" x="110" y="266" text-anchor="middle">+ F/T (fine-tune)</text><text class="dg-s" x="110" y="284" text-anchor="middle">new tokenizer, masked</text>
+<rect class="dg-key" x="260" y="80" width="260" height="150"/><text class="dg-t" x="390" y="110" text-anchor="middle">Transformer backbone</text><text class="dg-s" x="390" y="132" text-anchor="middle">Octo-Base: 12 layers, width 768</text><text class="dg-s" x="390" y="150" text-anchor="middle">block-wise mask: observations</text><text class="dg-s" x="390" y="166" text-anchor="middle">see task + earlier steps;</text><text class="dg-s" x="390" y="182" text-anchor="middle">missing inputs fully masked</text><text class="dg-s" x="390" y="206" text-anchor="middle">readout tokens only read</text>
+<rect class="dg-box" x="580" y="80" width="190" height="70"/><text class="dg-t" x="675" y="106" text-anchor="middle">diffusion head</text><text class="dg-s" x="675" y="126" text-anchor="middle">3-layer MLP, DDPM</text><text class="dg-s" x="675" y="142" text-anchor="middle">→ action chunk</text>
+<rect class="dg-badbox" x="580" y="170" width="190" height="60"/><text class="dg-t" x="675" y="196" text-anchor="middle">new head</text><text class="dg-s" x="675" y="216" text-anchor="middle">e.g. 14-D joints (ALOHA)</text>
+<rect class="dg-box" x="810" y="80" width="150" height="70"/><text class="dg-t" x="885" y="106" text-anchor="middle">robot</text><text class="dg-s" x="885" y="126" text-anchor="middle">EE deltas, or</text><text class="dg-s" x="885" y="142" text-anchor="middle">a new action space</text>
+<path class="dg-a" d="M200 72 H230 V150 H260"/><path class="dg-a" style="marker-end:none" d="M200 138 H230"/><path class="dg-a" style="marker-end:none" d="M200 204 H230 V160"/><path class="dg-ad" d="M200 270 H240 V200 H260"/>
+<path class="dg-a" d="M520 115 H580"/><path class="dg-ad" d="M520 200 H580"/><path class="dg-a" d="M770 115 H810"/>
+<text class="dg-l" x="580" y="270">dashed: added at fine-tuning time, with ~100 demos,</text>
+<text class="dg-l" x="580" y="288">without re-initialising the backbone</text>
+</svg>

@@ -32,10 +32,10 @@
     "items": [
       { "title": "Cách đánh giá VLA", "slug": "danh-gia-vla" },
       { "title": "LIBERO", "slug": "libero", "date": "06/2023" },
-      { "title": "GM-100", "slug": "gm-100" },
+      { "title": "GM-100", "slug": "gm-100", "date": "01/2026" },
       { "title": "SimplerEnv", "slug": "simplerenv", "date": "05/2024" },
       { "title": "CALVIN", "slug": "calvin", "date": "12/2021" },
-      { "title": "RoboTwin", "slug": "robotwin", "date": "09/2024" }
+      { "title": "RoboTwin / RoboTwin 2.0", "slug": "robotwin", "date": "09/2024 · 06/2025" }
     ]
   },
   {
@@ -43,13 +43,13 @@
     "title_en": "VLA Papers",
     "items": [
       { "title": "RT-1 / RT-2", "slug": "rt-1-rt-2", "date": "12/2022 · 07/2023" },
-      { "title": "Octo", "slug": "octo", "date": "05/2024" },
+      { "title": "Octo", "slug": "octo", "fit": "adapt", "date": "05/2024" },
       { "title": "OpenVLA", "slug": "openvla", "date": "06/2024" },
       { "title": "Pi0", "slug": "pi0", "date": "10/2024" },
       { "title": "Pi0.5", "slug": "pi0-5", "date": "04/2025" },
       { "title": "GR00T N1", "slug": "gr00t-n1", "date": "03/2025" },
       { "title": "SmolVLA", "slug": "smolvla", "date": "06/2025" },
-      { "title": "Lingbotv2", "slug": "lingbotv2" }
+      { "title": "LingBot-VLA 2.0", "slug": "lingbotv2", "date": "07/2026" }
     ]
   },
   {

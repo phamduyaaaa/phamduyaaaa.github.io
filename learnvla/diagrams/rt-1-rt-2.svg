@@ -1,0 +1,17 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">RT-1 (12/2022): A SMALL ROBOT TRANSFORMER TRAINED FROM ROBOT DATA</text>
+<rect class="dg-ext" x="20" y="40" width="160" height="70"/><text class="dg-t" x="100" y="64" text-anchor="middle">6 images</text><text class="dg-s" x="100" y="84" text-anchor="middle">300x300 history</text><text class="dg-s" x="100" y="100" text-anchor="middle">+ instruction (USE)</text>
+<rect class="dg-box" x="210" y="40" width="170" height="70"/><text class="dg-t" x="295" y="64" text-anchor="middle">FiLM EfficientNet</text><text class="dg-s" x="295" y="84" text-anchor="middle">text steers vision</text><text class="dg-s" x="295" y="100" text-anchor="middle">81 tokens / image</text>
+<rect class="dg-key" x="410" y="40" width="150" height="70"/><text class="dg-t" x="485" y="64" text-anchor="middle">TokenLearner</text><text class="dg-s" x="485" y="84" text-anchor="middle">81 → 8 tokens</text><text class="dg-s" x="485" y="100" text-anchor="middle">per image</text>
+<rect class="dg-box" x="590" y="40" width="170" height="70"/><text class="dg-t" x="675" y="64" text-anchor="middle">Transformer</text><text class="dg-s" x="675" y="84" text-anchor="middle">8 layers, 19M</text><text class="dg-s" x="675" y="100" text-anchor="middle">35M in total</text>
+<rect class="dg-box" x="790" y="40" width="170" height="70"/><text class="dg-t" x="875" y="64" text-anchor="middle">11 action tokens</text><text class="dg-s" x="875" y="84" text-anchor="middle">256 bins each</text><text class="dg-s" x="875" y="100" text-anchor="middle">arm 7, base 3, mode 1</text>
+<path class="dg-a" d="M180 75 H210"/><path class="dg-a" d="M380 75 H410"/><path class="dg-a" d="M560 75 H590"/><path class="dg-a" d="M760 75 H790"/>
+<text class="dg-s" x="20" y="134">data: ~130k demos, 700+ instructions, 13 robots over 17 months; runs at 3 Hz on the robot</text>
+<text class="dg-h" x="20" y="174">RT-2 (07/2023): FINE-TUNE A WEB-SCALE VLM SO THAT ACTIONS ARE JUST MORE TEXT</text>
+<rect class="dg-ext" x="20" y="190" width="200" height="74"/><text class="dg-t" x="120" y="214" text-anchor="middle">image + question</text><text class="dg-s" x="120" y="234" text-anchor="middle">"what action should the</text><text class="dg-s" x="120" y="250" text-anchor="middle">robot take to ...?"</text>
+<rect class="dg-key" x="250" y="190" width="240" height="74"/><text class="dg-t" x="370" y="214" text-anchor="middle">VLM, co-fine-tuned</text><text class="dg-s" x="370" y="234" text-anchor="middle">PaLI-X 5B / 55B or PaLM-E 12B</text><text class="dg-s" x="370" y="250" text-anchor="middle">robot data + web VQA data</text>
+<rect class="dg-box" x="520" y="190" width="220" height="74"/><text class="dg-t" x="630" y="214" text-anchor="middle">text answer</text><text class="dg-s" x="630" y="234" text-anchor="middle">"1 128 91 241 5 101 127"</text><text class="dg-s" x="630" y="250" text-anchor="middle">terminate, 6 deltas, gripper</text>
+<rect class="dg-box" x="770" y="190" width="190" height="74"/><text class="dg-t" x="865" y="214" text-anchor="middle">de-tokenise</text><text class="dg-s" x="865" y="234" text-anchor="middle">bins → action</text><text class="dg-s" x="865" y="250" text-anchor="middle">55B: 1-3 Hz (cloud TPU)</text>
+<path class="dg-a" d="M220 227 H250"/><path class="dg-a" d="M490 227 H520"/><path class="dg-a" d="M740 227 H770"/>
+<text class="dg-l" x="20" y="300">the step from RT-1 to RT-2 is the backbone: web knowledge enters through a pre-trained VLM, the action format stays binned tokens</text>
+</svg>

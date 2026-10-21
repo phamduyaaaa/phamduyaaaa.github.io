@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="π0.5 trains one model on robot data from many platforms, high-level subtask labels and web data, first as discrete FAST tokens, then with a flow-matching action expert. 97.6% of its pre-training examples are not home mobile manipulation, yet it cleans kitchens and bedrooms in new homes.">
+<title>π0.5: Co-training So a Robot Works in Homes It Has Never Seen · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="π0.5: Co-training So a Robot Works in Homes It Has Never Seen">
+<meta property="og:description" content="π0.5 trains one model on robot data from many platforms, high-level subtask labels and web data, first as discrete FAST tokens, then with a flow-matching action expert. 97.6% of its pre-training examples are not home mobile manipulation, yet it cleans kitchens and bedrooms in new homes.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>π0.5: Co-training So a Robot Works in Homes It Has Never Seen</h1>
+    <h1 data-vi>π0.5: Đồng huấn luyện để robot làm việc trong nhà chưa từng thấy</h1>
+
+    <p class="post-excerpt-lead" data-en>π0.5 trains one model on robot data from many platforms, high-level subtask labels and web data, first as discrete FAST tokens, then with a flow-matching action expert. 97.6% of its pre-training examples are not home mobile manipulation, yet it cleans kitchens and bedrooms in new homes.</p>
+    <p class="post-excerpt-lead" data-vi>π0.5 huấn luyện một mô hình trên dữ liệu robot từ nhiều nền tảng, nhãn tác vụ con và dữ liệu web, trước dưới dạng token FAST rời rạc, sau đó thêm action expert flow matching. 97,6% ví dụ tiền huấn luyện không phải thao tác di động trong nhà, vậy mà nó dọn được bếp và phòng ngủ ở nhà mới.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">π0.5</span><span class="pill">Co-training</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Physical Intelligence, <em>π0.5: a Vision-Language-Action Model with Open-World Generalization</em>, <a href="https://arxiv.org/abs/2504.16054">arXiv 2504.16054</a> · 04/2025</p>
+<p><strong>PROBLEM</strong> A home robot must do long, multi-stage chores (clean a kitchen, make a bed) in a home it has never seen, with new objects and layouts.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Methods that generalise to new homes do so for narrow primitives such as picking, using task-specific assumptions. End-to-end VLAs such as <a href="pi0.html">π0</a> are trained mostly on robot data for the target setting, and collecting robot data in every possible home is infeasible. Discrete action tokens train fast but are slow at inference; a flow expert is fast at inference but, trained from the start, does not get the benefits of token training.</p>
+<p><strong>IDEA</strong> Co-train one model on heterogeneous data: mobile-manipulator data from ~100 homes, other robots, lab data, high-level subtask prediction with object boxes, verbal instructions and web data. Pre-train everything as next-token prediction (actions as FAST tokens), then post-train with an added flow-matching action expert. At run time the model first writes a subtask in text, then generates the actions for it.</p>
+<p><strong>RESULT</strong> It cleans kitchens and bedrooms in homes not seen in training. With 104 training locations, it matches a control trained on data from the test homes themselves. It clearly beats π0 and an enhanced π0-FAST+Flow trained on the same robot data without the subtask and web data.</p>
+</div>
+<h2>1. The problem: you cannot collect robot data in every home</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is the training mix and order, not a new network: the architecture is π0's VLM plus action expert." class="dg-natural" width="871" height="206" viewBox="0 0 871 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">π0</text><rect class="dg-box" x="124" y="22" width="262" height="38"/><text class="dg-t" x="255" y="45" text-anchor="middle">Robot data for the target setup</text><path class="dg-a" d="M386 41 H418"/><rect class="dg-badbox" x="420" y="14" width="239" height="54"/><text class="dg-t" x="539" y="37" text-anchor="middle">Action expert from the start</text><text class="dg-s" x="539" y="53" text-anchor="middle">little non-robot knowledge</text><path class="dg-a" d="M658 41 H690"/><rect class="dg-box" x="692" y="22" width="140" height="38"/><text class="dg-t" x="762" y="45" text-anchor="middle">Seen-like homes</text><text class="dg-note dg-red" x="124" y="86">✗ data needed for every new place</text><text class="dg-lab dg-green" x="14" y="143">π0.5</text><rect class="dg-box" x="124" y="120" width="307" height="38"/><text class="dg-t" x="278" y="143" text-anchor="middle">Robot + other robots + subtasks + web</text><path class="dg-a" d="M431 139 H463"/><rect class="dg-key" x="465" y="112" width="262" height="54"/><text class="dg-t" x="596" y="135" text-anchor="middle">Tokens first, flow expert later</text><text class="dg-s" x="596" y="151" text-anchor="middle">one model, two levels</text><path class="dg-a" d="M727 139 H759"/><rect class="dg-box" x="761" y="120" width="96" height="38"/><text class="dg-t" x="809" y="143" text-anchor="middle">New homes</text><text class="dg-note dg-green" x="124" y="184">✓ 97.6% of pre-training data is from elsewhere</text></svg><figcaption>The change is the training mix and order, not a new network: the architecture is π0's VLM plus action expert.</figcaption></figure>
+<h2>2. Data and training stages</h2>
+<figure class="diagram"><svg role="img" aria-label="Five kinds of data go into a token-only pre-training; post-training adds the flow expert. At run time the model writes a subtask, then acts on it." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">PI0.5: TRAIN ON MANY KINDS OF DATA AS TOKENS, THEN ADD A FLOW EXPERT FOR CONTROL</text>
+<rect class="dg-box" x="20" y="44" width="150" height="50"/><text class="dg-t" x="95" y="66" text-anchor="middle">MM</text><text class="dg-s" x="95" y="84" text-anchor="middle">~400 h, ~100 homes</text>
+<rect class="dg-box" x="20" y="102" width="150" height="50"/><text class="dg-t" x="95" y="124" text-anchor="middle">ME + CE</text><text class="dg-s" x="95" y="142" text-anchor="middle">other robots, lab data</text>
+<rect class="dg-box" x="20" y="160" width="150" height="50"/><text class="dg-t" x="95" y="182" text-anchor="middle">HL</text><text class="dg-s" x="95" y="200" text-anchor="middle">subtask labels + boxes</text>
+<rect class="dg-box" x="20" y="218" width="150" height="50"/><text class="dg-t" x="95" y="240" text-anchor="middle">WD</text><text class="dg-s" x="95" y="258" text-anchor="middle">captions, VQA, boxes</text>
+<rect class="dg-key" x="220" y="80" width="230" height="150"/><text class="dg-t" x="335" y="106" text-anchor="middle">1. pre-training</text><text class="dg-s" x="335" y="128" text-anchor="middle">one VLM, next-token loss</text><text class="dg-s" x="335" y="146" text-anchor="middle">text, boxes, FAST action tokens</text><text class="dg-s" x="335" y="164" text-anchor="middle">280k steps</text><text class="dg-s" x="335" y="190" text-anchor="middle">97.6% of examples are not</text><text class="dg-s" x="335" y="206" text-anchor="middle">home mobile manipulation</text>
+<rect class="dg-key" x="500" y="80" width="230" height="150"/><text class="dg-t" x="615" y="106" text-anchor="middle">2. post-training</text><text class="dg-s" x="615" y="128" text-anchor="middle">add a flow-matching action</text><text class="dg-s" x="615" y="146" text-anchor="middle">expert (random init)</text><text class="dg-s" x="615" y="164" text-anchor="middle">tokens + alpha x flow, alpha 10</text><text class="dg-s" x="615" y="190" text-anchor="middle">80k steps, + verbal</text><text class="dg-s" x="615" y="206" text-anchor="middle">instructions (VI)</text>
+<rect class="dg-box" x="780" y="60" width="180" height="70"/><text class="dg-t" x="870" y="84" text-anchor="middle">high level</text><text class="dg-s" x="870" y="104" text-anchor="middle">"put away dishes" →</text><text class="dg-s" x="870" y="120" text-anchor="middle">"pick up the plate"</text>
+<rect class="dg-box" x="780" y="160" width="180" height="70"/><text class="dg-t" x="870" y="184" text-anchor="middle">low level</text><text class="dg-s" x="870" y="204" text-anchor="middle">subtask → action chunk</text><text class="dg-s" x="870" y="220" text-anchor="middle">10 flow steps, 50 Hz</text>
+<path class="dg-a" d="M170 69 H195 V155 H220"/><path class="dg-a" style="marker-end:none" d="M170 127 H195"/><path class="dg-a" style="marker-end:none" d="M170 185 H195"/><path class="dg-a" style="marker-end:none" d="M170 243 H195 V155"/>
+<path class="dg-a" d="M450 155 H500"/><path class="dg-a" d="M730 120 H755 V95 H780"/><path class="dg-a" d="M870 130 V160"/>
+<text class="dg-l" x="20" y="300">the same model writes the subtask in text, then generates the actions for that subtask</text>
+</svg><figcaption>Five kinds of data go into a token-only pre-training; post-training adds the flow expert. At run time the model writes a subtask, then acts on it.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Data (abbr.)</th>
+<th>What it is</th>
+<th>Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MM</td>
+<td>~400 h of mobile manipulators in ~100 homes</td>
+<td>pre + post</td>
+</tr>
+<tr>
+<td>ME</td>
+<td>non-mobile robots in diverse homes</td>
+<td>pre + post</td>
+</tr>
+<tr>
+<td>CE</td>
+<td>cross-embodiment lab data (incl. open datasets)</td>
+<td>pre</td>
+</tr>
+<tr>
+<td>HL</td>
+<td>predict the next subtask ("pick up the plate") and relevant boxes</td>
+<td>pre + post</td>
+</tr>
+<tr>
+<td>WD</td>
+<td>captioning, VQA, object localisation, extra indoor boxes</td>
+<td>pre + post</td>
+</tr>
+<tr>
+<td>VI</td>
+<td>verbal step-by-step instructions given by people to the trained policy</td>
+<td>post</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Loss</th>
+<th>Steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-training</td>
+<td>next-token prediction on text, boxes and FAST action tokens</td>
+<td>280k</td>
+</tr>
+<tr>
+<td>Post-training</td>
+<td>next-token + $\alpha \times$ flow matching for a new action expert, $\alpha = 10$</td>
+<td>80k</td>
+</tr>
+<tr>
+<td>Inference</td>
+<td>autoregressive subtask text, then 10 denoising steps for the chunk</td>
+<td>50 Hz commands</td>
+</tr>
+</tbody>
+</table>
+<p>Robot details: two mobile platforms, each with four cameras, two 6-DoF arms with parallel grippers, a mobile base and a torso lift; 18–19 DoF; targets tracked by simple PD controllers, no extra planning. State is discretised and given as text tokens.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> In post-training the token loss and the flow loss are added with weight $\alpha = 10$. Why so large? See what share of the gradient signal the action expert gets with and without it. (The loss values are illustrative.)</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$L_{tok}$</td>
+<td>cross-entropy on text and FAST tokens</td>
+<td>input</td>
+<td>2.0</td>
+</tr>
+<tr>
+<td>$L_{flow}$</td>
+<td>flow-matching MSE of the action expert</td>
+<td>input</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>weight on the flow loss</td>
+<td>input</td>
+<td>10 (paper) or 1</td>
+</tr>
+<tr>
+<td>$s$</td>
+<td>flow share of the total loss</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$L = L_{tok} + \alpha L_{flow}, \qquad s = \frac{\alpha L_{flow}}{L}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$\alpha = 1$: $L = 2.0 + 0.15 = 2.15$, $s = 0.15 / 2.15 = 7\%$.</li>
+<li>$\alpha = 10$: $L = 2.0 + 1.5 = 3.5$, $s = 1.5 / 3.5 = 43\%$.</li>
+</ol>
+<p><strong>Result.</strong> With $\alpha = 1$ the new, randomly initialised expert would get about 7% of the loss; with $\alpha = 10$ it gets about 43%.</p>
+<p><strong>Why it matters.</strong> Cross-entropy and MSE live on different scales, so the weight decides which part learns. The paper keeps the token loss in post-training to preserve text prediction (subtasks, web knowledge), and gives the flow loss a large weight so the expert still learns quickly.</p>
+</div>
+<h2>3. What the experiments show</h2>
+<ul>
+<li><strong>New homes:</strong> the robot is evaluated in real homes not in the training set, on multi-stage tasks such as "dishes in sink", "items in drawer", "laundry basket", "make bed".</li>
+<li><strong>Scaling locations:</strong> with 3, 12, 22, 53, 82 and 104 training locations, performance generally rises; at 104 it is similar to a control trained on the test homes.</li>
+<li><strong>Every ingredient matters:</strong> baselines trained only on mobile-manipulation data (even from the test homes) are significantly worse. Removing other-robot data (ME or CE) significantly degrades results, removing both more so. Removing web data made no significant difference to task success in mock homes, but significantly hurt language following on unseen object categories and high-level inference.</li>
+<li><strong>Against π0:</strong> π0.5 significantly outperforms π0 and π0-FAST+Flow (same robot data, hybrid training, no HL/WD), also when the baselines are trained longer.</li>
+<li><strong>High-level inference:</strong> the full model is best, even above a human "oracle" choosing subtasks. Second best is <em>implicit HL</em>: no subtask step at run time, but subtask data in training. Prompting GPT-4 zero-shot as the high level is worst. Verbal instructions are only about 11% of the high-level examples, yet removing them is significantly worse.</li>
+</ul>
+<h2>4. For a UR10e reader</h2>
+<p>π0.5 targets semantic generalisation (new homes, new objects), not contact. Its actions are position targets tracked by PD controllers, and no force input is used. Force papers that build on it, such as <a href="taf-vla.html">TaF-VLA</a> and <a href="torl-vla.html">TORL-VLA</a>, add tactile or wrench tokens to a π0.5 backbone. The "tokens first, flow later" recipe and the high-level subtask output are the parts worth reusing.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: data sources, 97.6%, 400 h / ~100 homes, 280k + 80k steps, $\alpha = 10$, 10 denoising steps, 50 Hz, robot details, ablation conclusions.</li>
+<li>Most results are bar charts; I quote their conclusions, not numbers read off the bars.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="gr00t-n1.html">GR00T N1</a> splits the same two levels into two separate systems; <a href="smolvla.html">SmolVLA</a> goes the other way, towards a small model trained only on community data.</p>
+<p><strong>Check question:</strong> with $L_{tok} = 1.2$ and $L_{flow} = 0.08$, what share of the loss is the flow term for $\alpha = 10$?</p>
+<details>
+<summary>Answer</summary>
+<p>$\alpha L_{flow} = 0.8$; $L = 2.0$; share $= 40\%$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Physical Intelligence, <em>π0.5: a Vision-Language-Action Model with Open-World Generalization</em>, <a href="https://arxiv.org/abs/2504.16054">arXiv 2504.16054</a> · 04/2025</p>
+<p><strong>VẤN ĐỀ</strong> Robot gia đình phải làm việc nhà dài, nhiều giai đoạn (dọn bếp, dọn giường) trong căn nhà chưa từng thấy, với vật và bố cục mới.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các phương pháp tổng quát được sang nhà mới chỉ làm vậy với thao tác hẹp như gắp, nhờ giả định riêng cho tác vụ. VLA đầu-cuối như <a href="pi0.html">π0</a> học chủ yếu từ dữ liệu robot cho đúng bối cảnh đích, mà thu dữ liệu robot trong mọi căn nhà là không khả thi. Token hành động rời rạc học nhanh nhưng suy luận chậm; action expert flow thì suy luận nhanh nhưng nếu học từ đầu thì không được hưởng lợi từ việc học bằng token.</p>
+<p><strong>Ý TƯỞNG</strong> Đồng huấn luyện một mô hình trên dữ liệu không đồng nhất: dữ liệu tay máy di động từ khoảng 100 căn nhà, robot khác, dữ liệu phòng lab, dự đoán tác vụ con kèm khung vật, câu chỉ dẫn bằng lời và dữ liệu web. Tiền huấn luyện mọi thứ như dự đoán token kế tiếp (hành động là token FAST), rồi hậu huấn luyện có thêm action expert flow matching. Khi chạy, mô hình viết tác vụ con bằng chữ trước, rồi sinh hành động cho nó.</p>
+<p><strong>KẾT QUẢ</strong> Dọn được bếp và phòng ngủ ở những căn nhà không có trong dữ liệu. Với 104 địa điểm huấn luyện, nó ngang một mô hình đối chứng học trên chính dữ liệu của nhà thử. Nó thắng rõ π0 và bản π0-FAST+Flow cải tiến học trên cùng dữ liệu robot nhưng không có dữ liệu tác vụ con và web.</p>
+</div>
+<h2>1. Vấn đề: không thể thu dữ liệu robot ở mọi căn nhà</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở hỗn hợp và thứ tự huấn luyện, không phải mạng mới: kiến trúc vẫn là VLM cộng action expert của π0." class="dg-natural" width="848" height="206" viewBox="0 0 848 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">π0</text><rect class="dg-box" x="124" y="22" width="216" height="38"/><text class="dg-t" x="232" y="45" text-anchor="middle">Dữ liệu robot cho bộ đích</text><path class="dg-a" d="M340 41 H372"/><rect class="dg-badbox" x="374" y="14" width="216" height="54"/><text class="dg-t" x="482" y="37" text-anchor="middle">Action expert ngay từ đầu</text><text class="dg-s" x="482" y="53" text-anchor="middle">ít tri thức ngoài robot</text><path class="dg-a" d="M590 41 H622"/><rect class="dg-box" x="624" y="22" width="155" height="38"/><text class="dg-t" x="702" y="45" text-anchor="middle">Nhà giống lúc học</text><text class="dg-note dg-red" x="124" y="86">✗ cần dữ liệu cho mỗi nơi mới</text><text class="dg-lab dg-green" x="14" y="143">π0.5</text><rect class="dg-box" x="124" y="120" width="307" height="38"/><text class="dg-t" x="278" y="143" text-anchor="middle">Robot + robot khác + tác vụ con + web</text><path class="dg-a" d="M431 139 H463"/><rect class="dg-key" x="465" y="112" width="239" height="54"/><text class="dg-t" x="585" y="135" text-anchor="middle">Token trước, flow expert sau</text><text class="dg-s" x="585" y="151" text-anchor="middle">một mô hình, hai tầng</text><path class="dg-a" d="M704 139 H736"/><rect class="dg-box" x="738" y="120" width="96" height="38"/><text class="dg-t" x="786" y="143" text-anchor="middle">Nhà mới</text><text class="dg-note dg-green" x="124" y="184">✓ 97,6% dữ liệu tiền huấn luyện đến từ nơi khác</text></svg><figcaption>Thay đổi nằm ở hỗn hợp và thứ tự huấn luyện, không phải mạng mới: kiến trúc vẫn là VLM cộng action expert của π0.</figcaption></figure>
+<h2>2. Dữ liệu và các giai đoạn huấn luyện</h2>
+<figure class="diagram"><svg role="img" aria-label="Năm loại dữ liệu vào giai đoạn tiền huấn luyện chỉ dùng token; hậu huấn luyện thêm flow expert. Khi chạy, mô hình viết tác vụ con rồi hành động theo nó." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">PI0.5: HỌC NHIỀU LOẠI DỮ LIỆU DƯỚI DẠNG TOKEN, RỒI THÊM FLOW EXPERT ĐỂ ĐIỀU KHIỂN</text>
+<rect class="dg-box" x="20" y="44" width="150" height="50"/><text class="dg-t" x="95" y="66" text-anchor="middle">MM</text><text class="dg-s" x="95" y="84" text-anchor="middle">~400 giờ, ~100 nhà</text>
+<rect class="dg-box" x="20" y="102" width="150" height="50"/><text class="dg-t" x="95" y="124" text-anchor="middle">ME + CE</text><text class="dg-s" x="95" y="142" text-anchor="middle">robot khác, dữ liệu lab</text>
+<rect class="dg-box" x="20" y="160" width="150" height="50"/><text class="dg-t" x="95" y="182" text-anchor="middle">HL</text><text class="dg-s" x="95" y="200" text-anchor="middle">nhãn tác vụ con + khung</text>
+<rect class="dg-box" x="20" y="218" width="150" height="50"/><text class="dg-t" x="95" y="240" text-anchor="middle">WD</text><text class="dg-s" x="95" y="258" text-anchor="middle">chú thích, VQA, khung</text>
+<rect class="dg-key" x="220" y="80" width="230" height="150"/><text class="dg-t" x="335" y="106" text-anchor="middle">1. tiền huấn luyện</text><text class="dg-s" x="335" y="128" text-anchor="middle">một VLM, loss token kế</text><text class="dg-s" x="335" y="146" text-anchor="middle">chữ, khung, token FAST</text><text class="dg-s" x="335" y="164" text-anchor="middle">280k bước</text><text class="dg-s" x="335" y="190" text-anchor="middle">97,6% ví dụ không phải</text><text class="dg-s" x="335" y="206" text-anchor="middle">thao tác di động trong nhà</text>
+<rect class="dg-key" x="500" y="80" width="230" height="150"/><text class="dg-t" x="615" y="106" text-anchor="middle">2. hậu huấn luyện</text><text class="dg-s" x="615" y="128" text-anchor="middle">thêm action expert</text><text class="dg-s" x="615" y="146" text-anchor="middle">flow matching (khởi tạo ngẫu nhiên)</text><text class="dg-s" x="615" y="164" text-anchor="middle">token + alpha x flow, alpha 10</text><text class="dg-s" x="615" y="190" text-anchor="middle">80k bước, + chỉ dẫn</text><text class="dg-s" x="615" y="206" text-anchor="middle">bằng lời (VI)</text>
+<rect class="dg-box" x="780" y="60" width="180" height="70"/><text class="dg-t" x="870" y="84" text-anchor="middle">tầng cao</text><text class="dg-s" x="870" y="104" text-anchor="middle">"cất bát đĩa" →</text><text class="dg-s" x="870" y="120" text-anchor="middle">"nhặt cái đĩa"</text>
+<rect class="dg-box" x="780" y="160" width="180" height="70"/><text class="dg-t" x="870" y="184" text-anchor="middle">tầng thấp</text><text class="dg-s" x="870" y="204" text-anchor="middle">tác vụ con → chunk</text><text class="dg-s" x="870" y="220" text-anchor="middle">10 bước flow, 50 Hz</text>
+<path class="dg-a" d="M170 69 H195 V155 H220"/><path class="dg-a" style="marker-end:none" d="M170 127 H195"/><path class="dg-a" style="marker-end:none" d="M170 185 H195"/><path class="dg-a" style="marker-end:none" d="M170 243 H195 V155"/>
+<path class="dg-a" d="M450 155 H500"/><path class="dg-a" d="M730 120 H755 V95 H780"/><path class="dg-a" d="M870 130 V160"/>
+<text class="dg-l" x="20" y="300">cùng một mô hình viết tác vụ con bằng chữ, rồi sinh hành động cho tác vụ con đó</text>
+</svg><figcaption>Năm loại dữ liệu vào giai đoạn tiền huấn luyện chỉ dùng token; hậu huấn luyện thêm flow expert. Khi chạy, mô hình viết tác vụ con rồi hành động theo nó.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Dữ liệu (viết tắt)</th>
+<th>Là gì</th>
+<th>Dùng ở</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MM</td>
+<td>~400 giờ tay máy di động trong ~100 căn nhà</td>
+<td>tiền + hậu</td>
+</tr>
+<tr>
+<td>ME</td>
+<td>robot không di động trong nhiều căn nhà</td>
+<td>tiền + hậu</td>
+</tr>
+<tr>
+<td>CE</td>
+<td>dữ liệu lab đa thân robot (gồm bộ dữ liệu mở)</td>
+<td>tiền</td>
+</tr>
+<tr>
+<td>HL</td>
+<td>đoán tác vụ con kế tiếp ("nhặt cái đĩa") và khung vật liên quan</td>
+<td>tiền + hậu</td>
+</tr>
+<tr>
+<td>WD</td>
+<td>chú thích ảnh, VQA, định vị vật, thêm khung vật trong nhà</td>
+<td>tiền + hậu</td>
+</tr>
+<tr>
+<td>VI</td>
+<td>chỉ dẫn từng bước bằng lời mà người đưa cho policy đã học</td>
+<td>hậu</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Giai đoạn</th>
+<th>Loss</th>
+<th>Số bước</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tiền huấn luyện</td>
+<td>dự đoán token kế tiếp trên chữ, khung và token hành động FAST</td>
+<td>280k</td>
+</tr>
+<tr>
+<td>Hậu huấn luyện</td>
+<td>token + $\alpha \times$ flow matching cho action expert mới, $\alpha = 10$</td>
+<td>80k</td>
+</tr>
+<tr>
+<td>Suy luận</td>
+<td>chữ tác vụ con tự hồi quy, rồi 10 bước khử nhiễu cho chunk</td>
+<td>lệnh 50 Hz</td>
+</tr>
+</tbody>
+</table>
+<p>Chi tiết robot: hai nền tảng di động, mỗi cái có bốn camera, hai tay 6 bậc với tay kẹp song song, đế di động và cơ cấu nâng thân; 18–19 bậc; đích được bám bằng bộ điều khiển PD đơn giản, không lập kế hoạch thêm. Trạng thái được rời rạc hóa và đưa vào như token chữ.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Ở hậu huấn luyện, loss token và loss flow được cộng với trọng số $\alpha = 10$. Vì sao lớn vậy? Xem action expert nhận được bao nhiêu phần tín hiệu khi có và không có trọng số này. (Giá trị loss là minh họa.)</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$L_{tok}$</td>
+<td>cross-entropy trên chữ và token FAST</td>
+<td>đầu vào</td>
+<td>2,0</td>
+</tr>
+<tr>
+<td>$L_{flow}$</td>
+<td>MSE flow matching của action expert</td>
+<td>đầu vào</td>
+<td>0,15</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>trọng số của loss flow</td>
+<td>đầu vào</td>
+<td>10 (paper) hoặc 1</td>
+</tr>
+<tr>
+<td>$s$</td>
+<td>phần của flow trong tổng loss</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$L = L_{tok} + \alpha L_{flow}, \qquad s = \frac{\alpha L_{flow}}{L}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$\alpha = 1$: $L = 2{,}0 + 0{,}15 = 2{,}15$, $s = 0{,}15 / 2{,}15 = 7\%$.</li>
+<li>$\alpha = 10$: $L = 2{,}0 + 1{,}5 = 3{,}5$, $s = 1{,}5 / 3{,}5 = 43\%$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Với $\alpha = 1$, expert mới khởi tạo ngẫu nhiên chỉ nhận khoảng 7% loss; với $\alpha = 10$ nó nhận khoảng 43%.</p>
+<p><strong>Vì sao quan trọng.</strong> Cross-entropy và MSE ở hai thang khác nhau, nên trọng số quyết định phần nào được học. Paper giữ loss token ở hậu huấn luyện để bảo toàn khả năng sinh chữ (tác vụ con, tri thức web), và cho loss flow trọng số lớn để expert vẫn học nhanh.</p>
+</div>
+<h2>3. Thí nghiệm cho thấy gì</h2>
+<ul>
+<li><strong>Nhà mới:</strong> robot được đánh giá trong nhà thật không có trong tập huấn luyện, với tác vụ nhiều giai đoạn như "bát đĩa vào bồn", "đồ vào ngăn kéo", "giỏ đồ giặt", "dọn giường".</li>
+<li><strong>Tăng số địa điểm:</strong> với 3, 12, 22, 53, 82 và 104 địa điểm huấn luyện, hiệu năng nhìn chung tăng; ở 104 nó tương đương mô hình đối chứng học trên chính các nhà thử.</li>
+<li><strong>Thành phần nào cũng quan trọng:</strong> baseline chỉ học trên dữ liệu tay máy di động (kể cả từ nhà thử) kém hơn rõ. Bỏ dữ liệu robot khác (ME hoặc CE) làm kết quả giảm đáng kể, bỏ cả hai còn tệ hơn. Bỏ dữ liệu web không tạo khác biệt có ý nghĩa thống kê về thành công tác vụ ở nhà mô phỏng, nhưng làm giảm rõ khả năng theo câu lệnh với loại vật chưa thấy và suy luận tầng cao.</li>
+<li><strong>So với π0:</strong> π0.5 thắng rõ π0 và π0-FAST+Flow (cùng dữ liệu robot, huấn luyện lai, không có HL/WD), kể cả khi baseline được học lâu hơn.</li>
+<li><strong>Suy luận tầng cao:</strong> mô hình đầy đủ tốt nhất, hơn cả một người "chuẩn" chọn tác vụ con. Tốt nhì là <em>implicit HL</em>: không có bước tác vụ con khi chạy, nhưng có dữ liệu tác vụ con khi học. Dùng GPT-4 không fine-tune làm tầng cao là tệ nhất. Câu chỉ dẫn bằng lời chỉ chiếm khoảng 11% ví dụ tầng cao, nhưng bỏ chúng thì kém hẳn.</li>
+</ul>
+<h2>4. Với người dùng UR10e</h2>
+<p>π0.5 nhắm vào tổng quát hóa ngữ nghĩa (nhà mới, vật mới), không phải tiếp xúc. Hành động của nó là đích vị trí do bộ PD bám theo, và không có đầu vào lực. Các paper lực xây trên nó, như <a href="taf-vla.html">TaF-VLA</a> và <a href="torl-vla.html">TORL-VLA</a>, thêm token xúc giác hoặc wrench vào backbone π0.5. Phần đáng dùng lại là công thức "token trước, flow sau" và đầu ra tác vụ con tầng cao.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: nguồn dữ liệu, 97,6%, 400 giờ / ~100 nhà, 280k + 80k bước, $\alpha = 10$, 10 bước khử nhiễu, 50 Hz, chi tiết robot, kết luận ablation.</li>
+<li>Phần lớn kết quả nằm trong biểu đồ cột; mình trích kết luận, không đọc số từ cột.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="gr00t-n1.html">GR00T N1</a> tách hai tầng này thành hai hệ riêng; <a href="smolvla.html">SmolVLA</a> đi hướng ngược lại, tới một mô hình nhỏ chỉ học trên dữ liệu cộng đồng.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> với $L_{tok} = 1{,}2$ và $L_{flow} = 0{,}08$, phần của flow trong loss là bao nhiêu khi $\alpha = 10$?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$\alpha L_{flow} = 0{,}8$; $L = 2{,}0$; tỉ lệ $= 40\%$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

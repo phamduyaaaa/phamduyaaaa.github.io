@@ -48,6 +48,22 @@
     "read_min": 5
   },
   {
+    "slug": "calvin",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "CALVIN: Long Chains of Language Instructions",
+    "title_vi": "CALVIN: Chuỗi dài các câu lệnh ngôn ngữ",
+    "excerpt_en": "CALVIN gives the policy five instructions in a row in a simulated room and stops at the first failure. Its headline number, average length, is the expected number of tasks completed in a row; the hard split trains on three rooms and tests on a fourth.",
+    "excerpt_vi": "CALVIN đưa cho policy năm câu lệnh liên tiếp trong một căn phòng mô phỏng và dừng ở lần thất bại đầu tiên. Con số chính, average length, là số tác vụ kỳ vọng làm được liên tiếp; phần khó nhất học trên ba phòng và kiểm tra trên phòng thứ tư.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "CALVIN",
+      "Long-horizon"
+    ],
+    "read_min": 5
+  },
+  {
     "slug": "contact-rich-control",
     "date": "2026-10-21",
     "date_display": "21 Oct 2026",
@@ -161,6 +177,70 @@
     "read_min": 5
   },
   {
+    "slug": "gm-100",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "GM-100: 100 Long-Tail Tasks on Real Robots",
+    "title_vi": "GM-100: 100 tác vụ đuôi dài trên robot thật",
+    "excerpt_en": "Most robot datasets and evaluations are dominated by \"pick and hold\". GM-100 designs 100 detail-oriented tasks from interaction primitives and affordances, collects 13K+ real trajectories on two dual-arm platforms, and scores success, partial success and action error. On ten tasks, π0.5 reaches 24.9% success and 53.9% partial success.",
+    "excerpt_vi": "Phần lớn bộ dữ liệu và bài đánh giá robot bị chi phối bởi \"gắp và giữ\". GM-100 thiết kế 100 tác vụ chi tiết từ các thao tác cơ bản và affordance, thu hơn 13K quỹ đạo thật trên hai nền tảng hai tay, và chấm thành công, thành công từng phần và sai số hành động. Trên mười tác vụ, π0.5 đạt 24,9% thành công và 53,9% thành công từng phần.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "GM-100",
+      "Real robot"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "gr00t-n1",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "GR00T N1: A Dual-System VLA Trained on a Data Pyramid",
+    "title_vi": "GR00T N1: VLA hai hệ thống học trên kim tự tháp dữ liệu",
+    "excerpt_en": "NVIDIA's GR00T N1 pairs a 10 Hz vision-language model (System 2) with a 120 Hz flow-matching diffusion transformer (System 1) and per-robot adapters. It fills the gap in robot data with human videos and generated videos labelled by latent actions. On a real GR-1 humanoid, it reaches 76.8% vs 46.4% for Diffusion Policy, and 42.6% with only 10% of the data.",
+    "excerpt_vi": "GR00T N1 của NVIDIA ghép một mô hình thị giác-ngôn ngữ 10 Hz (Hệ 2) với một diffusion transformer flow matching 120 Hz (Hệ 1) và adapter riêng cho từng robot. Nó bù thiếu hụt dữ liệu robot bằng video người và video sinh ra, gắn nhãn bằng latent action. Trên người máy GR-1 thật, nó đạt 76,8% so với 46,4% của Diffusion Policy, và 42,6% khi chỉ có 10% dữ liệu.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "GR00T",
+      "Humanoid"
+    ],
+    "read_min": 6
+  },
+  {
+    "slug": "libero",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "LIBERO: The Simulation Benchmark Most VLAs Report",
+    "title_vi": "LIBERO: Benchmark mô phỏng mà hầu hết VLA đều báo cáo",
+    "excerpt_en": "LIBERO was built to study lifelong learning with four 10-task suites, and became the standard sim score for VLAs. What each suite tests, what the usual protocol is, and why a 2-point gap near 90% needs about 900 trials to mean anything.",
+    "excerpt_vi": "LIBERO được làm để nghiên cứu học suốt đời với bốn bộ 10 tác vụ, rồi trở thành điểm mô phỏng chuẩn của VLA. Mỗi bộ kiểm tra gì, quy trình thường dùng ra sao, và vì sao chênh 2 điểm quanh 90% cần khoảng 900 lần thử mới có nghĩa.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "LIBERO",
+      "Simulation"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "lingbotv2",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "LingBot-VLA 2.0: 60,000 Hours, Whole-Body Actions and Predicted Futures",
+    "title_vi": "LingBot-VLA 2.0: 60.000 giờ, hành động toàn thân và dự đoán tương lai",
+    "excerpt_en": "LingBot-VLA 2.0 (Robbyant / Ant Group) pre-trains on ~60,000 hours (50,000 h of robot data from 20 configurations plus 10,000 h of human egocentric video), adds head, waist, base and hand degrees of freedom, a sparse MoE action expert, and distils depth and video-future features into the VLM. On nine GM-100 tasks it reaches 66.2 progress / 34.4% success, ahead of π0.5 (59.1 / 32.2).",
+    "excerpt_vi": "LingBot-VLA 2.0 (Robbyant / Ant Group) tiền huấn luyện trên ~60.000 giờ (50.000 giờ dữ liệu robot từ 20 cấu hình cộng 10.000 giờ video người góc nhìn thứ nhất), thêm bậc tự do cho đầu, eo, đế và bàn tay, một action expert MoE thưa, và chưng cất đặc trưng độ sâu và tương lai video vào VLM. Trên chín tác vụ GM-100 nó đạt 66,2 tiến độ / 34,4% thành công, hơn π0.5 (59,1 / 32,2).",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "LingBot",
+      "MoE"
+    ],
+    "read_min": 6
+  },
+  {
     "slug": "moe",
     "date": "2026-10-21",
     "date_display": "21 Oct 2026",
@@ -175,6 +255,53 @@
       "Force"
     ],
     "read_min": 4
+  },
+  {
+    "slug": "octo",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "Octo: An Open Generalist Policy You Can Re-wire When Fine-tuning",
+    "title_vi": "Octo: Policy tổng quát mã mở, nối lại được khi fine-tune",
+    "excerpt_en": "Octo is a 27M/93M transformer policy pre-trained on 800k Open X-Embodiment episodes, with a diffusion action head. Its block-wise attention lets you add a new sensor (a wrist F/T sensor for 1.5 mm peg insertion) or a new action space at fine-tuning time, with ~100 demos and about 5 hours on one GPU.",
+    "excerpt_vi": "Octo là policy transformer 27M/93M tiền huấn luyện trên 800k episode Open X-Embodiment, với đầu ra hành động dạng diffusion. Attention theo khối cho phép thêm cảm biến mới (cảm biến F/T cổ tay cho lắp chốt dung sai 1,5 mm) hoặc không gian hành động mới lúc fine-tune, với khoảng 100 demo và khoảng 5 giờ trên một GPU.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "Octo",
+      "Generalist policy"
+    ],
+    "read_min": 6
+  },
+  {
+    "slug": "openvla",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "OpenVLA: The RT-2 Recipe, Open and at 7B",
+    "title_vi": "OpenVLA: Công thức RT-2, mở và ở cỡ 7B",
+    "excerpt_en": "OpenVLA fine-tunes an open 7B VLM (Llama 2 with fused DINOv2 + SigLIP vision) on 970k Open X-Embodiment episodes to output 7 binned action tokens. It beats the closed 55B RT-2-X by 16.5 points over 29 tasks, fine-tunes with LoRA on one GPU, and runs in 7 GB at 4-bit.",
+    "excerpt_vi": "OpenVLA fine-tune một VLM mở 7B (Llama 2 với phần ảnh ghép DINOv2 + SigLIP) trên 970k episode Open X-Embodiment để xuất 7 token hành động chia bin. Nó hơn RT-2-X 55B đóng 16,5 điểm trên 29 tác vụ, fine-tune bằng LoRA trên một GPU, và chạy trong 7 GB ở 4-bit.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "OpenVLA"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "pi0-5",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "π0.5: Co-training So a Robot Works in Homes It Has Never Seen",
+    "title_vi": "π0.5: Đồng huấn luyện để robot làm việc trong nhà chưa từng thấy",
+    "excerpt_en": "π0.5 trains one model on robot data from many platforms, high-level subtask labels and web data, first as discrete FAST tokens, then with a flow-matching action expert. 97.6% of its pre-training examples are not home mobile manipulation, yet it cleans kitchens and bedrooms in new homes.",
+    "excerpt_vi": "π0.5 huấn luyện một mô hình trên dữ liệu robot từ nhiều nền tảng, nhãn tác vụ con và dữ liệu web, trước dưới dạng token FAST rời rạc, sau đó thêm action expert flow matching. 97,6% ví dụ tiền huấn luyện không phải thao tác di động trong nhà, vậy mà nó dọn được bếp và phòng ngủ ở nhà mới.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "π0.5",
+      "Co-training"
+    ],
+    "read_min": 6
   },
   {
     "slug": "proprioception",
@@ -207,6 +334,71 @@
       "Reinforcement Learning"
     ],
     "read_min": 4
+  },
+  {
+    "slug": "robotwin",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "RoboTwin: Generated Bimanual Data and a Clean-vs-Randomised Benchmark",
+    "title_vi": "RoboTwin: Dữ liệu hai tay sinh tự động và benchmark sạch so với ngẫu nhiên hóa",
+    "excerpt_en": "RoboTwin 2.0 lets a multimodal LLM write and repair expert programs for 50 dual-arm tasks in simulation, on five robot bodies including a UR5. Its benchmark trains on 50 clean demos and tests clean and randomised scenes: π0 falls from 46.4% to 16.3%, and the best clean policy (DP3) falls to 5%.",
+    "excerpt_vi": "RoboTwin 2.0 để một LLM đa phương thức viết và sửa chương trình chuyên gia cho 50 tác vụ hai tay trong mô phỏng, trên năm thân robot gồm cả UR5. Benchmark học trên 50 demo sạch và thử ở cảnh sạch lẫn ngẫu nhiên hóa: π0 rơi từ 46,4% xuống 16,3%, còn policy tốt nhất ở cảnh sạch (DP3) rơi xuống 5%.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "RoboTwin",
+      "Bimanual",
+      "Simulation"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "rt-1-rt-2",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "RT-1 and RT-2: From a Robot Transformer to the First VLA",
+    "title_vi": "RT-1 và RT-2: Từ Robot Transformer tới VLA đầu tiên",
+    "excerpt_en": "RT-1 showed that a 35M-parameter Transformer trained on 130k real demos can run 700+ instructions at 97% success. RT-2 replaced its backbone with a web-scale VLM and wrote actions as text tokens, doubling success on unseen objects, backgrounds and environments (32% → 62%). It named the model class: vision-language-action.",
+    "excerpt_vi": "RT-1 cho thấy một Transformer 35M tham số học từ 130k demo thật chạy được hơn 700 câu lệnh với 97% thành công. RT-2 thay backbone bằng một VLM cỡ web và viết hành động như token chữ, tăng gấp đôi thành công với vật, nền và môi trường chưa thấy (32% → 62%). Nó đặt tên cho lớp mô hình: vision-language-action.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "RT-1",
+      "RT-2"
+    ],
+    "read_min": 6
+  },
+  {
+    "slug": "simplerenv",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "SimplerEnv: Does the Simulator Rank Policies Like the Real Robot?",
+    "title_vi": "SimplerEnv: Mô phỏng có xếp hạng policy giống robot thật không?",
+    "excerpt_en": "SimplerEnv evaluates policies trained on real data in simulators tuned to two real setups (Google Robot, WidowX Bridge). It is judged by whether the simulated ranking matches the real ranking, measured with a new metric, MMRV.",
+    "excerpt_vi": "SimplerEnv đánh giá các policy học từ dữ liệu thật trong trình mô phỏng được chỉnh theo hai bộ robot thật (Google Robot, WidowX Bridge). Nó được chấm bằng việc thứ hạng mô phỏng có khớp thứ hạng thật không, đo bằng một thước đo mới là MMRV.",
+    "tags": [
+      "VLA",
+      "Benchmark",
+      "SimplerEnv",
+      "Real-to-sim"
+    ],
+    "read_min": 5
+  },
+  {
+    "slug": "smolvla",
+    "date": "2026-10-21",
+    "date_display": "21 Oct 2026",
+    "title_en": "SmolVLA: A 0.45B VLA Trained on Community Data",
+    "title_vi": "SmolVLA: VLA 0,45B học trên dữ liệu cộng đồng",
+    "excerpt_en": "SmolVLA cuts a VLA down to 0.45B parameters: a small VLM with only half its layers used, 64 tokens per image, and a light flow-matching expert that alternates cross- and self-attention. Pre-trained on 22.9K community episodes, it scores 87.3% on LIBERO and beats π0 (3.5B) on real SO-100 tasks; asynchronous inference finishes tasks about 30% faster.",
+    "excerpt_vi": "SmolVLA thu nhỏ VLA còn 0,45B tham số: một VLM nhỏ chỉ dùng nửa số lớp, 64 token mỗi ảnh, và một expert flow matching nhẹ xen kẽ cross- và self-attention. Tiền huấn luyện trên 22,9K episode cộng đồng, nó đạt 87,3% trên LIBERO và thắng π0 (3,5B) trên tác vụ SO-100 thật; suy luận bất đồng bộ làm xong tác vụ nhanh hơn khoảng 30%.",
+    "tags": [
+      "VLA",
+      "Paper Notes",
+      "SmolVLA",
+      "LeRobot"
+    ],
+    "read_min": 5
   },
   {
     "slug": "vlm",

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OpenVLA fine-tunes an open 7B VLM (Llama 2 with fused DINOv2 + SigLIP vision) on 970k Open X-Embodiment episodes to output 7 binned action tokens. It beats the closed 55B RT-2-X by 16.5 points over 29 tasks, fine-tunes with LoRA on one GPU, and runs in 7 GB at 4-bit.">
+<title>OpenVLA: The RT-2 Recipe, Open and at 7B · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="OpenVLA: The RT-2 Recipe, Open and at 7B">
+<meta property="og:description" content="OpenVLA fine-tunes an open 7B VLM (Llama 2 with fused DINOv2 + SigLIP vision) on 970k Open X-Embodiment episodes to output 7 binned action tokens. It beats the closed 55B RT-2-X by 16.5 points over 29 tasks, fine-tunes with LoRA on one GPU, and runs in 7 GB at 4-bit.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>OpenVLA: The RT-2 Recipe, Open and at 7B</h1>
+    <h1 data-vi>OpenVLA: Công thức RT-2, mở và ở cỡ 7B</h1>
+
+    <p class="post-excerpt-lead" data-en>OpenVLA fine-tunes an open 7B VLM (Llama 2 with fused DINOv2 + SigLIP vision) on 970k Open X-Embodiment episodes to output 7 binned action tokens. It beats the closed 55B RT-2-X by 16.5 points over 29 tasks, fine-tunes with LoRA on one GPU, and runs in 7 GB at 4-bit.</p>
+    <p class="post-excerpt-lead" data-vi>OpenVLA fine-tune một VLM mở 7B (Llama 2 với phần ảnh ghép DINOv2 + SigLIP) trên 970k episode Open X-Embodiment để xuất 7 token hành động chia bin. Nó hơn RT-2-X 55B đóng 16,5 điểm trên 29 tác vụ, fine-tune bằng LoRA trên một GPU, và chạy trong 7 GB ở 4-bit.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">OpenVLA</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Kim, Pertsch, Karamcheti et al., <em>OpenVLA: An Open-Source Vision-Language-Action Model</em>, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024</p>
+<p><strong>PROBLEM</strong> VLAs had shown that web-pretrained VLMs generalise better as robot policies, but nobody outside a few labs could use or adapt one.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper names two gaps: existing VLAs are "largely closed and inaccessible to the public" (RT-2, RT-2-X at 55B), and prior work did not study how to <em>fine-tune</em> a VLA efficiently for a new robot. Open generalist policies such as Octo and RT-1-X were trained from scratch on robot data, and in OpenVLA's tests they often grabbed the wrong object when distractors were present.</p>
+<p><strong>IDEA</strong> Take an open VLM (Prismatic-7B: DINOv2 + SigLIP vision, 2-layer MLP projector, Llama 2 7B), and fine-tune the whole model on 970k OXE episodes to output 7 action tokens, each one of 256 bins set by the 1st–99th percentile of that action dimension. Release everything, and study LoRA fine-tuning and quantised inference.</p>
+<p><strong>RESULT</strong> +16.5 points absolute over RT-2-X across 29 tasks on WidowX and Google Robot, with 7× fewer parameters. On LIBERO after fine-tuning: 76.5% average. LoRA (rank 32) matches full fine-tuning within 1.5 points while training 1.4% of the weights; 4-bit inference keeps success (71.9% vs 71.3%) at 7.0 GB instead of 16.8 GB.</p>
+</div>
+<h2>1. The problem: a strong recipe nobody could use</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is mostly about access and engineering: the same action-as-tokens recipe, with open parts, better data and documented fine-tuning." class="dg-natural" width="711" height="206" viewBox="0 0 711 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">RT-2-X</text><rect class="dg-box" x="124" y="22" width="117" height="38"/><text class="dg-t" x="183" y="45" text-anchor="middle">Web VLM, 55B</text><path class="dg-a" d="M241 41 H273"/><rect class="dg-badbox" x="275" y="14" width="231" height="54"/><text class="dg-t" x="391" y="37" text-anchor="middle">Closed weights</text><text class="dg-s" x="391" y="53" text-anchor="middle">cloud TPUs, no fine-tuning study</text><path class="dg-a" d="M506 41 H538"/><rect class="dg-box" x="540" y="22" width="96" height="38"/><text class="dg-t" x="588" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ best results, not reproducible</text><text class="dg-lab dg-green" x="14" y="143">OpenVLA</text><rect class="dg-box" x="124" y="120" width="117" height="38"/><text class="dg-t" x="183" y="143" text-anchor="middle">Open VLM, 7B</text><path class="dg-a" d="M241 139 H273"/><rect class="dg-key" x="275" y="112" width="292" height="54"/><text class="dg-t" x="421" y="135" text-anchor="middle">Full fine-tune on 970k OXE episodes</text><text class="dg-s" x="421" y="151" text-anchor="middle">1st–99th percentile bins</text><path class="dg-a" d="M567 139 H599"/><rect class="dg-box" x="601" y="120" width="96" height="38"/><text class="dg-t" x="649" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="184">✓ +16.5 points, open code, LoRA on one GPU</text></svg><figcaption>The change is mostly about access and engineering: the same action-as-tokens recipe, with open parts, better data and documented fine-tuning.</figcaption></figure>
+<h2>2. Architecture and training choices</h2>
+<figure class="diagram"><svg role="img" aria-label="One image and an instruction go through a fused vision encoder, a projector and Llama 2. The model writes 7 action tokens that are mapped back to bin centres." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OPENVLA: AN OPEN 7B VLM THAT ANSWERS WITH 7 ACTION TOKENS</text>
+<rect class="dg-ext" x="20" y="44" width="150" height="64"/><text class="dg-t" x="95" y="70" text-anchor="middle">image</text><text class="dg-s" x="95" y="90" text-anchor="middle">224 x 224, one camera</text>
+<rect class="dg-box" x="200" y="44" width="200" height="64"/><text class="dg-t" x="300" y="70" text-anchor="middle">DINOv2 + SigLIP</text><text class="dg-s" x="300" y="90" text-anchor="middle">features concatenated, 600M</text>
+<rect class="dg-box" x="430" y="44" width="150" height="64"/><text class="dg-t" x="505" y="70" text-anchor="middle">projector</text><text class="dg-s" x="505" y="90" text-anchor="middle">2-layer MLP</text>
+<rect class="dg-ext" x="20" y="140" width="150" height="64"/><text class="dg-t" x="95" y="166" text-anchor="middle">instruction</text><text class="dg-s" x="95" y="186" text-anchor="middle">"put the eggplant ..."</text>
+<rect class="dg-key" x="610" y="44" width="170" height="160"/><text class="dg-t" x="695" y="100" text-anchor="middle">Llama 2 7B</text><text class="dg-s" x="695" y="122" text-anchor="middle">Prismatic-7B VLM,</text><text class="dg-s" x="695" y="138" text-anchor="middle">fully fine-tuned</text><text class="dg-s" x="695" y="154" text-anchor="middle">on 970k OXE episodes</text>
+<rect class="dg-box" x="810" y="44" width="150" height="74"/><text class="dg-t" x="885" y="68" text-anchor="middle">7 tokens</text><text class="dg-s" x="885" y="88" text-anchor="middle">6 EE deltas + gripper</text><text class="dg-s" x="885" y="104" text-anchor="middle">256 bins each</text>
+<rect class="dg-box" x="810" y="140" width="150" height="64"/><text class="dg-t" x="885" y="166" text-anchor="middle">robot</text><text class="dg-s" x="885" y="186" text-anchor="middle">~6 Hz on an RTX 4090</text>
+<path class="dg-a" d="M170 76 H200"/><path class="dg-a" d="M400 76 H430"/><path class="dg-a" d="M580 76 H610"/><path class="dg-a" d="M170 172 H610"/><path class="dg-a" d="M780 81 H810"/><path class="dg-a" d="M885 118 V140"/>
+<text class="dg-s" x="20" y="240">bins span the 1st-99th percentile of each action dimension; the 256 least-used Llama tokens are overwritten as bin tokens</text>
+<text class="dg-l" x="20" y="268">trained 27 epochs on 64 A100s for 14 days; fine-tune with LoRA on one GPU; int4 inference in 7 GB</text>
+</svg><figcaption>One image and an instruction go through a fused vision encoder, a projector and Llama 2. The model writes 7 action tokens that are mapped back to bin centres.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>OpenVLA</th>
+<th>Why (paper)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision</td>
+<td>DINOv2 + SigLIP, features concatenated per patch</td>
+<td>SigLIP brings semantics, DINOv2 spatial detail; ~10 points better than a LLaVA backbone on multi-object language grounding</td>
+</tr>
+<tr>
+<td>Resolution</td>
+<td>224×224</td>
+<td>384×384 gave no gain and took 3× longer to train</td>
+</tr>
+<tr>
+<td>Vision encoder</td>
+<td>fine-tuned, not frozen</td>
+<td>frozen vision gave worse results in their ablations</td>
+</tr>
+<tr>
+<td>Action bins</td>
+<td>256 per dimension over the 1st–99th percentile</td>
+<td>min–max bounds (RT-2) let outliers stretch the bins</td>
+</tr>
+<tr>
+<td>Action tokens</td>
+<td>overwrite the 256 least-used Llama tokens</td>
+<td>Llama reserves only 100 special tokens</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>27, until action-token accuracy passes 95%</td>
+<td>far more passes than usual for VLM training</td>
+</tr>
+<tr>
+<td>Compute</td>
+<td>64 A100 × 14 days = 21,500 A100-hours, batch 2048</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Inference</td>
+<td>15 GB in bf16, ~6 Hz on an RTX 4090</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> OpenVLA bins each action dimension between its 1st and 99th percentile instead of its min and max. How much resolution does one outlier cost with min–max bins? (Illustrative numbers.)</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_{1}, q_{99}$</td>
+<td>1st and 99th percentile of $\Delta x$</td>
+<td>input</td>
+<td>−0.02 m, +0.02 m</td>
+</tr>
+<tr>
+<td>$x_{min}, x_{max}$</td>
+<td>min and max of $\Delta x$, one spike at 0.20 m</td>
+<td>input</td>
+<td>−0.02 m, +0.20 m</td>
+</tr>
+<tr>
+<td>$B$</td>
+<td>number of bins</td>
+<td>input</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$w$</td>
+<td>bin width</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$w = \frac{\text{upper} - \text{lower}}{B}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Percentile bins: $w = 0.04 / 256 = 0.000156$ m $= 0.16$ mm.</li>
+<li>Min–max bins: $w = 0.22 / 256 = 0.00086$ m $= 0.86$ mm.</li>
+<li>Ratio: $0.86 / 0.16 = 5.5$.</li>
+<li>With min–max, the normal motions (within ±0.02 m) use only $0.04 / 0.00086 \approx 46$ of the 256 bins.</li>
+</ol>
+<p><strong>Result.</strong> One outlier makes every bin 5.5× wider, and leaves 46 usable bins instead of 256.</p>
+<p><strong>Why it matters.</strong> The rounding error is half a bin: 0.08 mm against 0.43 mm per step. For precise insertion that is the difference between a fine and a coarse controller. Values outside the 1st–99th percentile are clipped to the end bins, which is the price of this choice.</p>
+</div>
+<h2>3. Results</h2>
+<ul>
+<li><strong>Out of the box</strong> (WidowX Bridge and Google Robot, 29 tasks): +16.5 points absolute over RT-2-X; RT-1-X and Octo often manipulated the wrong object. RT-2-X still did better on semantic generalisation, which the paper links to its larger web pre-training.</li>
+<li><strong>Fine-tuning to a new Franka setup</strong> (7 tasks, 10–150 demos): Diffusion Policy from scratch is strong on narrow single-instruction tasks; OpenVLA and Octo are better on diverse tasks with several objects and language grounding. OpenVLA is the only method above 50% on every task.</li>
+<li><strong>LIBERO</strong> (fine-tuned per suite): 76.5% average against 75.1% for Octo and 72.4% for Diffusion Policy; see <a href="libero.html">LIBERO</a> for the protocol.</li>
+<li><strong>Efficient adaptation:</strong> the full comparison of fine-tuning strategies (full, last layer, frozen vision, sandwich, LoRA) is on the <a href="backbone.html">backbone post</a>. LoRA cuts compute 8× and fits a new task in 10–15 h on one A100.</li>
+</ul>
+<figure class="diagram compact"><svg role="img" aria-label="GPU memory at inference (Table 2). Success on 8 Bridge tasks: 71.3%, 58.1%, 71.9%." class="dg-natural" width="496" height="102" viewBox="0 0 496 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="36" y="23" text-anchor="end">bf16</text><rect class="dg-bar" x="46" y="10" width="313" height="18"/><text class="dg-barval" x="367" y="23">16.8 GB</text><text class="dg-barlabel" x="36" y="53" text-anchor="end">int8</text><rect class="dg-bar" x="46" y="40" width="190" height="18"/><text class="dg-barval" x="244" y="53">10.2 GB</text><text class="dg-barlabel" x="36" y="83" text-anchor="end">int4</text><rect class="dg-key" x="46" y="70" width="130" height="18"/><text class="dg-barval" x="184" y="83">7 GB</text></svg><figcaption>GPU memory at inference (Table 2). Success on 8 Bridge tasks: 71.3%, 58.1%, 71.9%.</figcaption></figure>
+<h2>4. Limits the paper states</h2>
+<ul>
+<li>One image as input: no wrist camera, no history, no proprioception in the released model.</li>
+<li>~6 Hz on a 4090 is too slow for high-frequency control such as ALOHA at 50 Hz.</li>
+<li>Success is usually below 90%, so it is not yet reliable enough to deploy as is.</li>
+</ul>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: architecture, data, compute, tokenisation, LIBERO table, quantisation table and limitations.</li>
+<li>The calculation card uses made-up action ranges.</li>
+</ul>
+<p><strong>Carry forward:</strong> OpenVLA's one-token-per-dimension output is what <a href="action-tokenization.html">FAST</a> compresses and what <a href="pi0.html">π0</a> replaces with flow matching; <a href="smolvla.html">SmolVLA</a> asks how small such a model can be.</p>
+<p><strong>Check question:</strong> a gripper rotation dimension has $q_1 = -0.10$ rad and $q_{99} = 0.10$ rad. What is the bin width with 256 bins, and the largest rounding error?</p>
+<details>
+<summary>Answer</summary>
+<p>$w = 0.20 / 256 = 0.00078$ rad (about 0.045°). Largest rounding error: half a bin, 0.00039 rad (about 0.022°).</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Kim, Pertsch, Karamcheti và cộng sự, <em>OpenVLA: An Open-Source Vision-Language-Action Model</em>, <a href="https://arxiv.org/abs/2406.09246">arXiv 2406.09246</a> · 06/2024</p>
+<p><strong>VẤN ĐỀ</strong> VLA đã cho thấy VLM tiền huấn luyện trên web tổng quát tốt hơn khi làm policy robot, nhưng ngoài vài lab thì không ai dùng hay chỉnh được.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper nêu hai khoảng trống: các VLA hiện có "phần lớn đóng và công chúng không tiếp cận được" (RT-2, RT-2-X ở 55B), và chưa ai nghiên cứu cách <em>fine-tune</em> VLA hiệu quả cho robot mới. Các policy tổng quát mở như Octo và RT-1-X học từ đầu trên dữ liệu robot, và trong thử nghiệm của OpenVLA chúng hay gắp nhầm vật khi có vật gây nhiễu.</p>
+<p><strong>Ý TƯỞNG</strong> Lấy một VLM mở (Prismatic-7B: ảnh qua DINOv2 + SigLIP, projector MLP 2 lớp, Llama 2 7B), và fine-tune toàn bộ mô hình trên 970k episode OXE để xuất 7 token hành động, mỗi token là một trong 256 bin đặt theo phân vị 1–99 của chiều hành động đó. Công bố mọi thứ, và nghiên cứu fine-tune bằng LoRA cùng suy luận lượng tử hóa.</p>
+<p><strong>KẾT QUẢ</strong> Hơn RT-2-X 16,5 điểm tuyệt đối trên 29 tác vụ ở WidowX và Google Robot, với số tham số ít hơn 7 lần. Trên LIBERO sau fine-tune: trung bình 76,5%. LoRA (hạng 32) ngang fine-tune toàn bộ trong vòng 1,5 điểm khi chỉ huấn luyện 1,4% trọng số; suy luận 4-bit giữ nguyên thành công (71,9% so với 71,3%) với 7,0 GB thay vì 16,8 GB.</p>
+</div>
+<h2>1. Vấn đề: công thức mạnh nhưng không ai dùng được</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi chủ yếu nằm ở khả năng tiếp cận và kỹ thuật: vẫn công thức hành động-là-token, với linh kiện mở, dữ liệu tốt hơn và cách fine-tune có tài liệu." class="dg-natural" width="726" height="206" viewBox="0 0 726 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">RT-2-X</text><rect class="dg-box" x="124" y="22" width="117" height="38"/><text class="dg-t" x="183" y="45" text-anchor="middle">VLM web, 55B</text><path class="dg-a" d="M241 41 H273"/><rect class="dg-badbox" x="275" y="14" width="276" height="54"/><text class="dg-t" x="413" y="37" text-anchor="middle">Trọng số đóng</text><text class="dg-s" x="413" y="53" text-anchor="middle">TPU đám mây, không nghiên cứu fine-tune</text><path class="dg-a" d="M551 41 H583"/><rect class="dg-box" x="585" y="22" width="96" height="38"/><text class="dg-t" x="633" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ kết quả tốt nhất, không tái hiện được</text><text class="dg-lab dg-green" x="14" y="143">OpenVLA</text><rect class="dg-box" x="124" y="120" width="102" height="38"/><text class="dg-t" x="175" y="143" text-anchor="middle">VLM mở, 7B</text><path class="dg-a" d="M226 139 H258"/><rect class="dg-key" x="260" y="112" width="322" height="54"/><text class="dg-t" x="421" y="135" text-anchor="middle">Fine-tune toàn bộ trên 970k episode OXE</text><text class="dg-s" x="421" y="151" text-anchor="middle">bin theo phân vị 1–99</text><path class="dg-a" d="M582 139 H614"/><rect class="dg-box" x="616" y="120" width="96" height="38"/><text class="dg-t" x="664" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="184">✓ +16,5 điểm, mã mở, LoRA trên một GPU</text></svg><figcaption>Thay đổi chủ yếu nằm ở khả năng tiếp cận và kỹ thuật: vẫn công thức hành động-là-token, với linh kiện mở, dữ liệu tốt hơn và cách fine-tune có tài liệu.</figcaption></figure>
+<h2>2. Kiến trúc và các lựa chọn huấn luyện</h2>
+<figure class="diagram"><svg role="img" aria-label="Một ảnh và một câu lệnh đi qua bộ mã hóa ảnh ghép, projector và Llama 2. Mô hình viết 7 token hành động, rồi ánh xạ ngược về tâm của bin." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OPENVLA: VLM MỞ 7B TRẢ LỜI BẰNG 7 TOKEN HÀNH ĐỘNG</text>
+<rect class="dg-ext" x="20" y="44" width="150" height="64"/><text class="dg-t" x="95" y="70" text-anchor="middle">ảnh</text><text class="dg-s" x="95" y="90" text-anchor="middle">224 x 224, một camera</text>
+<rect class="dg-box" x="200" y="44" width="200" height="64"/><text class="dg-t" x="300" y="70" text-anchor="middle">DINOv2 + SigLIP</text><text class="dg-s" x="300" y="90" text-anchor="middle">nối đặc trưng, 600M</text>
+<rect class="dg-box" x="430" y="44" width="150" height="64"/><text class="dg-t" x="505" y="70" text-anchor="middle">projector</text><text class="dg-s" x="505" y="90" text-anchor="middle">MLP 2 lớp</text>
+<rect class="dg-ext" x="20" y="140" width="150" height="64"/><text class="dg-t" x="95" y="166" text-anchor="middle">câu lệnh</text><text class="dg-s" x="95" y="186" text-anchor="middle">"đặt quả cà tím ..."</text>
+<rect class="dg-key" x="610" y="44" width="170" height="160"/><text class="dg-t" x="695" y="100" text-anchor="middle">Llama 2 7B</text><text class="dg-s" x="695" y="122" text-anchor="middle">Prismatic-7B VLM,</text><text class="dg-s" x="695" y="138" text-anchor="middle">fine-tune toàn bộ</text><text class="dg-s" x="695" y="154" text-anchor="middle">trên 970k episode OXE</text>
+<rect class="dg-box" x="810" y="44" width="150" height="74"/><text class="dg-t" x="885" y="68" text-anchor="middle">7 token</text><text class="dg-s" x="885" y="88" text-anchor="middle">6 delta EE + tay kẹp</text><text class="dg-s" x="885" y="104" text-anchor="middle">mỗi token 256 bin</text>
+<rect class="dg-box" x="810" y="140" width="150" height="64"/><text class="dg-t" x="885" y="166" text-anchor="middle">robot</text><text class="dg-s" x="885" y="186" text-anchor="middle">~6 Hz trên RTX 4090</text>
+<path class="dg-a" d="M170 76 H200"/><path class="dg-a" d="M400 76 H430"/><path class="dg-a" d="M580 76 H610"/><path class="dg-a" d="M170 172 H610"/><path class="dg-a" d="M780 81 H810"/><path class="dg-a" d="M885 118 V140"/>
+<text class="dg-s" x="20" y="240">bin trải từ phân vị 1 tới 99 của mỗi chiều hành động; 256 token Llama ít dùng nhất bị ghi đè làm token bin</text>
+<text class="dg-l" x="20" y="268">học 27 epoch trên 64 A100 trong 14 ngày; fine-tune LoRA trên một GPU; suy luận int4 trong 7 GB</text>
+</svg><figcaption>Một ảnh và một câu lệnh đi qua bộ mã hóa ảnh ghép, projector và Llama 2. Mô hình viết 7 token hành động, rồi ánh xạ ngược về tâm của bin.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>OpenVLA</th>
+<th>Lý do (theo paper)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ảnh</td>
+<td>DINOv2 + SigLIP, nối đặc trưng theo từng ô</td>
+<td>SigLIP mang ngữ nghĩa, DINOv2 mang chi tiết không gian; hơn backbone LLaVA khoảng 10 điểm ở bài gắn ngôn ngữ nhiều vật</td>
+</tr>
+<tr>
+<td>Độ phân giải</td>
+<td>224×224</td>
+<td>384×384 không tốt hơn mà huấn luyện lâu gấp 3</td>
+</tr>
+<tr>
+<td>Bộ mã hóa ảnh</td>
+<td>fine-tune, không đóng băng</td>
+<td>đóng băng phần ảnh cho kết quả kém hơn trong ablation</td>
+</tr>
+<tr>
+<td>Bin hành động</td>
+<td>256 mỗi chiều trong khoảng phân vị 1–99</td>
+<td>biên min–max (RT-2) để giá trị ngoại lai kéo giãn bin</td>
+</tr>
+<tr>
+<td>Token hành động</td>
+<td>ghi đè 256 token Llama ít dùng nhất</td>
+<td>Llama chỉ dành sẵn 100 token đặc biệt</td>
+</tr>
+<tr>
+<td>Số epoch</td>
+<td>27, tới khi độ chính xác token hành động vượt 95%</td>
+<td>nhiều lượt hơn hẳn so với huấn luyện VLM thông thường</td>
+</tr>
+<tr>
+<td>Tính toán</td>
+<td>64 A100 × 14 ngày = 21.500 giờ A100, batch 2048</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Suy luận</td>
+<td>15 GB ở bf16, ~6 Hz trên RTX 4090</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> OpenVLA chia bin mỗi chiều hành động giữa phân vị 1 và 99 thay vì giữa min và max. Một giá trị ngoại lai làm mất bao nhiêu độ phân giải nếu dùng min–max? (Số minh họa.)</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_{1}, q_{99}$</td>
+<td>phân vị 1 và 99 của $\Delta x$</td>
+<td>đầu vào</td>
+<td>−0,02 m, +0,02 m</td>
+</tr>
+<tr>
+<td>$x_{min}, x_{max}$</td>
+<td>min và max của $\Delta x$, có một gai ở 0,20 m</td>
+<td>đầu vào</td>
+<td>−0,02 m, +0,20 m</td>
+</tr>
+<tr>
+<td>$B$</td>
+<td>số bin</td>
+<td>đầu vào</td>
+<td>256</td>
+</tr>
+<tr>
+<td>$w$</td>
+<td>độ rộng bin</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$w = \frac{\text{cận trên} - \text{cận dưới}}{B}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Bin theo phân vị: $w = 0{,}04 / 256 = 0{,}000156$ m $= 0{,}16$ mm.</li>
+<li>Bin min–max: $w = 0{,}22 / 256 = 0{,}00086$ m $= 0{,}86$ mm.</li>
+<li>Tỉ lệ: $0{,}86 / 0{,}16 = 5{,}5$.</li>
+<li>Với min–max, các cử động bình thường (trong ±0,02 m) chỉ dùng $0{,}04 / 0{,}00086 \approx 46$ trên 256 bin.</li>
+</ol>
+<p><strong>Kết quả.</strong> Một giá trị ngoại lai làm mọi bin rộng gấp 5,5 lần, và chỉ còn 46 bin dùng được thay vì 256.</p>
+<p><strong>Vì sao quan trọng.</strong> Sai số làm tròn là nửa bin: 0,08 mm so với 0,43 mm mỗi bước. Với lắp ghép chính xác, đó là khác biệt giữa bộ điều khiển tinh và thô. Giá trị ngoài khoảng phân vị 1–99 bị cắt về bin ở hai đầu, đó là cái giá của lựa chọn này.</p>
+</div>
+<h2>3. Kết quả</h2>
+<ul>
+<li><strong>Không fine-tune</strong> (WidowX Bridge và Google Robot, 29 tác vụ): hơn RT-2-X 16,5 điểm tuyệt đối; RT-1-X và Octo thường thao tác nhầm vật. RT-2-X vẫn tốt hơn ở tổng quát hóa ngữ nghĩa, paper cho là nhờ tiền huấn luyện web lớn hơn.</li>
+<li><strong>Fine-tune sang bộ Franka mới</strong> (7 tác vụ, 10–150 demo): Diffusion Policy học từ đầu mạnh ở tác vụ hẹp một câu lệnh; OpenVLA và Octo tốt hơn ở tác vụ đa dạng nhiều vật có gắn ngôn ngữ. OpenVLA là phương pháp duy nhất trên 50% ở mọi tác vụ.</li>
+<li><strong>LIBERO</strong> (fine-tune từng bộ): trung bình 76,5% so với 75,1% của Octo và 72,4% của Diffusion Policy; xem <a href="libero.html">LIBERO</a> để biết quy trình.</li>
+<li><strong>Thích nghi hiệu quả:</strong> so sánh đầy đủ các cách fine-tune (toàn bộ, lớp cuối, đóng băng ảnh, sandwich, LoRA) nằm ở <a href="backbone.html">bài backbone</a>. LoRA giảm tính toán 8 lần và học một tác vụ mới trong 10–15 giờ trên một A100.</li>
+</ul>
+<figure class="diagram compact"><svg role="img" aria-label="Bộ nhớ GPU khi suy luận (Bảng 2). Thành công trên 8 tác vụ Bridge: 71,3%, 58,1%, 71,9%." class="dg-natural" width="496" height="102" viewBox="0 0 496 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="36" y="23" text-anchor="end">bf16</text><rect class="dg-bar" x="46" y="10" width="313" height="18"/><text class="dg-barval" x="367" y="23">16,8 GB</text><text class="dg-barlabel" x="36" y="53" text-anchor="end">int8</text><rect class="dg-bar" x="46" y="40" width="190" height="18"/><text class="dg-barval" x="244" y="53">10,2 GB</text><text class="dg-barlabel" x="36" y="83" text-anchor="end">int4</text><rect class="dg-key" x="46" y="70" width="130" height="18"/><text class="dg-barval" x="184" y="83">7 GB</text></svg><figcaption>Bộ nhớ GPU khi suy luận (Bảng 2). Thành công trên 8 tác vụ Bridge: 71,3%, 58,1%, 71,9%.</figcaption></figure>
+<h2>4. Giới hạn paper tự nêu</h2>
+<ul>
+<li>Đầu vào chỉ một ảnh: không camera cổ tay, không lịch sử, không cảm thụ bản thể trong mô hình đã công bố.</li>
+<li>~6 Hz trên 4090 là quá chậm cho điều khiển tần số cao như ALOHA ở 50 Hz.</li>
+<li>Thành công thường dưới 90%, nên chưa đủ tin cậy để triển khai nguyên trạng.</li>
+</ul>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: kiến trúc, dữ liệu, tính toán, cách token hóa, bảng LIBERO, bảng lượng tử hóa và phần giới hạn.</li>
+<li>Thẻ tính tay dùng khoảng hành động tự đặt.</li>
+</ul>
+<p><strong>Mang theo:</strong> đầu ra mỗi chiều một token của OpenVLA chính là thứ <a href="action-tokenization.html">FAST</a> nén lại và <a href="pi0.html">π0</a> thay bằng flow matching; <a href="smolvla.html">SmolVLA</a> hỏi một mô hình như vậy nhỏ được tới đâu.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> một chiều quay tay kẹp có $q_1 = -0{,}10$ rad và $q_{99} = 0{,}10$ rad. Độ rộng bin với 256 bin là bao nhiêu, và sai số làm tròn lớn nhất là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$w = 0{,}20 / 256 = 0{,}00078$ rad (khoảng 0,045°). Sai số làm tròn lớn nhất: nửa bin, 0,00039 rad (khoảng 0,022°).</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

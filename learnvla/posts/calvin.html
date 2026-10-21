@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CALVIN gives the policy five instructions in a row in a simulated room and stops at the first failure. Its headline number, average length, is the expected number of tasks completed in a row; the hard split trains on three rooms and tests on a fourth.">
+<title>CALVIN: Long Chains of Language Instructions · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="CALVIN: Long Chains of Language Instructions">
+<meta property="og:description" content="CALVIN gives the policy five instructions in a row in a simulated room and stops at the first failure. Its headline number, average length, is the expected number of tasks completed in a row; the hard split trains on three rooms and tests on a fourth.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>CALVIN: Long Chains of Language Instructions</h1>
+    <h1 data-vi>CALVIN: Chuỗi dài các câu lệnh ngôn ngữ</h1>
+
+    <p class="post-excerpt-lead" data-en>CALVIN gives the policy five instructions in a row in a simulated room and stops at the first failure. Its headline number, average length, is the expected number of tasks completed in a row; the hard split trains on three rooms and tests on a fourth.</p>
+    <p class="post-excerpt-lead" data-vi>CALVIN đưa cho policy năm câu lệnh liên tiếp trong một căn phòng mô phỏng và dừng ở lần thất bại đầu tiên. Con số chính, average length, là số tác vụ kỳ vọng làm được liên tiếp; phần khó nhất học trên ba phòng và kiểm tra trên phòng thứ tư.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Benchmark</span><span class="pill">CALVIN</span><span class="pill">Long-horizon</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Mees, Hermann, Rosete-Beas, Burgard, <em>CALVIN: A Benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks</em>, <a href="https://arxiv.org/abs/2112.03227">arXiv 2112.03227</a> · 12/2021 · RA-L 2022</p>
+<p><strong>PROBLEM</strong> A home robot gets a sequence of requests ("open the drawer, then put the block in it"), not one isolated task, and it should handle rooms it has not seen.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The closest prior setup (multi-context imitation learning, MCIL) had 18 sub-tasks, chains of 4, no public implementation, and no test on an unseen environment. Single-task benchmarks score each task in isolation, so they never see errors that carry over from one task to the next.</p>
+<p><strong>IDEA</strong> Four similar simulated rooms (A, B, C, D), about 24 hours of unscripted teleoperated "play" with language labels, 34 tasks, and an evaluation of 1,000 chains of five instructions that stops at the first failure.</p>
+<p><strong>RESULT</strong> The MCIL baseline finishes the first instruction in 48.9% of chains but all five in only 0.08% (train and test on room D). The metric later VLA papers quote is the <em>average length</em> on the ABC→D split (0 to 5).</p>
+</div>
+<h2>1. The problem: tasks scored one at a time hide error carry-over</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is to score sequences, so a policy is punished for leaving the scene in a state it cannot continue from." class="dg-natural" width="668" height="206" viewBox="0 0 668 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Isolated tasks</text><rect class="dg-box" x="128" y="22" width="110" height="38"/><text class="dg-t" x="182" y="45" text-anchor="middle">Reset scene</text><path class="dg-a" d="M237 41 H269"/><rect class="dg-badbox" x="271" y="14" width="167" height="54"/><text class="dg-t" x="355" y="37" text-anchor="middle">Score one task</text><text class="dg-s" x="355" y="53" text-anchor="middle">fresh start every time</text><path class="dg-a" d="M438 41 H470"/><rect class="dg-box" x="472" y="22" width="96" height="38"/><text class="dg-t" x="520" y="45" text-anchor="middle">Success %</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ a messy end state never hurts the next task</text><text class="dg-lab dg-green" x="14" y="143">CALVIN</text><rect class="dg-box" x="128" y="120" width="125" height="38"/><text class="dg-t" x="190" y="143" text-anchor="middle">Neutral start</text><path class="dg-a" d="M252 139 H284"/><rect class="dg-key" x="286" y="112" width="201" height="54"/><text class="dg-t" x="387" y="135" text-anchor="middle">5 instructions in a row</text><text class="dg-s" x="387" y="151" text-anchor="middle">stop at the first failure</text><path class="dg-a" d="M487 139 H519"/><rect class="dg-box" x="521" y="120" width="132" height="38"/><text class="dg-t" x="587" y="143" text-anchor="middle">Average length</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ errors carry over, as in a real home</text></svg><figcaption>The change is to score sequences, so a policy is punished for leaving the scene in a state it cannot continue from.</figcaption></figure>
+<h2>2. Setup and splits</h2>
+<figure class="diagram"><svg role="img" aria-label="Training data is unscripted play in some rooms; evaluation follows five instructions in a row. The task names in the chain are an example; the percentages are the MCIL baseline's (D→D)." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TRAIN ON PLAY DATA FROM SOME ROOMS, THEN FOLLOW 5 INSTRUCTIONS IN A ROW</text>
+<rect class="dg-box" x="20" y="44" width="90" height="50"/><text class="dg-t" x="65" y="74" text-anchor="middle">env A</text>
+<rect class="dg-box" x="120" y="44" width="90" height="50"/><text class="dg-t" x="165" y="74" text-anchor="middle">env B</text>
+<rect class="dg-box" x="220" y="44" width="90" height="50"/><text class="dg-t" x="265" y="74" text-anchor="middle">env C</text>
+<rect class="dg-key" x="380" y="44" width="110" height="50"/><text class="dg-t" x="435" y="68" text-anchor="middle">env D</text><text class="dg-s" x="435" y="84" text-anchor="middle">unseen in ABC→D</text>
+<path class="dg-a" d="M310 69 H380"/><text class="dg-s" x="345" y="62" text-anchor="middle">test</text>
+<text class="dg-s" x="165" y="114" text-anchor="middle">~24 h of teleoperated play, 34 tasks, language labels</text>
+<rect class="dg-ext" x="560" y="44" width="400" height="70"/><text class="dg-t" x="760" y="68" text-anchor="middle">Franka Panda, 30 Hz</text><text class="dg-s" x="760" y="88" text-anchor="middle">static + gripper RGB-D, proprioception,</text><text class="dg-s" x="760" y="104" text-anchor="middle">vision-based tactile; cartesian or joint actions</text>
+<text class="dg-h" x="20" y="152">ONE EVALUATION CHAIN (1,000 CHAINS IN TOTAL)</text>
+<rect class="dg-box" x="20" y="166" width="160" height="56"/><text class="dg-t" x="100" y="190" text-anchor="middle">1 open drawer</text><text class="dg-s" x="100" y="208" text-anchor="middle">48.9% of chains</text>
+<rect class="dg-box" x="210" y="166" width="160" height="56"/><text class="dg-t" x="290" y="190" text-anchor="middle">2 push block</text><text class="dg-s" x="290" y="208" text-anchor="middle">12.9%</text>
+<rect class="dg-box" x="400" y="166" width="160" height="56"/><text class="dg-t" x="480" y="190" text-anchor="middle">3 turn on LED</text><text class="dg-s" x="480" y="208" text-anchor="middle">2.6%</text>
+<rect class="dg-box" x="590" y="166" width="160" height="56"/><text class="dg-t" x="670" y="190" text-anchor="middle">4 lift block</text><text class="dg-s" x="670" y="208" text-anchor="middle">0.5%</text>
+<rect class="dg-box" x="780" y="166" width="180" height="56"/><text class="dg-t" x="870" y="190" text-anchor="middle">5 place in slider</text><text class="dg-s" x="870" y="208" text-anchor="middle">0.08%</text>
+<path class="dg-a" d="M180 194 H210"/><path class="dg-a" d="M370 194 H400"/><path class="dg-a" d="M560 194 H590"/><path class="dg-a" d="M750 194 H780"/>
+<text class="dg-l" x="20" y="250">a failure ends the chain: later tasks are never attempted</text>
+<rect class="dg-key" x="20" y="262" width="940" height="44"/><text class="dg-t" x="490" y="289" text-anchor="middle">average length = sum of the five percentages = expected tasks done in a row (0 to 5)</text>
+</svg><figcaption>Training data is unscripted play in some rooms; evaluation follows five instructions in a row. The task names in the chain are an example; the percentages are the MCIL baseline's (D→D).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>CALVIN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>7-DoF Franka Panda with a parallel gripper, actions sent at 30 Hz</td>
+</tr>
+<tr>
+<td>Observations</td>
+<td>static camera RGB-D (200×200), gripper camera RGB-D (84×84), vision-based tactile image, proprioception (EE pose, gripper width, 7 joints)</td>
+</tr>
+<tr>
+<td>Actions</td>
+<td>absolute or relative cartesian pose + gripper, or 7 joint positions + gripper</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>~24 h of teleoperated play, 20K language directives, 400+ crowd-sourced instructions for 34 tasks</td>
+</tr>
+<tr>
+<td>Splits</td>
+<td>D→D (same room), ABCD→D (all rooms), ABC→D (test room never seen: the hardest)</td>
+</tr>
+<tr>
+<td>Long-horizon test</td>
+<td>1,000 unique chains of five, filtered for feasibility, cycles and redundancy</td>
+</tr>
+</tbody>
+</table>
+<p>The test instructions are new phrasings not in the training set, so language generalisation is tested too.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Average length is the expected number of instructions completed in a row. Computing it from the chain percentages shows why it moves so slowly at first and so fast once a policy is reliable.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$P_k$</td>
+<td>fraction of chains that complete the first $k$ instructions</td>
+<td>input</td>
+<td>MCIL D→D: 0.489, 0.129, 0.026, 0.005, 0.0008</td>
+</tr>
+<tr>
+<td>$s$</td>
+<td>per-instruction success, if every step had the same chance</td>
+<td>input</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>average length</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$L = \sum_{k=1}^{5} P_k, \qquad \text{if } P_k = s^k: \quad L = \frac{s\,(1 - s^5)}{1 - s}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>MCIL: $L = 0.489 + 0.129 + 0.026 + 0.005 + 0.0008 = 0.650$.</li>
+<li>Uniform $s = 0.9$: $P_k = 0.9, 0.81, 0.729, 0.656, 0.590$, so $L = 3.686$ (the closed form gives $0.9 \times 0.410 / 0.1 = 3.686$).</li>
+<li>Uniform $s = 0.5$: $L = 0.5 \times (1 - 0.03125) / 0.5 = 0.969$.</li>
+</ol>
+<p><strong>Result.</strong> The baseline averages 0.65 tasks per chain. Going from 50% to 90% per-instruction success multiplies $L$ by about 3.8.</p>
+<p><strong>Why it matters.</strong> $L$ rewards reliability, not single-task peaks: a policy only reaches task 5 if it rarely fails. When a paper reports $L$, also look at $P_5$, the fraction of full chains, which is the strictest number.</p>
+</div>
+<h2>3. What the paper found with its baseline</h2>
+<ul>
+<li>On single tasks (34 tasks, same room) MCIL reaches 53.9%; adding a gripper camera, depth or tactile sensing did not change that much.</li>
+<li>On chains, results collapse: 48.9% → 12.9% → 2.6% → 0.5% → 0.08% (D→D). With three rooms of training data and a new test room, MCIL completes the first instruction in roughly 17–30% of chains, depending on the sensors, and the second in under 2%.</li>
+<li>The authors' reading: long horizons and unseen rooms are the open problem. That is why later VLA papers use ABC→D average length as their headline.</li>
+</ul>
+<h2>4. Why it matters for a force-minded reader</h2>
+<p>CALVIN is one of the few standard benchmarks with a simulated vision-based tactile sensor and selectable action spaces, so it can host a contact-signal ablation. The baseline found no gain from tactile input, because most of its tasks (drawers, buttons, blocks) are decided by position, not by force. A task set where force matters (insertion, wiping) has to come from elsewhere; see the <a href="survey-force-map.html">force survey</a>.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full CALVIN paper: environments, sensors, action spaces, 34 tasks, 1,000 chains and the MCIL table.</li>
+<li>I do not quote later VLA scores on CALVIN here because I have not checked each paper's protocol; when you read one, check the split (ABC→D or ABCD→D) and whether the policy used the gripper camera.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="libero.html">LIBERO</a> checks single tasks per knowledge type; CALVIN checks chains. <a href="simplerenv.html">SimplerEnv</a> asks a different question: does the simulation ranking predict the real one?</p>
+<p><strong>Check question:</strong> a policy has $P = 0.95, 0.85, 0.70, 0.55, 0.40$. What is its average length, and what fraction of chains finish all five instructions?</p>
+<details>
+<summary>Answer</summary>
+<p>$L = 0.95 + 0.85 + 0.70 + 0.55 + 0.40 = 3.45$. Full chains: $P_5 = 40\%$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Mees, Hermann, Rosete-Beas, Burgard, <em>CALVIN: A Benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks</em>, <a href="https://arxiv.org/abs/2112.03227">arXiv 2112.03227</a> · 12/2021 · RA-L 2022</p>
+<p><strong>VẤN ĐỀ</strong> Robot trong nhà nhận một chuỗi yêu cầu ("mở ngăn kéo, rồi bỏ khối vào"), không phải một tác vụ riêng lẻ, và phải xử lý được căn phòng chưa từng thấy.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Bộ thử gần nhất trước đó (học bắt chước đa ngữ cảnh, MCIL) có 18 tác vụ con, chuỗi dài 4, không có mã công khai, và không kiểm tra trên môi trường chưa thấy. Benchmark một tác vụ chấm từng tác vụ riêng, nên không bao giờ thấy lỗi dồn từ tác vụ này sang tác vụ kế.</p>
+<p><strong>Ý TƯỞNG</strong> Bốn căn phòng mô phỏng giống nhau (A, B, C, D), khoảng 24 giờ "chơi" tự do do người điều khiển từ xa có gắn nhãn ngôn ngữ, 34 tác vụ, và bài đánh giá gồm 1.000 chuỗi năm câu lệnh, dừng ở lần thất bại đầu tiên.</p>
+<p><strong>KẾT QUẢ</strong> Baseline MCIL làm xong câu lệnh đầu ở 48,9% số chuỗi nhưng xong cả năm chỉ ở 0,08% (học và thử cùng phòng D). Con số mà các paper VLA sau này trích là <em>average length</em> trên phần ABC→D (từ 0 đến 5).</p>
+</div>
+<h2>1. Vấn đề: chấm từng tác vụ riêng che mất lỗi dồn</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là chấm theo chuỗi, nên policy bị phạt nếu để cảnh ở trạng thái không làm tiếp được." class="dg-natural" width="691" height="206" viewBox="0 0 691 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Tác vụ riêng lẻ</text><rect class="dg-box" x="134" y="22" width="117" height="38"/><text class="dg-t" x="193" y="45" text-anchor="middle">Đặt lại cảnh</text><path class="dg-a" d="M251 41 H283"/><rect class="dg-badbox" x="285" y="14" width="192" height="54"/><text class="dg-t" x="381" y="37" text-anchor="middle">Chấm một tác vụ</text><text class="dg-s" x="381" y="53" text-anchor="middle">mỗi lần bắt đầu lại từ đầu</text><path class="dg-a" d="M478 41 H510"/><rect class="dg-box" x="512" y="22" width="148" height="38"/><text class="dg-t" x="585" y="45" text-anchor="middle">Tỉ lệ thành công</text><text class="dg-note dg-red" x="134.0" y="86">✗ trạng thái lộn xộn cuối tác vụ không ảnh hưởng tác vụ sau</text><text class="dg-lab dg-green" x="14" y="143">CALVIN</text><rect class="dg-box" x="134" y="120" width="163" height="38"/><text class="dg-t" x="215" y="143" text-anchor="middle">Bắt đầu trung tính</text><path class="dg-a" d="M297 139 H329"/><rect class="dg-key" x="331" y="112" width="180" height="54"/><text class="dg-t" x="421" y="135" text-anchor="middle">5 câu lệnh liên tiếp</text><text class="dg-s" x="421" y="151" text-anchor="middle">dừng ở lần hỏng đầu tiên</text><path class="dg-a" d="M510 139 H542"/><rect class="dg-box" x="544" y="120" width="132" height="38"/><text class="dg-t" x="611" y="143" text-anchor="middle">Average length</text><text class="dg-note dg-green" x="134.0" y="184">✓ lỗi dồn sang, như trong nhà thật</text></svg><figcaption>Thay đổi là chấm theo chuỗi, nên policy bị phạt nếu để cảnh ở trạng thái không làm tiếp được.</figcaption></figure>
+<h2>2. Thiết lập và các phần chia</h2>
+<figure class="diagram"><svg role="img" aria-label="Dữ liệu huấn luyện là phần chơi tự do ở một số phòng; bài đánh giá theo năm câu lệnh liên tiếp. Tên tác vụ trong chuỗi chỉ là ví dụ; các phần trăm là của baseline MCIL (D→D)." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">HỌC TỪ DỮ LIỆU CHƠI Ở VÀI PHÒNG, RỒI LÀM 5 CÂU LỆNH LIÊN TIẾP</text>
+<rect class="dg-box" x="20" y="44" width="90" height="50"/><text class="dg-t" x="65" y="74" text-anchor="middle">phòng A</text>
+<rect class="dg-box" x="120" y="44" width="90" height="50"/><text class="dg-t" x="165" y="74" text-anchor="middle">phòng B</text>
+<rect class="dg-box" x="220" y="44" width="90" height="50"/><text class="dg-t" x="265" y="74" text-anchor="middle">phòng C</text>
+<rect class="dg-key" x="380" y="44" width="110" height="50"/><text class="dg-t" x="435" y="68" text-anchor="middle">phòng D</text><text class="dg-s" x="435" y="84" text-anchor="middle">chưa thấy ở ABC→D</text>
+<path class="dg-a" d="M310 69 H380"/><text class="dg-s" x="345" y="62" text-anchor="middle">thử</text>
+<text class="dg-s" x="165" y="114" text-anchor="middle">~24 giờ chơi điều khiển từ xa, 34 tác vụ, nhãn ngôn ngữ</text>
+<rect class="dg-ext" x="560" y="44" width="400" height="70"/><text class="dg-t" x="760" y="68" text-anchor="middle">Franka Panda, 30 Hz</text><text class="dg-s" x="760" y="88" text-anchor="middle">RGB-D cố định + tay kẹp, cảm thụ bản thể,</text><text class="dg-s" x="760" y="104" text-anchor="middle">xúc giác qua camera; hành động Descartes hoặc khớp</text>
+<text class="dg-h" x="20" y="152">MỘT CHUỖI ĐÁNH GIÁ (TỔNG 1.000 CHUỖI)</text>
+<rect class="dg-box" x="20" y="166" width="160" height="56"/><text class="dg-t" x="100" y="190" text-anchor="middle">1 mở ngăn kéo</text><text class="dg-s" x="100" y="208" text-anchor="middle">48,9% số chuỗi</text>
+<rect class="dg-box" x="210" y="166" width="160" height="56"/><text class="dg-t" x="290" y="190" text-anchor="middle">2 đẩy khối</text><text class="dg-s" x="290" y="208" text-anchor="middle">12,9%</text>
+<rect class="dg-box" x="400" y="166" width="160" height="56"/><text class="dg-t" x="480" y="190" text-anchor="middle">3 bật đèn LED</text><text class="dg-s" x="480" y="208" text-anchor="middle">2,6%</text>
+<rect class="dg-box" x="590" y="166" width="160" height="56"/><text class="dg-t" x="670" y="190" text-anchor="middle">4 nhấc khối</text><text class="dg-s" x="670" y="208" text-anchor="middle">0,5%</text>
+<rect class="dg-box" x="780" y="166" width="180" height="56"/><text class="dg-t" x="870" y="190" text-anchor="middle">5 đặt vào ngăn trượt</text><text class="dg-s" x="870" y="208" text-anchor="middle">0,08%</text>
+<path class="dg-a" d="M180 194 H210"/><path class="dg-a" d="M370 194 H400"/><path class="dg-a" d="M560 194 H590"/><path class="dg-a" d="M750 194 H780"/>
+<text class="dg-l" x="20" y="250">hỏng một lần là hết chuỗi: các tác vụ sau không được thử</text>
+<rect class="dg-key" x="20" y="262" width="940" height="44"/><text class="dg-t" x="490" y="289" text-anchor="middle">average length = tổng năm phần trăm = số tác vụ kỳ vọng làm liên tiếp (0 tới 5)</text>
+</svg><figcaption>Dữ liệu huấn luyện là phần chơi tự do ở một số phòng; bài đánh giá theo năm câu lệnh liên tiếp. Tên tác vụ trong chuỗi chỉ là ví dụ; các phần trăm là của baseline MCIL (D→D).</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>CALVIN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Robot</td>
+<td>Franka Panda 7 bậc với tay kẹp song song, gửi hành động ở 30 Hz</td>
+</tr>
+<tr>
+<td>Quan sát</td>
+<td>RGB-D camera cố định (200×200), RGB-D camera tay kẹp (84×84), ảnh xúc giác dựa trên camera, cảm thụ bản thể (tư thế đầu cuối, độ mở kẹp, 7 khớp)</td>
+</tr>
+<tr>
+<td>Hành động</td>
+<td>tư thế Descartes tuyệt đối hoặc tương đối + tay kẹp, hoặc 7 vị trí khớp + tay kẹp</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>~24 giờ chơi điều khiển từ xa, 20K câu chỉ dẫn, hơn 400 câu lệnh thu từ cộng đồng cho 34 tác vụ</td>
+</tr>
+<tr>
+<td>Phần chia</td>
+<td>D→D (cùng phòng), ABCD→D (mọi phòng), ABC→D (phòng thử chưa từng thấy: khó nhất)</td>
+</tr>
+<tr>
+<td>Bài thử tầm dài</td>
+<td>1.000 chuỗi năm câu lệnh khác nhau, đã lọc tính khả thi, vòng lặp và trùng lặp</td>
+</tr>
+</tbody>
+</table>
+<p>Câu lệnh lúc thử là cách diễn đạt mới không có trong tập huấn luyện, nên khả năng tổng quát ngôn ngữ cũng được kiểm tra.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Average length là số câu lệnh kỳ vọng làm xong liên tiếp. Tính nó từ phần trăm của chuỗi cho thấy vì sao lúc đầu nó tăng rất chậm và tăng rất nhanh khi policy đã đáng tin.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$P_k$</td>
+<td>tỉ lệ chuỗi làm xong $k$ câu lệnh đầu</td>
+<td>đầu vào</td>
+<td>MCIL D→D: 0,489, 0,129, 0,026, 0,005, 0,0008</td>
+</tr>
+<tr>
+<td>$s$</td>
+<td>xác suất thành công mỗi câu lệnh, nếu mọi bước như nhau</td>
+<td>đầu vào</td>
+<td>0,9</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>average length</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$L = \sum_{k=1}^{5} P_k, \qquad \text{nếu } P_k = s^k: \quad L = \frac{s\,(1 - s^5)}{1 - s}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>MCIL: $L = 0{,}489 + 0{,}129 + 0{,}026 + 0{,}005 + 0{,}0008 = 0{,}650$.</li>
+<li>$s = 0{,}9$ đều: $P_k = 0{,}9;\ 0{,}81;\ 0{,}729;\ 0{,}656;\ 0{,}590$, nên $L = 3{,}686$ (công thức đóng cho $0{,}9 \times 0{,}410 / 0{,}1 = 3{,}686$).</li>
+<li>$s = 0{,}5$ đều: $L = 0{,}5 \times (1 - 0{,}03125) / 0{,}5 = 0{,}969$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Baseline trung bình làm được 0,65 tác vụ mỗi chuỗi. Đi từ 50% lên 90% thành công mỗi câu lệnh nhân $L$ lên khoảng 3,8 lần.</p>
+<p><strong>Vì sao quan trọng.</strong> $L$ thưởng cho độ ổn định, không cho đỉnh của một tác vụ: policy chỉ tới được tác vụ 5 nếu hiếm khi hỏng. Khi paper báo $L$, hãy xem thêm $P_5$, tỉ lệ làm trọn chuỗi, là con số khắt khe nhất.</p>
+</div>
+<h2>3. Paper thấy gì với baseline của nó</h2>
+<ul>
+<li>Với từng tác vụ (34 tác vụ, cùng phòng) MCIL đạt 53,9%; thêm camera tay kẹp, độ sâu hay xúc giác không thay đổi nhiều.</li>
+<li>Với chuỗi, kết quả sụp: 48,9% → 12,9% → 2,6% → 0,5% → 0,08% (D→D). Khi học trên ba phòng và thử ở phòng mới, MCIL xong câu lệnh đầu ở khoảng 17–30% số chuỗi, tùy bộ cảm biến, và câu thứ hai dưới 2%.</li>
+<li>Cách đọc của tác giả: tầm dài và phòng chưa thấy là bài toán còn mở. Vì vậy các paper VLA sau này lấy average length trên ABC→D làm con số chính.</li>
+</ul>
+<h2>4. Vì sao đáng quan tâm với người làm lực</h2>
+<p>CALVIN là một trong ít benchmark chuẩn có cảm biến xúc giác dựa trên camera trong mô phỏng và cho chọn không gian hành động, nên có thể dùng làm nơi thử bỏ/thêm tín hiệu tiếp xúc. Baseline không thấy lợi từ xúc giác, vì phần lớn tác vụ (ngăn kéo, nút bấm, khối) được quyết định bởi vị trí chứ không phải lực. Bộ tác vụ mà lực quan trọng (lắp ghép, lau) phải tìm ở nơi khác; xem <a href="survey-force-map.html">survey về lực</a>.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn paper CALVIN: môi trường, cảm biến, không gian hành động, 34 tác vụ, 1.000 chuỗi và bảng MCIL.</li>
+<li>Mình không trích điểm CALVIN của các VLA sau này vì chưa kiểm tra quy trình của từng paper; khi đọc, hãy xem phần chia (ABC→D hay ABCD→D) và policy có dùng camera tay kẹp không.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="libero.html">LIBERO</a> kiểm tra từng tác vụ theo loại kiến thức; CALVIN kiểm tra chuỗi. <a href="simplerenv.html">SimplerEnv</a> hỏi một câu khác: thứ hạng trong mô phỏng có đoán được thứ hạng thật không?</p>
+<p><strong>Câu hỏi kiểm tra:</strong> một policy có $P = 0{,}95;\ 0{,}85;\ 0{,}70;\ 0{,}55;\ 0{,}40$. Average length là bao nhiêu, và bao nhiêu phần trăm chuỗi làm xong cả năm câu lệnh?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$L = 0{,}95 + 0{,}85 + 0{,}70 + 0{,}55 + 0{,}40 = 3{,}45$. Trọn chuỗi: $P_5 = 40\%$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

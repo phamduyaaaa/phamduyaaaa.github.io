@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="LIBERO was built to study lifelong learning with four 10-task suites, and became the standard sim score for VLAs. What each suite tests, what the usual protocol is, and why a 2-point gap near 90% needs about 900 trials to mean anything.">
+<title>LIBERO: The Simulation Benchmark Most VLAs Report · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="LIBERO: The Simulation Benchmark Most VLAs Report">
+<meta property="og:description" content="LIBERO was built to study lifelong learning with four 10-task suites, and became the standard sim score for VLAs. What each suite tests, what the usual protocol is, and why a 2-point gap near 90% needs about 900 trials to mean anything.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>LIBERO: The Simulation Benchmark Most VLAs Report</h1>
+    <h1 data-vi>LIBERO: Benchmark mô phỏng mà hầu hết VLA đều báo cáo</h1>
+
+    <p class="post-excerpt-lead" data-en>LIBERO was built to study lifelong learning with four 10-task suites, and became the standard sim score for VLAs. What each suite tests, what the usual protocol is, and why a 2-point gap near 90% needs about 900 trials to mean anything.</p>
+    <p class="post-excerpt-lead" data-vi>LIBERO được làm để nghiên cứu học suốt đời với bốn bộ 10 tác vụ, rồi trở thành điểm mô phỏng chuẩn của VLA. Mỗi bộ kiểm tra gì, quy trình thường dùng ra sao, và vì sao chênh 2 điểm quanh 90% cần khoảng 900 lần thử mới có nghĩa.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Benchmark</span><span class="pill">LIBERO</span><span class="pill">Simulation</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Liu et al., <em>LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning</em>, <a href="https://arxiv.org/abs/2306.03310">arXiv 2306.03310</a> · 06/2023 · NeurIPS 2023 Datasets and Benchmarks</p>
+<p><strong>PROBLEM</strong> To compare robot policies we need tasks that anyone can re-run, with a clear idea of <em>what kind</em> of knowledge each task tests.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Lifelong-learning benchmarks in vision and language test the transfer of <em>declarative</em> knowledge (concepts, entities). The paper argues that decision-making also needs <em>procedural</em> knowledge (how to move), and existing setups did not separate the two.</p>
+<p><strong>IDEA</strong> A procedural generator of tabletop tasks, and four fixed suites, three of which change exactly one factor: layout (Spatial), object (Object), or goal (Goal). The fourth (LIBERO-100) mixes everything. Every task ships with 50 human-teleoperated demonstrations.</p>
+<p><strong>RESULT</strong> 130 tasks in total. The VLA community later adopted the four 10-task suites (Spatial, Object, Goal, Long) as a standard fine-tuning benchmark. OpenVLA reports 76.5% average there; SmolVLA (0.45B) reports 87.3%.</p>
+</div>
+<h2>1. The problem: one score that says nothing about <em>why</em></h2>
+<figure class="diagram flow"><svg role="img" aria-label="The suites act like a controlled experiment: hold everything fixed, change one thing." class="dg-natural" width="714" height="206" viewBox="0 0 714 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Mixed task set</text><rect class="dg-box" x="128" y="22" width="132" height="38"/><text class="dg-t" x="194" y="45" text-anchor="middle">Train on tasks</text><path class="dg-a" d="M260 41 H292"/><rect class="dg-badbox" x="294" y="14" width="276" height="54"/><text class="dg-t" x="432" y="37" text-anchor="middle">One success %</text><text class="dg-s" x="432" y="53" text-anchor="middle">layout, object, goal all change at once</text><path class="dg-a" d="M570 41 H602"/><rect class="dg-box" x="604" y="22" width="96" height="38"/><text class="dg-t" x="652" y="45" text-anchor="middle">Score</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ a failure cannot be traced to a cause</text><text class="dg-lab dg-green" x="14" y="143">LIBERO</text><rect class="dg-box" x="128" y="120" width="148" height="38"/><text class="dg-t" x="201" y="143" text-anchor="middle">Train on a suite</text><path class="dg-a" d="M275 139 H307"/><rect class="dg-key" x="309" y="112" width="173" height="54"/><text class="dg-t" x="396" y="135" text-anchor="middle">Change one factor</text><text class="dg-s" x="396" y="151" text-anchor="middle">Spatial · Object · Goal</text><path class="dg-a" d="M482 139 H514"/><rect class="dg-box" x="516" y="120" width="140" height="38"/><text class="dg-t" x="586" y="143" text-anchor="middle">Score per suite</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ a low Spatial score points at spatial reasoning</text></svg><figcaption>The suites act like a controlled experiment: hold everything fixed, change one thing.</figcaption></figure>
+<h2>2. The four suites</h2>
+<figure class="diagram"><svg role="img" aria-label="Spatial, Object and Goal hold all but one factor fixed. Long mixes them over long horizons and is usually the hardest suite." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FOUR SUITES, EACH CHANGING ONE THING (10 TASKS x 50 HUMAN DEMOS EACH)</text>
+<rect class="dg-box" x="20" y="44" width="220" height="96"/><text class="dg-t" x="130" y="70" text-anchor="middle">LIBERO-Spatial</text><text class="dg-s" x="130" y="92" text-anchor="middle">same objects, new layout</text><text class="dg-s" x="130" y="110" text-anchor="middle">two identical bowls:</text><text class="dg-s" x="130" y="126" text-anchor="middle">which one, by position</text>
+<rect class="dg-box" x="260" y="44" width="220" height="96"/><text class="dg-t" x="370" y="70" text-anchor="middle">LIBERO-Object</text><text class="dg-s" x="370" y="92" text-anchor="middle">same layout, new objects</text><text class="dg-s" x="370" y="110" text-anchor="middle">pick-place a different</text><text class="dg-s" x="370" y="126" text-anchor="middle">object in each task</text>
+<rect class="dg-box" x="500" y="44" width="220" height="96"/><text class="dg-t" x="610" y="70" text-anchor="middle">LIBERO-Goal</text><text class="dg-s" x="610" y="92" text-anchor="middle">same objects and layout</text><text class="dg-s" x="610" y="110" text-anchor="middle">different goal: the</text><text class="dg-s" x="610" y="126" text-anchor="middle">motion must change</text>
+<rect class="dg-key" x="740" y="44" width="220" height="96"/><text class="dg-t" x="850" y="70" text-anchor="middle">LIBERO-Long (LIBERO-10)</text><text class="dg-s" x="850" y="92" text-anchor="middle">diverse objects, scenes</text><text class="dg-s" x="850" y="110" text-anchor="middle">long-horizon tasks,</text><text class="dg-s" x="850" y="126" text-anchor="middle">usually the lowest score</text>
+<text class="dg-l" x="130" y="160" text-anchor="middle">declarative: where</text><text class="dg-l" x="370" y="160" text-anchor="middle">declarative: what</text><text class="dg-l" x="610" y="160" text-anchor="middle">procedural: how</text><text class="dg-l" x="850" y="160" text-anchor="middle">entangled</text>
+<rect class="dg-ext" x="20" y="190" width="300" height="80"/><text class="dg-t" x="170" y="214" text-anchor="middle">fine-tune the VLA</text><text class="dg-s" x="170" y="234" text-anchor="middle">on one suite's demos</text><text class="dg-s" x="170" y="252" text-anchor="middle">(OpenVLA: one policy per suite)</text>
+<rect class="dg-box" x="360" y="190" width="300" height="80"/><text class="dg-t" x="510" y="214" text-anchor="middle">roll out in simulation</text><text class="dg-s" x="510" y="234" text-anchor="middle">Franka Panda, fixed initial states</text><text class="dg-s" x="510" y="252" text-anchor="middle">n trials per task: 10 to 50</text>
+<rect class="dg-key" x="700" y="190" width="260" height="80"/><text class="dg-t" x="830" y="214" text-anchor="middle">report</text><text class="dg-s" x="830" y="234" text-anchor="middle">success rate per suite</text><text class="dg-s" x="830" y="252" text-anchor="middle">+ the average of the four</text>
+<path class="dg-a" d="M320 230 H360"/><path class="dg-a" d="M660 230 H700"/>
+</svg><figcaption>Spatial, Object and Goal hold all but one factor fixed. Long mixes them over long horizons and is usually the hardest suite.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>What changes</th>
+<th>Knowledge type (paper)</th>
+<th>Tasks</th>
+<th>Demos per task</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LIBERO-Spatial</td>
+<td>layout; two identical bowls differ only by position</td>
+<td>declarative (where)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-Object</td>
+<td>which object is picked and placed</td>
+<td>declarative (what)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-Goal</td>
+<td>the goal, with the same objects and layout</td>
+<td>procedural (how)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-100</td>
+<td>everything: 90 short tasks (LIBERO-90) + 10 long tasks (LIBERO-Long, also called LIBERO-10)</td>
+<td>entangled</td>
+<td>100</td>
+<td>50</td>
+</tr>
+</tbody>
+</table>
+<p>In the original paper, LIBERO-90 is the pre-training source and LIBERO-Long is the downstream lifelong-learning test, scored by forward transfer, backward transfer and area under the success curve. VLA papers ignore that lifelong protocol: they fine-tune once per suite and report plain success rates.</p>
+<h2>3. The VLA protocol, and where it varies</h2>
+<p>OpenVLA's appendix fixed what most later papers copy, and also shows how many hidden choices there are:</p>
+<ul>
+<li><strong>Data cleaning.</strong> Replay every demo and drop the failures: 68, 46, 72 and 121 of 500 demos were removed from Spatial, Object, Goal and Long. Drop "no-op" steps (near-zero motion, no gripper change); OpenVLA says expressive single-step policies otherwise learn to freeze.</li>
+<li><strong>Inputs.</strong> Only the third-person camera (no wrist camera) in OpenVLA; images rotated 180° because the simulator renders them upside down.</li>
+<li><strong>Trials.</strong> OpenVLA: 500 trials per suite × 3 seeds. SmolVLA: 10 trials per task, so 100 per suite.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Policy (as reported in SmolVLA, Table 2)</th>
+<th>Robot pre-training</th>
+<th>Spatial</th>
+<th>Object</th>
+<th>Goal</th>
+<th>Long</th>
+<th>Avg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diffusion Policy</td>
+<td>no</td>
+<td>78.3</td>
+<td>92.5</td>
+<td>68.3</td>
+<td>50.5</td>
+<td>72.4</td>
+</tr>
+<tr>
+<td>Octo (0.09B)</td>
+<td>yes</td>
+<td>78.9</td>
+<td>85.7</td>
+<td>84.6</td>
+<td>51.1</td>
+<td>75.1</td>
+</tr>
+<tr>
+<td>OpenVLA (7B)</td>
+<td>yes</td>
+<td>84.7</td>
+<td>88.4</td>
+<td>79.2</td>
+<td>53.7</td>
+<td>76.5</td>
+</tr>
+<tr>
+<td>π0 (3.3B)</td>
+<td>yes</td>
+<td>90</td>
+<td>86</td>
+<td>95</td>
+<td>73</td>
+<td>86.0</td>
+</tr>
+<tr>
+<td>SmolVLA (0.45B)</td>
+<td>no</td>
+<td>90</td>
+<td>96</td>
+<td>92</td>
+<td>71</td>
+<td>87.3</td>
+</tr>
+</tbody>
+</table>
+<p>The first three rows are copied from OpenVLA (1,500 trials each); the last two come from a different protocol with 100 trials per suite. Putting them in one table is common practice, and it is exactly the kind of comparison the <a href="danh-gia-vla.html">evaluation post</a> warns about.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Near the top of LIBERO, papers differ by 1-3 points. How many trials per suite does it take before a gap that small is larger than the noise?</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$p$</td>
+<td>true success rate</td>
+<td>input</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>half-width of the 95% interval we want</td>
+<td>input</td>
+<td>0.02 (±2 points)</td>
+</tr>
+<tr>
+<td>$z$</td>
+<td>95% normal quantile</td>
+<td>constant</td>
+<td>1.96</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>trials needed</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$h$</td>
+<td>half-width actually reached with $n = 100$</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong> (normal approximation, good enough when $np$ and $n(1-p)$ are both above about 10)</p>
+<p>$$n = \frac{z^2\,p(1-p)}{d^2}, \qquad h = z\sqrt{\frac{p(1-p)}{n}}$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>$p(1-p) = 0.9 \times 0.1 = 0.09$.</li>
+<li>$n = 3.8416 \times 0.09 / 0.0004 = 864.4$, so about 865 trials.</li>
+<li>With $n = 100$: $h = 1.96 \times \sqrt{0.09/100} = 1.96 \times 0.03 = 0.0588$.</li>
+</ol>
+<p><strong>Result.</strong> About 865 trials per suite for ±2 points; 100 trials give about ±5.9 points.</p>
+<p><strong>Why it matters.</strong> SmolVLA (0.45B) scores 71% on Long and π0 73%, each from 100 trials. Their Wilson intervals are 61.5–79.0% and 63.6–80.7%: they overlap almost completely, so the table does not rank them on that suite. OpenVLA's 1,500 trials give 51.2–56.2% for its 53.7%, a much tighter claim.</p>
+</div>
+<h2>4. What LIBERO does and does not tell you</h2>
+<ul>
+<li><strong>Does:</strong> whether a policy can learn ten related tabletop tasks from 50 demos each, and which factor (layout, object, goal) it struggles with.</li>
+<li><strong>Does not:</strong> contact, force or friction realism; real camera noise; generalisation to unseen scenes (tasks at test time are the trained tasks with the same initial states).</li>
+<li>Scores near the top are saturated, so newer papers add harder splits or move to <a href="simplerenv.html">SimplerEnv</a>, <a href="robotwin.html">RoboTwin</a> or real robots.</li>
+</ul>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full LIBERO paper (suite definitions, 50 demos, 90/10 split, metrics) and the OpenVLA and SmolVLA papers (protocol, cleaning, table values).</li>
+<li>I do not quote the many later LIBERO numbers (above 95%) because each uses its own protocol; read the protocol before the number.</li>
+</ul>
+<p><strong>Carry forward:</strong> the same counting applies to every benchmark here. Next, <a href="calvin.html">CALVIN</a> scores long chains of tasks, and <a href="simplerenv.html">SimplerEnv</a> asks whether simulation ranks policies the way real robots do.</p>
+<p><strong>Check question:</strong> a paper reports 95% on Goal from 50 trials. What is the 95% half-width with the normal approximation, and would you trust a claim that it beats another method's 92%?</p>
+<details>
+<summary>Answer</summary>
+<p>$h = 1.96\sqrt{0.95 \times 0.05 / 50} = 1.96 \times 0.0308 = 0.060$, so about ±6 points (the normal approximation is rough here since $n(1-p) = 2.5$; Wilson gives about 85–98%). A 3-point gap is well inside the noise.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Liu và cộng sự, <em>LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning</em>, <a href="https://arxiv.org/abs/2306.03310">arXiv 2306.03310</a> · 06/2023 · NeurIPS 2023 Datasets and Benchmarks</p>
+<p><strong>VẤN ĐỀ</strong> Muốn so các policy robot, ta cần tác vụ mà ai cũng chạy lại được, và biết rõ mỗi tác vụ kiểm tra <em>loại</em> kiến thức nào.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các benchmark học suốt đời trong thị giác và ngôn ngữ kiểm tra việc chuyển giao kiến thức <em>khai báo</em> (khái niệm, thực thể). Paper lập luận rằng ra quyết định còn cần kiến thức <em>thủ tục</em> (cử động thế nào), và các bộ thử có sẵn không tách hai loại này ra.</p>
+<p><strong>Ý TƯỞNG</strong> Một bộ sinh tác vụ trên bàn theo quy trình, và bốn bộ cố định, trong đó ba bộ chỉ đổi đúng một yếu tố: bố cục (Spatial), vật (Object), hoặc mục tiêu (Goal). Bộ thứ tư (LIBERO-100) trộn tất cả. Mỗi tác vụ có sẵn 50 demo do người điều khiển từ xa.</p>
+<p><strong>KẾT QUẢ</strong> Tổng cộng 130 tác vụ. Cộng đồng VLA sau đó lấy bốn bộ 10 tác vụ (Spatial, Object, Goal, Long) làm benchmark fine-tune chuẩn. OpenVLA báo cáo trung bình 76,5% ở đó; SmolVLA (0,45B) báo cáo 87,3%.</p>
+</div>
+<h2>1. Vấn đề: một điểm số không nói được <em>vì sao</em></h2>
+<figure class="diagram flow"><svg role="img" aria-label="Các bộ giống một thí nghiệm có kiểm soát: giữ mọi thứ cố định, chỉ đổi một thứ." class="dg-natural" width="696" height="206" viewBox="0 0 696 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Tập tác vụ trộn</text><rect class="dg-box" x="134" y="22" width="140" height="38"/><text class="dg-t" x="204" y="45" text-anchor="middle">Học trên tác vụ</text><path class="dg-a" d="M274 41 H306"/><rect class="dg-badbox" x="308" y="14" width="244" height="54"/><text class="dg-t" x="430" y="37" text-anchor="middle">Một tỉ lệ thành công</text><text class="dg-s" x="430" y="53" text-anchor="middle">bố cục, vật, mục tiêu đổi cùng lúc</text><path class="dg-a" d="M552 41 H584"/><rect class="dg-box" x="586" y="22" width="96" height="38"/><text class="dg-t" x="634" y="45" text-anchor="middle">Điểm</text><text class="dg-note dg-red" x="134.0" y="86">✗ không lần ra được nguyên nhân thất bại</text><text class="dg-lab dg-green" x="14" y="143">LIBERO</text><rect class="dg-box" x="134" y="120" width="140" height="38"/><text class="dg-t" x="204" y="143" text-anchor="middle">Học trên một bộ</text><path class="dg-a" d="M274 139 H306"/><rect class="dg-key" x="308" y="112" width="173" height="54"/><text class="dg-t" x="395" y="135" text-anchor="middle">Đổi một yếu tố</text><text class="dg-s" x="395" y="151" text-anchor="middle">Spatial · Object · Goal</text><path class="dg-a" d="M481 139 H513"/><rect class="dg-box" x="515" y="120" width="117" height="38"/><text class="dg-t" x="574" y="143" text-anchor="middle">Điểm theo bộ</text><text class="dg-note dg-green" x="134.0" y="184">✓ điểm Spatial thấp chỉ thẳng vào suy luận không gian</text></svg><figcaption>Các bộ giống một thí nghiệm có kiểm soát: giữ mọi thứ cố định, chỉ đổi một thứ.</figcaption></figure>
+<h2>2. Bốn bộ tác vụ</h2>
+<figure class="diagram"><svg role="img" aria-label="Spatial, Object và Goal giữ cố định mọi yếu tố trừ một. Long trộn chúng trên tầm dài và thường là bộ khó nhất." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">BỐN BỘ, MỖI BỘ ĐỔI MỘT THỨ (10 TÁC VỤ x 50 DEMO NGƯỜI MỖI BỘ)</text>
+<rect class="dg-box" x="20" y="44" width="220" height="96"/><text class="dg-t" x="130" y="70" text-anchor="middle">LIBERO-Spatial</text><text class="dg-s" x="130" y="92" text-anchor="middle">cùng vật, bố cục mới</text><text class="dg-s" x="130" y="110" text-anchor="middle">hai bát giống hệt:</text><text class="dg-s" x="130" y="126" text-anchor="middle">cái nào, theo vị trí</text>
+<rect class="dg-box" x="260" y="44" width="220" height="96"/><text class="dg-t" x="370" y="70" text-anchor="middle">LIBERO-Object</text><text class="dg-s" x="370" y="92" text-anchor="middle">cùng bố cục, vật mới</text><text class="dg-s" x="370" y="110" text-anchor="middle">gắp-đặt một vật</text><text class="dg-s" x="370" y="126" text-anchor="middle">khác ở mỗi tác vụ</text>
+<rect class="dg-box" x="500" y="44" width="220" height="96"/><text class="dg-t" x="610" y="70" text-anchor="middle">LIBERO-Goal</text><text class="dg-s" x="610" y="92" text-anchor="middle">cùng vật và bố cục</text><text class="dg-s" x="610" y="110" text-anchor="middle">mục tiêu khác: cử động</text><text class="dg-s" x="610" y="126" text-anchor="middle">phải thay đổi</text>
+<rect class="dg-key" x="740" y="44" width="220" height="96"/><text class="dg-t" x="850" y="70" text-anchor="middle">LIBERO-Long (LIBERO-10)</text><text class="dg-s" x="850" y="92" text-anchor="middle">vật, cảnh đa dạng</text><text class="dg-s" x="850" y="110" text-anchor="middle">tác vụ tầm dài,</text><text class="dg-s" x="850" y="126" text-anchor="middle">thường điểm thấp nhất</text>
+<text class="dg-l" x="130" y="160" text-anchor="middle">khai báo: ở đâu</text><text class="dg-l" x="370" y="160" text-anchor="middle">khai báo: cái gì</text><text class="dg-l" x="610" y="160" text-anchor="middle">thủ tục: thế nào</text><text class="dg-l" x="850" y="160" text-anchor="middle">đan xen</text>
+<rect class="dg-ext" x="20" y="190" width="300" height="80"/><text class="dg-t" x="170" y="214" text-anchor="middle">fine-tune VLA</text><text class="dg-s" x="170" y="234" text-anchor="middle">trên demo của một bộ</text><text class="dg-s" x="170" y="252" text-anchor="middle">(OpenVLA: mỗi bộ một policy)</text>
+<rect class="dg-box" x="360" y="190" width="300" height="80"/><text class="dg-t" x="510" y="214" text-anchor="middle">chạy trong mô phỏng</text><text class="dg-s" x="510" y="234" text-anchor="middle">Franka Panda, trạng thái đầu cố định</text><text class="dg-s" x="510" y="252" text-anchor="middle">n lượt mỗi tác vụ: 10 tới 50</text>
+<rect class="dg-key" x="700" y="190" width="260" height="80"/><text class="dg-t" x="830" y="214" text-anchor="middle">báo cáo</text><text class="dg-s" x="830" y="234" text-anchor="middle">tỉ lệ thành công mỗi bộ</text><text class="dg-s" x="830" y="252" text-anchor="middle">+ trung bình của bốn bộ</text>
+<path class="dg-a" d="M320 230 H360"/><path class="dg-a" d="M660 230 H700"/>
+</svg><figcaption>Spatial, Object và Goal giữ cố định mọi yếu tố trừ một. Long trộn chúng trên tầm dài và thường là bộ khó nhất.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Bộ</th>
+<th>Cái gì thay đổi</th>
+<th>Loại kiến thức (theo paper)</th>
+<th>Số tác vụ</th>
+<th>Demo mỗi tác vụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LIBERO-Spatial</td>
+<td>bố cục; hai cái bát giống hệt chỉ khác vị trí</td>
+<td>khai báo (ở đâu)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-Object</td>
+<td>vật được gắp và đặt</td>
+<td>khai báo (cái gì)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-Goal</td>
+<td>mục tiêu, với cùng vật và bố cục</td>
+<td>thủ tục (làm thế nào)</td>
+<td>10</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LIBERO-100</td>
+<td>mọi thứ: 90 tác vụ ngắn (LIBERO-90) + 10 tác vụ dài (LIBERO-Long, còn gọi LIBERO-10)</td>
+<td>đan xen</td>
+<td>100</td>
+<td>50</td>
+</tr>
+</tbody>
+</table>
+<p>Trong paper gốc, LIBERO-90 là nguồn tiền huấn luyện, còn LIBERO-Long là bài kiểm tra học suốt đời, chấm bằng chuyển giao xuôi, chuyển giao ngược và diện tích dưới đường tỉ lệ thành công. Các paper VLA bỏ qua giao thức học suốt đời đó: fine-tune một lần cho mỗi bộ và báo cáo tỉ lệ thành công thuần.</p>
+<h2>3. Quy trình của VLA, và chỗ nó khác nhau</h2>
+<p>Phụ lục của OpenVLA chốt quy trình mà phần lớn paper sau chép lại, đồng thời cho thấy có bao nhiêu lựa chọn ẩn:</p>
+<ul>
+<li><strong>Làm sạch dữ liệu.</strong> Chạy lại mọi demo và bỏ demo thất bại: bỏ 68, 46, 72 và 121 trên 500 demo ở Spatial, Object, Goal và Long. Bỏ bước "no-op" (gần như không cử động, tay kẹp không đổi); OpenVLA nói nếu không bỏ, policy một bước đủ mạnh sẽ học cách đứng im.</li>
+<li><strong>Đầu vào.</strong> OpenVLA chỉ dùng camera góc thứ ba (không dùng camera cổ tay); ảnh xoay 180° vì trình mô phỏng xuất ảnh lộn ngược.</li>
+<li><strong>Số lần thử.</strong> OpenVLA: 500 lần mỗi bộ × 3 seed. SmolVLA: 10 lần mỗi tác vụ, tức 100 lần mỗi bộ.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Policy (theo Bảng 2 của SmolVLA)</th>
+<th>Tiền huấn luyện robot</th>
+<th>Spatial</th>
+<th>Object</th>
+<th>Goal</th>
+<th>Long</th>
+<th>TB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diffusion Policy</td>
+<td>không</td>
+<td>78,3</td>
+<td>92,5</td>
+<td>68,3</td>
+<td>50,5</td>
+<td>72,4</td>
+</tr>
+<tr>
+<td>Octo (0,09B)</td>
+<td>có</td>
+<td>78,9</td>
+<td>85,7</td>
+<td>84,6</td>
+<td>51,1</td>
+<td>75,1</td>
+</tr>
+<tr>
+<td>OpenVLA (7B)</td>
+<td>có</td>
+<td>84,7</td>
+<td>88,4</td>
+<td>79,2</td>
+<td>53,7</td>
+<td>76,5</td>
+</tr>
+<tr>
+<td>π0 (3,3B)</td>
+<td>có</td>
+<td>90</td>
+<td>86</td>
+<td>95</td>
+<td>73</td>
+<td>86,0</td>
+</tr>
+<tr>
+<td>SmolVLA (0,45B)</td>
+<td>không</td>
+<td>90</td>
+<td>96</td>
+<td>92</td>
+<td>71</td>
+<td>87,3</td>
+</tr>
+</tbody>
+</table>
+<p>Ba dòng đầu chép từ OpenVLA (1.500 lần thử mỗi số); hai dòng cuối theo quy trình khác, 100 lần mỗi bộ. Gộp chung một bảng là chuyện thường gặp, và đúng là kiểu so sánh mà <a href="danh-gia-vla.html">bài đánh giá</a> cảnh báo.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Ở vùng điểm cao của LIBERO, các paper chênh nhau 1-3 điểm. Cần bao nhiêu lần thử mỗi bộ thì khoảng chênh nhỏ như vậy mới lớn hơn nhiễu?</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$p$</td>
+<td>tỉ lệ thành công thật</td>
+<td>đầu vào</td>
+<td>0,90</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>nửa độ rộng khoảng tin cậy 95% mong muốn</td>
+<td>đầu vào</td>
+<td>0,02 (±2 điểm)</td>
+</tr>
+<tr>
+<td>$z$</td>
+<td>phân vị chuẩn 95%</td>
+<td>hằng số</td>
+<td>1,96</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>số lần thử cần</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$h$</td>
+<td>nửa độ rộng thực tế khi $n = 100$</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong> (xấp xỉ chuẩn, đủ dùng khi $np$ và $n(1-p)$ đều trên khoảng 10)</p>
+<p>$$n = \frac{z^2\,p(1-p)}{d^2}, \qquad h = z\sqrt{\frac{p(1-p)}{n}}$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>$p(1-p) = 0{,}9 \times 0{,}1 = 0{,}09$.</li>
+<li>$n = 3{,}8416 \times 0{,}09 / 0{,}0004 = 864{,}4$, tức khoảng 865 lần thử.</li>
+<li>Với $n = 100$: $h = 1{,}96 \times \sqrt{0{,}09/100} = 1{,}96 \times 0{,}03 = 0{,}0588$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Khoảng 865 lần thử mỗi bộ cho ±2 điểm; 100 lần thử chỉ cho khoảng ±5,9 điểm.</p>
+<p><strong>Vì sao quan trọng.</strong> SmolVLA (0,45B) đạt 71% ở Long còn π0 đạt 73%, mỗi số từ 100 lần thử. Khoảng Wilson của chúng là 61,5–79,0% và 63,6–80,7%: chồng lên nhau gần hết, nên bảng không xếp hạng được hai mô hình ở bộ này. 1.500 lần thử của OpenVLA cho 51,2–56,2% quanh 53,7%, một khẳng định chặt hơn nhiều.</p>
+</div>
+<h2>4. LIBERO cho biết gì và không cho biết gì</h2>
+<ul>
+<li><strong>Cho biết:</strong> policy có học được mười tác vụ trên bàn liên quan nhau từ 50 demo mỗi tác vụ không, và nó yếu ở yếu tố nào (bố cục, vật, mục tiêu).</li>
+<li><strong>Không cho biết:</strong> độ thật của tiếp xúc, lực, ma sát; nhiễu camera thật; khả năng tổng quát sang cảnh chưa thấy (lúc kiểm tra vẫn là các tác vụ đã học, cùng trạng thái ban đầu).</li>
+<li>Điểm ở vùng cao đã bão hòa, nên paper mới thêm phần khó hơn hoặc chuyển sang <a href="simplerenv.html">SimplerEnv</a>, <a href="robotwin.html">RoboTwin</a> hay robot thật.</li>
+</ul>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn paper LIBERO (định nghĩa các bộ, 50 demo, chia 90/10, thước đo) và với paper OpenVLA, SmolVLA (quy trình, làm sạch, số trong bảng).</li>
+<li>Mình không trích các số LIBERO mới hơn (trên 95%) vì mỗi paper dùng quy trình riêng; đọc quy trình trước khi đọc con số.</li>
+</ul>
+<p><strong>Mang theo:</strong> cách đếm này áp dụng cho mọi benchmark ở đây. Tiếp theo, <a href="calvin.html">CALVIN</a> chấm chuỗi tác vụ dài, còn <a href="simplerenv.html">SimplerEnv</a> hỏi liệu mô phỏng có xếp hạng policy giống robot thật không.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> một paper báo 95% ở Goal từ 50 lần thử. Nửa độ rộng 95% theo xấp xỉ chuẩn là bao nhiêu, và bạn có tin khẳng định nó hơn 92% của phương pháp khác không?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$h = 1{,}96\sqrt{0{,}95 \times 0{,}05 / 50} = 1{,}96 \times 0{,}0308 = 0{,}060$, tức khoảng ±6 điểm (xấp xỉ chuẩn ở đây khá thô vì $n(1-p) = 2{,}5$; Wilson cho khoảng 85–98%). Chênh 3 điểm nằm gọn trong nhiễu.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

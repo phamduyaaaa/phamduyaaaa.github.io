@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 310" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">REAL-TO-SIM: BUILD A SIMULATOR WHOSE RANKING OF POLICIES MATCHES THE REAL ONE</text>
+<rect class="dg-ext" x="20" y="44" width="200" height="70"/><text class="dg-t" x="120" y="70" text-anchor="middle">real setup</text><text class="dg-s" x="120" y="90" text-anchor="middle">Google Robot (RT-1 tasks)</text><text class="dg-s" x="120" y="106" text-anchor="middle">WidowX + BridgeData V2</text>
+<rect class="dg-box" x="270" y="44" width="200" height="70"/><text class="dg-t" x="370" y="70" text-anchor="middle">control gap</text><text class="dg-s" x="370" y="90" text-anchor="middle">fit PD stiffness/damping</text><text class="dg-s" x="370" y="106" text-anchor="middle">to logged EE trajectories</text>
+<rect class="dg-box" x="520" y="44" width="200" height="70"/><text class="dg-t" x="620" y="70" text-anchor="middle">visual gap</text><text class="dg-s" x="620" y="90" text-anchor="middle">green screen real background</text><text class="dg-s" x="620" y="106" text-anchor="middle">+ textures baked from photos</text>
+<rect class="dg-key" x="770" y="44" width="190" height="70"/><text class="dg-t" x="865" y="70" text-anchor="middle">SIMPLER env</text><text class="dg-s" x="865" y="90" text-anchor="middle">Gym interface,</text><text class="dg-s" x="865" y="106" text-anchor="middle">one line to load</text>
+<path class="dg-a" d="M220 79 H270"/><path class="dg-a" d="M470 79 H520"/><path class="dg-a" d="M720 79 H770"/>
+<rect class="dg-box" x="20" y="160" width="250" height="70"/><text class="dg-t" x="145" y="186" text-anchor="middle">same policies, two places</text><text class="dg-s" x="145" y="206" text-anchor="middle">RT-1, RT-1-X, RT-2-X, Octo</text><text class="dg-s" x="145" y="222" text-anchor="middle">trained on real data only</text>
+<rect class="dg-box" x="320" y="160" width="300" height="70"/><text class="dg-t" x="470" y="186" text-anchor="middle">compare success rates</text><text class="dg-s" x="470" y="206" text-anchor="middle">real R_i  vs  simulated R_S,i</text><text class="dg-s" x="470" y="222" text-anchor="middle">~1,500 real episodes in the paper</text>
+<rect class="dg-key" x="670" y="160" width="290" height="70"/><text class="dg-t" x="815" y="186" text-anchor="middle">MMRV (lower) + Pearson r</text><text class="dg-s" x="815" y="206" text-anchor="middle">Google Robot avg: 0.056, 0.924</text><text class="dg-s" x="815" y="222" text-anchor="middle">validation MSE: 0.375, 0.308</text>
+<path class="dg-a" d="M865 114 V137 H145 V160"/><path class="dg-a" d="M270 195 H320"/><path class="dg-a" d="M620 195 H670"/>
+<text class="dg-l" x="20" y="268">the simulator matters most for the order of the policies, not the exact success rates</text>
+<text class="dg-s" x="20" y="290">not a sim-to-real training environment: the policies never train in it</text>
+</svg>

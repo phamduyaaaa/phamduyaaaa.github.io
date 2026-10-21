@@ -75,7 +75,7 @@
   <article class="post-body">
     <div data-en>
 <div class="tldr">
-<p><strong>TOPIC</strong> Evaluating VLA policies. No single paper; benchmarks are covered on their own pages (LIBERO, SimplerEnv, CALVIN, RoboTwin).</p>
+<p><strong>TOPIC</strong> Evaluating VLA policies. No single paper; benchmarks are covered on their own pages (<a href="libero.html">LIBERO</a>, <a href="simplerenv.html">SimplerEnv</a>, <a href="calvin.html">CALVIN</a>, <a href="robotwin.html">RoboTwin</a>, <a href="gm-100.html">GM-100</a>).</p>
 <p><strong>PROBLEM</strong> To say "method A beats method B" we need a number we can trust. Robot trials are slow and costly, so each number comes from few rollouts.</p>
 <p><strong>WHAT FAILED BEFORE</strong> Papers report one success percentage, often from about 15 rollouts per task, with different tasks, scenes and protocols. <a href="survey-force-output.html">Survey 3</a> shows ForceVLA scored anywhere from 12% to 60.5% depending on the paper that ran it, so a bare number does not travel between papers.</p>
 <p><strong>IDEA</strong> Report the number <em>with</em> its uncertainty, a partial-credit score, the protocol, and the generalisation split. Compare only under the same protocol.</p>
@@ -152,28 +152,34 @@
 </thead>
 <tbody>
 <tr>
-<td>CALVIN</td>
+<td><a href="calvin.html">CALVIN</a></td>
 <td>12/2021</td>
 <td>simulation, long-horizon, language-conditioned</td>
 <td>average number of tasks completed in a row (the usual metric; chains of 5)</td>
 </tr>
 <tr>
-<td>LIBERO</td>
+<td><a href="libero.html">LIBERO</a></td>
 <td>06/2023</td>
 <td>simulation, built for lifelong learning: 130 tasks in four suites</td>
 <td>success per suite; originally a knowledge-transfer benchmark, now widely used to score VLAs</td>
 </tr>
 <tr>
-<td>SimplerEnv</td>
+<td><a href="simplerenv.html">SimplerEnv</a></td>
 <td>05/2024</td>
 <td>simulation built to track real-robot results</td>
 <td>does the sim ranking match the real ranking</td>
 </tr>
 <tr>
-<td>RoboTwin</td>
+<td><a href="robotwin.html">RoboTwin</a></td>
 <td>09/2024</td>
 <td>generative digital twins: data generation and a sim + real benchmark for dual-arm tasks</td>
 <td>bimanual coordination, sim-to-real alignment</td>
+</tr>
+<tr>
+<td><a href="gm-100.html">GM-100</a></td>
+<td>01/2026</td>
+<td>real robots: 100 long-tail dual-arm tasks, two platforms</td>
+<td>success and partial success on fixed test cases</td>
 </tr>
 <tr>
 <td>Real robot</td>
@@ -262,7 +268,7 @@
     </div>
     <div data-vi>
 <div class="tldr">
-<p><strong>CHỦ ĐỀ</strong> Đánh giá chính sách VLA. Không có paper riêng; các benchmark có trang riêng (LIBERO, SimplerEnv, CALVIN, RoboTwin).</p>
+<p><strong>CHỦ ĐỀ</strong> Đánh giá chính sách VLA. Không có paper riêng; các benchmark có trang riêng (<a href="libero.html">LIBERO</a>, <a href="simplerenv.html">SimplerEnv</a>, <a href="calvin.html">CALVIN</a>, <a href="robotwin.html">RoboTwin</a>, <a href="gm-100.html">GM-100</a>).</p>
 <p><strong>VẤN ĐỀ</strong> Để nói "phương pháp A hơn B" ta cần một con số đáng tin. Thử trên robot chậm và đắt, nên mỗi con số đến từ ít lần chạy.</p>
 <p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Các paper báo cáo một tỉ lệ thành công duy nhất, thường từ khoảng 15 lần chạy mỗi tác vụ, với tác vụ, cảnh và quy trình khác nhau. <a href="survey-force-output.html">Survey 3</a> cho thấy ForceVLA đạt từ 12% đến 60,5% tùy paper chạy nó, nên một con số trần không mang sang paper khác được.</p>
 <p><strong>Ý TƯỞNG</strong> Báo cáo con số <em>kèm</em> độ bất định, điểm từng phần, quy trình và phần tách kiểm tra tổng quát hóa. Chỉ so sánh khi cùng quy trình.</p>
@@ -339,28 +345,34 @@
 </thead>
 <tbody>
 <tr>
-<td>CALVIN</td>
+<td><a href="calvin.html">CALVIN</a></td>
 <td>12/2021</td>
 <td>mô phỏng, dài hạn, điều kiện theo ngôn ngữ</td>
 <td>số tác vụ hoàn thành liên tiếp trung bình (thước đo thông dụng; chuỗi 5 tác vụ)</td>
 </tr>
 <tr>
-<td>LIBERO</td>
+<td><a href="libero.html">LIBERO</a></td>
 <td>06/2023</td>
 <td>mô phỏng, xây cho lifelong learning: 130 tác vụ trong bốn suite</td>
 <td>thành công theo suite; ban đầu là benchmark chuyển giao tri thức, nay được dùng rộng rãi để chấm VLA</td>
 </tr>
 <tr>
-<td>SimplerEnv</td>
+<td><a href="simplerenv.html">SimplerEnv</a></td>
 <td>05/2024</td>
 <td>mô phỏng được thiết kế để bám kết quả robot thật</td>
 <td>thứ hạng trong mô phỏng có khớp thứ hạng thật không</td>
 </tr>
 <tr>
-<td>RoboTwin</td>
+<td><a href="robotwin.html">RoboTwin</a></td>
 <td>09/2024</td>
 <td>digital twin sinh tạo: sinh dữ liệu và benchmark mô phỏng + thật cho tác vụ hai tay</td>
 <td>phối hợp hai tay, độ khớp giữa mô phỏng và thật</td>
+</tr>
+<tr>
+<td><a href="gm-100.html">GM-100</a></td>
+<td>01/2026</td>
+<td>robot thật: 100 tác vụ hai tay đuôi dài, hai nền tảng</td>
+<td>thành công và thành công từng phần trên ca thử cố định</td>
 </tr>
 <tr>
 <td>Robot thật</td>

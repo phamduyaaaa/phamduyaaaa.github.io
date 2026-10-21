@@ -1,0 +1,13 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OPENVLA: AN OPEN 7B VLM THAT ANSWERS WITH 7 ACTION TOKENS</text>
+<rect class="dg-ext" x="20" y="44" width="150" height="64"/><text class="dg-t" x="95" y="70" text-anchor="middle">image</text><text class="dg-s" x="95" y="90" text-anchor="middle">224 x 224, one camera</text>
+<rect class="dg-box" x="200" y="44" width="200" height="64"/><text class="dg-t" x="300" y="70" text-anchor="middle">DINOv2 + SigLIP</text><text class="dg-s" x="300" y="90" text-anchor="middle">features concatenated, 600M</text>
+<rect class="dg-box" x="430" y="44" width="150" height="64"/><text class="dg-t" x="505" y="70" text-anchor="middle">projector</text><text class="dg-s" x="505" y="90" text-anchor="middle">2-layer MLP</text>
+<rect class="dg-ext" x="20" y="140" width="150" height="64"/><text class="dg-t" x="95" y="166" text-anchor="middle">instruction</text><text class="dg-s" x="95" y="186" text-anchor="middle">"put the eggplant ..."</text>
+<rect class="dg-key" x="610" y="44" width="170" height="160"/><text class="dg-t" x="695" y="100" text-anchor="middle">Llama 2 7B</text><text class="dg-s" x="695" y="122" text-anchor="middle">Prismatic-7B VLM,</text><text class="dg-s" x="695" y="138" text-anchor="middle">fully fine-tuned</text><text class="dg-s" x="695" y="154" text-anchor="middle">on 970k OXE episodes</text>
+<rect class="dg-box" x="810" y="44" width="150" height="74"/><text class="dg-t" x="885" y="68" text-anchor="middle">7 tokens</text><text class="dg-s" x="885" y="88" text-anchor="middle">6 EE deltas + gripper</text><text class="dg-s" x="885" y="104" text-anchor="middle">256 bins each</text>
+<rect class="dg-box" x="810" y="140" width="150" height="64"/><text class="dg-t" x="885" y="166" text-anchor="middle">robot</text><text class="dg-s" x="885" y="186" text-anchor="middle">~6 Hz on an RTX 4090</text>
+<path class="dg-a" d="M170 76 H200"/><path class="dg-a" d="M400 76 H430"/><path class="dg-a" d="M580 76 H610"/><path class="dg-a" d="M170 172 H610"/><path class="dg-a" d="M780 81 H810"/><path class="dg-a" d="M885 118 V140"/>
+<text class="dg-s" x="20" y="240">bins span the 1st-99th percentile of each action dimension; the 256 least-used Llama tokens are overwritten as bin tokens</text>
+<text class="dg-l" x="20" y="268">trained 27 epochs on 64 A100s for 14 days; fine-tune with LoRA on one GPU; int4 inference in 7 GB</text>
+</svg>

@@ -1,0 +1,19 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TRAIN ON PLAY DATA FROM SOME ROOMS, THEN FOLLOW 5 INSTRUCTIONS IN A ROW</text>
+<rect class="dg-box" x="20" y="44" width="90" height="50"/><text class="dg-t" x="65" y="74" text-anchor="middle">env A</text>
+<rect class="dg-box" x="120" y="44" width="90" height="50"/><text class="dg-t" x="165" y="74" text-anchor="middle">env B</text>
+<rect class="dg-box" x="220" y="44" width="90" height="50"/><text class="dg-t" x="265" y="74" text-anchor="middle">env C</text>
+<rect class="dg-key" x="380" y="44" width="110" height="50"/><text class="dg-t" x="435" y="68" text-anchor="middle">env D</text><text class="dg-s" x="435" y="84" text-anchor="middle">unseen in ABC→D</text>
+<path class="dg-a" d="M310 69 H380"/><text class="dg-s" x="345" y="62" text-anchor="middle">test</text>
+<text class="dg-s" x="165" y="114" text-anchor="middle">~24 h of teleoperated play, 34 tasks, language labels</text>
+<rect class="dg-ext" x="560" y="44" width="400" height="70"/><text class="dg-t" x="760" y="68" text-anchor="middle">Franka Panda, 30 Hz</text><text class="dg-s" x="760" y="88" text-anchor="middle">static + gripper RGB-D, proprioception,</text><text class="dg-s" x="760" y="104" text-anchor="middle">vision-based tactile; cartesian or joint actions</text>
+<text class="dg-h" x="20" y="152">ONE EVALUATION CHAIN (1,000 CHAINS IN TOTAL)</text>
+<rect class="dg-box" x="20" y="166" width="160" height="56"/><text class="dg-t" x="100" y="190" text-anchor="middle">1 open drawer</text><text class="dg-s" x="100" y="208" text-anchor="middle">48.9% of chains</text>
+<rect class="dg-box" x="210" y="166" width="160" height="56"/><text class="dg-t" x="290" y="190" text-anchor="middle">2 push block</text><text class="dg-s" x="290" y="208" text-anchor="middle">12.9%</text>
+<rect class="dg-box" x="400" y="166" width="160" height="56"/><text class="dg-t" x="480" y="190" text-anchor="middle">3 turn on LED</text><text class="dg-s" x="480" y="208" text-anchor="middle">2.6%</text>
+<rect class="dg-box" x="590" y="166" width="160" height="56"/><text class="dg-t" x="670" y="190" text-anchor="middle">4 lift block</text><text class="dg-s" x="670" y="208" text-anchor="middle">0.5%</text>
+<rect class="dg-box" x="780" y="166" width="180" height="56"/><text class="dg-t" x="870" y="190" text-anchor="middle">5 place in slider</text><text class="dg-s" x="870" y="208" text-anchor="middle">0.08%</text>
+<path class="dg-a" d="M180 194 H210"/><path class="dg-a" d="M370 194 H400"/><path class="dg-a" d="M560 194 H590"/><path class="dg-a" d="M750 194 H780"/>
+<text class="dg-l" x="20" y="250">a failure ends the chain: later tasks are never attempted</text>
+<rect class="dg-key" x="20" y="262" width="940" height="44"/><text class="dg-t" x="490" y="289" text-anchor="middle">average length = sum of the five percentages = expected tasks done in a row (0 to 5)</text>
+</svg>

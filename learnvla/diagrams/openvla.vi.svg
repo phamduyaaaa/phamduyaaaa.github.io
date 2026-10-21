@@ -1,0 +1,13 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">OPENVLA: VLM MỞ 7B TRẢ LỜI BẰNG 7 TOKEN HÀNH ĐỘNG</text>
+<rect class="dg-ext" x="20" y="44" width="150" height="64"/><text class="dg-t" x="95" y="70" text-anchor="middle">ảnh</text><text class="dg-s" x="95" y="90" text-anchor="middle">224 x 224, một camera</text>
+<rect class="dg-box" x="200" y="44" width="200" height="64"/><text class="dg-t" x="300" y="70" text-anchor="middle">DINOv2 + SigLIP</text><text class="dg-s" x="300" y="90" text-anchor="middle">nối đặc trưng, 600M</text>
+<rect class="dg-box" x="430" y="44" width="150" height="64"/><text class="dg-t" x="505" y="70" text-anchor="middle">projector</text><text class="dg-s" x="505" y="90" text-anchor="middle">MLP 2 lớp</text>
+<rect class="dg-ext" x="20" y="140" width="150" height="64"/><text class="dg-t" x="95" y="166" text-anchor="middle">câu lệnh</text><text class="dg-s" x="95" y="186" text-anchor="middle">"đặt quả cà tím ..."</text>
+<rect class="dg-key" x="610" y="44" width="170" height="160"/><text class="dg-t" x="695" y="100" text-anchor="middle">Llama 2 7B</text><text class="dg-s" x="695" y="122" text-anchor="middle">Prismatic-7B VLM,</text><text class="dg-s" x="695" y="138" text-anchor="middle">fine-tune toàn bộ</text><text class="dg-s" x="695" y="154" text-anchor="middle">trên 970k episode OXE</text>
+<rect class="dg-box" x="810" y="44" width="150" height="74"/><text class="dg-t" x="885" y="68" text-anchor="middle">7 token</text><text class="dg-s" x="885" y="88" text-anchor="middle">6 delta EE + tay kẹp</text><text class="dg-s" x="885" y="104" text-anchor="middle">mỗi token 256 bin</text>
+<rect class="dg-box" x="810" y="140" width="150" height="64"/><text class="dg-t" x="885" y="166" text-anchor="middle">robot</text><text class="dg-s" x="885" y="186" text-anchor="middle">~6 Hz trên RTX 4090</text>
+<path class="dg-a" d="M170 76 H200"/><path class="dg-a" d="M400 76 H430"/><path class="dg-a" d="M580 76 H610"/><path class="dg-a" d="M170 172 H610"/><path class="dg-a" d="M780 81 H810"/><path class="dg-a" d="M885 118 V140"/>
+<text class="dg-s" x="20" y="240">bin trải từ phân vị 1 tới 99 của mỗi chiều hành động; 256 token Llama ít dùng nhất bị ghi đè làm token bin</text>
+<text class="dg-l" x="20" y="268">học 27 epoch trên 64 A100 trong 14 ngày; fine-tune LoRA trên một GPU; suy luận int4 trong 7 GB</text>
+</svg>

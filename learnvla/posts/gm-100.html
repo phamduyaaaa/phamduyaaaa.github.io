@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Most robot datasets and evaluations are dominated by "pick and hold". GM-100 designs 100 detail-oriented tasks from interaction primitives and affordances, collects 13K+ real trajectories on two dual-arm platforms, and scores success, partial success and action error. On ten tasks, π0.5 reaches 24.9% success and 53.9% partial success.">
+<title>GM-100: 100 Long-Tail Tasks on Real Robots · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="GM-100: 100 Long-Tail Tasks on Real Robots">
+<meta property="og:description" content="Most robot datasets and evaluations are dominated by "pick and hold". GM-100 designs 100 detail-oriented tasks from interaction primitives and affordances, collects 13K+ real trajectories on two dual-arm platforms, and scores success, partial success and action error. On ten tasks, π0.5 reaches 24.9% success and 53.9% partial success.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">5 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>GM-100: 100 Long-Tail Tasks on Real Robots</h1>
+    <h1 data-vi>GM-100: 100 tác vụ đuôi dài trên robot thật</h1>
+
+    <p class="post-excerpt-lead" data-en>Most robot datasets and evaluations are dominated by "pick and hold". GM-100 designs 100 detail-oriented tasks from interaction primitives and affordances, collects 13K+ real trajectories on two dual-arm platforms, and scores success, partial success and action error. On ten tasks, π0.5 reaches 24.9% success and 53.9% partial success.</p>
+    <p class="post-excerpt-lead" data-vi>Phần lớn bộ dữ liệu và bài đánh giá robot bị chi phối bởi "gắp và giữ". GM-100 thiết kế 100 tác vụ chi tiết từ các thao tác cơ bản và affordance, thu hơn 13K quỹ đạo thật trên hai nền tảng hai tay, và chấm thành công, thành công từng phần và sai số hành động. Trên mười tác vụ, π0.5 đạt 24,9% thành công và 53,9% thành công từng phần.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Benchmark</span><span class="pill">GM-100</span><span class="pill">Real robot</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Wang et al. (SJTU, SII, Robbyant), <em>The Great March 100: 100 Detail-oriented Tasks for Evaluating Embodied AI Agents</em>, <a href="https://arxiv.org/abs/2601.11421">arXiv 2601.11421</a> · 01/2026</p>
+<p><strong>PROBLEM</strong> Each new method is tested on a few tasks of its authors' choosing, so results from different labs cannot be compared, and nobody knows how a policy does on rarer behaviours.</p>
+<p><strong>WHAT FAILED BEFORE</strong> The paper collects the task lists of large datasets such as Open X-Embodiment and Agibot, removes duplicates and finds a heavy bias towards a few verbs, mostly "pick and hold". Tasks were chosen by designer judgment, daily usefulness or application, which repeats the same common behaviours and leaves the long tail empty.</p>
+<p><strong>IDEA</strong> Design tasks by principle instead: expand prior task lists with human-object interaction primitives and object affordances, filter for feasibility with human experts, and fix 100 tasks with detailed success criteria and a template video. Collect teleoperated data on two different dual-arm robots, and score with success rate, partial success rate and offline action error.</p>
+<p><strong>RESULT</strong> 13K+ trajectories (all 100 tasks on Agilex Cobot Magic, 10 tasks also on Dobot Xtrainer). On the ten Xtrainer tasks, π0.5 reaches 24.9% success and 53.9% partial success, π0 4.4% and 32.1%, Diffusion Policy 1.6% and 7.0%. LingBot-VLA 2.0 later used GM-100 as its benchmark.</p>
+</div>
+<h2>1. The problem: benchmarks that only test the head of the distribution</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is to fix the task list by a design rule, publish it with data, and evaluate every model on the same real test cases." class="dg-natural" width="824" height="206" viewBox="0 0 824 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Ad-hoc task lists</text><rect class="dg-box" x="147" y="22" width="148" height="38"/><text class="dg-t" x="221" y="45" text-anchor="middle">Pick a few tasks</text><path class="dg-a" d="M294 41 H326"/><rect class="dg-badbox" x="328" y="14" width="178" height="54"/><text class="dg-t" x="417" y="37" text-anchor="middle">Mostly pick and hold</text><text class="dg-s" x="417" y="53" text-anchor="middle">chosen by each lab</text><path class="dg-a" d="M506 41 H538"/><rect class="dg-box" x="540" y="22" width="96" height="38"/><text class="dg-t" x="588" y="45" text-anchor="middle">Score</text><text class="dg-note dg-red" x="146.8" y="86">✗ not comparable, long tail never tested</text><text class="dg-lab dg-green" x="14" y="143">GM-100</text><rect class="dg-box" x="147" y="120" width="208" height="38"/><text class="dg-t" x="251" y="143" text-anchor="middle">Primitives + affordances</text><path class="dg-a" d="M355 139 H387"/><rect class="dg-key" x="389" y="112" width="186" height="54"/><text class="dg-t" x="482" y="135" text-anchor="middle">100 fixed tasks</text><text class="dg-s" x="482" y="151" text-anchor="middle">criteria + template video</text><path class="dg-a" d="M575 139 H607"/><rect class="dg-box" x="609" y="120" width="201" height="38"/><text class="dg-t" x="710" y="143" text-anchor="middle">SR · PSR · action error</text><text class="dg-note dg-green" x="146.8" y="184">✓ same tasks, same 30 test cases for every model</text></svg><figcaption>The change is to fix the task list by a design rule, publish it with data, and evaluate every model on the same real test cases.</figcaption></figure>
+<h2>2. Tasks, data and metrics</h2>
+<figure class="diagram"><svg role="img" aria-label="The task list is derived systematically; data is collected on two different dual-arm platforms; each task is scored three ways." viewBox="0 0 980 310" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">FROM BIASED TASK LISTS TO 100 LONG-TAIL TASKS, SCORED ON REAL ROBOTS</text>
+<rect class="dg-badbox" x="20" y="44" width="220" height="80"/><text class="dg-t" x="130" y="68" text-anchor="middle">existing task lists</text><text class="dg-s" x="130" y="88" text-anchor="middle">OXE, Agibot, ...: most verbs</text><text class="dg-s" x="130" y="104" text-anchor="middle">are "pick and hold"</text>
+<rect class="dg-box" x="280" y="44" width="220" height="80"/><text class="dg-t" x="390" y="68" text-anchor="middle">expand by primitives</text><text class="dg-s" x="390" y="88" text-anchor="middle">human-object interaction</text><text class="dg-s" x="390" y="104" text-anchor="middle">+ object affordances</text>
+<rect class="dg-key" x="540" y="44" width="200" height="80"/><text class="dg-t" x="640" y="68" text-anchor="middle">GM-100</text><text class="dg-s" x="640" y="88" text-anchor="middle">100 tasks, each with</text><text class="dg-s" x="640" y="104" text-anchor="middle">criteria + template video</text>
+<rect class="dg-ext" x="780" y="44" width="180" height="80"/><text class="dg-t" x="870" y="68" text-anchor="middle">13K+ teleop</text><text class="dg-s" x="870" y="88" text-anchor="middle">trajectories,</text><text class="dg-s" x="870" y="104" text-anchor="middle">open-sourced</text>
+<path class="dg-a" d="M240 84 H280"/><path class="dg-a" d="M500 84 H540"/><path class="dg-a" d="M740 84 H780"/>
+<rect class="dg-box" x="20" y="170" width="280" height="80"/><text class="dg-t" x="160" y="194" text-anchor="middle">Agilex Cobot Magic</text><text class="dg-s" x="160" y="214" text-anchor="middle">Mobile-Aloha-like, head camera</text><text class="dg-s" x="160" y="230" text-anchor="middle">all 100 tasks</text>
+<rect class="dg-box" x="330" y="170" width="280" height="80"/><text class="dg-t" x="470" y="194" text-anchor="middle">Dobot Xtrainer</text><text class="dg-s" x="470" y="214" text-anchor="middle">Aloha-like, top-down camera</text><text class="dg-s" x="470" y="230" text-anchor="middle">tasks 1-10: 100 train + 30 test</text>
+<rect class="dg-key" x="640" y="160" width="320" height="100"/><text class="dg-t" x="800" y="184" text-anchor="middle">three scores per task</text><text class="dg-s" x="800" y="204" text-anchor="middle">SR: whole task done</text><text class="dg-s" x="800" y="220" text-anchor="middle">PSR: share of sub-tasks done</text><text class="dg-s" x="800" y="236" text-anchor="middle">action error on 30 held-out demos</text>
+<path class="dg-a" d="M870 124 V142 H160 V170"/><path class="dg-a" d="M470 142 V170"/><path class="dg-a" d="M610 210 H640"/>
+<text class="dg-l" x="20" y="290">tasks are chosen by physical common sense and how-level affordance, not by how useful they are in a home</text>
+</svg><figcaption>The task list is derived systematically; data is collected on two different dual-arm platforms; each task is scored three ways.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>GM-100</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Task design</td>
+<td>analyse existing lists, expand with interaction primitives and affordances, filter with human experts; "physical common sense and how-level affordance" as the only selection standard</td>
+</tr>
+<tr>
+<td>Platforms</td>
+<td>Agilex Cobot Magic (Mobile-Aloha-like, forward-reaching arms, head camera); Dobot Xtrainer (Aloha-like, inward-folding arms, top-down camera)</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>13K+ teleoperated trajectories; tasks 1–10: 130 per task on both platforms (100 train, 30 test); tasks 11–100: Cobot Magic only</td>
+</tr>
+<tr>
+<td>SR</td>
+<td>whole task completed, over the same 30 test cases for all models</td>
+</tr>
+<tr>
+<td>PSR</td>
+<td>share of sub-tasks completed within a task</td>
+</tr>
+<tr>
+<td>Action error</td>
+<td>MSE and L1 on the 30 held-out demonstrations, on an overlapping prediction window</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Xtrainer, average of tasks 1–10</th>
+<th>DP</th>
+<th>π0</th>
+<th>π0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PSR</td>
+<td>7.0%</td>
+<td>32.1%</td>
+<td>53.9%</td>
+</tr>
+<tr>
+<td>SR</td>
+<td>1.6%</td>
+<td>4.4%</td>
+<td>24.9%</td>
+</tr>
+<tr>
+<td>Action MSE</td>
+<td>0.0047</td>
+<td>0.0033</td>
+<td>0.0029</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> π0 gets 44.6% PSR but 3.3% SR on one task. How can both be true, and how much does one success in 30 trials tell us?</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N$</td>
+<td>test trials</td>
+<td>input</td>
+<td>30</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>sub-tasks in the task</td>
+<td>input</td>
+<td>3 (illustrative)</td>
+</tr>
+<tr>
+<td>$c_i$</td>
+<td>sub-tasks done in trial $i$</td>
+<td>input</td>
+<td>1 trial: 3; 12 trials: 2; 10 trials: 1; 7 trials: 0</td>
+</tr>
+<tr>
+<td>PSR, SR</td>
+<td>partial and full success</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$\text{PSR} = \frac{1}{N}\sum_{i=1}^{N}\frac{c_i}{K}, \qquad \text{SR} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}[c_i = K]$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Sub-tasks done: $1 \times 3 + 12 \times 2 + 10 \times 1 + 7 \times 0 = 37$.</li>
+<li>$\text{PSR} = 37 / (30 \times 3) = 37/90 = 41.1\%$.</li>
+<li>$\text{SR} = 1/30 = 3.3\%$.</li>
+<li>Wilson 95% interval for 1/30: 0.6% to 16.7%.</li>
+</ol>
+<p><strong>Result.</strong> 41% partial success and 3.3% full success from the same 30 trials; the full-success number is only known to lie somewhere between 0.6% and 16.7%.</p>
+<p><strong>Why it matters.</strong> PSR tells you <em>where</em> a policy fails (it usually gets the first steps right); SR tells you whether the task is usable. With 30 trials, SR differences of a few points between weak policies are noise.</p>
+</div>
+<h2>3. A finding to read carefully: action error vs success</h2>
+<p>The paper reports a clear inverse relation between offline action error and real success across DP, π0 and π0.5: π0.5 has the lowest MSE and the highest PSR on nearly every task. <a href="simplerenv.html">SimplerEnv</a> found the opposite for validation MSE (Pearson $r$ 0.308 with real success). The two are compatible: GM-100 compares three models far apart in quality, where any reasonable signal orders them correctly; SimplerEnv ranks six checkpoints, some of them close, where MSE fails. Use offline error to rule out bad models, not to pick between good ones.</p>
+<h2>4. For a UR10e reader</h2>
+<p>GM-100 is dual-arm and real-robot only, on two specific platforms; a single UR10e cannot run it as is. What transfers is the method: a fixed task list with written criteria, a held-out set of 30 test cases, and reporting PSR next to SR. For a cap-pressing task, sub-tasks such as "grasp cap", "align", "press until click" give a PSR that shows which phase fails.</p>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against the full text: platforms, data counts, metric definitions, Table 1 (SR/PSR) and Table 2 (MSE) averages.</li>
+<li>The paper reports results for only three baselines so far and says more will be released over time; the Cobot Magic results are in a heatmap I did not read as numbers.</li>
+<li>The calculation card uses an illustrative split of trials, chosen to match the scale of the reported task.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="lingbotv2.html">LingBot-VLA 2.0</a> reports its results on GM-100. The <a href="danh-gia-vla.html">evaluation post</a> has the general checklist.</p>
+<p><strong>Check question:</strong> with $K = 4$ sub-tasks and 30 trials, a policy finishes all four in 6 trials, three in 6, two in 9 and none in 9. Compute PSR and SR.</p>
+<details>
+<summary>Answer</summary>
+<p>Sub-tasks done $= 6 \times 4 + 6 \times 3 + 9 \times 2 = 60$. $\text{PSR} = 60/120 = 50\%$. $\text{SR} = 6/30 = 20\%$.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Wang và cộng sự (SJTU, SII, Robbyant), <em>The Great March 100: 100 Detail-oriented Tasks for Evaluating Embodied AI Agents</em>, <a href="https://arxiv.org/abs/2601.11421">arXiv 2601.11421</a> · 01/2026</p>
+<p><strong>VẤN ĐỀ</strong> Mỗi phương pháp mới được thử trên vài tác vụ do chính tác giả chọn, nên kết quả giữa các lab không so được, và không ai biết policy làm thế nào với các hành vi hiếm hơn.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Paper gom danh sách tác vụ của các bộ dữ liệu lớn như Open X-Embodiment và Agibot, bỏ trùng và thấy lệch mạnh về vài động từ, chủ yếu là "gắp và giữ". Tác vụ được chọn theo phán đoán của người thiết kế, độ hữu ích hằng ngày hoặc ứng dụng, nên lặp lại cùng các hành vi phổ biến và bỏ trống phần đuôi dài.</p>
+<p><strong>Ý TƯỞNG</strong> Thiết kế tác vụ theo nguyên tắc: mở rộng danh sách cũ bằng các thao tác cơ bản giữa người và vật cùng affordance của vật, lọc tính khả thi với chuyên gia, rồi chốt 100 tác vụ với tiêu chí thành công chi tiết và một video mẫu. Thu dữ liệu điều khiển từ xa trên hai robot hai tay khác nhau, và chấm bằng tỉ lệ thành công, tỉ lệ thành công từng phần và sai số hành động offline.</p>
+<p><strong>KẾT QUẢ</strong> Hơn 13K quỹ đạo (cả 100 tác vụ trên Agilex Cobot Magic, 10 tác vụ thêm trên Dobot Xtrainer). Trên mười tác vụ ở Xtrainer, π0.5 đạt 24,9% thành công và 53,9% thành công từng phần, π0 đạt 4,4% và 32,1%, Diffusion Policy 1,6% và 7,0%. LingBot-VLA 2.0 sau đó dùng GM-100 làm benchmark.</p>
+</div>
+<h2>1. Vấn đề: benchmark chỉ thử phần đầu của phân phối</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là chốt danh sách tác vụ theo một quy tắc thiết kế, công bố kèm dữ liệu, và đánh giá mọi mô hình trên cùng các ca thử thật." class="dg-natural" width="849" height="206" viewBox="0 0 849 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Danh sách tùy ý</text><rect class="dg-box" x="134" y="22" width="140" height="38"/><text class="dg-t" x="204" y="45" text-anchor="middle">Chọn vài tác vụ</text><path class="dg-a" d="M274 41 H306"/><rect class="dg-badbox" x="308" y="14" width="163" height="54"/><text class="dg-t" x="389" y="37" text-anchor="middle">Chủ yếu gắp và giữ</text><text class="dg-s" x="389" y="53" text-anchor="middle">mỗi lab tự chọn</text><path class="dg-a" d="M471 41 H503"/><rect class="dg-box" x="505" y="22" width="96" height="38"/><text class="dg-t" x="553" y="45" text-anchor="middle">Điểm</text><text class="dg-note dg-red" x="134.0" y="86">✗ không so được, phần đuôi không bao giờ được thử</text><text class="dg-lab dg-green" x="14" y="143">GM-100</text><rect class="dg-box" x="134" y="120" width="239" height="38"/><text class="dg-t" x="253" y="143" text-anchor="middle">Thao tác cơ bản + affordance</text><path class="dg-a" d="M373 139 H405"/><rect class="dg-key" x="407" y="112" width="163" height="54"/><text class="dg-t" x="488" y="135" text-anchor="middle">100 tác vụ cố định</text><text class="dg-s" x="488" y="151" text-anchor="middle">tiêu chí + video mẫu</text><path class="dg-a" d="M570 139 H602"/><rect class="dg-box" x="604" y="120" width="231" height="38"/><text class="dg-t" x="719" y="143" text-anchor="middle">SR · PSR · sai số hành động</text><text class="dg-note dg-green" x="134.0" y="184">✓ cùng tác vụ, cùng 30 ca thử cho mọi mô hình</text></svg><figcaption>Thay đổi là chốt danh sách tác vụ theo một quy tắc thiết kế, công bố kèm dữ liệu, và đánh giá mọi mô hình trên cùng các ca thử thật.</figcaption></figure>
+<h2>2. Tác vụ, dữ liệu và thước đo</h2>
+<figure class="diagram"><svg role="img" aria-label="Danh sách tác vụ được suy ra có hệ thống; dữ liệu thu trên hai nền tảng hai tay khác nhau; mỗi tác vụ được chấm theo ba cách." viewBox="0 0 980 310" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TỪ DANH SÁCH TÁC VỤ LỆCH TỚI 100 TÁC VỤ ĐUÔI DÀI, CHẤM TRÊN ROBOT THẬT</text>
+<rect class="dg-badbox" x="20" y="44" width="220" height="80"/><text class="dg-t" x="130" y="68" text-anchor="middle">danh sách tác vụ có sẵn</text><text class="dg-s" x="130" y="88" text-anchor="middle">OXE, Agibot, ...: phần lớn động từ</text><text class="dg-s" x="130" y="104" text-anchor="middle">là "gắp và giữ"</text>
+<rect class="dg-box" x="280" y="44" width="220" height="80"/><text class="dg-t" x="390" y="68" text-anchor="middle">mở rộng theo thao tác</text><text class="dg-s" x="390" y="88" text-anchor="middle">tương tác người-vật</text><text class="dg-s" x="390" y="104" text-anchor="middle">+ affordance của vật</text>
+<rect class="dg-key" x="540" y="44" width="200" height="80"/><text class="dg-t" x="640" y="68" text-anchor="middle">GM-100</text><text class="dg-s" x="640" y="88" text-anchor="middle">100 tác vụ, mỗi tác vụ có</text><text class="dg-s" x="640" y="104" text-anchor="middle">tiêu chí + video mẫu</text>
+<rect class="dg-ext" x="780" y="44" width="180" height="80"/><text class="dg-t" x="870" y="68" text-anchor="middle">13K+ quỹ đạo</text><text class="dg-s" x="870" y="88" text-anchor="middle">điều khiển từ xa,</text><text class="dg-s" x="870" y="104" text-anchor="middle">mã mở</text>
+<path class="dg-a" d="M240 84 H280"/><path class="dg-a" d="M500 84 H540"/><path class="dg-a" d="M740 84 H780"/>
+<rect class="dg-box" x="20" y="170" width="280" height="80"/><text class="dg-t" x="160" y="194" text-anchor="middle">Agilex Cobot Magic</text><text class="dg-s" x="160" y="214" text-anchor="middle">kiểu Mobile-Aloha, camera đầu</text><text class="dg-s" x="160" y="230" text-anchor="middle">cả 100 tác vụ</text>
+<rect class="dg-box" x="330" y="170" width="280" height="80"/><text class="dg-t" x="470" y="194" text-anchor="middle">Dobot Xtrainer</text><text class="dg-s" x="470" y="214" text-anchor="middle">kiểu Aloha, camera từ trên</text><text class="dg-s" x="470" y="230" text-anchor="middle">tác vụ 1-10: 100 học + 30 thử</text>
+<rect class="dg-key" x="640" y="160" width="320" height="100"/><text class="dg-t" x="800" y="184" text-anchor="middle">ba điểm mỗi tác vụ</text><text class="dg-s" x="800" y="204" text-anchor="middle">SR: xong cả tác vụ</text><text class="dg-s" x="800" y="220" text-anchor="middle">PSR: tỉ lệ tác vụ con xong</text><text class="dg-s" x="800" y="236" text-anchor="middle">sai số hành động trên 30 demo giữ lại</text>
+<path class="dg-a" d="M870 124 V142 H160 V170"/><path class="dg-a" d="M470 142 V170"/><path class="dg-a" d="M610 210 H640"/>
+<text class="dg-l" x="20" y="290">tác vụ được chọn theo lẽ thường vật lý và affordance mức làm-thế-nào, không theo độ hữu ích trong nhà</text>
+</svg><figcaption>Danh sách tác vụ được suy ra có hệ thống; dữ liệu thu trên hai nền tảng hai tay khác nhau; mỗi tác vụ được chấm theo ba cách.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>GM-100</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thiết kế tác vụ</td>
+<td>phân tích danh sách có sẵn, mở rộng bằng thao tác cơ bản và affordance, lọc với chuyên gia; "lẽ thường vật lý và affordance mức làm-thế-nào" là tiêu chuẩn chọn duy nhất</td>
+</tr>
+<tr>
+<td>Nền tảng</td>
+<td>Agilex Cobot Magic (giống Mobile-Aloha, tay vươn về trước, camera trên đầu); Dobot Xtrainer (giống Aloha, tay gập vào trong, camera nhìn từ trên xuống)</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>hơn 13K quỹ đạo điều khiển từ xa; tác vụ 1–10: 130 quỹ đạo mỗi tác vụ trên cả hai nền tảng (100 học, 30 thử); tác vụ 11–100: chỉ Cobot Magic</td>
+</tr>
+<tr>
+<td>SR</td>
+<td>làm xong cả tác vụ, trên cùng 30 ca thử cho mọi mô hình</td>
+</tr>
+<tr>
+<td>PSR</td>
+<td>tỉ lệ tác vụ con làm xong trong một tác vụ</td>
+</tr>
+<tr>
+<td>Sai số hành động</td>
+<td>MSE và L1 trên 30 demo giữ lại, trong một cửa sổ dự đoán chung</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Xtrainer, trung bình tác vụ 1–10</th>
+<th>DP</th>
+<th>π0</th>
+<th>π0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PSR</td>
+<td>7,0%</td>
+<td>32,1%</td>
+<td>53,9%</td>
+</tr>
+<tr>
+<td>SR</td>
+<td>1,6%</td>
+<td>4,4%</td>
+<td>24,9%</td>
+</tr>
+<tr>
+<td>MSE hành động</td>
+<td>0,0047</td>
+<td>0,0033</td>
+<td>0,0029</td>
+</tr>
+</tbody>
+</table>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> π0 đạt 44,6% PSR nhưng 3,3% SR ở một tác vụ. Làm sao cả hai cùng đúng, và một lần thành công trên 30 lần thử nói lên được bao nhiêu?</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N$</td>
+<td>số lần thử</td>
+<td>đầu vào</td>
+<td>30</td>
+</tr>
+<tr>
+<td>$K$</td>
+<td>số tác vụ con</td>
+<td>đầu vào</td>
+<td>3 (minh họa)</td>
+</tr>
+<tr>
+<td>$c_i$</td>
+<td>số tác vụ con làm xong ở lần thử $i$</td>
+<td>đầu vào</td>
+<td>1 lần: 3; 12 lần: 2; 10 lần: 1; 7 lần: 0</td>
+</tr>
+<tr>
+<td>PSR, SR</td>
+<td>thành công từng phần và trọn vẹn</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$\text{PSR} = \frac{1}{N}\sum_{i=1}^{N}\frac{c_i}{K}, \qquad \text{SR} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}[c_i = K]$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Số tác vụ con làm xong: $1 \times 3 + 12 \times 2 + 10 \times 1 + 7 \times 0 = 37$.</li>
+<li>$\text{PSR} = 37 / (30 \times 3) = 37/90 = 41{,}1\%$.</li>
+<li>$\text{SR} = 1/30 = 3{,}3\%$.</li>
+<li>Khoảng Wilson 95% cho 1/30: từ 0,6% đến 16,7%.</li>
+</ol>
+<p><strong>Kết quả.</strong> 41% thành công từng phần và 3,3% thành công trọn vẹn từ cùng 30 lần thử; con số trọn vẹn chỉ biết là nằm đâu đó giữa 0,6% và 16,7%.</p>
+<p><strong>Vì sao quan trọng.</strong> PSR cho biết policy hỏng <em>ở đâu</em> (thường làm đúng vài bước đầu); SR cho biết tác vụ có dùng được không. Với 30 lần thử, SR chênh vài điểm giữa các policy yếu chỉ là nhiễu.</p>
+</div>
+<h2>3. Một phát hiện cần đọc kỹ: sai số hành động và thành công</h2>
+<p>Paper báo một quan hệ nghịch rõ giữa sai số hành động offline và thành công thật trên DP, π0 và π0.5: π0.5 có MSE thấp nhất và PSR cao nhất ở gần như mọi tác vụ. <a href="simplerenv.html">SimplerEnv</a> thấy điều ngược lại với MSE kiểm định (Pearson $r$ 0,308 với thành công thật). Hai kết quả không mâu thuẫn: GM-100 so ba mô hình chênh nhau xa, nơi tín hiệu nào hợp lý cũng xếp đúng; SimplerEnv xếp sáu checkpoint, vài cái sát nhau, nơi MSE thất bại. Dùng sai số offline để loại mô hình tồi, không dùng để chọn giữa các mô hình tốt.</p>
+<h2>4. Với người dùng UR10e</h2>
+<p>GM-100 chỉ có hai tay và chỉ trên robot thật, với hai nền tảng cụ thể; một chiếc UR10e đơn không chạy nguyên xi được. Thứ mang sang được là phương pháp: danh sách tác vụ cố định có tiêu chí viết rõ, một tập 30 ca thử giữ lại, và báo PSR cạnh SR. Với tác vụ ấn nắp, các tác vụ con như "gắp nắp", "căn thẳng", "ấn tới khi nghe tách" cho PSR chỉ ra giai đoạn nào hỏng.</p>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn: nền tảng, số lượng dữ liệu, định nghĩa thước đo, trung bình ở Bảng 1 (SR/PSR) và Bảng 2 (MSE).</li>
+<li>Paper mới báo kết quả cho ba baseline và nói sẽ công bố thêm dần; kết quả trên Cobot Magic nằm trong một heatmap mà mình không đọc thành số.</li>
+<li>Thẻ tính tay dùng cách chia lần thử minh họa, chọn cho khớp cỡ số của tác vụ được báo cáo.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="lingbotv2.html">LingBot-VLA 2.0</a> báo kết quả trên GM-100. <a href="danh-gia-vla.html">Bài đánh giá</a> có danh sách kiểm tra tổng quát.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> với $K = 4$ tác vụ con và 30 lần thử, một policy xong cả bốn ở 6 lần, ba ở 6 lần, hai ở 9 lần và không gì ở 9 lần. Tính PSR và SR.</p>
+<details>
+<summary>Đáp án</summary>
+<p>Số tác vụ con xong $= 6 \times 4 + 6 \times 3 + 9 \times 2 = 60$. $\text{PSR} = 60/120 = 50\%$. $\text{SR} = 6/30 = 20\%$.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RT-1 showed that a 35M-parameter Transformer trained on 130k real demos can run 700+ instructions at 97% success. RT-2 replaced its backbone with a web-scale VLM and wrote actions as text tokens, doubling success on unseen objects, backgrounds and environments (32% → 62%). It named the model class: vision-language-action.">
+<title>RT-1 and RT-2: From a Robot Transformer to the First VLA · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="RT-1 and RT-2: From a Robot Transformer to the First VLA">
+<meta property="og:description" content="RT-1 showed that a 35M-parameter Transformer trained on 130k real demos can run 700+ instructions at 97% success. RT-2 replaced its backbone with a web-scale VLM and wrote actions as text tokens, doubling success on unseen objects, backgrounds and environments (32% → 62%). It named the model class: vision-language-action.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">21 Oct 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">6 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>RT-1 and RT-2: From a Robot Transformer to the First VLA</h1>
+    <h1 data-vi>RT-1 và RT-2: Từ Robot Transformer tới VLA đầu tiên</h1>
+
+    <p class="post-excerpt-lead" data-en>RT-1 showed that a 35M-parameter Transformer trained on 130k real demos can run 700+ instructions at 97% success. RT-2 replaced its backbone with a web-scale VLM and wrote actions as text tokens, doubling success on unseen objects, backgrounds and environments (32% → 62%). It named the model class: vision-language-action.</p>
+    <p class="post-excerpt-lead" data-vi>RT-1 cho thấy một Transformer 35M tham số học từ 130k demo thật chạy được hơn 700 câu lệnh với 97% thành công. RT-2 thay backbone bằng một VLM cỡ web và viết hành động như token chữ, tăng gấp đôi thành công với vật, nền và môi trường chưa thấy (32% → 62%). Nó đặt tên cho lớp mô hình: vision-language-action.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Paper Notes</span><span class="pill">RT-1</span><span class="pill">RT-2</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPERS</strong> Brohan et al., <em>RT-1: Robotics Transformer for Real-World Control at Scale</em>, <a href="https://arxiv.org/abs/2212.06817">arXiv 2212.06817</a> · 12/2022. Brohan et al., <em>RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control</em>, <a href="https://arxiv.org/abs/2307.15818">arXiv 2307.15818</a> · 07/2023.</p>
+<p><strong>PROBLEM</strong> One policy for hundreds of everyday instructions on a real mobile manipulator, which also handles objects, backgrounds and requests it was never shown.</p>
+<p><strong>WHAT FAILED BEFORE</strong> For RT-1: multi-task robot policies were trained on small, narrow datasets, and large models were too slow for closed-loop control (Gato at 1.2B took 1.9 s per step on the robot). For RT-2: RT-1 learns only from robot data, so it knows only the objects and words in its demos; on unseen objects, backgrounds and environments it averages 32%.</p>
+<p><strong>IDEA</strong> RT-1: compress images hard (FiLM-conditioned EfficientNet, then TokenLearner keeps 8 tokens per image) so a Transformer can run at 3 Hz, and train on 130k demos. RT-2: take a pre-trained VLM, write each action as a string of integers ("1 128 91 241 5 101 127"), and <em>co-fine-tune</em> on robot data together with the original web data.</p>
+<p><strong>RESULT</strong> RT-1: 97% on 200+ seen instructions, 76% on 21 unseen ones. RT-2: same seen-task success (91–93% vs RT-1's 92%), unseen average 62% vs 32%, and 60% vs 17% on "emergent" tests (symbols, reasoning, people) that need web knowledge.</p>
+</div>
+<h2>1. The problem: robot data alone does not know the world</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The change is where knowledge comes from: a VLM already knows objects, symbols and words that never appear in robot data." class="dg-natural" width="761" height="206" viewBox="0 0 761 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">RT-1</text><rect class="dg-box" x="124" y="22" width="224" height="38"/><text class="dg-t" x="236" y="45" text-anchor="middle">Robot images + instruction</text><path class="dg-a" d="M348 41 H380"/><rect class="dg-badbox" x="382" y="14" width="199" height="54"/><text class="dg-t" x="481" y="37" text-anchor="middle">Small transformer</text><text class="dg-s" x="481" y="53" text-anchor="middle">trained on robot demos only</text><path class="dg-a" d="M580 41 H612"/><rect class="dg-box" x="614" y="22" width="125" height="38"/><text class="dg-t" x="677" y="45" text-anchor="middle">Action tokens</text><text class="dg-note dg-red" x="124" y="86">✗ strong on seen tasks, 32% unseen average</text><text class="dg-lab dg-green" x="14" y="143">RT-2</text><rect class="dg-box" x="124" y="120" width="224" height="38"/><text class="dg-t" x="236" y="143" text-anchor="middle">Robot images + instruction</text><path class="dg-a" d="M348 139 H380"/><rect class="dg-key" x="382" y="112" width="199" height="54"/><text class="dg-t" x="481" y="135" text-anchor="middle">Web-pretrained VLM</text><text class="dg-s" x="481" y="151" text-anchor="middle">co-fine-tuned with web data</text><path class="dg-a" d="M580 139 H612"/><rect class="dg-box" x="614" y="120" width="132" height="38"/><text class="dg-t" x="681" y="143" text-anchor="middle">Action as text</text><text class="dg-note dg-green" x="124" y="184">✓ 62% unseen average, follows "move banana near the sum of two plus one"</text></svg><figcaption>The change is where knowledge comes from: a VLM already knows objects, symbols and words that never appear in robot data.</figcaption></figure>
+<h2>2. Two architectures, one action format</h2>
+<figure class="diagram"><svg role="img" aria-label="RT-1 is built for speed from robot data. RT-2 keeps the binned action format but makes the model a VLM that answers in action tokens." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">RT-1 (12/2022): A SMALL ROBOT TRANSFORMER TRAINED FROM ROBOT DATA</text>
+<rect class="dg-ext" x="20" y="40" width="160" height="70"/><text class="dg-t" x="100" y="64" text-anchor="middle">6 images</text><text class="dg-s" x="100" y="84" text-anchor="middle">300x300 history</text><text class="dg-s" x="100" y="100" text-anchor="middle">+ instruction (USE)</text>
+<rect class="dg-box" x="210" y="40" width="170" height="70"/><text class="dg-t" x="295" y="64" text-anchor="middle">FiLM EfficientNet</text><text class="dg-s" x="295" y="84" text-anchor="middle">text steers vision</text><text class="dg-s" x="295" y="100" text-anchor="middle">81 tokens / image</text>
+<rect class="dg-key" x="410" y="40" width="150" height="70"/><text class="dg-t" x="485" y="64" text-anchor="middle">TokenLearner</text><text class="dg-s" x="485" y="84" text-anchor="middle">81 → 8 tokens</text><text class="dg-s" x="485" y="100" text-anchor="middle">per image</text>
+<rect class="dg-box" x="590" y="40" width="170" height="70"/><text class="dg-t" x="675" y="64" text-anchor="middle">Transformer</text><text class="dg-s" x="675" y="84" text-anchor="middle">8 layers, 19M</text><text class="dg-s" x="675" y="100" text-anchor="middle">35M in total</text>
+<rect class="dg-box" x="790" y="40" width="170" height="70"/><text class="dg-t" x="875" y="64" text-anchor="middle">11 action tokens</text><text class="dg-s" x="875" y="84" text-anchor="middle">256 bins each</text><text class="dg-s" x="875" y="100" text-anchor="middle">arm 7, base 3, mode 1</text>
+<path class="dg-a" d="M180 75 H210"/><path class="dg-a" d="M380 75 H410"/><path class="dg-a" d="M560 75 H590"/><path class="dg-a" d="M760 75 H790"/>
+<text class="dg-s" x="20" y="134">data: ~130k demos, 700+ instructions, 13 robots over 17 months; runs at 3 Hz on the robot</text>
+<text class="dg-h" x="20" y="174">RT-2 (07/2023): FINE-TUNE A WEB-SCALE VLM SO THAT ACTIONS ARE JUST MORE TEXT</text>
+<rect class="dg-ext" x="20" y="190" width="200" height="74"/><text class="dg-t" x="120" y="214" text-anchor="middle">image + question</text><text class="dg-s" x="120" y="234" text-anchor="middle">"what action should the</text><text class="dg-s" x="120" y="250" text-anchor="middle">robot take to ...?"</text>
+<rect class="dg-key" x="250" y="190" width="240" height="74"/><text class="dg-t" x="370" y="214" text-anchor="middle">VLM, co-fine-tuned</text><text class="dg-s" x="370" y="234" text-anchor="middle">PaLI-X 5B / 55B or PaLM-E 12B</text><text class="dg-s" x="370" y="250" text-anchor="middle">robot data + web VQA data</text>
+<rect class="dg-box" x="520" y="190" width="220" height="74"/><text class="dg-t" x="630" y="214" text-anchor="middle">text answer</text><text class="dg-s" x="630" y="234" text-anchor="middle">"1 128 91 241 5 101 127"</text><text class="dg-s" x="630" y="250" text-anchor="middle">terminate, 6 deltas, gripper</text>
+<rect class="dg-box" x="770" y="190" width="190" height="74"/><text class="dg-t" x="865" y="214" text-anchor="middle">de-tokenise</text><text class="dg-s" x="865" y="234" text-anchor="middle">bins → action</text><text class="dg-s" x="865" y="250" text-anchor="middle">55B: 1-3 Hz (cloud TPU)</text>
+<path class="dg-a" d="M220 227 H250"/><path class="dg-a" d="M490 227 H520"/><path class="dg-a" d="M740 227 H770"/>
+<text class="dg-l" x="20" y="300">the step from RT-1 to RT-2 is the backbone: web knowledge enters through a pre-trained VLM, the action format stays binned tokens</text>
+</svg><figcaption>RT-1 is built for speed from robot data. RT-2 keeps the binned action format but makes the model a VLM that answers in action tokens.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>RT-1</th>
+<th>RT-2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>FiLM EfficientNet-B3 (16M) + TokenLearner + 8-layer Transformer (19M); 35M total</td>
+<td>PaLI-X (5B, 55B) or PaLM-E (12B)</td>
+</tr>
+<tr>
+<td>Input</td>
+<td>6 images (300×300), instruction via a sentence encoder</td>
+<td>image + "Q: what action should the robot take to [task]? A:"</td>
+</tr>
+<tr>
+<td>Action</td>
+<td>11 dims (arm 7, base 3, mode 1), 256 uniform bins each</td>
+<td>8 tokens: terminate, 6 end-effector deltas, gripper; 256 bins</td>
+</tr>
+<tr>
+<td>Token for a bin</td>
+<td>its own action vocabulary</td>
+<td>PaLI-X: the existing token for the integer; PaLM-E: overwrite the 256 least-used tokens</td>
+</tr>
+<tr>
+<td>Training data</td>
+<td>~130k demos, 700+ instructions, 13 robots, 17 months</td>
+<td>the same robot data + the VLM's web data, robot data up-weighted</td>
+</tr>
+<tr>
+<td>Rate</td>
+<td>3 Hz on the robot</td>
+<td>55B: 1–3 Hz, 5B: ~5 Hz, served from cloud TPUs</td>
+</tr>
+</tbody>
+</table>
+<p>Two training details carry over to later VLAs. RT-2 <em>constrains decoding</em> so that, when asked for an action, only valid action tokens can be sampled. And it shows that co-fine-tuning with web data generalises better than fine-tuning on robot data alone.</p>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Why did RT-1 need TokenLearner to hit 3 Hz? Count the tokens and attention pairs its Transformer would see with and without it.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$F$</td>
+<td>images in the history</td>
+<td>input</td>
+<td>6 (paper)</td>
+</tr>
+<tr>
+<td>$t_0$</td>
+<td>tokens per image from EfficientNet</td>
+<td>input</td>
+<td>81 ($9 \times 9$ map)</td>
+</tr>
+<tr>
+<td>$t_1$</td>
+<td>tokens per image after TokenLearner</td>
+<td>input</td>
+<td>8</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>tokens the Transformer attends over</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$n^2$</td>
+<td>attention pairs per layer</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Formula</strong></p>
+<p>$$n = F \times t, \qquad \text{pairs} = n^2$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Without TokenLearner: $n = 6 \times 81 = 486$, pairs $= 486^2 = 236{,}196$.</li>
+<li>With it: $n = 6 \times 8 = 48$, pairs $= 48^2 = 2{,}304$.</li>
+<li>Ratio: $236{,}196 / 2{,}304 = 102.5$.</li>
+</ol>
+<p><strong>Result.</strong> About 100× fewer attention pairs in every one of the 8 layers.</p>
+<p><strong>Why it matters.</strong> The paper's latency budget was under 100 ms per step. RT-2 could not use this trick (the VLM is fixed), so it ran a 55B model on cloud TPUs at 1–3 Hz instead: the price of web knowledge was speed, which later work (OpenVLA at 7B, then π0's action chunks) set out to recover.</p>
+</div>
+<h2>3. What the papers report</h2>
+<figure class="diagram compact"><svg role="img" aria-label="RT-2 Tables 6 and 7. Seen tasks stay the same; generalisation and web-knowledge tests roughly double or triple." class="dg-natural" width="620" height="192" viewBox="0 0 620 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="160" y="23" text-anchor="end">RT-1 seen</text><rect class="dg-bar" x="170" y="10" width="331" height="18"/><text class="dg-barval" x="509" y="23">92%</text><text class="dg-barlabel" x="160" y="53" text-anchor="end">RT-1 unseen avg</text><rect class="dg-bar" x="170" y="40" width="115" height="18"/><text class="dg-barval" x="293" y="53">32%</text><text class="dg-barlabel" x="160" y="83" text-anchor="end">RT-2 PaLI-X seen</text><rect class="dg-key" x="170" y="70" width="328" height="18"/><text class="dg-barval" x="505" y="83">91%</text><text class="dg-barlabel" x="160" y="113" text-anchor="end">RT-2 PaLI-X unseen avg</text><rect class="dg-key" x="170" y="100" width="223" height="18"/><text class="dg-barval" x="401" y="113">62%</text><text class="dg-barlabel" x="160" y="143" text-anchor="end">RT-1 emergent</text><rect class="dg-bar" x="170" y="130" width="61" height="18"/><text class="dg-barval" x="239" y="143">17%</text><text class="dg-barlabel" x="160" y="173" text-anchor="end">RT-2 PaLI-X emergent</text><rect class="dg-key" x="170" y="160" width="216" height="18"/><text class="dg-barval" x="394" y="173">60%</text></svg><figcaption>RT-2 Tables 6 and 7. Seen tasks stay the same; generalisation and web-knowledge tests roughly double or triple.</figcaption></figure>
+<ul>
+<li><strong>RT-1:</strong> 97% on more than 200 seen instructions (25 points above BC-Z, 32 above Gato); 76% on 21 unseen instructions; 25%, 36% and 18% better than the next baseline on new tasks, distractors and backgrounds. Over 3,000 real trials.</li>
+<li><strong>RT-2:</strong> about 6,000 real trials. Unseen objects, backgrounds and environments: both RT-2 variants average 62% against RT-1's 32% and MOO's 35%. Emergent tests: RT-2-PaLI-X 60% average, RT-2-PaLM-E 40%, RT-1 17%.</li>
+<li><strong>RT-2's stated limits:</strong> it does not learn new <em>motions</em> from the web, only new semantics; the large models are expensive and slow.</li>
+</ul>
+<h2>4. What later VLAs kept and changed</h2>
+<table>
+<thead>
+<tr>
+<th>Kept</th>
+<th>Changed later</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a VLM backbone, co-training with web data</td>
+<td>open weights and smaller size: <a href="openvla.html">OpenVLA</a> (7B)</td>
+</tr>
+<tr>
+<td>tokens for actions, one per dimension</td>
+<td>compressed tokens (<a href="action-tokenization.html">FAST</a>) or continuous chunks (<a href="pi0.html">π0</a>, flow matching)</td>
+</tr>
+<tr>
+<td>one step per inference</td>
+<td>chunks of 50 steps at up to 50 Hz</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Caveats</h2>
+<ul>
+<li>Checked against both full texts: architecture numbers, action format, data counts, rates, and Tables 6 and 7 of RT-2.</li>
+<li>RT-2 weights were not released. RT-1 and RT-1-X checkpoints are public, and <a href="simplerenv.html">SimplerEnv</a> ships inference code for them; its RT-2-X numbers come from the Google authors.</li>
+</ul>
+<p><strong>Carry forward:</strong> <a href="openvla.html">OpenVLA</a> is the open, 7B version of the RT-2 recipe. <a href="action-tokenization.html">Action tokenization</a> explains the binning both papers use.</p>
+<p><strong>Check question:</strong> RT-1 with a history of 4 images and TokenLearner keeping 6 tokens per image: how many attention pairs per layer, compared with 4 × 81 tokens?</p>
+<details>
+<summary>Answer</summary>
+<p>$n = 24$, pairs $= 576$. Without it: $n = 324$, pairs $= 104{,}976$. Ratio about 182.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Brohan và cộng sự, <em>RT-1: Robotics Transformer for Real-World Control at Scale</em>, <a href="https://arxiv.org/abs/2212.06817">arXiv 2212.06817</a> · 12/2022. Brohan và cộng sự, <em>RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control</em>, <a href="https://arxiv.org/abs/2307.15818">arXiv 2307.15818</a> · 07/2023.</p>
+<p><strong>VẤN ĐỀ</strong> Một policy cho hàng trăm câu lệnh hằng ngày trên một tay máy di động thật, xử lý được cả vật, nền và yêu cầu chưa từng được dạy.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Với RT-1: policy đa tác vụ được học trên bộ dữ liệu nhỏ, hẹp, còn mô hình lớn thì quá chậm cho điều khiển vòng kín (Gato 1,2B mất 1,9 s mỗi bước trên robot). Với RT-2: RT-1 chỉ học từ dữ liệu robot, nên chỉ biết những vật và từ có trong demo; với vật, nền và môi trường chưa thấy nó đạt trung bình 32%.</p>
+<p><strong>Ý TƯỞNG</strong> RT-1: nén ảnh thật mạnh (EfficientNet có điều kiện FiLM, rồi TokenLearner giữ 8 token mỗi ảnh) để Transformer chạy được 3 Hz, và học trên 130k demo. RT-2: lấy một VLM đã tiền huấn luyện, viết mỗi hành động thành chuỗi số nguyên ("1 128 91 241 5 101 127"), và <em>co-fine-tune</em> trên dữ liệu robot cùng với dữ liệu web gốc.</p>
+<p><strong>KẾT QUẢ</strong> RT-1: 97% trên hơn 200 câu lệnh đã thấy, 76% trên 21 câu lệnh chưa thấy. RT-2: thành công với tác vụ đã thấy giữ nguyên (91–93% so với 92% của RT-1), trung bình phần chưa thấy 62% so với 32%, và 60% so với 17% ở các bài thử "năng lực nổi lên" (ký hiệu, suy luận, nhận người) cần tri thức web.</p>
+</div>
+<h2>1. Vấn đề: chỉ dữ liệu robot thì không biết về thế giới</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Thay đổi là tri thức đến từ đâu: VLM đã biết những vật, ký hiệu và từ ngữ không bao giờ xuất hiện trong dữ liệu robot." class="dg-natural" width="786" height="206" viewBox="0 0 786 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">RT-1</text><rect class="dg-box" x="124" y="22" width="178" height="38"/><text class="dg-t" x="213" y="45" text-anchor="middle">Ảnh robot + câu lệnh</text><path class="dg-a" d="M302 41 H334"/><rect class="dg-badbox" x="336" y="14" width="160" height="54"/><text class="dg-t" x="416" y="37" text-anchor="middle">Transformer nhỏ</text><text class="dg-s" x="416" y="53" text-anchor="middle">chỉ học từ demo robot</text><path class="dg-a" d="M496 41 H528"/><rect class="dg-box" x="530" y="22" width="140" height="38"/><text class="dg-t" x="600" y="45" text-anchor="middle">Token hành động</text><text class="dg-note dg-red" x="124" y="86">✗ mạnh với tác vụ đã thấy, chưa thấy trung bình 32%</text><text class="dg-lab dg-green" x="14" y="143">RT-2</text><rect class="dg-box" x="124" y="120" width="178" height="38"/><text class="dg-t" x="213" y="143" text-anchor="middle">Ảnh robot + câu lệnh</text><path class="dg-a" d="M302 139 H334"/><rect class="dg-key" x="336" y="112" width="239" height="54"/><text class="dg-t" x="455" y="135" text-anchor="middle">VLM tiền huấn luyện trên web</text><text class="dg-s" x="455" y="151" text-anchor="middle">co-fine-tune cùng dữ liệu web</text><path class="dg-a" d="M575 139 H607"/><rect class="dg-box" x="609" y="120" width="163" height="38"/><text class="dg-t" x="690" y="143" text-anchor="middle">Hành động dạng chữ</text><text class="dg-note dg-green" x="124" y="184">✓ chưa thấy trung bình 62%, làm được "đưa quả chuối tới tổng của hai cộng một"</text></svg><figcaption>Thay đổi là tri thức đến từ đâu: VLM đã biết những vật, ký hiệu và từ ngữ không bao giờ xuất hiện trong dữ liệu robot.</figcaption></figure>
+<h2>2. Hai kiến trúc, một định dạng hành động</h2>
+<figure class="diagram"><svg role="img" aria-label="RT-1 được dựng cho tốc độ từ dữ liệu robot. RT-2 giữ định dạng hành động chia bin nhưng biến mô hình thành một VLM trả lời bằng token hành động." viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">RT-1 (12/2022): TRANSFORMER ROBOT NHỎ HỌC TỪ DỮ LIỆU ROBOT</text>
+<rect class="dg-ext" x="20" y="40" width="160" height="70"/><text class="dg-t" x="100" y="64" text-anchor="middle">6 ảnh</text><text class="dg-s" x="100" y="84" text-anchor="middle">lịch sử 300x300</text><text class="dg-s" x="100" y="100" text-anchor="middle">+ câu lệnh (USE)</text>
+<rect class="dg-box" x="210" y="40" width="170" height="70"/><text class="dg-t" x="295" y="64" text-anchor="middle">FiLM EfficientNet</text><text class="dg-s" x="295" y="84" text-anchor="middle">chữ điều khiển phần ảnh</text><text class="dg-s" x="295" y="100" text-anchor="middle">81 token / ảnh</text>
+<rect class="dg-key" x="410" y="40" width="150" height="70"/><text class="dg-t" x="485" y="64" text-anchor="middle">TokenLearner</text><text class="dg-s" x="485" y="84" text-anchor="middle">81 → 8 token</text><text class="dg-s" x="485" y="100" text-anchor="middle">mỗi ảnh</text>
+<rect class="dg-box" x="590" y="40" width="170" height="70"/><text class="dg-t" x="675" y="64" text-anchor="middle">Transformer</text><text class="dg-s" x="675" y="84" text-anchor="middle">8 lớp, 19M</text><text class="dg-s" x="675" y="100" text-anchor="middle">tổng 35M</text>
+<rect class="dg-box" x="790" y="40" width="170" height="70"/><text class="dg-t" x="875" y="64" text-anchor="middle">11 token hành động</text><text class="dg-s" x="875" y="84" text-anchor="middle">mỗi token 256 bin</text><text class="dg-s" x="875" y="100" text-anchor="middle">tay 7, đế 3, chế độ 1</text>
+<path class="dg-a" d="M180 75 H210"/><path class="dg-a" d="M380 75 H410"/><path class="dg-a" d="M560 75 H590"/><path class="dg-a" d="M760 75 H790"/>
+<text class="dg-s" x="20" y="134">dữ liệu: ~130k demo, 700+ câu lệnh, 13 robot trong 17 tháng; chạy 3 Hz trên robot</text>
+<text class="dg-h" x="20" y="174">RT-2 (07/2023): FINE-TUNE VLM CỠ WEB ĐỂ HÀNH ĐỘNG CHỈ LÀ THÊM CHỮ</text>
+<rect class="dg-ext" x="20" y="190" width="200" height="74"/><text class="dg-t" x="120" y="214" text-anchor="middle">ảnh + câu hỏi</text><text class="dg-s" x="120" y="234" text-anchor="middle">"robot nên làm hành</text><text class="dg-s" x="120" y="250" text-anchor="middle">động gì để ...?"</text>
+<rect class="dg-key" x="250" y="190" width="240" height="74"/><text class="dg-t" x="370" y="214" text-anchor="middle">VLM, co-fine-tune</text><text class="dg-s" x="370" y="234" text-anchor="middle">PaLI-X 5B / 55B hoặc PaLM-E 12B</text><text class="dg-s" x="370" y="250" text-anchor="middle">dữ liệu robot + VQA web</text>
+<rect class="dg-box" x="520" y="190" width="220" height="74"/><text class="dg-t" x="630" y="214" text-anchor="middle">câu trả lời chữ</text><text class="dg-s" x="630" y="234" text-anchor="middle">"1 128 91 241 5 101 127"</text><text class="dg-s" x="630" y="250" text-anchor="middle">kết thúc, 6 delta, tay kẹp</text>
+<rect class="dg-box" x="770" y="190" width="190" height="74"/><text class="dg-t" x="865" y="214" text-anchor="middle">giải token</text><text class="dg-s" x="865" y="234" text-anchor="middle">bin → hành động</text><text class="dg-s" x="865" y="250" text-anchor="middle">55B: 1-3 Hz (TPU đám mây)</text>
+<path class="dg-a" d="M220 227 H250"/><path class="dg-a" d="M490 227 H520"/><path class="dg-a" d="M740 227 H770"/>
+<text class="dg-l" x="20" y="300">bước từ RT-1 lên RT-2 là backbone: tri thức web vào qua VLM tiền huấn luyện, định dạng hành động vẫn là token chia bin</text>
+</svg><figcaption>RT-1 được dựng cho tốc độ từ dữ liệu robot. RT-2 giữ định dạng hành động chia bin nhưng biến mô hình thành một VLM trả lời bằng token hành động.</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>RT-1</th>
+<th>RT-2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backbone</td>
+<td>FiLM EfficientNet-B3 (16M) + TokenLearner + Transformer 8 lớp (19M); tổng 35M</td>
+<td>PaLI-X (5B, 55B) hoặc PaLM-E (12B)</td>
+</tr>
+<tr>
+<td>Đầu vào</td>
+<td>6 ảnh (300×300), câu lệnh qua bộ mã hóa câu</td>
+<td>ảnh + "Q: robot nên làm hành động gì để [tác vụ]? A:"</td>
+</tr>
+<tr>
+<td>Hành động</td>
+<td>11 chiều (tay 7, đế 3, chế độ 1), mỗi chiều 256 bin đều</td>
+<td>8 token: kết thúc, 6 delta đầu cuối, tay kẹp; 256 bin</td>
+</tr>
+<tr>
+<td>Token cho mỗi bin</td>
+<td>từ vựng hành động riêng</td>
+<td>PaLI-X: token sẵn có của số nguyên đó; PaLM-E: ghi đè 256 token ít dùng nhất</td>
+</tr>
+<tr>
+<td>Dữ liệu học</td>
+<td>~130k demo, hơn 700 câu lệnh, 13 robot, 17 tháng</td>
+<td>cùng dữ liệu robot + dữ liệu web của VLM, tăng trọng số dữ liệu robot</td>
+</tr>
+<tr>
+<td>Tần số</td>
+<td>3 Hz trên robot</td>
+<td>55B: 1–3 Hz, 5B: ~5 Hz, chạy trên TPU đám mây</td>
+</tr>
+</tbody>
+</table>
+<p>Hai chi tiết huấn luyện được các VLA sau giữ lại. RT-2 <em>ràng buộc giải mã</em> để khi được hỏi hành động thì chỉ token hành động hợp lệ mới được lấy mẫu. Và nó cho thấy co-fine-tune cùng dữ liệu web tổng quát tốt hơn fine-tune chỉ trên dữ liệu robot.</p>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Vì sao RT-1 cần TokenLearner để đạt 3 Hz? Đếm số token và số cặp attention mà Transformer phải xử lý khi có và không có nó.</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$F$</td>
+<td>số ảnh trong lịch sử</td>
+<td>đầu vào</td>
+<td>6 (paper)</td>
+</tr>
+<tr>
+<td>$t_0$</td>
+<td>token mỗi ảnh ra từ EfficientNet</td>
+<td>đầu vào</td>
+<td>81 (bản đồ $9 \times 9$)</td>
+</tr>
+<tr>
+<td>$t_1$</td>
+<td>token mỗi ảnh sau TokenLearner</td>
+<td>đầu vào</td>
+<td>8</td>
+</tr>
+<tr>
+<td>$n$</td>
+<td>số token Transformer phải chú ý</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$n^2$</td>
+<td>số cặp attention mỗi lớp</td>
+<td>đầu ra</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức</strong></p>
+<p>$$n = F \times t, \qquad \text{số cặp} = n^2$$</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Không có TokenLearner: $n = 6 \times 81 = 486$, số cặp $= 486^2 = 236.196$.</li>
+<li>Có nó: $n = 6 \times 8 = 48$, số cặp $= 48^2 = 2.304$.</li>
+<li>Tỉ lệ: $236.196 / 2.304 = 102{,}5$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Ít hơn khoảng 100 lần số cặp attention ở mỗi lớp trong 8 lớp.</p>
+<p><strong>Vì sao quan trọng.</strong> Ngân sách độ trễ của paper là dưới 100 ms mỗi bước. RT-2 không dùng được mẹo này (VLM đã cố định), nên phải chạy mô hình 55B trên TPU đám mây ở 1–3 Hz: cái giá của tri thức web là tốc độ, và các công trình sau (OpenVLA 7B, rồi action chunk của π0) tìm cách lấy lại nó.</p>
+</div>
+<h2>3. Các paper báo cáo gì</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Bảng 6 và 7 của RT-2. Tác vụ đã thấy giữ nguyên; tổng quát hóa và các bài thử tri thức web tăng khoảng hai đến ba lần." class="dg-natural" width="620" height="192" viewBox="0 0 620 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="160" y="23" text-anchor="end">RT-1 seen</text><rect class="dg-bar" x="170" y="10" width="331" height="18"/><text class="dg-barval" x="509" y="23">92%</text><text class="dg-barlabel" x="160" y="53" text-anchor="end">RT-1 unseen avg</text><rect class="dg-bar" x="170" y="40" width="115" height="18"/><text class="dg-barval" x="293" y="53">32%</text><text class="dg-barlabel" x="160" y="83" text-anchor="end">RT-2 PaLI-X seen</text><rect class="dg-key" x="170" y="70" width="328" height="18"/><text class="dg-barval" x="505" y="83">91%</text><text class="dg-barlabel" x="160" y="113" text-anchor="end">RT-2 PaLI-X unseen avg</text><rect class="dg-key" x="170" y="100" width="223" height="18"/><text class="dg-barval" x="401" y="113">62%</text><text class="dg-barlabel" x="160" y="143" text-anchor="end">RT-1 emergent</text><rect class="dg-bar" x="170" y="130" width="61" height="18"/><text class="dg-barval" x="239" y="143">17%</text><text class="dg-barlabel" x="160" y="173" text-anchor="end">RT-2 PaLI-X emergent</text><rect class="dg-key" x="170" y="160" width="216" height="18"/><text class="dg-barval" x="394" y="173">60%</text></svg><figcaption>Bảng 6 và 7 của RT-2. Tác vụ đã thấy giữ nguyên; tổng quát hóa và các bài thử tri thức web tăng khoảng hai đến ba lần.</figcaption></figure>
+<ul>
+<li><strong>RT-1:</strong> 97% trên hơn 200 câu lệnh đã thấy (hơn BC-Z 25 điểm, hơn Gato 32 điểm); 76% trên 21 câu lệnh chưa thấy; tốt hơn baseline kế tiếp 25%, 36% và 18% với tác vụ mới, vật gây nhiễu và nền mới. Hơn 3.000 lượt thử thật.</li>
+<li><strong>RT-2:</strong> khoảng 6.000 lượt thử thật. Vật, nền và môi trường chưa thấy: cả hai biến thể RT-2 đạt trung bình 62% so với 32% của RT-1 và 35% của MOO. Bài thử năng lực nổi lên: RT-2-PaLI-X trung bình 60%, RT-2-PaLM-E 40%, RT-1 17%.</li>
+<li><strong>Giới hạn RT-2 tự nêu:</strong> nó không học được <em>cử động</em> mới từ web, chỉ học ngữ nghĩa mới; mô hình lớn thì đắt và chậm.</li>
+</ul>
+<h2>4. VLA sau này giữ gì và đổi gì</h2>
+<table>
+<thead>
+<tr>
+<th>Giữ lại</th>
+<th>Đổi về sau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>backbone VLM, đồng huấn luyện với dữ liệu web</td>
+<td>trọng số mở và nhỏ hơn: <a href="openvla.html">OpenVLA</a> (7B)</td>
+</tr>
+<tr>
+<td>token cho hành động, mỗi chiều một token</td>
+<td>token nén (<a href="action-tokenization.html">FAST</a>) hoặc chunk liên tục (<a href="pi0.html">π0</a>, flow matching)</td>
+</tr>
+<tr>
+<td>mỗi lần suy luận một bước</td>
+<td>chunk 50 bước, tới 50 Hz</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Lưu ý</h2>
+<ul>
+<li>Đã đối chiếu với toàn văn cả hai paper: số liệu kiến trúc, định dạng hành động, số lượng dữ liệu, tần số, và Bảng 6, 7 của RT-2.</li>
+<li>Trọng số RT-2 không được công bố. Checkpoint RT-1 và RT-1-X là công khai, và <a href="simplerenv.html">SimplerEnv</a> có sẵn mã suy luận cho chúng; số của RT-2-X trong đó do các tác giả Google chạy.</li>
+</ul>
+<p><strong>Mang theo:</strong> <a href="openvla.html">OpenVLA</a> là phiên bản mở, 7B của công thức RT-2. <a href="action-tokenization.html">Action tokenization</a> giải thích cách chia bin mà cả hai paper dùng.</p>
+<p><strong>Câu hỏi kiểm tra:</strong> RT-1 với lịch sử 4 ảnh và TokenLearner giữ 6 token mỗi ảnh: mỗi lớp có bao nhiêu cặp attention, so với 4 × 81 token?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$n = 24$, số cặp $= 576$. Không có nó: $n = 324$, số cặp $= 104.976$. Tỉ lệ khoảng 182.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
