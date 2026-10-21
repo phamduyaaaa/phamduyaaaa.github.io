@@ -231,22 +231,22 @@
 <figure class="diagram flow"><svg role="img" aria-label="Thay đổi là tính toán có điều kiện: tham số nào chạy phụ thuộc vào token." class="dg-natural" width="667" height="206" viewBox="0 0 667 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Lớp dày đặc</text><rect class="dg-box" x="124" y="22" width="96" height="38"/><text class="dg-t" x="172" y="45" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 41 H252"/><rect class="dg-badbox" x="254" y="14" width="205" height="54"/><text class="dg-t" x="357" y="37" text-anchor="middle">Dùng mọi tham số</text><text class="dg-s" x="357" y="53" text-anchor="middle">chi phí tăng theo kích thước</text><path class="dg-a" d="M459 41 H491"/><rect class="dg-box" x="493" y="22" width="96" height="38"/><text class="dg-t" x="541" y="45" text-anchor="middle">Đầu ra</text><text class="dg-note dg-red" x="124" y="86">✗ mô hình lớn hơn, chậm hơn</text><text class="dg-lab dg-green" x="14" y="143">MoE thưa</text><rect class="dg-box" x="124" y="120" width="96" height="38"/><text class="dg-t" x="172" y="143" text-anchor="middle">Mọi token</text><path class="dg-a" d="M220 139 H252"/><rect class="dg-key" x="254" y="112" width="269" height="54"/><text class="dg-t" x="389" y="135" text-anchor="middle">Router chọn 1 trong N chuyên gia</text><text class="dg-s" x="389" y="151" text-anchor="middle">N lần tham số, 1 lần tính toán</text><path class="dg-a" d="M523 139 H555"/><rect class="dg-box" x="557" y="120" width="96" height="38"/><text class="dg-t" x="605" y="143" text-anchor="middle">Đầu ra</text><text class="dg-note dg-green" x="124" y="184">✓ có sức chứa mà không tốn thêm</text></svg><figcaption>Thay đổi là tính toán có điều kiện: tham số nào chạy phụ thuộc vào token.</figcaption></figure>
 <h2>2. Lớp MoE</h2>
 <figure class="diagram"><svg role="img" aria-label="Router biến một token thành xác suất trên các chuyên gia; chỉ chuyên gia được chọn chạy, và đầu ra của nó được nhân với xác suất của router để router vẫn nhận được gradient." viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
-<text class="dg-h" x="20" y="24">A SPARSE MoE LAYER: A ROUTER SENDS EACH TOKEN TO ONE (OR k) OF N EXPERTS</text>
-<rect class="dg-ext" x="20" y="120" width="140" height="56"/><text class="dg-t" x="90" y="144" text-anchor="middle">token x</text><text class="dg-s" x="90" y="162" text-anchor="middle">e.g. a force token</text>
+<text class="dg-h" x="20" y="24">MỘT LỚP MoE THƯA: ROUTER GỬI MỖI TOKEN TỚI MỘT (HOẶC k) TRONG N EXPERT</text>
+<rect class="dg-ext" x="20" y="120" width="140" height="56"/><text class="dg-t" x="90" y="144" text-anchor="middle">token x</text><text class="dg-s" x="90" y="162" text-anchor="middle">vd. một token lực</text>
 <rect class="dg-key" x="210" y="120" width="150" height="56"/><text class="dg-t" x="285" y="144" text-anchor="middle">router</text><text class="dg-s" x="285" y="162" text-anchor="middle">softmax(W_r x)</text>
 <path class="dg-a" d="M160 148 H210"/>
-<rect class="dg-key" x="440" y="44" width="150" height="44"/><text class="dg-t" x="515" y="64" text-anchor="middle">expert 1</text><text class="dg-s" x="515" y="80" text-anchor="middle">p = 0.70, chosen</text>
-<rect class="dg-box" x="440" y="100" width="150" height="44"/><text class="dg-t" x="515" y="120" text-anchor="middle">expert 2</text><text class="dg-s" x="515" y="136" text-anchor="middle">p = 0.16, skipped</text>
-<rect class="dg-box" x="440" y="156" width="150" height="44"/><text class="dg-t" x="515" y="176" text-anchor="middle">expert 3</text><text class="dg-s" x="515" y="192" text-anchor="middle">p = 0.11, skipped</text>
-<rect class="dg-box" x="440" y="212" width="150" height="44"/><text class="dg-t" x="515" y="232" text-anchor="middle">expert 4</text><text class="dg-s" x="515" y="248" text-anchor="middle">p = 0.04, skipped</text>
+<rect class="dg-key" x="440" y="44" width="150" height="44"/><text class="dg-t" x="515" y="64" text-anchor="middle">expert 1</text><text class="dg-s" x="515" y="80" text-anchor="middle">p = 0,70, được chọn</text>
+<rect class="dg-box" x="440" y="100" width="150" height="44"/><text class="dg-t" x="515" y="120" text-anchor="middle">expert 2</text><text class="dg-s" x="515" y="136" text-anchor="middle">p = 0,16, bỏ qua</text>
+<rect class="dg-box" x="440" y="156" width="150" height="44"/><text class="dg-t" x="515" y="176" text-anchor="middle">expert 3</text><text class="dg-s" x="515" y="192" text-anchor="middle">p = 0,11, bỏ qua</text>
+<rect class="dg-box" x="440" y="212" width="150" height="44"/><text class="dg-t" x="515" y="232" text-anchor="middle">expert 4</text><text class="dg-s" x="515" y="248" text-anchor="middle">p = 0,04, bỏ qua</text>
 <path class="dg-a" d="M360 140 H400 V66 H440"/><path class="dg-ad" d="M400 122 H440"/><path class="dg-ad" d="M400 140 V178 H440"/><path class="dg-ad" d="M400 178 V234 H440"/>
-<rect class="dg-box" x="660" y="44" width="150" height="56"/><text class="dg-t" x="735" y="68" text-anchor="middle">p x E1(x)</text><text class="dg-s" x="735" y="86" text-anchor="middle">gate times output</text>
+<rect class="dg-box" x="660" y="44" width="150" height="56"/><text class="dg-t" x="735" y="68" text-anchor="middle">p x E1(x)</text><text class="dg-s" x="735" y="86" text-anchor="middle">cổng nhân đầu ra</text>
 <path class="dg-a" d="M590 66 H660"/>
 <rect class="dg-box" x="840" y="44" width="120" height="56"/><text class="dg-t" x="900" y="68" text-anchor="middle">x + ...</text><text class="dg-s" x="900" y="86" text-anchor="middle">residual</text>
 <path class="dg-a" d="M810 72 H840"/>
-<text class="dg-l" x="640" y="160">capacity: 4 experts of parameters</text>
-<text class="dg-l" x="640" y="182">compute: 1 expert per token</text>
-<text class="dg-note dg-red" x="640" y="230">without a balancing loss, one expert</text><text class="dg-note dg-red" x="640" y="248">can end up taking every token</text>
+<text class="dg-l" x="640" y="160">sức chứa: tham số của 4 expert</text>
+<text class="dg-l" x="640" y="182">tính toán: 1 expert mỗi token</text>
+<text class="dg-note dg-red" x="640" y="230">không có loss cân bằng, một expert</text><text class="dg-note dg-red" x="640" y="248">có thể ôm hết mọi token</text>
 </svg><figcaption>Router biến một token thành xác suất trên các chuyên gia; chỉ chuyên gia được chọn chạy, và đầu ra của nó được nhân với xác suất của router để router vẫn nhận được gradient.</figcaption></figure>
 <table>
 <thead>

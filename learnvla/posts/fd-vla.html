@@ -269,29 +269,29 @@
 <figure class="diagram compact"><svg role="img" aria-label="Ablation, trung bình ba task: query phải *dự đoán* lực cho kết quả tốt nhất." class="dg-natural" width="703" height="102" viewBox="0 0 703 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="243" y="23" text-anchor="end">Không FDM, mã hóa lực bằng MLP</text><rect class="dg-bar" x="253" y="10" width="140" height="18"/><text class="dg-barval" x="401" y="23">38,9%</text><text class="dg-barlabel" x="243" y="53" text-anchor="end">FDM dùng latent lực thật làm query</text><rect class="dg-bar" x="253" y="40" width="184" height="18"/><text class="dg-barval" x="445" y="53">51,1%</text><text class="dg-barlabel" x="243" y="83" text-anchor="end">FDM với query học được</text><rect class="dg-key" x="253" y="70" width="220" height="18"/><text class="dg-barval" x="481" y="83">61,1%</text></svg><figcaption>Ablation, trung bình ba task: query phải *dự đoán* lực cho kết quả tốt nhất.</figcaption></figure>
 <h2>2. Kiến trúc</h2>
 <figure class="diagram"><svg role="img" aria-label="Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó bị kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
-<rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Vision V_t</text>
-<rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Language L</text>
-<rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">State S_t</text>
-<rect class="dg-box" x="160" y="24" width="120" height="124"/><text class="dg-t" x="220" y="76" text-anchor="middle">Projection</text><text class="dg-s" x="220" y="94" text-anchor="middle">1-layer MLP</text><text class="dg-s" x="220" y="112" text-anchor="middle">f^V · f^L · f^S</text>
+<rect class="dg-ext" x="20" y="24" width="110" height="36"/><text class="dg-t" x="75" y="46" text-anchor="middle">Ảnh V_t</text>
+<rect class="dg-ext" x="20" y="68" width="110" height="36"/><text class="dg-t" x="75" y="90" text-anchor="middle">Ngôn ngữ L</text>
+<rect class="dg-ext" x="20" y="112" width="110" height="36"/><text class="dg-t" x="75" y="134" text-anchor="middle">Trạng thái S_t</text>
+<rect class="dg-box" x="160" y="24" width="120" height="124"/><text class="dg-t" x="220" y="76" text-anchor="middle">Chiếu</text><text class="dg-s" x="220" y="94" text-anchor="middle">MLP 1 lớp</text><text class="dg-s" x="220" y="112" text-anchor="middle">f^V · f^L · f^S</text>
 <path class="dg-a" d="M130 42 H160"/><path class="dg-a" d="M130 86 H160"/><path class="dg-a" d="M130 130 H160"/>
-<rect class="dg-ext" x="160" y="196" width="120" height="36"/><text class="dg-t" x="220" y="212" text-anchor="middle">Query p</text><text class="dg-s" x="220" y="225" text-anchor="middle">learnable, 1×D</text>
-<rect class="dg-key" x="330" y="150" width="160" height="96"/><text class="dg-t" x="410" y="178" text-anchor="middle">Force Distillation</text><text class="dg-t" x="410" y="194" text-anchor="middle">Module (FDM)</text><text class="dg-s" x="410" y="214" text-anchor="middle">1-query attention over</text><text class="dg-s" x="410" y="228" text-anchor="middle">[p, f^V, f^S] + FFN</text>
+<rect class="dg-ext" x="160" y="196" width="120" height="36"/><text class="dg-t" x="220" y="212" text-anchor="middle">Query p</text><text class="dg-s" x="220" y="225" text-anchor="middle">học được, 1×D</text>
+<rect class="dg-key" x="330" y="150" width="160" height="96"/><text class="dg-t" x="410" y="178" text-anchor="middle">Mô-đun chưng cất</text><text class="dg-t" x="410" y="194" text-anchor="middle">lực (FDM)</text><text class="dg-s" x="410" y="214" text-anchor="middle">attention 1 query trên</text><text class="dg-s" x="410" y="228" text-anchor="middle">[p, f^V, f^S] + FFN</text>
 <path class="dg-a" d="M280 130 H305 V174 H330"/><path class="dg-a" d="M280 214 H305 V222 H330"/>
 <rect class="dg-key" x="540" y="168" width="90" height="36"/><text class="dg-t" x="585" y="190" text-anchor="middle">f^pF</text>
 <path class="dg-a" d="M490 198 H540"/><text class="dg-l" x="515" y="190" text-anchor="middle">1×D</text>
-<rect class="dg-box" x="780" y="40" width="180" height="140"/><text class="dg-t" x="870" y="84" text-anchor="middle">SmolVLM-2 (frozen)</text><text class="dg-s" x="870" y="104" text-anchor="middle">SigLIP encoder</text><text class="dg-s" x="870" y="124" text-anchor="middle">directional mask:</text><text class="dg-s" x="870" y="138" text-anchor="middle">control tokens see percept</text><text class="dg-s" x="870" y="152" text-anchor="middle">tokens, never the reverse</text>
-<path class="dg-a" d="M280 60 H780"/><text class="dg-l" x="530" y="52" text-anchor="middle">percept tokens f^V, f^L</text>
+<rect class="dg-box" x="780" y="40" width="180" height="140"/><text class="dg-t" x="870" y="84" text-anchor="middle">SmolVLM-2 (đóng băng)</text><text class="dg-s" x="870" y="104" text-anchor="middle">bộ mã hóa SigLIP</text><text class="dg-s" x="870" y="124" text-anchor="middle">mask một chiều:</text><text class="dg-s" x="870" y="138" text-anchor="middle">token điều khiển thấy token</text><text class="dg-s" x="870" y="152" text-anchor="middle">tri giác, không ngược lại</text>
+<path class="dg-a" d="M280 60 H780"/><text class="dg-l" x="530" y="52" text-anchor="middle">token tri giác f^V, f^L</text>
 <path class="dg-a" d="M630 180 H740 V120 H780"/><text class="dg-l" x="700" y="172" text-anchor="middle">+ f^S, f^pF</text>
-<rect class="dg-box" x="780" y="230" width="180" height="50"/><text class="dg-t" x="870" y="250" text-anchor="middle">Action expert</text><text class="dg-s" x="870" y="266" text-anchor="middle">flow-matching decoder</text>
-<rect class="dg-box" x="780" y="318" width="180" height="36"/><text class="dg-t" x="870" y="340" text-anchor="middle">Action chunk A_t</text>
+<rect class="dg-box" x="780" y="230" width="180" height="50"/><text class="dg-t" x="870" y="250" text-anchor="middle">Action expert</text><text class="dg-s" x="870" y="266" text-anchor="middle">bộ giải mã flow-matching</text>
+<rect class="dg-box" x="780" y="318" width="180" height="36"/><text class="dg-t" x="870" y="340" text-anchor="middle">Chunk hành động A_t</text>
 <path class="dg-a" d="M870 180 V230"/><path class="dg-a" d="M870 280 V318"/>
-<rect class="dg-ext" x="170" y="300" width="130" height="40"/><text class="dg-t" x="235" y="318" text-anchor="middle">Force F_t</text><text class="dg-s" x="235" y="332" text-anchor="middle">training only</text>
-<rect class="dg-box" x="340" y="300" width="120" height="40"/><text class="dg-t" x="400" y="318" text-anchor="middle">Light MLP</text><text class="dg-s" x="400" y="332" text-anchor="middle">teacher</text>
+<rect class="dg-ext" x="170" y="300" width="130" height="40"/><text class="dg-t" x="235" y="318" text-anchor="middle">Lực F_t</text><text class="dg-s" x="235" y="332" text-anchor="middle">chỉ khi huấn luyện</text>
+<rect class="dg-box" x="340" y="300" width="120" height="40"/><text class="dg-t" x="400" y="318" text-anchor="middle">MLP nhẹ</text><text class="dg-s" x="400" y="332" text-anchor="middle">thầy</text>
 <rect class="dg-box" x="500" y="300" width="100" height="40"/><text class="dg-t" x="550" y="324" text-anchor="middle">f^aF</text>
 <path class="dg-a" d="M300 320 H340"/><path class="dg-a" d="M460 320 H500"/>
 <rect class="dg-key" x="640" y="252" width="110" height="52"/><text class="dg-t" x="695" y="274" text-anchor="middle">L_dist</text><text class="dg-s" x="695" y="290" text-anchor="middle">‖f^pF−f^aF‖²</text>
 <path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
-<text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
+<text class="dg-h" x="170" y="372">KHI SUY LUẬN: không có cảm biến lực. FDM đoán f^pF chỉ từ ảnh + trạng thái.</text>
 </svg><figcaption>Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó bị kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán.</figcaption></figure>
 <table>
 <thead>

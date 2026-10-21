@@ -1,6 +1,7 @@
 """Sinh sơ đồ ma trận cho Survey 1 và khối tài liệu tham khảo (một lần, dữ liệu ở scripts/data/force-refs.tsv).
 Chạy:  python scripts/gen-survey-figs.py
-Ghi:   learnvla/diagrams/survey-force-matrix.svg  và  scripts/data/force-refs.md (khối tham khảo để dán vào bài)."""
+Ghi:   learnvla/diagrams/survey-force-matrix.svg  và  scripts/data/force-refs.md (khối tham khảo để dán vào bài).
+Sau đó chạy  python scripts/translate-svgs.py  để cập nhật bản tiếng Việt (.vi.svg)."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

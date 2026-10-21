@@ -223,18 +223,18 @@
 <figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở đường đi: đường thẳng có vận tốc không đổi nên bước lớn vẫn chính xác." class="dg-natural" width="736" height="206" viewBox="0 0 736 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Diffusion policy</text><rect class="dg-box" x="140" y="22" width="96" height="38"/><text class="dg-t" x="188" y="45" text-anchor="middle">Nhiễu</text><path class="dg-a" d="M236 41 H268"/><rect class="dg-badbox" x="270" y="14" width="148" height="54"/><text class="dg-t" x="344" y="37" text-anchor="middle">Khử nhiễu bước 1</text><text class="dg-s" x="344" y="53" text-anchor="middle">đường cong</text><path class="dg-a" d="M418 41 H450"/><rect class="dg-badbox" x="452" y="22" width="140" height="38"/><text class="dg-t" x="522" y="45" text-anchor="middle">... bước 50-100</text><path class="dg-a" d="M592 41 H624"/><rect class="dg-box" x="626" y="22" width="96" height="38"/><text class="dg-t" x="674" y="45" text-anchor="middle">Hành động</text><text class="dg-note dg-red" x="140.4" y="86">✗ nhiều lần gọi mạng cho mỗi đoạn hành động</text><text class="dg-lab dg-green" x="14" y="143">Flow matching</text><rect class="dg-box" x="140" y="120" width="96" height="38"/><text class="dg-t" x="188" y="143" text-anchor="middle">Nhiễu</text><path class="dg-a" d="M236 139 H268"/><rect class="dg-key" x="270" y="112" width="132" height="54"/><text class="dg-t" x="337" y="135" text-anchor="middle">Trường vận tốc</text><text class="dg-s" x="337" y="151" text-anchor="middle">đường thẳng</text><path class="dg-a" d="M403 139 H435"/><rect class="dg-box" x="437" y="120" width="96" height="38"/><text class="dg-t" x="485" y="143" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="140.4" y="184">✓ khoảng 10 bước Euler</text></svg><figcaption>Thay đổi nằm ở đường đi: đường thẳng có vận tốc không đổi nên bước lớn vẫn chính xác.</figcaption></figure>
 <h2>2. Cơ chế</h2>
 <figure class="diagram"><svg role="img" aria-label="Trái: đường của diffusion cong và cần nhiều bước. Phải: đường flow từ nhiễu $x_0$ đến hành động $x_1$ là đường thẳng với vận tốc không đổi $x_1 - x_0$." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
-<rect class="dg-grp" x="10" y="8" width="470" height="304"/><text class="dg-h" x="22" y="26">DIFFUSION (curved path, many steps)</text>
-<circle class="dg-m" cx="60" cy="230" r="6"/><text class="dg-s" x="60" y="256" text-anchor="middle">noise</text>
-<circle class="dg-m" cx="430" cy="80" r="6"/><text class="dg-s" x="430" y="104" text-anchor="middle">action</text>
+<rect class="dg-grp" x="10" y="8" width="470" height="304"/><text class="dg-h" x="22" y="26">DIFFUSION (đường cong, nhiều bước)</text>
+<circle class="dg-m" cx="60" cy="230" r="6"/><text class="dg-s" x="60" y="256" text-anchor="middle">nhiễu</text>
+<circle class="dg-m" cx="430" cy="80" r="6"/><text class="dg-s" x="430" y="104" text-anchor="middle">hành động</text>
 <path class="dg-a" d="M60 230 C 140 90, 200 280, 260 160 S 380 60, 430 80" style="stroke:#b3261e"/>
-<text class="dg-note dg-red" x="245" y="296" text-anchor="middle">tens to hundreds of denoise steps</text>
-<rect class="dg-grp" x="500" y="8" width="470" height="304"/><text class="dg-h" x="512" y="26">FLOW MATCHING (straight path)</text>
-<circle class="dg-m" cx="550" cy="230" r="6"/><text class="dg-s" x="550" y="256" text-anchor="middle">x0 noise</text>
-<circle class="dg-m" cx="920" cy="80" r="6"/><text class="dg-s" x="920" y="104" text-anchor="middle">x1 action</text>
+<text class="dg-note dg-red" x="245" y="296" text-anchor="middle">hàng chục tới hàng trăm bước khử nhiễu</text>
+<rect class="dg-grp" x="500" y="8" width="470" height="304"/><text class="dg-h" x="512" y="26">FLOW MATCHING (đường thẳng)</text>
+<circle class="dg-m" cx="550" cy="230" r="6"/><text class="dg-s" x="550" y="256" text-anchor="middle">x0 nhiễu</text>
+<circle class="dg-m" cx="920" cy="80" r="6"/><text class="dg-s" x="920" y="104" text-anchor="middle">x1 hành động</text>
 <path class="dg-a" d="M550 230 L920 80" style="stroke:#2e7d32"/>
 <circle class="dg-m" cx="642" cy="193" r="4"/><circle class="dg-m" cx="735" cy="155" r="4"/><circle class="dg-m" cx="827" cy="118" r="4"/>
-<text class="dg-l" x="760" y="250" text-anchor="middle">velocity u = x1 − x0 (constant)</text>
-<text class="dg-note dg-green" x="735" y="296" text-anchor="middle">about 10 Euler steps (π0: δ = 0.1)</text>
+<text class="dg-l" x="760" y="250" text-anchor="middle">vận tốc u = x1 − x0 (hằng số)</text>
+<text class="dg-note dg-green" x="735" y="296" text-anchor="middle">khoảng 10 bước Euler (π0: δ = 0,1)</text>
 </svg><figcaption>Trái: đường của diffusion cong và cần nhiều bước. Phải: đường flow từ nhiễu $x_0$ đến hành động $x_1$ là đường thẳng với vận tốc không đổi $x_1 - x_0$.</figcaption></figure>
 <table>
 <thead>

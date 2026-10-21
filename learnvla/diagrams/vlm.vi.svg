@@ -1,0 +1,15 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">VLM = BỘ MÃ HÓA ẢNH + MỘT ADAPTER NHỎ + MÔ HÌNH NGÔN NGỮ</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="56"/><text class="dg-t" x="95" y="74" text-anchor="middle">ảnh camera</text><text class="dg-s" x="95" y="92" text-anchor="middle">224 x 224</text>
+<rect class="dg-key" x="210" y="50" width="170" height="56"/><text class="dg-t" x="295" y="74" text-anchor="middle">bộ mã hóa ảnh</text><text class="dg-s" x="295" y="92" text-anchor="middle">SigLIP: 256 x 1152</text>
+<rect class="dg-box" x="420" y="50" width="160" height="56"/><text class="dg-t" x="500" y="74" text-anchor="middle">projector</text><text class="dg-s" x="500" y="92" text-anchor="middle">tuyến tính: 1152 sang 2048</text>
+<rect class="dg-ext" x="420" y="140" width="160" height="56"/><text class="dg-t" x="500" y="164" text-anchor="middle">token chữ</text><text class="dg-s" x="500" y="182" text-anchor="middle">"nhặt cái cốc đỏ"</text>
+<rect class="dg-key" x="630" y="80" width="170" height="96"/><text class="dg-t" x="715" y="114" text-anchor="middle">mô hình ngôn ngữ</text><text class="dg-s" x="715" y="134" text-anchor="middle">Gemma 2B, rộng 2048</text><text class="dg-s" x="715" y="150" text-anchor="middle">đọc token ảnh + chữ</text>
+<path class="dg-a" d="M170 78 H210"/><path class="dg-a" d="M380 78 H420"/><path class="dg-a" d="M580 78 H605 V110 H630"/><path class="dg-a" d="M580 168 H605 V146 H630"/>
+<rect class="dg-box" x="840" y="50" width="120" height="50"/><text class="dg-t" x="900" y="72" text-anchor="middle">VLM xuất ra</text><text class="dg-s" x="900" y="88" text-anchor="middle">câu trả lời chữ</text>
+<rect class="dg-box" x="840" y="120" width="120" height="50"/><text class="dg-t" x="900" y="142" text-anchor="middle">VLA, tokens</text><text class="dg-s" x="900" y="158" text-anchor="middle">RT-2, OpenVLA</text>
+<rect class="dg-box" x="840" y="190" width="120" height="50"/><text class="dg-t" x="900" y="212" text-anchor="middle">VLA, expert</text><text class="dg-s" x="900" y="228" text-anchor="middle">pi0: flow head</text>
+<path class="dg-a" d="M800 110 H820 V75 H840"/><path class="dg-a" d="M800 128 H820 V145 H840"/><path class="dg-a" d="M800 150 H820 V215 H840"/>
+<text class="dg-l" x="20" y="270">bước 1: huấn luyện projector để vector ảnh rơi vào chỗ mô hình ngôn ngữ chờ từ ngữ</text>
+<text class="dg-l" x="20" y="292">bước 2: fine-tune trên câu lệnh (VLM), hoặc trên demo robot với đầu ra hành động (VLA)</text>
+</svg>

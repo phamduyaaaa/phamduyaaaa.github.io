@@ -1,0 +1,22 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">VLA CHẬM (MỖI GIÂY MỘT LẦN) LẬP KẾ HOẠCH TƯ THẾ VÀ LỰC, BỘ ĐIỀU KHIỂN NHANH (500 Hz) BÁM THEO</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">2 camera + câu lệnh</text><text class="dg-s" x="120" y="86" text-anchor="middle">cổ tay và nhìn ngang</text>
+<rect class="dg-ext" x="20" y="112" width="200" height="54"/><text class="dg-t" x="120" y="134" text-anchor="middle">tư thế, tay kẹp, lực (13)</text><text class="dg-s" x="120" y="152" text-anchor="middle">trạng thái cảm thụ bản thể</text>
+<rect class="dg-key" x="20" y="178" width="200" height="54"/><text class="dg-t" x="120" y="200" text-anchor="middle">lịch sử lực h x 6</text><text class="dg-s" x="120" y="218" text-anchor="middle">lấy mẫu mỗi 0,1 s</text>
+<rect class="dg-box" x="270" y="46" width="200" height="110"/><text class="dg-t" x="370" y="82" text-anchor="middle">pi0 backbone</text><text class="dg-s" x="370" y="104" text-anchor="middle">PaliGemma + flow-matching</text><text class="dg-s" x="370" y="120" text-anchor="middle">action expert</text>
+<rect class="dg-key" x="270" y="170" width="200" height="70"/><text class="dg-t" x="370" y="196" text-anchor="middle">Expert hợp nhất đa kênh</text><text class="dg-s" x="370" y="214" text-anchor="middle">token lực + MoE thưa</text>
+<path class="dg-a" d="M220 73 H245 V90 H270"/><path class="dg-a" d="M220 139 H270"/><path class="dg-a" d="M220 205 H270"/><path class="dg-a" d="M370 170 V156"/>
+<rect class="dg-box" x="520" y="80" width="190" height="90"/><text class="dg-t" x="615" y="110" text-anchor="middle">Action chunk, H = 40</text><text class="dg-s" x="615" y="132" text-anchor="middle">tư thế mong muốn + tay kẹp</text><text class="dg-s" x="615" y="148" text-anchor="middle">+ lực mong muốn</text>
+<path class="dg-a" d="M470 100 H520"/><path class="dg-a" d="M470 205 H495 V150 H520"/>
+<text class="dg-s" x="520" y="192">nội suy lên 500 Hz</text>
+<rect class="dg-key" x="760" y="46" width="200" height="110"/><text class="dg-t" x="860" y="72" text-anchor="middle">bộ điều khiển mềm dẻo</text><text class="dg-t" x="860" y="90" text-anchor="middle">thích nghi theo VLA</text><text class="dg-s" x="860" y="114" text-anchor="middle">F = K(x - x_d) + D x' + F_d</text><text class="dg-s" x="860" y="132" text-anchor="middle">K thích nghi theo sai số lực</text>
+<path class="dg-a" d="M710 125 H760"/>
+<rect class="dg-ext" x="760" y="190" width="200" height="60"/><text class="dg-t" x="860" y="214" text-anchor="middle">UR5e qua RTDE</text><text class="dg-s" x="860" y="232" text-anchor="middle">cảm biến F/T 6 bậc</text>
+<path class="dg-a" d="M860 156 V190"/>
+<path class="dg-ad" d="M860 250 V285 H120 V232"/><text class="dg-l" x="250" y="279">lực đo: vào bộ điều khiển nhanh, vào lịch sử chậm</text>
+<text class="dg-h" x="20" y="326">DỮ LIỆU VÀ HUẤN LUYỆN</text>
+<rect class="dg-ext" x="20" y="342" width="290" height="70"/><text class="dg-t" x="165" y="366" text-anchor="middle">Điều khiển từ xa chia sẻ</text><text class="dg-s" x="165" y="384" text-anchor="middle">tay cầm hoặc chuột 3D, được làm mềm</text><text class="dg-s" x="165" y="400" text-anchor="middle">bởi trở kháng ảo có bù</text>
+<rect class="dg-box" x="345" y="342" width="290" height="70"/><text class="dg-t" x="490" y="366" text-anchor="middle">Giai đoạn I</text><text class="dg-s" x="490" y="384" text-anchor="middle">fine-tune pi0 trên ảnh, ngôn ngữ,</text><text class="dg-s" x="490" y="400" text-anchor="middle">cảm thụ bản thể</text>
+<rect class="dg-key" x="670" y="342" width="290" height="70"/><text class="dg-t" x="815" y="366" text-anchor="middle">Giai đoạn II</text><text class="dg-s" x="815" y="384" text-anchor="middle">thêm expert hợp nhất lực như một</text><text class="dg-s" x="815" y="400" text-anchor="middle">nhánh residual của action expert</text>
+<path class="dg-a" d="M310 377 H345"/><path class="dg-a" d="M635 377 H670"/>
+</svg>

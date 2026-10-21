@@ -1,0 +1,18 @@
+<svg viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">HAI CÁCH BIẾN MỘT CHUNK HÀNH ĐỘNG 1 GIÂY THÀNH TOKEN</text>
+<rect class="dg-ext" x="20" y="44" width="170" height="60"/><text class="dg-t" x="105" y="68" text-anchor="middle">Action chunk</text><text class="dg-s" x="105" y="86" text-anchor="middle">H bước x D chiều</text>
+<rect class="dg-badbox" x="250" y="44" width="200" height="60"/><text class="dg-t" x="350" y="68" text-anchor="middle">Chia bin, từng giá trị</text><text class="dg-s" x="350" y="86" text-anchor="middle">mỗi giá trị 256 bin</text>
+<rect class="dg-badbox" x="510" y="44" width="200" height="60"/><text class="dg-t" x="610" y="68" text-anchor="middle">H x D token</text><text class="dg-s" x="610" y="86" text-anchor="middle">50 Hz, 7 chiều: 350 token</text>
+<path class="dg-a" d="M190 74 H250"/><path class="dg-a" d="M450 74 H510"/>
+<text class="dg-note dg-red" x="730" y="70">token kề nhau gần như bằng nhau:</text><text class="dg-note dg-red" x="730" y="88">mỗi token ít thông tin mới</text>
+<text class="dg-h" x="20" y="150">FAST (01/2025)</text>
+<rect class="dg-box" x="20" y="166" width="140" height="60"/><text class="dg-t" x="90" y="190" text-anchor="middle">Chuẩn hóa</text><text class="dg-s" x="90" y="208" text-anchor="middle">phân vị 1-99 về [-1,1]</text>
+<rect class="dg-key" x="190" y="166" width="140" height="60"/><text class="dg-t" x="260" y="190" text-anchor="middle">DCT từng chiều</text><text class="dg-s" x="260" y="208" text-anchor="middle">thời gian sang tần số</text>
+<rect class="dg-key" x="360" y="166" width="140" height="60"/><text class="dg-t" x="430" y="190" text-anchor="middle">Nhân + làm tròn</text><text class="dg-s" x="430" y="208" text-anchor="middle">hệ số nhỏ thành 0</text>
+<rect class="dg-box" x="530" y="166" width="150" height="60"/><text class="dg-t" x="605" y="190" text-anchor="middle">Trải phẳng</text><text class="dg-s" x="605" y="208" text-anchor="middle">tần số thấp trước</text>
+<rect class="dg-key" x="710" y="166" width="120" height="60"/><text class="dg-t" x="770" y="190" text-anchor="middle">BPE</text><text class="dg-s" x="770" y="208" text-anchor="middle">nén các số 0</text>
+<rect class="dg-box" x="860" y="166" width="100" height="60"/><text class="dg-t" x="910" y="190" text-anchor="middle">~30</text><text class="dg-s" x="910" y="208" text-anchor="middle">token mỗi tay</text>
+<path class="dg-a" d="M160 196 H190"/><path class="dg-a" d="M330 196 H360"/><path class="dg-a" d="M500 196 H530"/><path class="dg-a" d="M680 196 H710"/><path class="dg-a" d="M830 196 H860"/>
+<text class="dg-l" x="20" y="262">chuyển động mượt dồn năng lượng vào vài tần số thấp, nên phần lớn hệ số sau làm tròn bằng 0</text>
+<text class="dg-l" x="20" y="284">số token đi theo độ phức tạp của chuyển động, không theo tần số điều khiển</text>
+</svg>

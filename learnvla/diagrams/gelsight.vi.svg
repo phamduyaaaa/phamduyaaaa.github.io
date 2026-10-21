@@ -1,0 +1,27 @@
+<svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="22">BÊN TRONG CẢM BIẾN (mặt cắt)</text>
+<rect class="dg-ext" x="60" y="40" width="240" height="46"/><text class="dg-t" x="180" y="60" text-anchor="middle">Vật ấn lên gel</text><text class="dg-s" x="180" y="76" text-anchor="middle">vật liệu bất kỳ</text>
+<rect class="dg-key" x="40" y="96" width="280" height="14"/><text class="dg-s" x="326" y="103">màng</text><text class="dg-s" x="326" y="116">+ điểm đánh dấu</text>
+<rect class="dg-box" x="40" y="110" width="280" height="64"/><text class="dg-t" x="180" y="138" text-anchor="middle">Đàn hồi mềm trong suốt</text><text class="dg-s" x="180" y="156" text-anchor="middle">biến dạng theo hình vật</text>
+<rect class="dg-grp" x="40" y="174" width="280" height="30"/><text class="dg-s" x="180" y="193" text-anchor="middle">tấm đỡ</text>
+<rect class="dg-box" x="40" y="236" width="70" height="40"/><text class="dg-t" x="75" y="260" text-anchor="middle">R LED</text>
+<rect class="dg-box" x="145" y="236" width="70" height="40"/><text class="dg-t" x="180" y="260" text-anchor="middle">G LED</text>
+<rect class="dg-box" x="250" y="236" width="70" height="40"/><text class="dg-t" x="285" y="260" text-anchor="middle">B LED</text>
+<path class="dg-ad" d="M75 236 L110 206"/><path class="dg-ad" d="M285 236 L250 206"/><path class="dg-ad" d="M180 236 V206"/>
+<text class="dg-l" x="330" y="250">3 màu,</text><text class="dg-l" x="330" y="264">3 hướng</text>
+<rect class="dg-key" x="90" y="320" width="180" height="56"/><text class="dg-t" x="180" y="344" text-anchor="middle">Camera</text><text class="dg-s" x="180" y="362" text-anchor="middle">30 Hz, nhìn gel từ dưới</text>
+<path class="dg-a" d="M180 276 V320"/>
+<text class="dg-h" x="430" y="22">ẢNH CHO BẠN BIẾT GÌ</text>
+<rect class="dg-box" x="430" y="60" width="170" height="64"/><text class="dg-t" x="515" y="86" text-anchor="middle">Sắc độ màu</text><text class="dg-s" x="515" y="104" text-anchor="middle">từng pixel, 3 kênh</text>
+<rect class="dg-key" x="650" y="60" width="150" height="64"/><text class="dg-t" x="725" y="86" text-anchor="middle">Bảng tra</text><text class="dg-s" x="725" y="104" text-anchor="middle">màu sang pháp tuyến</text>
+<rect class="dg-key" x="840" y="60" width="120" height="64"/><text class="dg-t" x="900" y="86" text-anchor="middle">Bản đồ độ cao</text><text class="dg-s" x="900" y="104" text-anchor="middle">giải Poisson</text>
+<path class="dg-a" d="M600 92 H650"/><path class="dg-a" d="M800 92 H840"/>
+<text class="dg-l" x="430" y="150">1. HÌNH DẠNG và vân bề mặt: 20-30 µm ở bản đầu ngón</text>
+<rect class="dg-box" x="430" y="200" width="170" height="64"/><text class="dg-t" x="515" y="226" text-anchor="middle">Vị trí điểm đánh dấu</text><text class="dg-s" x="515" y="244" text-anchor="middle">tâm điểm, từng khung</text>
+<rect class="dg-key" x="650" y="200" width="150" height="64"/><text class="dg-t" x="725" y="226" text-anchor="middle">Trường chuyển động</text><text class="dg-s" x="725" y="244" text-anchor="middle">du = u - u0</text>
+<rect class="dg-key" x="840" y="200" width="120" height="64"/><text class="dg-t" x="900" y="226" text-anchor="middle">Lực, trượt</text><text class="dg-s" x="900" y="244" text-anchor="middle">mẫu + độ lớn</text>
+<path class="dg-a" d="M600 232 H650"/><path class="dg-a" d="M800 232 H840"/>
+<text class="dg-l" x="430" y="290">2. LỰC, MÔ-MEN và TRƯỢT: loe ra = pháp tuyến, dịch = cắt, xoay = mô-men</text>
+<rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">Để có lực không phụ thuộc hình dạng vật:</text><text class="dg-s" x="695" y="366" text-anchor="middle">một CNN đọc ảnh hiệu (hiện tại trừ lúc chưa chạm) và xuất Fx, Fy, Fz, Tz</text>
+<path class="dg-ad" d="M900 264 V320"/>
+</svg>

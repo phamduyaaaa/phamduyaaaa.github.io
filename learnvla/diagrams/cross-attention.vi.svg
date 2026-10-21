@@ -1,0 +1,13 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">SELF-ATTENTION: MỘT CHUỖI    CROSS-ATTENTION: QUERY TỪ CHUỖI NÀY, KEY VÀ VALUE TỪ CHUỖI KIA</text>
+<rect class="dg-ext" x="20" y="60" width="200" height="60"/><text class="dg-t" x="120" y="84" text-anchor="middle">token VLM (m)</text><text class="dg-s" x="120" y="102" text-anchor="middle">ảnh + câu lệnh, vd. 800</text>
+<rect class="dg-ext" x="20" y="180" width="200" height="60"/><text class="dg-t" x="120" y="204" text-anchor="middle">token hành động (n)</text><text class="dg-s" x="120" y="222" text-anchor="middle">chunk nhiễu, vd. 50</text>
+<rect class="dg-box" x="300" y="60" width="140" height="60"/><text class="dg-t" x="370" y="84" text-anchor="middle">K = X W_K</text><text class="dg-s" x="370" y="102" text-anchor="middle">V = X W_V</text>
+<rect class="dg-box" x="300" y="180" width="140" height="60"/><text class="dg-t" x="370" y="204" text-anchor="middle">Q = Y W_Q</text><text class="dg-s" x="370" y="222" text-anchor="middle">mỗi hành động cần gì</text>
+<path class="dg-a" d="M220 90 H300"/><path class="dg-a" d="M220 210 H300"/>
+<rect class="dg-key" x="520" y="110" width="200" height="80"/><text class="dg-t" x="620" y="140" text-anchor="middle">softmax(Q K^T / sqrt d) V</text><text class="dg-s" x="620" y="160" text-anchor="middle">n x m điểm</text><text class="dg-s" x="620" y="176" text-anchor="middle">token VLM chỉ được đọc</text>
+<path class="dg-a" d="M440 90 H480 V130 H520"/><path class="dg-a" d="M440 210 H480 V170 H520"/>
+<rect class="dg-box" x="790" y="110" width="170" height="80"/><text class="dg-t" x="875" y="140" text-anchor="middle">hành động đã cập nhật</text><text class="dg-s" x="875" y="160" text-anchor="middle">n vector, mỗi vector giờ</text><text class="dg-s" x="875" y="176" text-anchor="middle">mang thông tin cảnh</text>
+<path class="dg-a" d="M720 150 H790"/>
+<text class="dg-note" x="20" y="280">key và value của VLM không đổi giữa các bước khử nhiễu, nên chỉ tính một lần rồi lưu đệm</text>
+</svg>

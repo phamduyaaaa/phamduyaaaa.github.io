@@ -1,0 +1,74 @@
+<svg viewBox="0 0 980 464" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-t" x="400" y="106" transform="rotate(-50 400 106)">ForceVLA</text>
+<path class="dg-grp" d="M400 112 V420"/>
+<text class="dg-t" x="440" y="106" transform="rotate(-50 440 106)">ForceVLA2</text>
+<path class="dg-grp" d="M440 112 V420"/>
+<text class="dg-t" x="480" y="106" transform="rotate(-50 480 106)">CR-VLA-Force</text>
+<path class="dg-grp" d="M480 112 V420"/>
+<text class="dg-t" x="520" y="106" transform="rotate(-50 520 106)">MoDE-VLA</text>
+<path class="dg-grp" d="M520 112 V420"/>
+<text class="dg-t" x="560" y="106" transform="rotate(-50 560 106)">VLA-Touch</text>
+<path class="dg-grp" d="M560 112 V420"/>
+<text class="dg-t" x="600" y="106" transform="rotate(-50 600 106)">TaF-VLA</text>
+<path class="dg-grp" d="M600 112 V420"/>
+<text class="dg-t" x="640" y="106" transform="rotate(-50 640 106)">Tabero</text>
+<path class="dg-grp" d="M640 112 V420"/>
+<text class="dg-t" x="680" y="106" transform="rotate(-50 680 106)">FD-VLA</text>
+<path class="dg-grp" d="M680 112 V420"/>
+<text class="dg-t" x="720" y="106" transform="rotate(-50 720 106)">HapticVLA</text>
+<path class="dg-grp" d="M720 112 V420"/>
+<text class="dg-t" x="760" y="106" transform="rotate(-50 760 106)">FWBC-VLA</text>
+<path class="dg-grp" d="M760 112 V420"/>
+<text class="dg-t" x="800" y="106" transform="rotate(-50 800 106)">TORL-VLA</text>
+<path class="dg-grp" d="M800 112 V420"/>
+<text class="dg-t" x="840" y="106" transform="rotate(-50 840 106)">TER-DAgger</text>
+<path class="dg-grp" d="M840 112 V420"/>
+<text class="dg-t" x="880" y="106" transform="rotate(-50 880 106)">TA-VLA</text>
+<path class="dg-grp" d="M880 112 V420"/>
+<text class="dg-t" x="920" y="106" transform="rotate(-50 920 106)">GelSight</text>
+<path class="dg-grp" d="M920 112 V420"/>
+<rect x="10" y="114" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="132">A  Cảm biến F/T cổ tay, lắp / lau / bóc</text>
+<circle cx="400" cy="128" r="8" class="dg-key"/>
+<circle cx="440" cy="128" r="7" class="dg-box"/>
+<circle cx="480" cy="128" r="7" class="dg-box"/>
+<circle cx="800" cy="128" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="162">B  Phải ấn nhẹ: "nhặt quả trứng nhẹ tay"</text>
+<circle cx="640" cy="158" r="8" class="dg-key"/>
+<circle cx="440" cy="158" r="8" class="dg-key"/>
+<circle cx="720" cy="158" r="7" class="dg-box"/>
+<rect x="10" y="174" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="192">C  Chỉ có cảm biến gel trên tay kẹp</text>
+<circle cx="600" cy="188" r="8" class="dg-key"/>
+<circle cx="560" cy="188" r="7" class="dg-box"/>
+<circle cx="920" cy="188" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="222">D  Planner phải đoán cứng / mềm qua chạm</text>
+<circle cx="560" cy="218" r="8" class="dg-key"/>
+<circle cx="920" cy="218" r="7" class="dg-box"/>
+<rect x="10" y="234" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="252">E  Robot triển khai không có cảm biến lực</text>
+<circle cx="680" cy="248" r="8" class="dg-key"/>
+<circle cx="720" cy="248" r="8" class="dg-key"/>
+<circle cx="880" cy="248" r="7" class="dg-box"/>
+<circle cx="760" cy="248" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="282">F  Chỉ có mô-men khớp: nút, sạc, tay nắm</text>
+<circle cx="880" cy="278" r="8" class="dg-key"/>
+<circle cx="760" cy="278" r="7" class="dg-box"/>
+<circle cx="520" cy="278" r="7" class="dg-box"/>
+<rect x="10" y="294" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="312">G  Lắp chính xác, người có thể can thiệp</text>
+<circle cx="840" cy="308" r="8" class="dg-key"/>
+<circle cx="800" cy="308" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="342">H  Robot di động đẩy cửa, lau bảng</text>
+<circle cx="760" cy="338" r="8" class="dg-key"/>
+<circle cx="400" cy="338" r="7" class="dg-box"/>
+<rect x="10" y="354" width="960" height="30" fill="currentColor" fill-opacity=".05"/>
+<text class="dg-t" x="22" y="372">I  Bàn tay khéo: gọt táo, lắp ráp</text>
+<circle cx="520" cy="368" r="8" class="dg-key"/>
+<circle cx="400" cy="368" r="7" class="dg-box"/>
+<text class="dg-t" x="22" y="402">J  Cùng tiếp xúc cứ hỏng, học online</text>
+<circle cx="800" cy="398" r="8" class="dg-key"/>
+<circle cx="840" cy="398" r="7" class="dg-box"/>
+<circle cx="30" cy="444" r="8" class="dg-key"/><text class="dg-s" x="46" y="448">bắt đầu ở đây</text>
+<circle cx="170" cy="444" r="7" class="dg-box"/><text class="dg-s" x="186" y="448">đọc tiếp</text>
+</svg>

@@ -1,0 +1,18 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">MỘT LỚP MoE THƯA: ROUTER GỬI MỖI TOKEN TỚI MỘT (HOẶC k) TRONG N EXPERT</text>
+<rect class="dg-ext" x="20" y="120" width="140" height="56"/><text class="dg-t" x="90" y="144" text-anchor="middle">token x</text><text class="dg-s" x="90" y="162" text-anchor="middle">vd. một token lực</text>
+<rect class="dg-key" x="210" y="120" width="150" height="56"/><text class="dg-t" x="285" y="144" text-anchor="middle">router</text><text class="dg-s" x="285" y="162" text-anchor="middle">softmax(W_r x)</text>
+<path class="dg-a" d="M160 148 H210"/>
+<rect class="dg-key" x="440" y="44" width="150" height="44"/><text class="dg-t" x="515" y="64" text-anchor="middle">expert 1</text><text class="dg-s" x="515" y="80" text-anchor="middle">p = 0,70, được chọn</text>
+<rect class="dg-box" x="440" y="100" width="150" height="44"/><text class="dg-t" x="515" y="120" text-anchor="middle">expert 2</text><text class="dg-s" x="515" y="136" text-anchor="middle">p = 0,16, bỏ qua</text>
+<rect class="dg-box" x="440" y="156" width="150" height="44"/><text class="dg-t" x="515" y="176" text-anchor="middle">expert 3</text><text class="dg-s" x="515" y="192" text-anchor="middle">p = 0,11, bỏ qua</text>
+<rect class="dg-box" x="440" y="212" width="150" height="44"/><text class="dg-t" x="515" y="232" text-anchor="middle">expert 4</text><text class="dg-s" x="515" y="248" text-anchor="middle">p = 0,04, bỏ qua</text>
+<path class="dg-a" d="M360 140 H400 V66 H440"/><path class="dg-ad" d="M400 122 H440"/><path class="dg-ad" d="M400 140 V178 H440"/><path class="dg-ad" d="M400 178 V234 H440"/>
+<rect class="dg-box" x="660" y="44" width="150" height="56"/><text class="dg-t" x="735" y="68" text-anchor="middle">p x E1(x)</text><text class="dg-s" x="735" y="86" text-anchor="middle">cổng nhân đầu ra</text>
+<path class="dg-a" d="M590 66 H660"/>
+<rect class="dg-box" x="840" y="44" width="120" height="56"/><text class="dg-t" x="900" y="68" text-anchor="middle">x + ...</text><text class="dg-s" x="900" y="86" text-anchor="middle">residual</text>
+<path class="dg-a" d="M810 72 H840"/>
+<text class="dg-l" x="640" y="160">sức chứa: tham số của 4 expert</text>
+<text class="dg-l" x="640" y="182">tính toán: 1 expert mỗi token</text>
+<text class="dg-note dg-red" x="640" y="230">không có loss cân bằng, một expert</text><text class="dg-note dg-red" x="640" y="248">có thể ôm hết mọi token</text>
+</svg>

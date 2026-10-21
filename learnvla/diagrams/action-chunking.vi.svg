@@ -1,0 +1,19 @@
+<svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="92"/><text class="dg-h" x="22" y="26">POLICY TỪNG BƯỚC: mỗi bước một quyết định, sai số cộng dồn</text>
+<rect class="dg-ext" x="30" y="44" width="110" height="40"/><text class="dg-t" x="85" y="68" text-anchor="middle">obs s_t</text>
+<rect class="dg-box" x="200" y="44" width="150" height="40"/><text class="dg-t" x="275" y="68" text-anchor="middle">π(a_t | s_t)</text>
+<rect class="dg-badbox" x="410" y="44" width="110" height="40"/><text class="dg-t" x="465" y="68" text-anchor="middle">a_t</text>
+<path class="dg-a" d="M140 64 H200"/><path class="dg-a" d="M350 64 H410"/>
+<text class="dg-note dg-red" x="560" y="68">T quyết định trong một episode T bước</text>
+<rect class="dg-grp" x="10" y="116" width="960" height="206"/><text class="dg-h" x="22" y="134">ACTION CHUNKING + TEMPORAL ENSEMBLING (ACT)</text>
+<rect class="dg-box" x="30" y="156" width="270" height="34"/><text class="dg-s" x="165" y="177" text-anchor="middle">hỏi ở t: chunk a_t ... a_t+k</text>
+<rect class="dg-box" x="90" y="200" width="270" height="34"/><text class="dg-s" x="225" y="221" text-anchor="middle">hỏi ở t+1: chunk a_t+1 ... a_t+1+k</text>
+<rect class="dg-box" x="150" y="244" width="270" height="34"/><text class="dg-s" x="285" y="265" text-anchor="middle">hỏi ở t+2: chunk a_t+2 ... a_t+2+k</text>
+<path class="dg-ad" d="M300 173 H470 V222"/><path class="dg-ad" d="M360 217 H470"/><path class="dg-ad" d="M420 261 H470 V222"/>
+<text class="dg-l" x="478" y="160">3 dự đoán cho cùng một bước</text>
+<rect class="dg-key" x="540" y="196" width="190" height="52"/><text class="dg-t" x="635" y="218" text-anchor="middle">Trung bình có trọng số</text><text class="dg-s" x="635" y="234" text-anchor="middle">w_i = exp(−m·i), cũ nhất i=0</text>
+<path class="dg-a" d="M470 222 H540"/>
+<rect class="dg-box" x="790" y="196" width="150" height="52"/><text class="dg-t" x="865" y="218" text-anchor="middle">a được chạy</text><text class="dg-s" x="865" y="234" text-anchor="middle">không cần huấn luyện thêm</text>
+<path class="dg-a" d="M730 222 H790"/>
+<text class="dg-note dg-green" x="560" y="290">Chunk dài k: số lần quyết định giảm k lần</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THẦY CÓ THỨ MÀ TRÒ SẼ KHÔNG CÓ KHI CHẠY THẬT</text>
+<rect class="dg-ext" x="20" y="54" width="170" height="56"/><text class="dg-t" x="105" y="78" text-anchor="middle">đầu vào huấn luyện</text><text class="dg-s" x="105" y="96" text-anchor="middle">ảnh + trạng thái (+ F/T)</text>
+<rect class="dg-key" x="250" y="40" width="210" height="84"/><text class="dg-t" x="355" y="68" text-anchor="middle">thầy</text><text class="dg-s" x="355" y="88" text-anchor="middle">lớn hơn, hoặc thấy tín hiệu</text><text class="dg-s" x="355" y="104" text-anchor="middle">đặc quyền (lực thật, xúc giác)</text>
+<rect class="dg-box" x="250" y="170" width="210" height="84"/><text class="dg-t" x="355" y="198" text-anchor="middle">trò</text><text class="dg-s" x="355" y="218" text-anchor="middle">nhỏ hơn, hoặc không có</text><text class="dg-s" x="355" y="234" text-anchor="middle">cảm biến thêm</text>
+<path class="dg-a" d="M190 76 H250"/><path class="dg-a" d="M190 96 H220 V212 H250"/>
+<rect class="dg-box" x="530" y="40" width="200" height="84"/><text class="dg-t" x="630" y="68" text-anchor="middle">nhãn mềm</text><text class="dg-s" x="630" y="88" text-anchor="middle">xác suất ở nhiệt độ T</text><text class="dg-s" x="630" y="104" text-anchor="middle">hoặc đặc trưng / token lực</text>
+<path class="dg-a" d="M460 82 H530"/>
+<rect class="dg-key" x="530" y="170" width="200" height="84"/><text class="dg-t" x="630" y="198" text-anchor="middle">bắt chước thầy</text><text class="dg-s" x="630" y="218" text-anchor="middle">cross-entropy hoặc</text><text class="dg-s" x="630" y="234" text-anchor="middle">khoảng cách đặc trưng</text>
+<path class="dg-a" d="M630 124 V170"/><path class="dg-a" d="M460 212 H530"/>
+<rect class="dg-box" x="790" y="170" width="170" height="84"/><text class="dg-t" x="875" y="198" text-anchor="middle">triển khai trò</text><text class="dg-s" x="875" y="218" text-anchor="middle">nhanh hơn, hoặc robot</text><text class="dg-s" x="875" y="234" text-anchor="middle">không cần cảm biến</text>
+<path class="dg-a" d="M730 212 H790"/>
+</svg>

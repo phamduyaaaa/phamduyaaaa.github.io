@@ -1,0 +1,21 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">MỘT BATCH N CẶP CHO N ĐÁP ÁN ĐÚNG VÀ N x (N - 1) ĐÁP ÁN SAI</text>
+<rect class="dg-ext" x="20" y="60" width="150" height="50"/><text class="dg-t" x="95" y="82" text-anchor="middle">bộ mã hóa ảnh</text><text class="dg-s" x="95" y="98" text-anchor="middle">vd. ViT</text>
+<rect class="dg-ext" x="20" y="170" width="150" height="50"/><text class="dg-t" x="95" y="192" text-anchor="middle">bộ mã hóa chữ</text><text class="dg-s" x="95" y="208" text-anchor="middle">chú thích</text>
+<text class="dg-s" x="300" y="56" text-anchor="middle">"cốc đỏ"</text><text class="dg-s" x="380" y="56" text-anchor="middle">"đĩa xanh"</text><text class="dg-s" x="460" y="56" text-anchor="middle">"thìa"</text>
+<text class="dg-s" x="250" y="94" text-anchor="end">ảnh cốc</text><text class="dg-s" x="250" y="144" text-anchor="end">ảnh đĩa</text><text class="dg-s" x="250" y="194" text-anchor="end">ảnh thìa</text>
+<rect class="dg-key" x="260" y="70" width="80" height="44"/><text class="dg-t" x="300" y="97" text-anchor="middle">0.9</text>
+<rect class="dg-box" x="340" y="70" width="80" height="44"/><text class="dg-t" x="380" y="97" text-anchor="middle">0.3</text>
+<rect class="dg-box" x="420" y="70" width="80" height="44"/><text class="dg-t" x="460" y="97" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="260" y="120" width="80" height="44"/><text class="dg-t" x="300" y="147" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="340" y="120" width="80" height="44"/><text class="dg-t" x="380" y="147" text-anchor="middle">0.8</text>
+<rect class="dg-box" x="420" y="120" width="80" height="44"/><text class="dg-t" x="460" y="147" text-anchor="middle">0.0</text>
+<rect class="dg-box" x="260" y="170" width="80" height="44"/><text class="dg-t" x="300" y="197" text-anchor="middle">0.1</text>
+<rect class="dg-box" x="340" y="170" width="80" height="44"/><text class="dg-t" x="380" y="197" text-anchor="middle">0.2</text>
+<rect class="dg-key" x="420" y="170" width="80" height="44"/><text class="dg-t" x="460" y="197" text-anchor="middle">0.7</text>
+<text class="dg-s" x="380" y="240" text-anchor="middle">độ giống cosine của ảnh i và chú thích j</text>
+<rect class="dg-box" x="580" y="70" width="380" height="64"/><text class="dg-t" x="770" y="96" text-anchor="middle">InfoNCE / CLIP: softmax theo từng hàng</text><text class="dg-s" x="770" y="116" text-anchor="middle">đường chéo phải thắng phần còn lại của hàng</text>
+<rect class="dg-box" x="580" y="150" width="380" height="64"/><text class="dg-t" x="770" y="176" text-anchor="middle">SigLIP: sigmoid có/không cho từng ô</text><text class="dg-s" x="770" y="196" text-anchor="middle">đường chéo = có, mọi ô khác = không</text>
+<path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
+<text class="dg-note" x="20" y="280">không cần nhãn lớp: chú thích đi kèm ảnh chính là nhãn, các chú thích khác trong batch là phản ví dụ</text>
+</svg>

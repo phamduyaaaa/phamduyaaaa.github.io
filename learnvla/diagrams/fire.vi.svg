@@ -1,0 +1,24 @@
+<svg viewBox="0 0 980 444" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">MỘT BƯỚC ĐIỀU KHIỂN: VLA LẬP KẾ HOẠCH, RESIDUAL XỬ LÝ TIẾP XÚC</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="64"/><text class="dg-t" x="120" y="70" text-anchor="middle">3 camera + tư thế + chữ</text><text class="dg-s" x="120" y="90" text-anchor="middle">không lực; đọc mỗi chunk 1 lần</text>
+<rect class="dg-key" x="260" y="46" width="170" height="64"/><text class="dg-t" x="345" y="70" text-anchor="middle">VLA đóng băng</text><text class="dg-s" x="345" y="90" text-anchor="middle">chỉ tinh chỉnh action head</text>
+<rect class="dg-box" x="470" y="46" width="150" height="64"/><text class="dg-t" x="545" y="70" text-anchor="middle">Chunk a_VLA</text><text class="dg-s" x="545" y="90" text-anchor="middle">T = 16 bước (GR00T)</text>
+<path class="dg-a" d="M220 78 H260"/><path class="dg-a" d="M430 78 H470"/>
+<rect class="dg-ext" x="20" y="170" width="200" height="70"/><text class="dg-t" x="120" y="194" text-anchor="middle">tư thế tương đối, vận tốc,</text><text class="dg-t" x="120" y="210" text-anchor="middle">lực F (3), a trước đó</text><text class="dg-s" x="120" y="228" text-anchor="middle">mỗi bước, 15 Hz</text>
+<rect class="dg-key" x="260" y="170" width="170" height="70"/><text class="dg-t" x="345" y="196" text-anchor="middle">Policy residual</text><text class="dg-s" x="345" y="214" text-anchor="middle">PPO, học trong mô phỏng</text>
+<rect class="dg-box" x="470" y="170" width="150" height="70"/><text class="dg-t" x="545" y="196" text-anchor="middle">a_res</text><text class="dg-s" x="545" y="214" text-anchor="middle">có giới hạn, 6 chiều</text>
+<path class="dg-a" d="M220 205 H260"/><path class="dg-a" d="M430 205 H470"/>
+<circle class="dg-key" cx="700" cy="141" r="22"/><text class="dg-t" x="700" y="148" text-anchor="middle">+</text>
+<path class="dg-a" d="M620 78 H700 V119"/><path class="dg-a" d="M620 205 H700 V163"/>
+<rect class="dg-box" x="770" y="116" width="190" height="50"/><text class="dg-t" x="865" y="138" text-anchor="middle">Bộ điều khiển trở kháng</text><text class="dg-s" x="865" y="154" text-anchor="middle">1 kHz, nội suy</text>
+<path class="dg-a" d="M722 141 H770"/>
+<rect class="dg-ext" x="770" y="200" width="190" height="50"/><text class="dg-t" x="865" y="222" text-anchor="middle">Franka FR3</text><text class="dg-s" x="865" y="238" text-anchor="middle">cảm biến lực 3 trục cổ tay</text>
+<path class="dg-a" d="M865 166 V200"/>
+<path class="dg-ad" d="M865 250 V275 H120 V240"/><text class="dg-l" x="400" y="270">lực, tư thế và vận tốc phản hồi mỗi bước</text>
+<text class="dg-h" x="20" y="318">VÒNG CHẬM-NHANH: LẤY CHUNK KẾ TIẾP TRONG LÚC CHUNK HIỆN TẠI ĐANG CHẠY</text>
+<rect class="dg-box" x="20" y="334" width="440" height="30"/><text class="dg-t" x="240" y="354" text-anchor="middle">chunk i đang chạy</text>
+<rect class="dg-grp" x="460" y="334" width="440" height="30"/><text class="dg-t" x="680" y="354" text-anchor="middle">chunk i+1 (thay vào khi i kết thúc)</text>
+<path class="dg-ad" d="M240 364 V382"/><text class="dg-s" x="250" y="394">giữa chừng: lấy trước chunk kế</text>
+<path class="dg-ad" d="M460 364 V404"/><text class="dg-s" x="470" y="416">hết chunk: thay chunk đã lấy trước</text>
+<text class="dg-l" x="20" y="430">residual vẫn sửa ở mọi bước, nên vòng lặp không phải chờ VLA</text>
+</svg>

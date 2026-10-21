@@ -437,35 +437,35 @@
 <h2>1. Bốn giao diện đầu ra</h2>
 <p>Hãy nghĩ đến chuyện bảo ai đó đẩy cánh cửa. Bạn có thể nói <em>đặt tay ở đâu</em> (pose), <em>đặt tay ở đâu và đẩy mạnh bao nhiêu</em> (pose + lực), <em>đặt tay ở đâu và giữ cánh tay cứng hay mềm thế nào</em> (pose + độ cứng), hoặc <em>cứ làm theo kế hoạch, nhưng liên tục tự chỉnh theo cảm giác trên tay</em> (nền + residual).</p>
 <figure class="diagram"><svg role="img" aria-label="Bốn cách để một chính sách có nhận biết lực nói chuyện với robot." viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg">
-<rect class="dg-grp" x="10" y="8" width="230" height="304"/><text class="dg-h" x="22" y="28">(a) POSE ONLY</text>
+<rect class="dg-grp" x="10" y="8" width="230" height="304"/><text class="dg-h" x="22" y="28">(a) CHỈ TƯ THẾ</text>
 <rect class="dg-box" x="35" y="44" width="180" height="36"/><text class="dg-t" x="125" y="66" text-anchor="middle">VLA</text>
 <path class="dg-a" d="M125 80 V128"/><text class="dg-l" x="133" y="108">x_target</text>
-<rect class="dg-box" x="35" y="128" width="180" height="48"/><text class="dg-t" x="125" y="148" text-anchor="middle">Impedance, fixed K</text><text class="dg-s" x="125" y="164" text-anchor="middle">F = K·Δx (implied)</text>
+<rect class="dg-box" x="35" y="128" width="180" height="48"/><text class="dg-t" x="125" y="148" text-anchor="middle">Trở kháng, K cố định</text><text class="dg-s" x="125" y="164" text-anchor="middle">F = K·Δx (ngầm định)</text>
 <path class="dg-a" d="M125 176 V214"/>
 <rect class="dg-ext" x="35" y="214" width="180" height="32"/><text class="dg-t" x="125" y="235" text-anchor="middle">Robot</text>
 <text class="dg-s" x="125" y="274" text-anchor="middle">ForceVLA · FD-VLA · TaF-VLA</text><text class="dg-s" x="125" y="290" text-anchor="middle">LIFT · FM-VLA · HapticVLA</text>
-<rect class="dg-grp" x="250" y="8" width="230" height="304"/><text class="dg-h" x="262" y="28">(b) POSE + FORCE TARGET</text>
+<rect class="dg-grp" x="250" y="8" width="230" height="304"/><text class="dg-h" x="262" y="28">(b) TƯ THẾ + ĐÍCH LỰC</text>
 <rect class="dg-box" x="275" y="44" width="180" height="36"/><text class="dg-t" x="365" y="66" text-anchor="middle">VLA</text>
 <path class="dg-a" d="M365 80 V128"/><text class="dg-l" x="373" y="108">x_target + F*</text>
-<rect class="dg-key" x="275" y="128" width="180" height="48"/><text class="dg-t" x="365" y="148" text-anchor="middle">Hybrid force-position</text><text class="dg-s" x="365" y="164" text-anchor="middle">tracks F* using F_meas</text>
+<rect class="dg-key" x="275" y="128" width="180" height="48"/><text class="dg-t" x="365" y="148" text-anchor="middle">Lai lực-vị trí</text><text class="dg-s" x="365" y="164" text-anchor="middle">bám F* nhờ F_meas</text>
 <path class="dg-a" d="M365 176 V214"/>
 <rect class="dg-ext" x="275" y="214" width="180" height="32"/><text class="dg-t" x="365" y="235" text-anchor="middle">Robot</text>
 <path class="dg-ad" d="M455 230 H468 V152 H455"/>
 <text class="dg-s" x="365" y="274" text-anchor="middle">ForceVLA2 · Tabero · Tactile-VLA</text><text class="dg-s" x="365" y="290" text-anchor="middle">Opt2VLA · CR-VLA-Force</text>
-<rect class="dg-grp" x="490" y="8" width="230" height="304"/><text class="dg-h" x="502" y="28">(c) POSE + STIFFNESS</text>
+<rect class="dg-grp" x="490" y="8" width="230" height="304"/><text class="dg-h" x="502" y="28">(c) TƯ THẾ + ĐỘ CỨNG</text>
 <rect class="dg-box" x="515" y="44" width="180" height="36"/><text class="dg-t" x="605" y="66" text-anchor="middle">VLA</text>
 <path class="dg-a" d="M605 80 V128"/><text class="dg-l" x="613" y="108">x_target + K(t)</text>
-<rect class="dg-key" x="515" y="128" width="180" height="48"/><text class="dg-t" x="605" y="148" text-anchor="middle">Variable impedance</text><text class="dg-s" x="605" y="164" text-anchor="middle">VLA sets how soft to be</text>
+<rect class="dg-key" x="515" y="128" width="180" height="48"/><text class="dg-t" x="605" y="148" text-anchor="middle">Trở kháng biến đổi</text><text class="dg-s" x="605" y="164" text-anchor="middle">VLA quyết định mềm cỡ nào</text>
 <path class="dg-a" d="M605 176 V214"/>
 <rect class="dg-ext" x="515" y="214" width="180" height="32"/><text class="dg-t" x="605" y="235" text-anchor="middle">Robot</text>
 <text class="dg-s" x="605" y="274" text-anchor="middle">CompVLA</text><text class="dg-s" x="605" y="290" text-anchor="middle">CompliantVLA-adaptor</text>
-<rect class="dg-grp" x="730" y="8" width="240" height="304"/><text class="dg-h" x="742" y="28">(d) BASE + RESIDUAL</text>
-<rect class="dg-box" x="745" y="44" width="95" height="36"/><text class="dg-t" x="792" y="66" text-anchor="middle">Base VLA</text>
-<rect class="dg-key" x="860" y="44" width="95" height="36"/><text class="dg-t" x="907" y="60" text-anchor="middle">Residual</text><text class="dg-s" x="907" y="73" text-anchor="middle">sees force</text>
+<rect class="dg-grp" x="730" y="8" width="240" height="304"/><text class="dg-h" x="742" y="28">(d) GỐC + RESIDUAL</text>
+<rect class="dg-box" x="745" y="44" width="95" height="36"/><text class="dg-t" x="792" y="66" text-anchor="middle">VLA gốc</text>
+<rect class="dg-key" x="860" y="44" width="95" height="36"/><text class="dg-t" x="907" y="60" text-anchor="middle">Residual</text><text class="dg-s" x="907" y="73" text-anchor="middle">thấy lực</text>
 <circle class="dg-box" cx="850" cy="104" r="12"/><text class="dg-t" x="850" y="109" text-anchor="middle">+</text>
 <path class="dg-a" d="M792 80 V104 H838"/><path class="dg-a" d="M907 80 V104 H862"/><text class="dg-l" x="775" y="96">a</text><text class="dg-l" x="915" y="96">Δa</text>
 <path class="dg-a" d="M850 116 V128"/>
-<rect class="dg-box" x="760" y="128" width="180" height="48"/><text class="dg-t" x="850" y="148" text-anchor="middle">Controller</text><text class="dg-s" x="850" y="164" text-anchor="middle">executes a + Δa</text>
+<rect class="dg-box" x="760" y="128" width="180" height="48"/><text class="dg-t" x="850" y="148" text-anchor="middle">Bộ điều khiển</text><text class="dg-s" x="850" y="164" text-anchor="middle">thực thi a + Δa</text>
 <path class="dg-a" d="M850 176 V214"/>
 <rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
 <text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
@@ -677,22 +677,22 @@
 </table>
 <h2>6. Cách chọn</h2>
 <figure class="diagram"><svg role="img" aria-label="Bắt đầu từ góc trên bên trái rồi đi theo các câu trả lời. Sơ đồ này chỉ là công cụ giúp đọc, dựng từ các paper đã khảo sát, không phải một so sánh có kiểm soát." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
-<rect class="dg-key" x="20" y="20" width="200" height="50"/><text class="dg-t" x="120" y="50" text-anchor="middle">Start: my task</text>
-<rect class="dg-box" x="300" y="14" width="260" height="62"/><text class="dg-t" x="430" y="40" text-anchor="middle">Is the robot's job about</text><text class="dg-t" x="430" y="56" text-anchor="middle">HOW HARD to push?</text>
+<rect class="dg-key" x="20" y="20" width="200" height="50"/><text class="dg-t" x="120" y="50" text-anchor="middle">Bắt đầu: tác vụ của tôi</text>
+<rect class="dg-box" x="300" y="14" width="260" height="62"/><text class="dg-t" x="430" y="40" text-anchor="middle">Việc của robot có phải là</text><text class="dg-t" x="430" y="56" text-anchor="middle">ẤN MẠNH CỠ NÀO?</text>
 <path class="dg-a" d="M220 45 H300"/>
-<rect class="dg-box" x="680" y="14" width="280" height="62"/><text class="dg-t" x="820" y="40" text-anchor="middle">Output a force target</text><text class="dg-t" x="820" y="56" text-anchor="middle">or a stiffness (Survey 3)</text>
-<path class="dg-a" d="M560 45 H680"/><text class="dg-l" x="600" y="38">yes</text>
-<rect class="dg-box" x="300" y="116" width="260" height="62"/><text class="dg-t" x="430" y="142" text-anchor="middle">Does contact change in</text><text class="dg-t" x="430" y="158" text-anchor="middle">tens of milliseconds?</text>
-<path class="dg-a" d="M430 76 V116"/><text class="dg-l" x="440" y="100">no</text>
-<rect class="dg-box" x="680" y="116" width="280" height="62"/><text class="dg-t" x="820" y="142" text-anchor="middle">Add a fast residual or</text><text class="dg-t" x="820" y="158" text-anchor="middle">controller outside the VLA</text>
-<path class="dg-a" d="M560 147 H680"/><text class="dg-l" x="600" y="140">yes</text>
-<rect class="dg-box" x="300" y="218" width="260" height="62"/><text class="dg-t" x="430" y="244" text-anchor="middle">Will the deployed robot</text><text class="dg-t" x="430" y="260" text-anchor="middle">have the force sensor?</text>
-<path class="dg-a" d="M430 178 V218"/><text class="dg-l" x="440" y="202">no</text>
-<rect class="dg-box" x="680" y="218" width="280" height="62"/><text class="dg-t" x="820" y="244" text-anchor="middle">Distil from a sensorised teacher,</text><text class="dg-t" x="820" y="260" text-anchor="middle">or estimate from joint torque</text>
-<path class="dg-a" d="M560 249 H680"/><text class="dg-l" x="600" y="242">no</text>
-<rect class="dg-key" x="300" y="320" width="260" height="62"/><text class="dg-t" x="430" y="346" text-anchor="middle">Fuse after the VLM with a</text><text class="dg-t" x="430" y="362" text-anchor="middle">protected path (e.g. MoE)</text>
-<path class="dg-a" d="M430 280 V320"/><text class="dg-l" x="440" y="304">yes</text>
-<rect class="dg-grp" x="680" y="320" width="280" height="62"/><text class="dg-t" x="820" y="346" text-anchor="middle">Same contact keeps failing?</text><text class="dg-s" x="820" y="364" text-anchor="middle">add human corrections, refine online</text>
+<rect class="dg-box" x="680" y="14" width="280" height="62"/><text class="dg-t" x="820" y="40" text-anchor="middle">Xuất đích lực</text><text class="dg-t" x="820" y="56" text-anchor="middle">hoặc độ cứng (Survey 3)</text>
+<path class="dg-a" d="M560 45 H680"/><text class="dg-l" x="600" y="38">có</text>
+<rect class="dg-box" x="300" y="116" width="260" height="62"/><text class="dg-t" x="430" y="142" text-anchor="middle">Tiếp xúc có đổi trong</text><text class="dg-t" x="430" y="158" text-anchor="middle">vài chục mili giây?</text>
+<path class="dg-a" d="M430 76 V116"/><text class="dg-l" x="440" y="100">không</text>
+<rect class="dg-box" x="680" y="116" width="280" height="62"/><text class="dg-t" x="820" y="142" text-anchor="middle">Thêm residual nhanh hoặc</text><text class="dg-t" x="820" y="158" text-anchor="middle">bộ điều khiển ngoài VLA</text>
+<path class="dg-a" d="M560 147 H680"/><text class="dg-l" x="600" y="140">có</text>
+<rect class="dg-box" x="300" y="218" width="260" height="62"/><text class="dg-t" x="430" y="244" text-anchor="middle">Robot khi triển khai</text><text class="dg-t" x="430" y="260" text-anchor="middle">có cảm biến lực không?</text>
+<path class="dg-a" d="M430 178 V218"/><text class="dg-l" x="440" y="202">không</text>
+<rect class="dg-box" x="680" y="218" width="280" height="62"/><text class="dg-t" x="820" y="244" text-anchor="middle">Chưng cất từ thầy có cảm biến,</text><text class="dg-t" x="820" y="260" text-anchor="middle">hoặc ước lượng từ mô-men khớp</text>
+<path class="dg-a" d="M560 249 H680"/><text class="dg-l" x="600" y="242">không</text>
+<rect class="dg-key" x="300" y="320" width="260" height="62"/><text class="dg-t" x="430" y="346" text-anchor="middle">Hợp nhất sau VLM với một</text><text class="dg-t" x="430" y="362" text-anchor="middle">đường riêng được bảo vệ (vd. MoE)</text>
+<path class="dg-a" d="M430 280 V320"/><text class="dg-l" x="440" y="304">có</text>
+<rect class="dg-grp" x="680" y="320" width="280" height="62"/><text class="dg-t" x="820" y="346" text-anchor="middle">Cùng một tiếp xúc cứ hỏng?</text><text class="dg-s" x="820" y="364" text-anchor="middle">thêm sửa của người, tinh chỉnh online</text>
 <path class="dg-ad" d="M560 351 H680"/>
 </svg><figcaption>Bắt đầu từ góc trên bên trái rồi đi theo các câu trả lời. Sơ đồ này chỉ là công cụ giúp đọc, dựng từ các paper đã khảo sát, không phải một so sánh có kiểm soát.</figcaption></figure>
 <table>

@@ -23,5 +23,5 @@
 <rect class="dg-box" x="700" y="350" width="260" height="44"/><text class="dg-t" x="830" y="368" text-anchor="middle">Euler ×10 steps (H=50)</text><text class="dg-s" x="830" y="382" text-anchor="middle">a_arm · a_hand · a_other (incl. trigger c)</text>
 <path class="dg-a" d="M960 162 H974 V372 H960"/><path class="dg-a" d="M905 300 V350"/>
 <rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (PPO hand skill)</text><text class="dg-s" x="530" y="442" text-anchor="middle">in-hand rotation</text>
-<path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="710" y="424" text-anchor="middle">c&gt;0.5: overrides hand action</text>
+<path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="648" y="450">c&gt;0.5: overrides hand action</text>
 </svg>

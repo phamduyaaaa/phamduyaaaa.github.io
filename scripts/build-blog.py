@@ -51,9 +51,11 @@ MATH_INLINE_RE = re.compile(r"(?<![\\$])\$(?!\s)[^$\n]+?(?<!\s)\$")
 FIG_RE = re.compile(r"^\[\[fig:([\w-]+)\]\][ \t]*(.*)$", re.MULTILINE)
 
 
-def render_figure(name: str, caption: str, diagram_dir: Path) -> str:
-    """Nhúng diagrams/<name>.svg thành <figure> có caption (dùng chung cho cả EN và VI)."""
+def render_figure(name: str, caption: str, diagram_dir: Path, lang: str = "en") -> str:
+    """Nhúng diagrams/<name>.svg thành <figure> có caption; khối VI ưu tiên <name>.vi.svg nếu có."""
     svg_path = diagram_dir / f"{name}.svg"
+    if lang == "vi" and (diagram_dir / f"{name}.vi.svg").exists():
+        svg_path = diagram_dir / f"{name}.vi.svg"
     if not svg_path.exists():
         raise ValueError(f"không tìm thấy sơ đồ {svg_path}")
     svg = svg_path.read_text(encoding="utf-8").strip()
@@ -206,7 +208,7 @@ def render_markdown(text: str, diagram_dir: Path = None, lang: str = "en") -> st
     figs = []
 
     def stash_fig(m):
-        figs.append(render_figure(m.group(1), m.group(2).strip(), diagram_dir))
+        figs.append(render_figure(m.group(1), m.group(2).strip(), diagram_dir, lang))
         return f"@@FIG{len(figs) - 1}@@"
 
     def stash_flow(m):

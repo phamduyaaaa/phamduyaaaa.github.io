@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">KHI CHẠY: MỘT ĐỀ XUẤT = HÀNH ĐỘNG + WRENCH MÀ CHÚNG DỰ KIẾN GÂY RA</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="60"/><text class="dg-t" x="115" y="72" text-anchor="middle">3 góc RGB + văn bản</text><text class="dg-s" x="115" y="90" text-anchor="middle">câu lệnh tác vụ con</text>
+<rect class="dg-ext" x="20" y="126" width="190" height="60"/><text class="dg-t" x="115" y="152" text-anchor="middle">tư thế + tay kẹp (7)</text><text class="dg-s" x="115" y="170" text-anchor="middle">trạng thái động học</text>
+<rect class="dg-key" x="20" y="206" width="190" height="60"/><text class="dg-t" x="115" y="232" text-anchor="middle">lịch sử wrench 10x6</text><text class="dg-s" x="115" y="250" text-anchor="middle">10 lần đọc F/T gần nhất</text>
+<rect class="dg-key" x="260" y="100" width="170" height="110"/><text class="dg-t" x="345" y="144" text-anchor="middle">Biểu diễn</text><text class="dg-t" x="345" y="162" text-anchor="middle">ngữ nghĩa-tiếp xúc</text><text class="dg-s" x="345" y="184" text-anchor="middle">PaliGemma + fusion</text>
+<rect class="dg-box" x="480" y="100" width="170" height="110"/><text class="dg-t" x="565" y="140" text-anchor="middle">Flow-matching</text><text class="dg-t" x="565" y="158" text-anchor="middle">action expert</text><text class="dg-s" x="565" y="180" text-anchor="middle">thô 5-10 Hz</text><text class="dg-s" x="565" y="194" text-anchor="middle">tinh 20 Hz</text>
+<path class="dg-a" d="M210 76 H235 V130 H260"/><path class="dg-a" d="M210 156 H260"/><path class="dg-a" d="M210 236 H235 V180 H260"/><path class="dg-a" d="M430 155 H480"/>
+<rect class="dg-box" x="700" y="46" width="250" height="60"/><text class="dg-t" x="825" y="72" text-anchor="middle">hành động 50x7</text><text class="dg-s" x="825" y="90" text-anchor="middle">phần duy nhất được chạy</text>
+<rect class="dg-ext" x="700" y="126" width="250" height="60"/><text class="dg-t" x="825" y="152" text-anchor="middle">wrench 50x6</text><text class="dg-s" x="825" y="170" text-anchor="middle">chỉ dự đoán, không ra lệnh</text>
+<rect class="dg-box" x="700" y="206" width="250" height="60"/><text class="dg-t" x="825" y="232" text-anchor="middle">kẹp an toàn + điều khiển mềm</text><text class="dg-s" x="825" y="250" text-anchor="middle">200 Hz, vòng lực trên F/T đo</text>
+<path class="dg-a" d="M650 130 H675 V76 H700"/><path class="dg-a" d="M650 160 H700"/>
+<path class="dg-a" d="M950 76 H966 V236 H950"/>
+<path class="dg-ad" d="M825 266 V292 H115 V266"/><text class="dg-l" x="300" y="286">F/T cổ tay đo được quay lại lịch sử</text>
+<text class="dg-h" x="20" y="332">BA GIAI ĐOẠN HUẤN LUYỆN</text>
+<rect class="dg-box" x="20" y="348" width="290" height="70"/><text class="dg-t" x="165" y="372" text-anchor="middle">01 Căn chỉnh</text><text class="dg-s" x="165" y="390" text-anchor="middle">flow matching chung hành động-wrench</text><text class="dg-s" x="165" y="406" text-anchor="middle">trên demo ManuFacet-1K</text>
+<rect class="dg-key" x="345" y="348" width="290" height="70"/><text class="dg-t" x="490" y="372" text-anchor="middle">02 Tinh chỉnh</text><text class="dg-s" x="490" y="390" text-anchor="middle">Action-Wrench Critic chấm từng đề xuất;</text><text class="dg-s" x="490" y="406" text-anchor="middle">gán công theo tiếp xúc chọn khung</text>
+<rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Thích nghi</text><text class="dg-s" x="815" y="390" text-anchor="middle">actor nhỏ có giới hạn trên token đóng băng,</text><text class="dg-s" x="815" y="406" text-anchor="middle">học trên robot từ 10 demo</text>
+<path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
+</svg>

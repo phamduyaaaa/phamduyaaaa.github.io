@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">TỪ LƯỚI ẢNH TỚI CHUỖI TOKEN</text>
+<rect class="dg-ext" x="20" y="50" width="150" height="150"/>
+<path class="dg-grp" d="M57 50 V200 M95 50 V200 M132 50 V200 M20 87 H170 M20 125 H170 M20 162 H170"/>
+<text class="dg-s" x="95" y="222" text-anchor="middle">224 x 224 điểm ảnh</text><text class="dg-s" x="95" y="238" text-anchor="middle">cắt thành ô 14 x 14</text>
+<rect class="dg-box" x="220" y="70" width="150" height="56"/><text class="dg-t" x="295" y="94" text-anchor="middle">Trải phẳng</text><text class="dg-s" x="295" y="112" text-anchor="middle">14 x 14 x 3 = 588 số</text>
+<rect class="dg-key" x="420" y="70" width="160" height="56"/><text class="dg-t" x="500" y="94" text-anchor="middle">Chiếu tuyến tính</text><text class="dg-s" x="500" y="112" text-anchor="middle">z = p W_p, cỡ d</text>
+<rect class="dg-key" x="630" y="70" width="150" height="56"/><text class="dg-t" x="705" y="94" text-anchor="middle">+ vị trí</text><text class="dg-s" x="705" y="112" text-anchor="middle">mỗi ô một vector</text>
+<rect class="dg-box" x="830" y="70" width="130" height="56"/><text class="dg-t" x="895" y="94" text-anchor="middle">Transformer</text><text class="dg-s" x="895" y="112" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M170 98 H220"/><path class="dg-a" d="M370 98 H420"/><path class="dg-a" d="M580 98 H630"/><path class="dg-a" d="M780 98 H830"/>
+<text class="dg-l" x="220" y="168">mỗi pixel một token: 50.176 token, khoảng 2,5 tỉ cặp attention</text>
+<text class="dg-l" x="220" y="190">mỗi ô 14 x 14 một token: 16 x 16 = 256 token, 65.536 cặp</text>
+<text class="dg-note dg-red" x="220" y="230">không có vector vị trí, xáo trộn các ô vẫn cho cùng một tập đầu ra</text>
+</svg>

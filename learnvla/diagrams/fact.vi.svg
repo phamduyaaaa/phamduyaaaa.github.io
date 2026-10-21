@@ -1,0 +1,23 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">MỘT CHUNK: LẬP KẾ HOẠCH BẰNG VIDEO VÀ VỆT, RỒI TINH CHỈNH HÀNH ĐỘNG CÙNG LỰC</text>
+<rect class="dg-ext" x="20" y="46" width="190" height="54"/><text class="dg-t" x="115" y="68" text-anchor="middle">góc nhìn + câu lệnh</text><text class="dg-s" x="115" y="86" text-anchor="middle">camera đầu và cổ tay</text>
+<rect class="dg-ext" x="20" y="112" width="190" height="54"/><text class="dg-t" x="115" y="134" text-anchor="middle">trạng thái + vệt cũ</text><text class="dg-s" x="115" y="152" text-anchor="middle">lịch sử vệt thị giác</text>
+<rect class="dg-key" x="20" y="178" width="190" height="54"/><text class="dg-t" x="115" y="200" text-anchor="middle">lịch sử xúc giác</text><text class="dg-s" x="115" y="218" text-anchor="middle">lực đầu ngón, 5 Hz</text>
+<rect class="dg-box" x="250" y="46" width="220" height="140"/><text class="dg-t" x="360" y="78" text-anchor="middle">Bộ lập kế hoạch thô</text><text class="dg-t" x="360" y="96" text-anchor="middle">dẫn bởi vệt</text><text class="dg-s" x="360" y="120" text-anchor="middle">5B video DiT</text><text class="dg-s" x="360" y="138" text-anchor="middle">khử nhiễu video tương lai,</text><text class="dg-s" x="360" y="154" text-anchor="middle">vệt thị giác, hành động thô</text>
+<rect class="dg-key" x="580" y="46" width="200" height="140"/><text class="dg-t" x="680" y="78" text-anchor="middle">Bộ tinh chỉnh chung</text><text class="dg-t" x="680" y="96" text-anchor="middle">Lực-Hành động</text><text class="dg-s" x="680" y="120" text-anchor="middle">6-block transformer, 65M</text><text class="dg-s" x="680" y="138" text-anchor="middle">khử nhiễu đuôi hành động</text><text class="dg-s" x="680" y="154" text-anchor="middle">cùng lực đầu ngón tương lai</text>
+<path class="dg-a" d="M210 73 H250"/><path class="dg-a" d="M210 139 H250"/>
+<path class="dg-a" d="M470 90 H580"/><text class="dg-s" x="476" y="82">bàn giao, tau 0,4</text>
+<path class="dg-ad" d="M470 150 H580"/><text class="dg-s" x="476" y="142">lưu đệm</text>
+<path class="dg-a" d="M210 205 H680 V186"/>
+<rect class="dg-box" x="830" y="46" width="130" height="54"/><text class="dg-t" x="895" y="68" text-anchor="middle">chunk hành động</text><text class="dg-s" x="895" y="86" text-anchor="middle">16 bước, 20 Hz</text>
+<rect class="dg-ext" x="830" y="112" width="130" height="54"/><text class="dg-t" x="895" y="134" text-anchor="middle">lực tương lai</text><text class="dg-s" x="895" y="152" text-anchor="middle">chỉ dự đoán</text>
+<rect class="dg-grp" x="830" y="178" width="130" height="54"/><text class="dg-t" x="895" y="200" text-anchor="middle">video + vệt</text><text class="dg-s" x="895" y="218" text-anchor="middle">giải mã, không chạy</text>
+<path class="dg-a" d="M780 73 H830"/><path class="dg-a" d="M780 139 H830"/><path class="dg-a" d="M795 139 V205 H830"/>
+<text class="dg-l" x="250" y="258">mỗi lần xúc giác cập nhật (5 Hz), chỉ bộ tinh chỉnh chạy lại trên phần chunk chưa thực hiện</text>
+<text class="dg-h" x="20" y="300">TIỀN HUẤN LUYỆN</text>
+<rect class="dg-ext" x="20" y="316" width="300" height="56"/><text class="dg-t" x="170" y="340" text-anchor="middle">EgoForce: 2.000 giờ người</text><text class="dg-s" x="170" y="358" text-anchor="middle">găng xúc giác + 3 camera góc nhìn người</text>
+<rect class="dg-ext" x="350" y="316" width="260" height="56"/><text class="dg-t" x="480" y="340" text-anchor="middle">+ 100 giờ điều khiển robot từ xa</text><text class="dg-s" x="480" y="358" text-anchor="middle">từ dữ liệu T-Rex</text>
+<rect class="dg-key" x="640" y="316" width="320" height="56"/><text class="dg-t" x="800" y="340" text-anchor="middle">huấn luyện đầu-cuối, từ DiT video</text><text class="dg-s" x="800" y="358" text-anchor="middle">240 bộ tăng tốc</text>
+<path class="dg-a" d="M320 344 H350"/><path class="dg-a" d="M610 344 H640"/>
+<rect class="dg-box" x="20" y="394" width="940" height="34"/><text class="dg-t" x="490" y="416" text-anchor="middle">fine-tune mỗi tác vụ: 10 quỹ đạo robot + 90 quỹ đạo người, 8 GPU</text>
+</svg>

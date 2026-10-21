@@ -18,7 +18,7 @@
 <path class="dg-a" d="M780 240 H830 V296 H851"/><text class="dg-l" x="700" y="282" text-anchor="middle">r = r_max·tanh(r̄)</text>
 <path class="dg-a" d="M960 76 H972 V296 H879"/><text class="dg-l" x="968" y="230" text-anchor="end">u_nom (nominal base)</text>
 <rect class="dg-key" x="770" y="340" width="190" height="52"/><text class="dg-t" x="865" y="362" text-anchor="middle">WBC policy</text><text class="dg-s" x="865" y="378" text-anchor="middle">balance + command tracking</text>
-<path class="dg-a" d="M865 310 V340"/><text class="dg-l" x="878" y="328">u_base = u_nom + r</text>
+<path class="dg-a" d="M865 310 V340"/><text class="dg-l" x="855" y="328" text-anchor="end">u_base = u_nom + r</text>
 <rect class="dg-ext" x="560" y="346" width="170" height="40"/><text class="dg-t" x="645" y="364" text-anchor="middle">Wheeled-legged robot</text><text class="dg-s" x="645" y="378" text-anchor="middle">+ 6-DoF arm</text>
 <path class="dg-a" d="M770 366 H730"/>
 <text class="dg-h" x="20" y="416">arm and gripper actions go from the VLA to the WBC unchanged; only the base command is corrected.</text>

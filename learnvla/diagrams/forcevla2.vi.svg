@@ -1,0 +1,27 @@
+<svg viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-ext" x="20" y="20" width="130" height="36"/><text class="dg-t" x="85" y="42" text-anchor="middle">RGB nhiều góc</text>
+<rect class="dg-ext" x="20" y="64" width="130" height="36"/><text class="dg-t" x="85" y="86" text-anchor="middle">Prompt tác vụ T_t</text>
+<rect class="dg-key" x="20" y="108" width="130" height="36"/><text class="dg-t" x="85" y="130" text-anchor="middle">Prompt lực T_f</text>
+<rect class="dg-box" x="190" y="20" width="150" height="124"/><text class="dg-t" x="265" y="70" text-anchor="middle">VLM (SigLIP-</text><text class="dg-t" x="265" y="86" text-anchor="middle">based, PaliGemma)</text><text class="dg-s" x="265" y="108" text-anchor="middle">E: (Nv+Nt+Nf)×D</text>
+<path class="dg-a" d="M150 38 H190"/><path class="dg-a" d="M150 82 H190"/><path class="dg-a" d="M150 126 H190"/>
+<text class="dg-l" x="85" y="160" text-anchor="middle">chữ giai đoạn / tác vụ con</text>
+<rect class="dg-ext" x="20" y="212" width="130" height="36"/><text class="dg-t" x="85" y="228" text-anchor="middle">tư thế đầu cuối p</text><text class="dg-s" x="85" y="241" text-anchor="middle">R^7</text>
+<rect class="dg-ext" x="20" y="256" width="130" height="36"/><text class="dg-t" x="85" y="272" text-anchor="middle">F/T f_raw</text><text class="dg-s" x="85" y="285" text-anchor="middle">R^6</text>
+<rect class="dg-box" x="190" y="212" width="110" height="36"/><text class="dg-t" x="245" y="234" text-anchor="middle">Linear φ_P</text>
+<rect class="dg-box" x="190" y="256" width="110" height="36"/><text class="dg-t" x="245" y="278" text-anchor="middle">Linear φ_F</text>
+<path class="dg-a" d="M150 230 H190"/><path class="dg-a" d="M150 274 H190"/>
+<rect class="dg-box" x="340" y="234" width="100" height="36"/><text class="dg-t" x="390" y="250" text-anchor="middle">E_state</text><text class="dg-s" x="390" y="263" text-anchor="middle">[E_P ; E_F]</text>
+<path class="dg-a" d="M300 230 H320 V246 H340"/><path class="dg-a" d="M300 274 H320 V258 H340"/>
+<rect class="dg-box" x="480" y="190" width="150" height="70"/><text class="dg-t" x="555" y="218" text-anchor="middle">Cross-Attn</text><text class="dg-s" x="555" y="234" text-anchor="middle">Q = E_state</text><text class="dg-s" x="555" y="248" text-anchor="middle">K,V = E</text>
+<path class="dg-a" d="M440 252 H460 V236 H480"/><path class="dg-a" d="M340 82 H455 V206 H480"/>
+<rect class="dg-box" x="670" y="150" width="100" height="60"/><text class="dg-t" x="720" y="176" text-anchor="middle">E_cond</text><text class="dg-s" x="720" y="192" text-anchor="middle">[E; E'; E_F]</text>
+<path class="dg-a" d="M340 56 H650 V166 H670"/><path class="dg-a" d="M630 225 H650 V196 H670"/>
+<path class="dg-ad" d="M245 292 V340 H720 V210"/><text class="dg-l" x="480" y="334" text-anchor="middle">E_F đi tắt: lực thô bỏ qua các lớp hợp nhất</text>
+<rect class="dg-key" x="810" y="110" width="150" height="140"/><text class="dg-t" x="885" y="150" text-anchor="middle">Cross-Scale MoE</text><text class="dg-s" x="885" y="172" text-anchor="middle">3 expert: V · S · F</text><text class="dg-s" x="885" y="188" text-anchor="middle">cổng w theo từng token</text><text class="dg-s" x="885" y="204" text-anchor="middle">Σ w_m · Expert_m</text>
+<path class="dg-a" d="M770 180 H810"/>
+<rect class="dg-box" x="810" y="290" width="150" height="44"/><text class="dg-t" x="885" y="310" text-anchor="middle">Flow-matching</text><text class="dg-t" x="885" y="325" text-anchor="middle">action head</text>
+<path class="dg-a" d="M885 250 V290"/>
+<rect class="dg-box" x="690" y="360" width="160" height="40"/><text class="dg-t" x="770" y="378" text-anchor="middle">a_t = [Δp_t ; f_t]</text><text class="dg-s" x="770" y="392" text-anchor="middle">lai tư thế + lực</text>
+<rect class="dg-box" x="870" y="360" width="100" height="40"/><text class="dg-t" x="920" y="378" text-anchor="middle">s_t ∈ [0,1]</text><text class="dg-s" x="920" y="392" text-anchor="middle">tiến độ tác vụ</text>
+<path class="dg-a" d="M860 334 V347 H770 V360"/><path class="dg-a" d="M910 334 V347 H920 V360"/>
+</svg>

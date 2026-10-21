@@ -1,0 +1,14 @@
+<svg viewBox="0 0 980 280" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">GIỮ POLICY GỐC TỐT, CHỈ HỌC MỘT HIỆU CHỈNH NHỎ CÓ GIỚI HẠN</text>
+<rect class="dg-ext" x="20" y="100" width="150" height="56"/><text class="dg-t" x="95" y="124" text-anchor="middle">quan sát</text><text class="dg-s" x="95" y="142" text-anchor="middle">gồm lực</text>
+<rect class="dg-box" x="230" y="44" width="220" height="64"/><text class="dg-t" x="340" y="70" text-anchor="middle">policy gốc (đóng băng)</text><text class="dg-s" x="340" y="90" text-anchor="middle">bộ điều khiển, policy BC hoặc VLA</text>
+<rect class="dg-key" x="230" y="150" width="220" height="64"/><text class="dg-t" x="340" y="176" text-anchor="middle">policy residual</text><text class="dg-s" x="340" y="196" text-anchor="middle">nhỏ, học bằng RL hoặc BC</text>
+<path class="dg-a" d="M170 120 H200 V76 H230"/><path class="dg-a" d="M170 136 H200 V182 H230"/>
+<rect class="dg-box" x="500" y="150" width="170" height="64"/><text class="dg-t" x="585" y="176" text-anchor="middle">giới hạn</text><text class="dg-s" x="585" y="196" text-anchor="middle">a_res = b tanh(u)</text>
+<path class="dg-a" d="M450 182 H500"/>
+<circle class="dg-key" cx="730" cy="128" r="22"/><text class="dg-t" x="730" y="135" text-anchor="middle">+</text>
+<path class="dg-a" d="M450 76 H730 V106"/><path class="dg-a" d="M670 182 H730 V150"/>
+<rect class="dg-box" x="800" y="100" width="160" height="56"/><text class="dg-t" x="880" y="124" text-anchor="middle">a = a_base + a_res</text><text class="dg-s" x="880" y="142" text-anchor="middle">gửi tới robot</text>
+<path class="dg-a" d="M752 128 H800"/>
+<text class="dg-l" x="230" y="252">residual bắt đầu từ 0, nên huấn luyện xuất phát từ hành vi của policy gốc</text>
+</svg>

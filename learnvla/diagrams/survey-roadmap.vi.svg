@@ -1,0 +1,18 @@
+<svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="24">THỨ TỰ ĐỌC</text>
+<rect class="dg-ext" x="20" y="40" width="170" height="124"/><text class="dg-t" x="105" y="62" text-anchor="middle">0. Nền tảng</text>
+<text class="dg-s" x="34" y="84">Học bắt chước</text><text class="dg-s" x="34" y="100">Token · Attention</text><text class="dg-s" x="34" y="116">Transformer</text><text class="dg-s" x="34" y="132">Flow matching</text><text class="dg-s" x="34" y="148">Action chunking</text>
+<rect class="dg-box" x="240" y="62" width="130" height="80"/><text class="dg-t" x="305" y="96" text-anchor="middle">1. π0</text><text class="dg-s" x="305" y="114" text-anchor="middle">nền mà phần lớn</text><text class="dg-s" x="305" y="128" text-anchor="middle">paper lực mở rộng</text>
+<rect class="dg-key" x="420" y="62" width="150" height="80"/><text class="dg-t" x="495" y="90" text-anchor="middle">2. Survey 1</text><text class="dg-s" x="495" y="108" text-anchor="middle">bản đồ: lực</text><text class="dg-s" x="495" y="122" text-anchor="middle">đi vào đâu</text>
+<rect class="dg-box" x="620" y="40" width="150" height="56"/><text class="dg-t" x="695" y="64" text-anchor="middle">3a. Survey 2</text><text class="dg-s" x="695" y="82" text-anchor="middle">đo cái gì</text>
+<rect class="dg-box" x="620" y="110" width="150" height="56"/><text class="dg-t" x="695" y="134" text-anchor="middle">3b. Survey 3</text><text class="dg-s" x="695" y="152" text-anchor="middle">xuất ra cái gì</text>
+<rect class="dg-box" x="820" y="62" width="140" height="80"/><text class="dg-t" x="890" y="92" text-anchor="middle">4. Các paper</text><text class="dg-s" x="890" y="110" text-anchor="middle">chọn theo điểm</text><text class="dg-s" x="890" y="124" text-anchor="middle">đi vào ①–⑥</text>
+<path class="dg-a" d="M190 102 H240"/><path class="dg-a" d="M370 102 H420"/><path class="dg-a" d="M570 90 H595 V68 H620"/><path class="dg-a" d="M570 114 H595 V138 H620"/><path class="dg-a" d="M770 68 H795 V92 H820"/><path class="dg-a" d="M770 138 H795 V112 H820"/>
+<text class="dg-h" x="20" y="196">BA LỘ TRÌNH</text>
+<rect class="dg-grp" x="20" y="208" width="300" height="136"/><text class="dg-t" x="36" y="232">5 phút</text>
+<text class="dg-s" x="36" y="256">Đọc TL;DR của Survey 1,</text><text class="dg-s" x="36" y="272">xem hình ma trận,</text><text class="dg-s" x="36" y="288">tìm điểm đi vào của bạn.</text><text class="dg-s dg-mute" x="36" y="324">Mục tiêu: nắm toàn cảnh.</text>
+<rect class="dg-grp" x="340" y="208" width="300" height="136"/><text class="dg-t" x="356" y="232">30 phút</text>
+<text class="dg-s" x="356" y="256">Survey 1, rồi 2 và 3.</text><text class="dg-s" x="356" y="272">Làm ba thẻ tính tay</text><text class="dg-s" x="356" y="288">bằng bút.</text><text class="dg-s dg-mute" x="356" y="324">Mục tiêu: chọn thiết kế.</text>
+<rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Đọc sâu</text>
+<text class="dg-s" x="676" y="256">Nền tảng, π0, Survey 1,</text><text class="dg-s" x="676" y="272">rồi các bài paper của</text><text class="dg-s" x="676" y="288">điểm đi vào bạn chọn.</text><text class="dg-s dg-mute" x="676" y="324">Mục tiêu: tái hiện hoặc mở rộng.</text>
+</svg>

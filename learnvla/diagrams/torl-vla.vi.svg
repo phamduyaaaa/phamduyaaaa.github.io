@@ -1,0 +1,32 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<rect class="dg-grp" x="10" y="8" width="960" height="184"/><text class="dg-h" x="22" y="26">GIAI ĐOẠN I · VLA THAM CHIẾU BIẾT WRENCH (π0.5)</text>
+<rect class="dg-ext" x="20" y="42" width="150" height="44"/><text class="dg-t" x="95" y="60" text-anchor="middle">Ảnh + ngôn ngữ</text><text class="dg-s" x="95" y="75" text-anchor="middle">+ trạng thái robot</text>
+<rect class="dg-box" x="210" y="42" width="140" height="44"/><text class="dg-t" x="280" y="60" text-anchor="middle">VLM</text><text class="dg-s" x="280" y="75" text-anchor="middle">prefix P_t</text>
+<path class="dg-a" d="M170 64 H210"/>
+<rect class="dg-ext" x="20" y="108" width="150" height="44"/><text class="dg-t" x="95" y="126" text-anchor="middle">Cửa sổ wrench W_t</text><text class="dg-s" x="95" y="141" text-anchor="middle">2 miếng, R^12 mỗi bước</text>
+<rect class="dg-key" x="210" y="108" width="140" height="44"/><text class="dg-t" x="280" y="126" text-anchor="middle">Bộ mã hóa MLP</text><text class="dg-s" x="280" y="141" text-anchor="middle">z^tac (1 token)</text>
+<path class="dg-a" d="M170 130 H210"/>
+<rect class="dg-box" x="390" y="64" width="120" height="64"/><text class="dg-t" x="450" y="90" text-anchor="middle">[P_t ; z^tac]</text><text class="dg-s" x="450" y="106" text-anchor="middle">self-attention</text>
+<path class="dg-a" d="M350 64 H370 V80 H390"/><path class="dg-a" d="M350 130 H370 V112 H390"/>
+<rect class="dg-key" x="550" y="64" width="120" height="64"/><text class="dg-t" x="610" y="90" text-anchor="middle">MoE định tuyến</text><text class="dg-t" x="610" y="106" text-anchor="middle">mềm</text>
+<path class="dg-a" d="M510 96 H550"/>
+<circle class="dg-box" cx="720" cy="96" r="14"/><text class="dg-t" x="720" y="101" text-anchor="middle">+</text>
+<path class="dg-a" d="M670 96 H706"/>
+<path class="dg-ad" d="M280 152 V176 H720 V110"/><text class="dg-l" x="500" y="170" text-anchor="middle">đường tắt khởi tạo 0 (α·P(z^tac), α bắt đầu bằng 0)</text>
+<rect class="dg-box" x="770" y="62" width="180" height="68"/><text class="dg-t" x="860" y="88" text-anchor="middle">Expert flow-matching</text><text class="dg-s" x="860" y="106" text-anchor="middle">xuất A^ref và</text><text class="dg-s" x="860" y="120" text-anchor="middle">wrench tương lai W^ref</text>
+<path class="dg-a" d="M734 96 H770"/>
+<rect class="dg-grp" x="10" y="208" width="960" height="222"/><text class="dg-h" x="22" y="226">GIAI ĐOẠN II · TINH CHỈNH RL ONLINE (VLA tham chiếu đóng băng)</text>
+<rect class="dg-box" x="20" y="250" width="210" height="64"/><text class="dg-t" x="125" y="274" text-anchor="middle">Ngữ cảnh c_t</text><text class="dg-s" x="125" y="290" text-anchor="middle">[z^vla, q, w, W hist,</text><text class="dg-s" x="125" y="304" text-anchor="middle">W^ref, A^ref]</text>
+<path class="dg-ad" d="M860 130 V204 H125 V250"/><text class="dg-l" x="560" y="200" text-anchor="middle">VLA đóng băng cấp z^vla, A^ref, W^ref</text>
+<rect class="dg-box" x="270" y="256" width="140" height="52"/><text class="dg-t" x="340" y="276" text-anchor="middle">Ước lượng giai đoạn</text><text class="dg-s" x="340" y="292" text-anchor="middle">chọn đầu g_t</text>
+<rect class="dg-key" x="450" y="244" width="170" height="76"/><text class="dg-t" x="535" y="270" text-anchor="middle">Actor riêng</text><text class="dg-t" x="535" y="286" text-anchor="middle">từng giai đoạn π_φ(g)</text><text class="dg-s" x="535" y="304" text-anchor="middle">chunk đã tinh chỉnh A^φ</text>
+<path class="dg-a" d="M230 282 H270"/><path class="dg-a" d="M410 282 H450"/>
+<rect class="dg-box" x="660" y="256" width="110" height="52"/><text class="dg-t" x="715" y="278" text-anchor="middle">Robot</text><text class="dg-s" x="715" y="294" text-anchor="middle">thực thi</text>
+<path class="dg-a" d="M620 282 H660"/>
+<rect class="dg-ext" x="800" y="256" width="150" height="52"/><text class="dg-t" x="875" y="276" text-anchor="middle">Người</text><text class="dg-s" x="875" y="292" text-anchor="middle">can thiệp + thưởng</text>
+<path class="dg-a" d="M800 282 H770"/>
+<rect class="dg-box" x="660" y="356" width="170" height="44"/><text class="dg-t" x="745" y="374" text-anchor="middle">Bộ đệm replay</text><text class="dg-s" x="745" y="388" text-anchor="middle">nguồn: policy | người</text>
+<path class="dg-a" d="M715 308 V356"/>
+<rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: bootstrap bỏ qua đoạn can thiệp</text>
+<path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">loss actor L_π</text>
+</svg>
