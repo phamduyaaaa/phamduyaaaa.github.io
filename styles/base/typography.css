@@ -6,45 +6,7 @@ em { font-style: italic; }
 
 h1, h2, h3, .project-title, .pub-title, .hero-role {
   text-wrap: balance;
-  letter-spacing: -0.045em;
-}
-
-p, .hero-bio, .project-desc, .pub-desc, .xp-bullets li {
-  color: var(--ink-3); 
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.section-label, .project-type, .pub-venue, .hero-eyebrow, .cert-issuer {
-  font-size: 10.5px;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-  opacity: 0.8;
-}
-
-.container { max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8); }
-
-h1, h2, h3, .project-title, .pub-title, .hero-role {
-  text-wrap: balance; 
   letter-spacing: -0.04em;
-}
-
-h1 {
-  font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.08em;
-  text-transform: uppercase;
-}
-h1 .name-last {
-  font-weight: 500;
-  font-style: italic;
-}
-
-.section-label, .project-type, .pub-venue, .hero-eyebrow, .cert-issuer {
-  font-size: 10.5px;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-  opacity: 0.8;
 }
 
 p, .hero-bio, .project-desc, .pub-desc, .xp-bullets li {
@@ -53,10 +15,24 @@ p, .hero-bio, .project-desc, .pub-desc, .xp-bullets li {
   line-height: 1.7;
   letter-spacing: -0.01em;
 }
-:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 4px;
-  border-radius: var(--r-sm);
+
+.section-label, .project-type, .pub-venue, .hero-eyebrow, .cert-issuer {
+  font-size: 10.5px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8); }
+
+.hero-text h1, .blog-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
+}
+h1 .name-last {
+  font-weight: 500;
+  font-style: italic;
 }
 
 .metrics-bar {

@@ -11,14 +11,28 @@ function splitText(element) {
   element.setAttribute('aria-label', text);
   element.textContent = '';
 
-  return [...text].map((character) => {
-    const span = document.createElement('span');
-    span.className = 'gsap-char';
-    span.textContent = character === ' ' ? '\u00a0' : character;
-    span.setAttribute('aria-hidden', 'true');
-    element.appendChild(span);
-    return span;
+  const chars = [];
+  text.split(' ').forEach((word, wordIndex) => {
+    if (wordIndex > 0) element.appendChild(document.createTextNode(' '));
+
+    const wordSpan = document.createElement('span');
+    wordSpan.className = 'gsap-word';
+    wordSpan.style.display = 'inline-block';
+    wordSpan.style.whiteSpace = 'nowrap';
+
+    [...word].forEach((character) => {
+      const span = document.createElement('span');
+      span.className = 'gsap-char';
+      span.textContent = character;
+      span.setAttribute('aria-hidden', 'true');
+      wordSpan.appendChild(span);
+      chars.push(span);
+    });
+
+    element.appendChild(wordSpan);
   });
+
+  return chars;
 }
 
 function initTextAnimations() {

@@ -1,3 +1,7 @@
+if (window.gsap && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  window.gsap.globalTimeline.timeScale(50);
+}
+
 import './modules/boot-screen.js';
 import './modules/nav.js';
 import './modules/cursor.js';

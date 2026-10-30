@@ -11,7 +11,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .about-grid > *:nth-child(2) { border-left: 12px solid var(--cyan); padding-left: var(--sp-6); transform: rotate(1.5deg); }
 .about-text p { margin-bottom: var(--sp-6); }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); }
-.tag { font-family: var(--font-body); font-weight: 500; border: 2px solid var(--ink); color: var(--ink-3); transition: all var(--t); border-radius: 0; font-size: 11.5px; padding: 4px 14px; letter-spacing: 0.02em; }
+.tag { font-family: var(--font-body); font-weight: 500; border: 2px solid var(--ink); color: var(--ink-3); transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t), transform var(--t); border-radius: 0; font-size: 11.5px; padding: 4px 14px; letter-spacing: 0.02em; }
 .tag:hover { background: var(--cream-2); border-color: var(--ink-4); color: var(--ink); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .tag-dark { background: var(--code-bg); color: var(--code-ink); border-color: transparent; }
 .tag-dark:hover { background: #2A2F48; color: white; border-color: transparent; }
@@ -43,7 +43,7 @@ h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-w
 .contact-intro { margin-bottom: var(--sp-8); }
 .contact-note { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); border-top: 1px solid var(--border); padding-top: var(--sp-4); margin-top: var(--sp-4); }
 .contact-links { display: flex; flex-direction: column; gap: var(--sp-3); }
-.contact-link { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-4) var(--sp-5); background: var(--cream); border: 2px solid var(--ink); border-radius: 0; color: var(--ink-3); box-shadow: var(--shadow-sm); transition: all var(--t); min-height: 56px; }
+.contact-link { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-4) var(--sp-5); background: var(--cream); border: 2px solid var(--ink); border-radius: 0; color: var(--ink-3); box-shadow: var(--shadow-sm); transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t), transform var(--t); min-height: 56px; }
 .contact-link:hover { background: var(--cream-2); border-color: var(--ink-4); transform: translateX(8px); color: var(--ink); box-shadow: var(--shadow-hover); }
 .contact-label { font-size: 14px; font-weight: 600; color: var(--ink); font-family: var(--font-display); }
 .contact-value { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--amber-a11y); }

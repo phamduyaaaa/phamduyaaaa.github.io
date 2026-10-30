@@ -15,7 +15,8 @@
         transform: translate(-50%, -50%);
         pointer-events: none;
         z-index: 9999;
-        transition: transform 0.2s var(--ease);
+        opacity: 0;
+        transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
     }
 
     .cursor-outline {
@@ -27,7 +28,12 @@
         transform: translate(-50%, -50%);
         pointer-events: none;
         z-index: 9998;
-        transition: width 0.3s var(--ease), height 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s var(--ease);
+        opacity: 0;
+        transition: width 0.3s var(--ease), height 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s var(--ease), opacity 0.2s var(--ease);
+    }
+
+    .cursor-dot.visible, .cursor-outline.visible {
+        opacity: 1;
     }
 
     .cursor-dot.hovering {
@@ -35,7 +41,7 @@
     }
     .cursor-outline.hovering {
         width: 64px; height: 64px;
-        background: rgba(184, 146, 74, 0.1);
+        background: var(--amber-dim);
         border-color: var(--amber);
     }
 }

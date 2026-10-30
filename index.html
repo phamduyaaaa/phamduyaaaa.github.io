@@ -77,7 +77,7 @@
           <strong>autonomous navigation research</strong> and deployed hardware.
         </p>
         <p class="hero-bio">
-          Two years shipping ROS 2 mobile robots into production across hospitals, restaurants, and factory floors at <strong>ByteHome Robotics</strong>. Currently a Source Engineer at <strong>VinRobotics</strong>, focused on robot license management and factory QC workflow automation, and Lab Leader at <strong>HalBotLab</strong>, researching Embodied AI and Nav2 systems. Published in MethodsX (Q2) on distributional RL for path planning under sensor noise.
+          Two years shipping ROS 2 mobile robots into production across hospitals, restaurants, and factory floors at <strong>ByteHome Robotics</strong>. Currently a Robotics Software Engineer at <strong>VinRobotics</strong>, focused on robot license management and factory QC workflow automation, and Lab Leader at <strong>HaiBotLab</strong>, researching Embodied AI and Nav2 systems. Published in MethodsX (Q2) on distributional RL for path planning under sensor noise.
         </p>
         <div class="btn-group">
           <a href="mailto:duypham.robotics@gmail.com" class="btn btn-primary">Get in touch ↗</a>
@@ -142,7 +142,7 @@
     <div class="about-text">
       <p>Most robotics demos work in ideal conditions. My job is to make them work when they don't — when the LiDAR scan is partial, the floor is reflective, the network drops packets, and the operator expects the robot to keep moving. I tune <strong>DDS QoS profiles and ROS 2 executor strategies</strong> for real-time performance, configure <strong>Cartographer SLAM</strong> for constrained hardware, and debug Nav2 failure modes that never appear in simulation.</p>
       <p>At <strong>ByteHome Robotics</strong>, I led the full cycle from prototype to commercialized product — hardware integration, software stack, and the rarely-mentioned last mile: writing operator handbooks for independent fleet operation without ongoing engineering support.</p>
-      <p>At <strong>HalBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.</p>
+      <p>At <strong>HaiBotLab</strong> I'm focused on the harder problem — moving beyond scripted navigation toward robots that understand unstructured 3D environments. We work with <strong>depth images, point cloud pipelines</strong>, and Micro-ROS on ESP32 running RTOS for low-latency sensor communication.</p>
       <div class="tag-cloud" data-stagger>
         <span class="tag tag-dark" data-reveal>ROS 2</span><span class="tag tag-dark" data-reveal>Nav2</span>
         <span class="tag tag-dark" data-reveal>Cartographer SLAM</span><span class="tag tag-dark" data-reveal>Micro-ROS</span>
@@ -226,7 +226,7 @@
         <div class="xp-live"><span class="xp-live-dot" aria-hidden="true"></span> Active</div>
       </div>
       <div>
-        <div class="xp-company">HalBotLab <a href="https://sites.google.com/view/haibot-lab" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-family:var(--font-mono);color:var(--amber-a11y);font-weight:700;margin-left:8px;">↗ haibot-lab</a></div>
+        <div class="xp-company">HaiBotLab <a href="https://sites.google.com/view/haibot-lab" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-family:var(--font-mono);color:var(--amber-a11y);font-weight:700;margin-left:8px;">↗ haibot-lab</a></div>
         <div class="xp-role">Lab Leader · Hanoi Intelligence Robot Laboratory</div>
         <ul class="xp-bullets">
           <li>Direct lab research on <strong>Embodied AI</strong>: representation learning from egocentric observations, manipulation policy training in MuJoCo, sim-to-real transfer of perception modules.</li>
@@ -259,8 +259,7 @@
   <div class="projects-grid" data-stagger>
     <div class="project-card featured" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback poster="assets/robot1.jpg" aria-label="Service robot navigating a hospital corridor">
-          <source src="assets/robot1.avif" type="video/avif">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="Service robot navigating a hospital corridor">
           <source src="assets/robot1.webm" type="video/webm">
         </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Hospital Navigation Demo</div>
@@ -282,8 +281,7 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback poster="assets/robot2.jpg" aria-label="HG-Dagger obstacle avoidance">
-          <source src="assets/robot2.avif" type="video/avif">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="HG-Dagger obstacle avoidance">
           <source src="assets/robot2.webm" type="video/webm">
         </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Imitation Learning Demo</div>
@@ -292,7 +290,7 @@
         <div>
           <div class="project-type">Imitation Learning · Thesis Work</div>
           <div class="project-title">HG-Dagger Obstacle Avoidance</div>
-          <div class="project-desc">Local obstacle avoidance policy trained via Human-Gated DAgger. The learned policy replaces the DWA local planner — a single forward pass on LiDAR scan input yields <strong>131↗ fewer FLOPs</strong> per control cycle versus DWA's iterative trajectory sampling. Deployed on Micro-ROS / ESP32.</div>
+          <div class="project-desc">Local obstacle avoidance policy trained via Human-Gated DAgger. The learned policy replaces the DWA local planner — a single forward pass on LiDAR scan input yields <strong>131× fewer FLOPs</strong> per control cycle versus DWA's iterative trajectory sampling. Deployed on Micro-ROS / ESP32.</div>
           <div class="project-pills">
             <span class="pill">Micro-ROS</span><span class="pill">FreeRTOS</span>
             <span class="pill">ROS 2</span><span class="pill">C++</span>
@@ -306,8 +304,7 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback poster="assets/robot3.jpg" aria-label="Skid-steer outdoor robot">
-          <source src="assets/robot3.avif" type="video/avif">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="Skid-steer outdoor robot">
           <source src="assets/robot3.webm" type="video/webm">
         </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Outdoor Navigation Demo</div>
@@ -330,10 +327,6 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback poster="assets/robot4.jpg" aria-label="Distributional RL path planning">
-          <source src="assets/robot4.avif" type="video/avif">
-          <source src="assets/robot4.webm" type="video/webm">
-        </video>
         <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
       </div>
       <div class="project-body">
@@ -353,8 +346,7 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback poster="assets/robot5.jpg" aria-label="Atari Double DQN">
-          <source src="assets/robot5.avif" type="video/avif">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="Atari Double DQN">
           <source src="assets/robot5.webm" type="video/webm">
         </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Atari · Double DQN</div>

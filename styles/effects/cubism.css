@@ -48,10 +48,19 @@ body::before {
   position: absolute;
   top: var(--sp-6);
   right: 0;
+  left: auto;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  background: none;
+  clip-path: none;
+  transform: none;
+  z-index: 1;
   color: var(--cubist-graphite);
   font: 700 10px/1 var(--font-mono);
   letter-spacing: 0.16em;
   opacity: 0.58;
+  pointer-events: none;
 }
 
 #projects,
@@ -68,10 +77,19 @@ body::before {
   position: absolute;
   top: var(--sp-6);
   right: 0;
+  left: auto;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  background: none;
+  clip-path: none;
+  transform: none;
+  z-index: 1;
   color: var(--cubist-vermilion);
   font: 700 10px/1 var(--font-mono);
   letter-spacing: 0.16em;
   opacity: 0.72;
+  pointer-events: none;
 }
 
 .hero-orbit {

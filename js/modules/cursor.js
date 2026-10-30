@@ -12,10 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('mousemove', (e) => {
             const posX = e.clientX;
             const posY = e.clientY;
-            
+
+            dot.classList.add('visible');
+            outline.classList.add('visible');
             dot.style.left = `${posX}px`;
             dot.style.top = `${posY}px`;
-            
+
             outline.animate({
                 left: `${posX}px`,
                 top: `${posY}px`

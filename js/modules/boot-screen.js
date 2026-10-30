@@ -51,10 +51,10 @@ function initBoot() {
     }
 }
 
-if (document.readyState === 'complete') {
+if (document.readyState !== 'loading') {
     initBoot();
 } else {
-    window.addEventListener('load', initBoot, { once: true });
+    document.addEventListener('DOMContentLoaded', initBoot, { once: true });
 }
 
 function runCypherEffect() {
@@ -73,6 +73,6 @@ function runCypherEffect() {
         }).join("");
         
         if(iterations >= finalString.length) clearInterval(interval);
-        iterations += 1 / 3;
+        iterations += 1;
     }, 30);
 }

@@ -68,6 +68,8 @@ function initHeroEntrance() {
       ease: 'power3.out',
     }, '-=0.8');
 
+  timeline.timeScale(1.8);
+
   gsap.to('.hero-rules', {
     yPercent: 12,
     duration: 8,
