@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="RT-1 and RT-2: From a Robot Transformer to the First VLA">
 <meta property="og:description" content="RT-1 showed that a 35M-parameter Transformer trained on 130k real demos can run 700+ instructions at 97% success. RT-2 replaced its backbone with a web-scale VLM and wrote actions as text tokens, doubling success on unseen objects, backgrounds and environments (32% → 62%). It named the model class: vision-language-action.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -101,7 +102,7 @@
 <path class="dg-a" d="M220 227 H250"/><path class="dg-a" d="M490 227 H520"/><path class="dg-a" d="M740 227 H770"/>
 <text class="dg-l" x="20" y="300">the step from RT-1 to RT-2 is the backbone: web knowledge enters through a pre-trained VLM, the action format stays binned tokens</text>
 </svg><figcaption>RT-1 is built for speed from robot data. RT-2 keeps the binned action format but makes the model a VLM that answers in action tokens.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th></th>
@@ -141,12 +142,12 @@
 <td>55B: 1–3 Hz, 5B: ~5 Hz, served from cloud TPUs</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two training details carry over to later VLAs. RT-2 <em>constrains decoding</em> so that, when asked for an action, only valid action tokens can be sampled. And it shows that co-fine-tuning with web data generalises better than fine-tuning on robot data alone.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Why did RT-1 need TokenLearner to hit 3 Hz? Count the tokens and attention pairs its Transformer would see with and without it.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -187,7 +188,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$n = F \times t, \qquad \text{pairs} = n^2$$</p>
 <p><strong>Steps</strong></p>
@@ -207,7 +208,7 @@
 <li><strong>RT-2's stated limits:</strong> it does not learn new <em>motions</em> from the web, only new semantics; the large models are expensive and slow.</li>
 </ul>
 <h2>4. What later VLAs kept and changed</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Kept</th>
@@ -228,7 +229,7 @@
 <td>chunks of 50 steps at up to 50 Hz</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Caveats</h2>
 <ul>
 <li>Checked against both full texts: architecture numbers, action format, data counts, rates, and Tables 6 and 7 of RT-2.</li>
@@ -269,7 +270,7 @@
 <path class="dg-a" d="M220 227 H250"/><path class="dg-a" d="M490 227 H520"/><path class="dg-a" d="M740 227 H770"/>
 <text class="dg-l" x="20" y="300">bước từ RT-1 lên RT-2 là backbone: tri thức web vào qua VLM tiền huấn luyện, định dạng hành động vẫn là token chia bin</text>
 </svg><figcaption>RT-1 được dựng cho tốc độ từ dữ liệu robot. RT-2 giữ định dạng hành động chia bin nhưng biến mô hình thành một VLM trả lời bằng token hành động.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th></th>
@@ -309,12 +310,12 @@
 <td>55B: 1–3 Hz, 5B: ~5 Hz, chạy trên TPU đám mây</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Hai chi tiết huấn luyện được các VLA sau giữ lại. RT-2 <em>ràng buộc giải mã</em> để khi được hỏi hành động thì chỉ token hành động hợp lệ mới được lấy mẫu. Và nó cho thấy co-fine-tune cùng dữ liệu web tổng quát tốt hơn fine-tune chỉ trên dữ liệu robot.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Vì sao RT-1 cần TokenLearner để đạt 3 Hz? Đếm số token và số cặp attention mà Transformer phải xử lý khi có và không có nó.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -355,7 +356,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$n = F \times t, \qquad \text{số cặp} = n^2$$</p>
 <p><strong>Các bước</strong></p>
@@ -375,7 +376,7 @@
 <li><strong>Giới hạn RT-2 tự nêu:</strong> nó không học được <em>cử động</em> mới từ web, chỉ học ngữ nghĩa mới; mô hình lớn thì đắt và chậm.</li>
 </ul>
 <h2>4. VLA sau này giữ gì và đổi gì</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Giữ lại</th>
@@ -396,7 +397,7 @@
 <td>chunk 50 bước, tới 50 Hz</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Lưu ý</h2>
 <ul>
 <li>Đã đối chiếu với toàn văn cả hai paper: số liệu kiến trúc, định dạng hành động, số lượng dữ liệu, tần số, và Bảng 6, 7 của RT-2.</li>

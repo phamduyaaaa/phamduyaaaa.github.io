@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Contrastive Learning: Learning by Telling the Right Pair from the Wrong Ones">
 <meta property="og:description" content="Classifiers learn a fixed list of labels. Contrastive learning only asks which caption goes with which image, using the rest of the batch as counter-examples. InfoNCE worked by hand, and where it shows up in VLAs: the SigLIP image encoder and TaF-VLA's touch–force alignment.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -105,7 +106,7 @@
 <path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
 <text class="dg-note" x="20" y="280">no class labels: the caption that came with the image is the label, and the other captions in the batch are the counter-examples</text>
 </svg><figcaption>Each row is an image, each column a caption. The diagonal holds the true pairs. InfoNCE asks the diagonal to win its row; SigLIP asks every cell for a yes or no.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -140,11 +141,11 @@
 <td>InfoNCE: cross-entropy along each row (and column); SigLIP: binary loss per cell</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Compute the InfoNCE loss for one image in a batch of three, once when the right caption clearly wins and once when it barely wins.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -179,7 +180,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$L_1 = -\log \frac{e^{s_{11}/\tau}}{\sum_{j} e^{s_{1j}/\tau}}$$</p>
 <p><strong>Steps</strong> (clear case)</p>
@@ -237,7 +238,7 @@
 <path class="dg-a" d="M500 102 H580"/><path class="dg-a" d="M500 182 H580"/>
 <text class="dg-note" x="20" y="280">không cần nhãn lớp: chú thích đi kèm ảnh chính là nhãn, các chú thích khác trong batch là phản ví dụ</text>
 </svg><figcaption>Mỗi hàng là một ảnh, mỗi cột là một chú thích. Đường chéo chứa các cặp đúng. InfoNCE đòi đường chéo thắng cả hàng của nó; SigLIP hỏi từng ô một câu có hoặc không.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -272,11 +273,11 @@
 <td>InfoNCE: cross-entropy theo mỗi hàng (và cột); SigLIP: loss nhị phân cho mỗi ô</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Tính loss InfoNCE cho một ảnh trong batch ba cặp, một lần khi chú thích đúng thắng rõ, một lần khi nó chỉ thắng sát nút.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -311,7 +312,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$L_1 = -\log \frac{e^{s_{11}/\tau}}{\sum_{j} e^{s_{1j}/\tau}}$$</p>
 <p><strong>Từng bước</strong> (trường hợp rõ)</p>

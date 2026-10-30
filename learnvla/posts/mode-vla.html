@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="MoDE-VLA: Mixture-of-Dexterous-Experts for Force and Touch">
 <meta property="og:description" content="π0 is blind to arm torque and fingertip touch, and mixing them into shared layers risks overwriting what it learned. MoDE-VLA gives them a separate sparse-MoE path that only adds residual corrections.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -111,7 +112,7 @@
 <rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (PPO hand skill)</text><text class="dg-s" x="530" y="442" text-anchor="middle">in-hand rotation</text>
 <path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="648" y="450">c&gt;0.5: overrides hand action</text>
 </svg><figcaption>Force and tactile tokens pass a sparse MoE and become residual corrections for arm and hand velocity; an RL skill can take over the hand.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -158,12 +159,12 @@
 <td>takes over if trigger $c &gt; 0.5$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: why copy the force token H times</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> One force reading gives one vector, but the action chunk has $H = 50$ future steps that may need different corrections (just touching vs holding). Copying the vector per step and adding a step encoding lets the router send each step to a different expert.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -204,7 +205,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$</p>
 <p><strong>Steps</strong></p>
@@ -217,7 +218,7 @@
 <p><strong>Why it matters.</strong> The paper motivates routing by contact regime; the copies are what make per-step routing possible. (The router here is a toy; the real one is learned.)</p>
 </div>
 <h2>4. Training and data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -246,10 +247,10 @@
 <td>$14 = 7 \times 2$ torques, $60 = 5 \times 6 \times 2$ tactile values, $63 = (7+22)\times 2 + 2 + 3$ DoF</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Average success over four tasks, 20 trials per task (Table II of the paper)." class="dg-natural" width="558" height="132" viewBox="0 0 558 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="98" y="23" text-anchor="end">π0 (baseline)</text><rect class="dg-bar" x="108" y="10" width="54" height="18"/><text class="dg-barval" x="170" y="23">15%</text><text class="dg-barlabel" x="98" y="53" text-anchor="end">w/o force</text><rect class="dg-bar" x="108" y="40" width="83" height="18"/><text class="dg-barval" x="198" y="53">23%</text><text class="dg-barlabel" x="98" y="83" text-anchor="end">w/o touch</text><rect class="dg-bar" x="108" y="70" width="94" height="18"/><text class="dg-barval" x="209" y="83">26%</text><text class="dg-barlabel" x="98" y="113" text-anchor="end">MoDE-VLA</text><rect class="dg-key" x="108" y="100" width="122" height="18"/><text class="dg-barval" x="238" y="113">34%</text></svg><figcaption>Average success over four tasks, 20 trials per task (Table II of the paper).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Task</th>
@@ -289,7 +290,7 @@
 <td>15%</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>Removing force costs the most (−11 points on average); removing touch costs 8 (the paper's figures). Without the IMCopilot RL skill, apple peeling falls from 30% to 0% success and from 73% to 25% ring completion.</li>
 <li>Data collection: operators with force and touch feedback succeed in 89% of in-hand trials (80/90), against 34% (31/90) for plain teleoperation.</li>
@@ -344,7 +345,7 @@
 <rect class="dg-ext" x="420" y="410" width="220" height="44"/><text class="dg-t" x="530" y="428" text-anchor="middle">IMCopilot (kỹ năng tay PPO)</text><text class="dg-s" x="530" y="442" text-anchor="middle">xoay trong lòng bàn tay</text>
 <path class="dg-ad" d="M640 432 H780 V394"/><text class="dg-l" x="648" y="450">c&gt;0,5: thay hành động bàn tay</text>
 </svg><figcaption>Token lực và xúc giác qua MoE thưa và thành hiệu chỉnh residual cho vận tốc cánh tay và bàn tay; một kỹ năng RL có thể tiếp quản bàn tay.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -391,12 +392,12 @@
 <td>tiếp quản nếu tín hiệu $c &gt; 0{,}5$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: vì sao nhân bản token lực H lần</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một lần đọc lực cho một vector, nhưng chunk hành động có $H = 50$ bước tương lai có thể cần hiệu chỉnh khác nhau (vừa chạm và đang giữ). Nhân bản vector cho mỗi bước và cộng mã hóa bước giúp router gửi mỗi bước tới một expert khác nhau.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -437,7 +438,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\tilde z^{(i)} = z_f + \text{pos}_i, \qquad e_i = \arg\max(\ell_A, \ell_B)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -450,7 +451,7 @@
 <p><strong>Ý nghĩa.</strong> Bài lý giải định tuyến bằng các chế độ tiếp xúc; việc nhân bản là thứ cho phép định tuyến theo từng bước. (Router ở đây là đồ chơi; router thật được học.)</p>
 </div>
 <h2>4. Huấn luyện và dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -479,10 +480,10 @@
 <td>$14 = 7 \times 2$ mô men, $60 = 5 \times 6 \times 2$ giá trị xúc giác, $63 = (7+22)\times 2 + 2 + 3$ bậc tự do</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Tỉ lệ thành công trung bình trên bốn tác vụ, 20 lượt mỗi tác vụ (Bảng II của paper)." class="dg-natural" width="558" height="132" viewBox="0 0 558 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="98" y="23" text-anchor="end">π0 (baseline)</text><rect class="dg-bar" x="108" y="10" width="54" height="18"/><text class="dg-barval" x="170" y="23">15%</text><text class="dg-barlabel" x="98" y="53" text-anchor="end">Bỏ lực</text><rect class="dg-bar" x="108" y="40" width="83" height="18"/><text class="dg-barval" x="198" y="53">23%</text><text class="dg-barlabel" x="98" y="83" text-anchor="end">Bỏ xúc giác</text><rect class="dg-bar" x="108" y="70" width="94" height="18"/><text class="dg-barval" x="209" y="83">26%</text><text class="dg-barlabel" x="98" y="113" text-anchor="end">MoDE-VLA</text><rect class="dg-key" x="108" y="100" width="122" height="18"/><text class="dg-barval" x="238" y="113">34%</text></svg><figcaption>Tỉ lệ thành công trung bình trên bốn tác vụ, 20 lượt mỗi tác vụ (Bảng II của paper).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tác vụ</th>
@@ -522,7 +523,7 @@
 <td>15%</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>Bỏ lực làm giảm nhiều nhất (−11 điểm trung bình); bỏ xúc giác giảm 8 điểm (số của paper). Bỏ kỹ năng RL IMCopilot thì gọt táo từ 30% thành công xuống 0%, và mức hoàn thành vòng gọt từ 73% xuống 25%.</li>
 <li>Thu dữ liệu: người vận hành có phản hồi lực và xúc giác thành công 89% các lượt thao tác trong tay (80/90), so với 34% (31/90) khi teleoperation thường.</li>

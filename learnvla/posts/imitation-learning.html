@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Imitation Learning: Copying an Expert, and Why the Copy Drifts">
 <meta property="og:description" content="Behavior cloning turns robot control into supervised learning, but the policy then meets states the expert never showed. DAgger fixes this by letting the expert label the policy's own states.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -101,7 +102,7 @@
 <path class="dg-a" d="M174 248 H230"/><path class="dg-a" d="M400 248 H456"/><path class="dg-a" d="M626 248 H682"/>
 <path class="dg-ad" d="M747 276 V304 H99 V276"/><text class="dg-l" x="420" y="298" text-anchor="middle">repeat</text>
 </svg><figcaption>Top: BC fits once and then drifts. Bottom: DAgger keeps adding the states the policy itself visits, labelled by the expert.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Term</th>
@@ -130,11 +131,11 @@
 <td>average per-step mistake of the policy on the expert's states</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How much worse than the expert is a cloned policy over a whole episode? The bound shows why BC drifts and DAgger does not.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -175,7 +176,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (worst-case bounds: the BC bound is from Ross and Bagnell, 2010; the DAgger bound from the DAgger paper, which also carries a constant $u$ for how much one mistake can cost, here taken as 1)</p>
 <p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim u\,T\varepsilon$$</p>
 <p><strong>Steps</strong></p>
@@ -230,7 +231,7 @@
 <path class="dg-a" d="M174 248 H230"/><path class="dg-a" d="M400 248 H456"/><path class="dg-a" d="M626 248 H682"/>
 <path class="dg-ad" d="M747 276 V304 H99 V276"/><text class="dg-l" x="420" y="298" text-anchor="middle">lặp lại</text>
 </svg><figcaption>Trên: BC khớp một lần rồi trôi. Dưới: DAgger liên tục thêm các trạng thái mà chính sách tự đi qua, do chuyên gia gán nhãn.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Thuật ngữ</th>
@@ -259,11 +260,11 @@
 <td>lỗi trung bình mỗi bước của chính sách trên trạng thái của chuyên gia</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Bản sao BC tệ hơn chuyên gia bao nhiêu trên cả episode? Cận dưới đây cho thấy vì sao BC trôi còn DAgger thì không.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -304,7 +305,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (cận trường hợp xấu nhất: cận của BC lấy từ Ross và Bagnell, 2010; cận của DAgger lấy từ paper DAgger, có thêm hằng số $u$ cho biết một lỗi có thể tốn bao nhiêu, ở đây lấy bằng 1)</p>
 <p>$$\Delta_{BC} \lesssim T^2\varepsilon \qquad \Delta_{DAgger} \lesssim u\,T\varepsilon$$</p>
 <p><strong>Các bước</strong></p>

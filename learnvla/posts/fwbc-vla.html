@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="FWBC-VLA: Force-aware Whole-Body Compensation for Loco-Manipulation">
 <meta property="og:description" content="Arm-centric force VLAs like ForceVLA correct the arm, but on a legged robot the door also pushes the body. FWBC-VLA estimates contact from joint torques, feeds it to the VLA and corrects the base: door opening 52% vs 12%.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -109,7 +110,7 @@
 <path class="dg-a" d="M770 366 H730"/>
 <text class="dg-h" x="20" y="416">arm and gripper actions go from the VLA to the WBC unchanged; only the base command is corrected.</text>
 </svg><figcaption>A 200 Hz sensorless estimator feeds force tokens to the 15 Hz VLA and a body load to a small compensation network; the corrected base command goes to the WBC.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -156,12 +157,12 @@
 <td>balance and tracking</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: separating contact from motion</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Without a force sensor, contact must be inferred: the measured joint torque minus the torque the robot's own motion explains. Two experts guess that free-motion torque and a gate blends them. Then the body correction is squashed so it can never exceed a safe limit.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -208,7 +209,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qquad \hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}, \qquad r = r_{max}\tanh(\bar r)$$</p>
 <p><strong>Steps</strong></p>
@@ -227,7 +228,7 @@
 <li>Estimator force error with no load: 0.15 N.</li>
 </ul>
 <h2>5. Training and data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -252,7 +253,7 @@
 <td>$\ell_1$ regression on the demonstrated base residual</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Caveats</h2>
 <ul>
 <li>Checked against the full text: the policy runs at 15 Hz and the estimator at 200 Hz. Chunk length, WBC internals and the compensation rate are not stated.</li>
@@ -301,7 +302,7 @@
 <path class="dg-a" d="M770 366 H730"/>
 <text class="dg-h" x="20" y="416">hành động tay và tay kẹp đi từ VLA tới WBC nguyên vẹn; chỉ lệnh đế được hiệu chỉnh.</text>
 </svg><figcaption>Bộ ước lượng 200 Hz không cảm biến cấp token lực cho VLA 15 Hz và tải thân cho một mạng bù nhỏ; lệnh thân đã sửa đi vào WBC.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -348,12 +349,12 @@
 <td>thăng bằng và bám lệnh</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: tách tiếp xúc khỏi chuyển động</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Không có cảm biến lực, tiếp xúc phải được suy ra: mô men khớp đo được trừ đi phần mà chuyển động của chính robot giải thích. Hai expert đoán phần mô men chuyển động tự do đó và một gate trộn chúng. Sau đó hiệu chỉnh thân bị nén để không bao giờ vượt giới hạn an toàn.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -400,7 +401,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\hat\tau_{free} = (1-\alpha_t)\hat\tau_{hist} + \alpha_t\hat\tau_{state}, \qquad \hat\tau_{ext} = \tau_{meas} - \hat\tau_{free}, \qquad r = r_{max}\tanh(\bar r)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -419,7 +420,7 @@
 <li>Sai số lực của bộ ước lượng khi không tải: 0,15 N.</li>
 </ul>
 <h2>5. Huấn luyện và dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -444,7 +445,7 @@
 <td>hồi quy $\ell_1$ trên residual thân của demo</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Đã đối chiếu với toàn văn: chính sách chạy 15 Hz và bộ ước lượng 200 Hz. Độ dài chunk, nội bộ WBC và tần số của đường bù không được nêu.</li>

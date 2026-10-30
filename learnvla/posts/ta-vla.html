@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TA-VLA: Joint Torque as a Force Sensor for a VLA">
 <meta property="og:description" content="Most force-aware policies need an external F/T sensor, and VLAs such as π0 know nothing about contact. TA-VLA reads torque from the motor currents and studies where and how to feed it to π0: one history token in the decoder, plus a future-torque prediction task.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -107,7 +108,7 @@
 <path class="dg-a" d="M820 225 H840 V188 H860"/><path class="dg-a" d="M820 257 H840 V278 H860"/>
 <text class="dg-note dg-red" x="440" y="402">✗ H separate tokens (one per frame): disturb the decoder's input pattern</text>
 </svg><figcaption>Torque history becomes one token for the action expert; the output layer predicts actions and future torques together.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -142,13 +143,13 @@
 <td>one widened linear layer, new weights start small</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Why torque carries contact.</strong> The arm's dynamics give $\tau_{measured} = \tau_{model} + J^\top F_{ext}$: what is left after the arm's own motion is explained is the external force mapped through the Jacobian. The paper's Section 3 states this; <a href="survey-force-sensing.html">Survey 2</a> works it by hand.</p>
 <figure class="diagram compact"><svg role="img" aria-label="Average success over the five contact-rich tasks, 20 trials each (my average of the paper's Table 5)." class="dg-natural" width="654" height="132" viewBox="0 0 654 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="194" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="204" y="10" width="50" height="18"/><text class="dg-barval" x="263" y="23">14%</text><text class="dg-barlabel" x="194" y="53" text-anchor="end">RDT</text><rect class="dg-bar" x="204" y="40" width="54" height="18"/><text class="dg-barval" x="266" y="53">15%</text><text class="dg-barlabel" x="194" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="204" y="70" width="83" height="18"/><text class="dg-barval" x="295" y="83">23%</text><text class="dg-barlabel" x="194" y="113" text-anchor="end">π0 + torque obs + objective</text><rect class="dg-key" x="204" y="100" width="310" height="18"/><text class="dg-barval" x="522" y="113">86%</text></svg><figcaption>Average success over the five contact-rich tasks, 20 trials each (my average of the paper's Table 5).</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> What does "one token for the whole history" change inside the decoder? Count the tokens the decoder sees. The paper argues that extra history tokens "disturb the decoder's input pattern", and its results agree.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -189,7 +190,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$d_{in} = n_f\, d_\tau \ (\text{one token}), \qquad N_1 = L_0 + 1, \qquad N_H = L_0 + n_f$$</p>
 <p><strong>Steps</strong></p>
@@ -202,7 +203,7 @@
 <p><strong>Why it matters.</strong> The decoder was pre-trained on 51 tokens; the one-token design barely changes what it sees. In the paper's Table 3 the one-token decoder scores 15/20 and 16/20 on button pushing and charger plugging; the one-token-per-frame decoder scores 9/20 and 7/20.</p>
 </div>
 <h2>3. Three design questions, three answers</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Question</th>
@@ -231,13 +232,13 @@
 <td>average 86% against 78% (observation only) and 64% (objective only)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li><strong>Why the decoder:</strong> the paper measures (HSIC) that torque is more aligned with joint-angle features, and that the decoder reacts more to small input changes than the encoder: adding noise hurts the decoder more.</li>
 <li><strong>The training objective:</strong> $L = L_{action} + \beta L_{torque}$, with $\beta = 1$ for the objective-only variant and $\beta = 0.1$ when combined with the observation token. The future torque has length $H = 5$.</li>
 </ul>
 <h2>4. Training and data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -266,7 +267,7 @@
 <td>ROKAE SR arm: 200 demonstrations, 50k steps, charger insertion with a retry after a failed attempt</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. What the paper reports</h2>
 <ul>
 <li><strong>Contact-rich tasks (successes of 20):</strong> π0 gets 5, 0, 0, 16, 2 on button pushing, charger plugging, USB plugging, socket unplugging, door handle turning; π0 + torque observation + objective gets 18, 17, 17, 19, 15.</li>
@@ -321,7 +322,7 @@
 <path class="dg-a" d="M820 225 H840 V188 H860"/><path class="dg-a" d="M820 257 H840 V278 H860"/>
 <text class="dg-note dg-red" x="440" y="402">✗ H token riêng (mỗi khung một token): làm nhiễu mẫu đầu vào của decoder</text>
 </svg><figcaption>Lịch sử mô-men thành một token cho action expert; lớp đầu ra dự đoán đồng thời hành động và mô-men tương lai.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -356,13 +357,13 @@
 <td>một lớp tuyến tính được mở rộng, trọng số mới khởi tạo nhỏ</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Vì sao mô-men chứa thông tin tiếp xúc.</strong> Động lực học của cánh tay cho $\tau_{measured} = \tau_{model} + J^\top F_{ext}$: phần còn lại sau khi trừ chuyển động của chính cánh tay là lực ngoài được chiếu qua Jacobian. Mục 3 của paper nêu điều này; <a href="survey-force-sensing.html">Survey 2</a> tính tay ví dụ.</p>
 <figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên năm tác vụ giàu tiếp xúc, 20 lượt mỗi tác vụ (trung bình mình tính từ Bảng 5 của paper)." class="dg-natural" width="696" height="132" viewBox="0 0 696 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="236" y="23" text-anchor="end">ACT</text><rect class="dg-bar" x="246" y="10" width="50" height="18"/><text class="dg-barval" x="304" y="23">14%</text><text class="dg-barlabel" x="236" y="53" text-anchor="end">RDT</text><rect class="dg-bar" x="246" y="40" width="54" height="18"/><text class="dg-barval" x="308" y="53">15%</text><text class="dg-barlabel" x="236" y="83" text-anchor="end">π0</text><rect class="dg-bar" x="246" y="70" width="83" height="18"/><text class="dg-barval" x="336" y="83">23%</text><text class="dg-barlabel" x="236" y="113" text-anchor="end">π0 + mô-men (quan sát + mục tiêu)</text><rect class="dg-key" x="246" y="100" width="310" height="18"/><text class="dg-barval" x="563" y="113">86%</text></svg><figcaption>Thành công trung bình trên năm tác vụ giàu tiếp xúc, 20 lượt mỗi tác vụ (trung bình mình tính từ Bảng 5 của paper).</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> "Một token cho cả lịch sử" thay đổi gì bên trong decoder? Hãy đếm số token mà decoder thấy. Paper lập luận rằng thêm token lịch sử "làm rối khuôn đầu vào của decoder", và kết quả khớp.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -403,7 +404,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$d_{in} = n_f\, d_\tau \ (\text{một token}), \qquad N_1 = L_0 + 1, \qquad N_H = L_0 + n_f$$</p>
 <p><strong>Từng bước</strong></p>
@@ -416,7 +417,7 @@
 <p><strong>Ý nghĩa.</strong> Decoder được tiền huấn luyện với 51 token; thiết kế một token gần như không đổi những gì nó thấy. Ở Bảng 3 của paper, decoder dùng một token đạt 15/20 và 16/20 ở bấm nút và cắm sạc; decoder dùng một token mỗi khung đạt 9/20 và 7/20.</p>
 </div>
 <h2>3. Ba câu hỏi thiết kế, ba câu trả lời</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Câu hỏi</th>
@@ -445,13 +446,13 @@
 <td>trung bình 86% so với 78% (chỉ quan sát) và 64% (chỉ mục tiêu)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li><strong>Vì sao decoder:</strong> paper đo (HSIC) thấy mô-men căn chỉnh với đặc trưng góc khớp hơn, và decoder nhạy với thay đổi nhỏ của đầu vào hơn encoder: thêm nhiễu làm decoder hỏng nhiều hơn.</li>
 <li><strong>Hàm mục tiêu huấn luyện:</strong> $L = L_{action} + \beta L_{torque}$, với $\beta = 1$ ở biến thể chỉ có mục tiêu và $\beta = 0{,}1$ khi kết hợp với token quan sát. Chuỗi mô-men tương lai dài $H = 5$.</li>
 </ul>
 <h2>4. Huấn luyện và dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -480,7 +481,7 @@
 <td>cánh tay ROKAE SR: 200 bản demo, 50k bước, cắm sạc có thử lại sau lần hỏng</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Paper báo cáo gì</h2>
 <ul>
 <li><strong>Tác vụ giàu tiếp xúc (số lần thành công trên 20):</strong> π0 đạt 5, 0, 0, 16, 2 ở bấm nút, cắm sạc, cắm USB, rút ổ cắm, xoay tay nắm cửa; π0 + token mô-men + mục tiêu đạt 18, 17, 17, 19, 15.</li>

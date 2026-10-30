@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Flow Matching: Straight Paths From Noise to Action">
 <meta property="og:description" content="Diffusion policies denoise along a curved path in many steps. Flow matching trains a network to predict a constant velocity along a straight line, so about ten Euler steps are enough. Worked by hand in one dimension.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <text class="dg-l" x="760" y="250" text-anchor="middle">velocity u = x1 − x0 (constant)</text>
 <text class="dg-note dg-green" x="735" y="296" text-anchor="middle">about 10 Euler steps (π0: δ = 0.1)</text>
 </svg><figcaption>Left: diffusion path is curved and needs many steps. Right: the flow path from noise $x_0$ to action $x_1$ is a straight line with constant velocity $x_1 - x_0$.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -133,11 +134,11 @@
 <td>follow the velocity in steps of $\delta$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> One training example and one sampling pass in one dimension. It shows the network's target and why a straight path needs few steps.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -184,7 +185,7 @@
 <td>$0.1$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>(Convention of Lipman et al.: $t = 0$ is noise. Some robot papers flip the direction; check each paper.)</p>
 <p><strong>Formula</strong></p>
 <p>$$x_t = (1-t)\,x_0 + t\,x_1, \qquad u = x_1 - x_0, \qquad L = \| v_\theta(x_t, t) - u \|^2$$</p>
@@ -236,7 +237,7 @@
 <text class="dg-l" x="760" y="250" text-anchor="middle">vận tốc u = x1 − x0 (hằng số)</text>
 <text class="dg-note dg-green" x="735" y="296" text-anchor="middle">khoảng 10 bước Euler (π0: δ = 0,1)</text>
 </svg><figcaption>Trái: đường của diffusion cong và cần nhiều bước. Phải: đường flow từ nhiễu $x_0$ đến hành động $x_1$ là đường thẳng với vận tốc không đổi $x_1 - x_0$.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -271,11 +272,11 @@
 <td>đi theo vận tốc từng bước $\delta$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một ví dụ huấn luyện và một lượt lấy mẫu trong một chiều. Cho thấy mục tiêu của mạng và vì sao đường thẳng cần ít bước.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -322,7 +323,7 @@
 <td>$0{,}1$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>(Quy ước của Lipman et al.: $t = 0$ là nhiễu. Một số paper robot đảo chiều; hãy kiểm tra từng paper.)</p>
 <p><strong>Công thức</strong></p>
 <p>$$x_t = (1-t)\,x_0 + t\,x_1, \qquad u = x_1 - x_0, \qquad L = \| v_\theta(x_t, t) - u \|^2$$</p>

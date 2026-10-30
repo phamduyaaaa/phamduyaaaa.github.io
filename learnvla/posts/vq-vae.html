@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="VQ-VAE: Learning a Codebook of Discrete Tokens">
 <meta property="og:description" content="Bins cut a signal on a fixed grid; a VQ-VAE learns where its codes should be. The encoder's output snaps to the nearest codebook vector, and a stop-gradient trick lets the whole thing train. Worked by hand, and where force and touch papers use it.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -95,7 +96,7 @@
 <path class="dg-a" d="M160 128 H200"/><path class="dg-a" d="M340 128 H390"/><path class="dg-a" d="M590 128 H640"/><path class="dg-a" d="M780 128 H820"/>
 <path class="dg-ad" d="M710 156 V230 H270 V156"/><text class="dg-l" x="300" y="250">backward pass: the gradient skips the snap and is copied straight to the encoder</text>
 </svg><figcaption>The encoder output snaps to the closest codebook vector, whose index is the token. In the backward pass the gradient jumps over the snap.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -130,13 +131,13 @@
 <td>the snap has no derivative, so pretend it is the identity</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Loss, with $\mathrm{sg}$ meaning "treat as a constant":</p>
 <p>$$L = \lVert x - \hat x\rVert^2 + \lVert \mathrm{sg}[z_e] - e_{k^*}\rVert^2 + \beta\,\lVert z_e - \mathrm{sg}[e_{k^*}]\rVert^2$$</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Quantise one encoder output and compute the two extra loss terms, to see which part of the model each one moves.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -177,7 +178,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Steps</strong></p>
 <ol>
 <li>Squared distances: to $e_1$: $0.1^2 + 0.2^2 = 0.05$; to $e_2$: $0.9^2 + 0.8^2 = 1.45$; to $e_3$: $0.4^2 + 0.3^2 = 0.25$.</li>
@@ -189,7 +190,7 @@
 <p><strong>Why it matters.</strong> The two stop-gradients split one distance into two jobs: the codebook learns where the data lives, and the encoder learns not to wander away from the codebook. The paper found results unchanged for $\beta$ from 0.1 to 2.0. A known failure is codebook collapse, where only a few codes are ever chosen; TaF-VLA adds a reconstruction term partly for this reason.</p>
 </div>
 <h2>3. Bins, VQ and FAST compared</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tokenizer</th>
@@ -218,7 +219,7 @@
 <td>force windows (TaF-VLA), touch (FACT, T-Rex), latent actions (GR00T N1)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The FAST paper notes a weakness of VQ for actions: reconstruction quality "can be sensitive to hyperparameter choices and structure", which is one reason it chose a fixed transform.</p>
 <p><strong>Carry forward:</strong> tokens and codes describe actions; generating a whole continuous chunk of actions is a different route. The first widely used one in robotics: <a href="diffusion-policy.html">diffusion policy</a>.</p>
 <p><strong>Check question:</strong> Same codebook, $z_e = (0.4, 0.6)$. Which code is chosen, and what is $L_{commit}$ with $\beta = 0.25$?</p>
@@ -249,7 +250,7 @@
 <path class="dg-a" d="M160 128 H200"/><path class="dg-a" d="M340 128 H390"/><path class="dg-a" d="M590 128 H640"/><path class="dg-a" d="M780 128 H820"/>
 <path class="dg-ad" d="M710 156 V230 H270 V156"/><text class="dg-l" x="300" y="250">lan truyền ngược: gradient bỏ qua bước bắt mã, chép thẳng về encoder</text>
 </svg><figcaption>Đầu ra encoder bị kéo về vector codebook gần nhất, chỉ số của vector đó là token. Ở lượt lan truyền ngược, gradient nhảy qua bước kéo về.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -284,13 +285,13 @@
 <td>bước kéo về không có đạo hàm, nên giả như nó là phép đồng nhất</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Hàm loss, với $\mathrm{sg}$ nghĩa là "coi như hằng số":</p>
 <p>$$L = \lVert x - \hat x\rVert^2 + \lVert \mathrm{sg}[z_e] - e_{k^*}\rVert^2 + \beta\,\lVert z_e - \mathrm{sg}[e_{k^*}]\rVert^2$$</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Lượng tử hóa một đầu ra encoder và tính hai số hạng loss phụ, để thấy mỗi số hạng di chuyển phần nào của mô hình.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -331,7 +332,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Từng bước</strong></p>
 <ol>
 <li>Bình phương khoảng cách: tới $e_1$: $0{,}1^2 + 0{,}2^2 = 0{,}05$; tới $e_2$: $0{,}9^2 + 0{,}8^2 = 1{,}45$; tới $e_3$: $0{,}4^2 + 0{,}3^2 = 0{,}25$.</li>
@@ -343,7 +344,7 @@
 <p><strong>Ý nghĩa.</strong> Hai phép dừng gradient chia một khoảng cách thành hai việc: codebook học xem dữ liệu nằm ở đâu, còn encoder học cách không đi lạc khỏi codebook. Paper thấy kết quả không đổi khi $\beta$ chạy từ 0,1 tới 2,0. Một lỗi đã biết là codebook sụp, khi chỉ vài mã được chọn; TaF-VLA thêm một số hạng dựng lại một phần vì lý do này.</p>
 </div>
 <h2>3. So sánh bin, VQ và FAST</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tokenizer</th>
@@ -372,7 +373,7 @@
 <td>cửa sổ lực (TaF-VLA), xúc giác (FACT, T-Rex), hành động ẩn (GR00T N1)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Paper FAST chỉ ra một điểm yếu của VQ với hành động: chất lượng dựng lại "có thể nhạy với các lựa chọn siêu tham số và cấu trúc", một lý do họ chọn một phép biến đổi cố định.</p>
 <p><strong>Mang theo:</strong> token và mã mô tả hành động; sinh cả một chunk hành động liên tục là một con đường khác. Con đường đầu tiên được dùng rộng rãi trong robot: <a href="diffusion-policy.html">diffusion policy</a>.</p>
 <p><strong>Câu kiểm tra:</strong> Cùng codebook, $z_e = (0{,}4;\ 0{,}6)$. Mã nào được chọn, và $L_{commit}$ bằng bao nhiêu với $\beta = 0{,}25$?</p>

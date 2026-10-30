@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TORL-VLA: Tactile-guided Online RL on Top of a Wrench-aware VLA">
 <meta property="og:description" content="ForceVLA and TA-VLA are fixed after offline training, and standard online refinement credits human rescues to the policy. TORL-VLA adds a small online actor-critic with an intervention-censored critic: 28/30 full tasks vs 15/30.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -117,7 +118,7 @@
 <rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: intervention-censored bootstrap</text>
 <path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">actor loss L_π</text>
 </svg><figcaption>Stage I trains a wrench-aware reference VLA; Stage II freezes it and trains stage-specific actor heads and two critics online.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -170,12 +171,12 @@
 <td>train the actor</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: who gets the credit?</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> After a human takes over and succeeds, an ordinary critic gives the <em>preceding policy chunk</em> a high value. The intervention-censored critic cuts that link. Computing both targets shows the difference.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -228,7 +229,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} + (1-d)(1-m^{int})\,\gamma^K Q_{next}$$</p>
 <p><strong>Steps</strong></p>
@@ -240,7 +241,7 @@
 <p><strong>Why it matters.</strong> The chunk that drove the robot towards unsafe contact <em>caused</em> the takeover. Only the censored target teaches the actor to avoid it. Human actions still stay in the replay buffer for imitation.</p>
 </div>
 <h2>4. Training</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Stage</th>
@@ -260,7 +261,7 @@
 <td>online rollouts, human interventions, binary success per subtask</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Caveats</h2>
 <ul>
 <li>Checked against the full text: policy observations are queried and logged at 20 Hz, and in stage II the wrench-aware VLA is frozen. Chunk length, the number of MoE experts and the tactile sample rate are not stated.</li>
@@ -316,7 +317,7 @@
 <rect class="dg-key" x="270" y="356" width="330" height="44"/><text class="dg-t" x="435" y="374" text-anchor="middle">Critics: Q_task + Q_ic</text><text class="dg-s" x="435" y="388" text-anchor="middle">Q_ic: bootstrap bỏ qua đoạn can thiệp</text>
 <path class="dg-a" d="M660 378 H600"/><path class="dg-a" d="M535 356 V320"/><text class="dg-l" x="545" y="342">loss actor L_π</text>
 </svg><figcaption>Giai đoạn I huấn luyện VLA tham chiếu nhận biết wrench; giai đoạn II đóng băng nó và huấn luyện online các đầu actor theo pha cùng hai critic.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -369,12 +370,12 @@
 <td>huấn luyện actor</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: ai được ghi công?</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Sau khi con người tiếp quản và thành công, một critic thông thường cho <em>chunk của chính sách ngay trước đó</em> giá trị cao. Critic kiểm duyệt theo can thiệp cắt mối liên hệ đó. Tính cả hai mục tiêu để thấy khác biệt.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -427,7 +428,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$y_{task} = R + (1-d)\,\gamma^K Q_{next}, \qquad y_{ic} = R - c_{int}\,m^{int} + (1-d)(1-m^{int})\,\gamma^K Q_{next}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -439,7 +440,7 @@
 <p><strong>Ý nghĩa.</strong> Chunk đẩy robot về phía tiếp xúc không an toàn chính là thứ <em>gây ra</em> việc tiếp quản. Chỉ mục tiêu kiểm duyệt mới dạy actor tránh nó. Hành động của con người vẫn nằm trong replay buffer để bắt chước.</p>
 </div>
 <h2>4. Huấn luyện</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Giai đoạn</th>
@@ -459,7 +460,7 @@
 <td>lượt chạy online, can thiệp của người, thành công nhị phân mỗi subtask</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Lưu ý</h2>
 <ul>
 <li>Đã đối chiếu với toàn văn: quan sát của chính sách được truy vấn và ghi ở 20 Hz, và ở giai đoạn II VLA nhận biết wrench được đóng băng. Độ dài chunk, số expert của MoE và tần số lấy mẫu xúc giác không được nêu.</li>

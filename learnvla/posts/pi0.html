@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="π0: A VLM With a Flow-Matching Action Expert">
 <meta property="og:description" content="Earlier VLAs write actions as text-like tokens one at a time, which struggles with dexterous, high-frequency control. π0 attaches a 300M flow-matching action expert to a 3B VLM and outputs a 50-step action chunk in 10 integration steps.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -106,7 +107,7 @@
 <rect class="dg-box" x="800" y="130" width="160" height="60"/><text class="dg-t" x="880" y="156" text-anchor="middle">Action chunk</text><text class="dg-s" x="880" y="174" text-anchor="middle">50 steps, up to 50 Hz</text>
 <path class="dg-a" d="M900 262 V190"/>
 </svg><figcaption>Image and language tokens go through the VLM. Robot-specific tokens (state and noisy actions) use a separate set of weights, the action expert, and attend to the VLM's tokens. The expert is run 10 times to turn noise into an action chunk.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -147,12 +148,12 @@
 <td>10 steps, $\delta = 0.1$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Parameters in billions. π0-small is the paper's baseline without VLM initialisation." class="dg-natural" width="585" height="132" viewBox="0 0 585 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">VLM backbone</text><rect class="dg-bar" x="135" y="10" width="285" height="18"/><text class="dg-barval" x="428" y="23">3 B</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">Action expert</text><rect class="dg-bar" x="135" y="40" width="28" height="18"/><text class="dg-barval" x="172" y="53">0.3 B</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">π0 total</text><rect class="dg-key" x="135" y="70" width="313" height="18"/><text class="dg-barval" x="456" y="83">3.3 B</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">π0-small (no VLM)</text><rect class="dg-bar" x="135" y="100" width="45" height="18"/><text class="dg-barval" x="188" y="113">0.47 B</text></svg><figcaption>Parameters in billions. π0-small is the paper's baseline without VLM initialisation.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How many <em>sequential</em> network passes does one action chunk need with text-like tokens, versus with π0's flow expert? This is the reason for the new head.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -193,7 +194,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$P_{AR} = H \times d, \qquad P_{flow} = N$$</p>
 <p><strong>Steps</strong></p>
@@ -264,7 +265,7 @@
 <rect class="dg-box" x="800" y="130" width="160" height="60"/><text class="dg-t" x="880" y="156" text-anchor="middle">Chunk hành động</text><text class="dg-s" x="880" y="174" text-anchor="middle">50 bước, tới 50 Hz</text>
 <path class="dg-a" d="M900 262 V190"/>
 </svg><figcaption>Token ảnh và ngôn ngữ đi qua VLM. Token riêng của robot (trạng thái và hành động nhiễu) dùng một bộ trọng số riêng, action expert, và chú ý đến token của VLM. Expert chạy 10 lần để biến nhiễu thành đoạn hành động.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -305,12 +306,12 @@
 <td>10 bước, $\delta = 0{,}1$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Số tham số, đơn vị tỉ. π0-small là baseline của paper, không khởi tạo từ VLM." class="dg-natural" width="606" height="132" viewBox="0 0 606 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="146" y="23" text-anchor="end">Backbone VLM</text><rect class="dg-bar" x="156" y="10" width="285" height="18"/><text class="dg-barval" x="449" y="23">3 B</text><text class="dg-barlabel" x="146" y="53" text-anchor="end">Action expert</text><rect class="dg-bar" x="156" y="40" width="28" height="18"/><text class="dg-barval" x="192" y="53">0,3 B</text><text class="dg-barlabel" x="146" y="83" text-anchor="end">π0 tổng</text><rect class="dg-key" x="156" y="70" width="313" height="18"/><text class="dg-barval" x="477" y="83">3,3 B</text><text class="dg-barlabel" x="146" y="113" text-anchor="end">π0-small (không VLM)</text><rect class="dg-bar" x="156" y="100" width="45" height="18"/><text class="dg-barval" x="209" y="113">0,47 B</text></svg><figcaption>Số tham số, đơn vị tỉ. π0-small là baseline của paper, không khởi tạo từ VLM.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một đoạn hành động cần bao nhiêu lượt qua mạng <em>tuần tự</em> với token giống chữ, so với flow expert của π0? Đây là lý do của đầu ra mới.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -351,7 +352,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$P_{AR} = H \times d, \qquad P_{flow} = N$$</p>
 <p><strong>Các bước</strong></p>

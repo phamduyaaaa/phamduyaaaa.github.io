@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Residual Policy: Learning Only the Correction">
 <meta property="og:description" content="A hand-tuned controller or a VLA is good but not good enough at contact. Instead of replacing it, add a small learned correction on top, bounded so the base stays in charge. Worked: a bounded residual step, and where TER-DAgger, FIRe and MoDE-VLA use the idea.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <path class="dg-a" d="M752 128 H800"/>
 <text class="dg-l" x="230" y="252">residual starts at zero, so training starts from the base policy's behaviour</text>
 </svg><figcaption>The base policy is kept (often frozen). A small residual policy outputs a correction that is squashed into a fixed range and added to the base action.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -133,11 +134,11 @@
 <td>FIRe: PPO in simulation; TER-DAgger: human-corrected demonstrations</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> One control step: the base proposes a move, the residual network outputs a raw value, the bound squashes it. It shows why a wild residual output cannot take over.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -172,7 +173,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$a_{res} = b\,\tanh(u), \qquad a = a_{base} + a_{res}$$</p>
 <p><strong>Steps</strong></p>
@@ -223,7 +224,7 @@
 <path class="dg-a" d="M752 128 H800"/>
 <text class="dg-l" x="230" y="252">residual bắt đầu từ 0, nên huấn luyện xuất phát từ hành vi của policy gốc</text>
 </svg><figcaption>Chính sách nền được giữ lại (thường đóng băng). Một chính sách residual nhỏ xuất ra phần hiệu chỉnh, được nén vào một khoảng cố định rồi cộng vào hành động nền.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ phận</th>
@@ -258,11 +259,11 @@
 <td>FIRe: PPO trong mô phỏng; TER-DAgger: demo được người hiệu chỉnh</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một bước điều khiển: phần nền đề xuất một bước dịch, mạng residual xuất một giá trị thô, giới hạn nén nó lại. Phép tính cho thấy vì sao một đầu ra residual hoang dã không thể chiếm quyền.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -297,7 +298,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$a_{res} = b\,\tanh(u), \qquad a = a_{base} + a_{res}$$</p>
 <p><strong>Từng bước</strong></p>

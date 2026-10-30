@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="LingBot-VLA 2.0: 60,000 Hours, Whole-Body Actions and Predicted Futures">
 <meta property="og:description" content="LingBot-VLA 2.0 (Robbyant / Ant Group) pre-trains on ~60,000 hours (50,000 h of robot data from 20 configurations plus 10,000 h of human egocentric video), adds head, waist, base and hand degrees of freedom, a sparse MoE action expert, and distils depth and video-future features into the VLM. On nine GM-100 tasks it reaches 66.2 progress / 34.4% success, ahead of π0.5 (59.1 / 32.2).">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -94,7 +95,7 @@
 <path class="dg-a" d="M240 94 H290"/><path class="dg-a" d="M240 210 H290"/><path class="dg-a" d="M520 152 H570"/><path class="dg-a" d="M770 152 H810"/>
 <text class="dg-l" x="20" y="296">the future query is trained to match the teachers' features of the frame one chunk ahead</text>
 </svg><figcaption>Two queries appended to the VLM tokens are trained to match a depth teacher and a video teacher, for the current frame and the frame one chunk ahead; the action expert uses sparse MoE layers.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -127,12 +128,12 @@
 <td>built on DINOv3 with causal temporal attention: a step's feature depends only on current and past frames</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two connections to the foundation posts: the MoE balancing replaces the auxiliary loss of <a href="moe.html">MoE</a> with a bias that is nudged after each step towards under-used experts, and the future query is a form of <a href="distillation.html">distillation</a> where the teachers are perception models, not a bigger policy.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> On GM-100 (Cobot Magic) LingBot-VLA 2.0 averages 34.4% success and π0.5 32.2%. Is a 2.2-point gap over nine tasks meaningful? (Assumption: 10 trials per task, which fits the table, where every success value is a multiple of 10; the paper does not state it for this table.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -161,7 +162,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (Wilson)</p>
 <p>$$\frac{\hat p + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
 <p><strong>Steps</strong></p>
@@ -174,7 +175,7 @@
 <p><strong>Why it matters.</strong> Per task the picture is mixed: π0.5 is far ahead on block sorting (60% vs 0%) and tool packing (30% vs 0%), LingBot-VLA 2.0 far ahead on retrieving a keychain (100% vs 20%). The progress score, which counts sub-steps, separates them more (66.2 vs 59.1), and on the second robot (Galaxea R1 Pro) the gap is larger. Read the average together with the per-task table.</p>
 </div>
 <h2>3. Results</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>GM-100, 9 tasks, average (Table 5)</th>
@@ -200,8 +201,8 @@
 <td>34.6 / 15.6</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Long-horizon mobile (15 trials per setting)</th>
@@ -231,7 +232,7 @@
 <td>62.5 / 33.3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>The paper itself points out that several tasks show partial progress but fail at the final placement or release step, and that the gap between the two robots shows embodiment-specific factors (kinematics, cameras, action-space alignment) are still hard.</li>
 <li>Under matched <em>active</em> parameters, the sparse MoE model reached lower training loss and lower validation action error on GM-100 than the dense one.</li>
@@ -271,7 +272,7 @@
 <path class="dg-a" d="M240 94 H290"/><path class="dg-a" d="M240 210 H290"/><path class="dg-a" d="M520 152 H570"/><path class="dg-a" d="M770 152 H810"/>
 <text class="dg-l" x="20" y="296">query tương lai được học để khớp đặc trưng của các thầy ở khung sau một chunk</text>
 </svg><figcaption>Hai query nối thêm vào token của VLM được học để khớp với một mô hình độ sâu và một mô hình video, cho khung hiện tại và khung sau một chunk; action expert dùng các lớp MoE thưa.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phần</th>
@@ -304,12 +305,12 @@
 <td>xây trên DINOv3 với attention thời gian nhân quả: đặc trưng ở một bước chỉ phụ thuộc khung hiện tại và quá khứ</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Hai mối nối với các bài nền tảng: cách cân bằng MoE thay loss phụ của <a href="moe.html">MoE</a> bằng một bias được đẩy dần sau mỗi bước về phía expert ít được dùng, và query tương lai là một dạng <a href="distillation.html">chưng cất</a> trong đó thầy là mô hình tri giác, không phải một policy lớn hơn.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Trên GM-100 (Cobot Magic) LingBot-VLA 2.0 trung bình 34,4% thành công, π0.5 32,2%. Chênh 2,2 điểm trên chín tác vụ có ý nghĩa không? (Giả định: 10 lượt mỗi tác vụ, khớp với bảng vì mọi giá trị thành công đều là bội của 10; paper không nêu rõ cho bảng này.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -338,7 +339,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (Wilson)</p>
 <p>$$\frac{\hat p + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
 <p><strong>Các bước</strong></p>
@@ -351,7 +352,7 @@
 <p><strong>Vì sao quan trọng.</strong> Theo từng tác vụ thì bức tranh lẫn lộn: π0.5 hơn xa ở xếp khối (60% so với 0%) và đóng gói dụng cụ (30% so với 0%), LingBot-VLA 2.0 hơn xa ở lấy chùm chìa khóa (100% so với 20%). Điểm tiến độ, đếm từng bước con, tách hai mô hình rõ hơn (66,2 so với 59,1), và trên robot thứ hai (Galaxea R1 Pro) khoảng cách lớn hơn. Hãy đọc con số trung bình cùng với bảng từng tác vụ.</p>
 </div>
 <h2>3. Kết quả</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>GM-100, 9 tác vụ, trung bình (Bảng 5)</th>
@@ -377,8 +378,8 @@
 <td>34,6 / 15,6</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Di động tầm dài (15 lượt mỗi chế độ)</th>
@@ -408,7 +409,7 @@
 <td>62,5 / 33,3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>Chính paper chỉ ra nhiều tác vụ có tiến triển từng phần nhưng hỏng ở bước đặt hoặc thả cuối cùng, và khoảng cách giữa hai robot cho thấy các yếu tố riêng của từng thân (động học, camera, khớp không gian hành động) vẫn còn khó.</li>
 <li>Với số tham số <em>hoạt động</em> bằng nhau, mô hình MoE thưa đạt loss huấn luyện thấp hơn và sai số hành động kiểm định trên GM-100 thấp hơn mô hình dày đặc.</li>

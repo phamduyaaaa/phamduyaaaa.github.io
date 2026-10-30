@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Transformer: Attention Without Recurrence">
 <meta property="og:description" content="RNNs read tokens one by one, so they cannot run in parallel and distant tokens are many steps apart. The Transformer stacks self-attention and feed-forward blocks so every token sees every other in one hop.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -97,7 +98,7 @@
 <rect class="dg-box" x="760" y="140" width="190" height="76"/><text class="dg-t" x="855" y="168" text-anchor="middle">Why it won</text><text class="dg-s" x="855" y="186" text-anchor="middle">all tokens in parallel,</text><text class="dg-s" x="855" y="202" text-anchor="middle">any two tokens 1 hop apart</text>
 <path class="dg-ad" d="M570 258 H640 V178 H760"/>
 </svg><figcaption>One block = multi-head self-attention, then a per-token feed-forward network. Each is wrapped by "add the input back" (residual) and layer norm. The stack repeats this N times.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -132,7 +133,7 @@
 <td>same small MLP applied to each token</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The base model in the paper: $d = 512$, 8 heads, feed-forward width 2048, 6 layers.</p>
 <p><strong>Why each piece is there, from first principles.</strong></p>
 <ul>
@@ -144,7 +145,7 @@
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Why is self-attention better than a recurrent layer for long sequences with fast hardware? Compare the cost of a layer and the path between positions (the paper's Table 1).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -179,7 +180,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (per layer, up to constants)</p>
 <p>$$C_{attn} = n^2 d \ (\text{sequential steps } O(1)) \qquad C_{rnn} = n\, d^2 \ (\text{sequential steps } O(n))$$</p>
 <p><strong>Steps</strong></p>
@@ -227,7 +228,7 @@
 <rect class="dg-box" x="760" y="140" width="190" height="76"/><text class="dg-t" x="855" y="168" text-anchor="middle">Vì sao thắng</text><text class="dg-s" x="855" y="186" text-anchor="middle">mọi token song song,</text><text class="dg-s" x="855" y="202" text-anchor="middle">2 token bất kỳ cách 1 bước</text>
 <path class="dg-ad" d="M570 258 H640 V178 H760"/>
 </svg><figcaption>Một khối = self-attention nhiều đầu, rồi mạng feed-forward cho từng token. Mỗi phần được bọc bởi "cộng đầu vào trở lại" (residual) và layer norm. Chồng này lặp N lần.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -262,7 +263,7 @@
 <td>cùng một MLP nhỏ áp cho từng token</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Mô hình base trong paper: $d = 512$, 8 đầu, độ rộng feed-forward 2048, 6 lớp.</p>
 <p><strong>Vì sao mỗi mảnh có mặt, nghĩ từ gốc.</strong></p>
 <ul>
@@ -274,7 +275,7 @@
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Vì sao self-attention tốt hơn lớp hồi quy với chuỗi dài trên phần cứng nhanh? So chi phí một lớp và đường đi giữa các vị trí (Bảng 1 của paper).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -309,7 +310,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (mỗi lớp, sai khác hằng số)</p>
 <p>$$C_{attn} = n^2 d \ (\text{số bước tuần tự } O(1)) \qquad C_{rnn} = n\, d^2 \ (\text{số bước tuần tự } O(n))$$</p>
 <p><strong>Các bước</strong></p>

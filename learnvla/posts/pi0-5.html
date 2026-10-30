@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="π0.5: Co-training So a Robot Works in Homes It Has Never Seen">
 <meta property="og:description" content="π0.5 trains one model on robot data from many platforms, high-level subtask labels and web data, first as discrete FAST tokens, then with a flow-matching action expert. 97.6% of its pre-training examples are not home mobile manipulation, yet it cleans kitchens and bedrooms in new homes.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <path class="dg-a" d="M450 155 H500"/><path class="dg-a" d="M730 120 H755 V95 H780"/><path class="dg-a" d="M870 130 V160"/>
 <text class="dg-l" x="20" y="300">the same model writes the subtask in text, then generates the actions for that subtask</text>
 </svg><figcaption>Five kinds of data go into a token-only pre-training; post-training adds the flow expert. At run time the model writes a subtask, then acts on it.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Data (abbr.)</th>
@@ -138,8 +139,8 @@
 <td>post</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Stage</th>
@@ -164,12 +165,12 @@
 <td>50 Hz commands</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Robot details: two mobile platforms, each with four cameras, two 6-DoF arms with parallel grippers, a mobile base and a torso lift; 18–19 DoF; targets tracked by simple PD controllers, no extra planning. State is discretised and given as text tokens.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> In post-training the token loss and the flow loss are added with weight $\alpha = 10$. Why so large? See what share of the gradient signal the action expert gets with and without it. (The loss values are illustrative.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -204,7 +205,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$L = L_{tok} + \alpha L_{flow}, \qquad s = \frac{\alpha L_{flow}}{L}$$</p>
 <p><strong>Steps</strong></p>
@@ -262,7 +263,7 @@
 <path class="dg-a" d="M450 155 H500"/><path class="dg-a" d="M730 120 H755 V95 H780"/><path class="dg-a" d="M870 130 V160"/>
 <text class="dg-l" x="20" y="300">cùng một mô hình viết tác vụ con bằng chữ, rồi sinh hành động cho tác vụ con đó</text>
 </svg><figcaption>Năm loại dữ liệu vào giai đoạn tiền huấn luyện chỉ dùng token; hậu huấn luyện thêm flow expert. Khi chạy, mô hình viết tác vụ con rồi hành động theo nó.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Dữ liệu (viết tắt)</th>
@@ -302,8 +303,8 @@
 <td>hậu</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Giai đoạn</th>
@@ -328,12 +329,12 @@
 <td>lệnh 50 Hz</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Chi tiết robot: hai nền tảng di động, mỗi cái có bốn camera, hai tay 6 bậc với tay kẹp song song, đế di động và cơ cấu nâng thân; 18–19 bậc; đích được bám bằng bộ điều khiển PD đơn giản, không lập kế hoạch thêm. Trạng thái được rời rạc hóa và đưa vào như token chữ.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Ở hậu huấn luyện, loss token và loss flow được cộng với trọng số $\alpha = 10$. Vì sao lớn vậy? Xem action expert nhận được bao nhiêu phần tín hiệu khi có và không có trọng số này. (Giá trị loss là minh họa.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -368,7 +369,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$L = L_{tok} + \alpha L_{flow}, \qquad s = \frac{\alpha L_{flow}}{L}$$</p>
 <p><strong>Các bước</strong></p>

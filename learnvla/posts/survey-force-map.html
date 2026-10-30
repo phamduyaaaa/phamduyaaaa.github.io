@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Survey 1: Where Does Force Enter a VLA?">
 <meta property="og:description" content="Start here. A map of 33 force, torque and touch VLA methods (2025-2026), sorted by the one choice every one of them has to make: where the contact signal joins the pipeline. With a reading order, a one-page matrix, and references.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -100,7 +101,7 @@
 <rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Deep</text>
 <text class="dg-s" x="676" y="256">Basics, π0, Survey 1,</text><text class="dg-s" x="676" y="272">then the paper notes of the</text><text class="dg-s" x="676" y="288">entry point you chose.</text><text class="dg-s dg-mute" x="676" y="324">Goal: reproduce or extend.</text>
 </svg><figcaption>Read basics once, then π0, then this map. Surveys 2 and 3 zoom in on two questions the map raises. Paper notes come last, picked by the entry point you care about.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Route</th>
@@ -129,14 +130,14 @@
 <td>enough to reproduce or extend a method</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>1. Why one force number gets ignored</h2>
 <p>Picture a meeting of 789 people where one person has something important to say but speaks at the same volume as everyone else. Nobody notices. A transformer's attention works the same way: every token competes for attention, and one force token competes with hundreds of image tokens.</p>
 <figure class="diagram flow"><svg role="img" aria-label="The pattern behind almost every design in this survey." class="dg-natural" width="724" height="192" viewBox="0 0 724 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Naive</text><text class="dg-lab dg-red" x="14" y="46">force in the crowd</text><rect class="dg-box" x="153" y="15" width="224" height="38"/><text class="dg-t" x="265" y="38" text-anchor="middle">768 image + 20 text tokens</text><path class="dg-a" d="M377 34 H409"/><rect class="dg-badbox" x="411" y="15" width="140" height="38"/><text class="dg-t" x="481" y="38" text-anchor="middle">+ 1 force token</text><path class="dg-a" d="M551 34 H583"/><rect class="dg-box" x="585" y="15" width="125" height="38"/><text class="dg-t" x="647" y="38" text-anchor="middle">VLM attention</text><text class="dg-note dg-red" x="153.2" y="72">✗ gets about 0.1% of attention</text><text class="dg-lab dg-green" x="14" y="129">Most methods</text><rect class="dg-box" x="153" y="106" width="96" height="38"/><text class="dg-t" x="201" y="129" text-anchor="middle">force</text><path class="dg-a" d="M249 125 H281"/><rect class="dg-key" x="283" y="98" width="231" height="54"/><text class="dg-t" x="399" y="121" text-anchor="middle">Its own path</text><text class="dg-s" x="399" y="137" text-anchor="middle">MoE, adapter, bypass, controller</text><path class="dg-a" d="M514 125 H546"/><rect class="dg-box" x="548" y="106" width="96" height="38"/><text class="dg-t" x="596" y="129" text-anchor="middle">Action</text><text class="dg-note dg-green" x="153.2" y="170">✓ force cannot be drowned out</text></svg><figcaption>The pattern behind almost every design in this survey.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How much attention does one force token get, and how much louder must it be to matter? The answer explains why so many methods build a separate path for force.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -165,7 +166,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (softmax, every other score equal)</p>
 <p>$$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$</p>
 <p><strong>Steps</strong></p>
@@ -221,7 +222,7 @@
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Predicted</text><text class="dg-s" x="890" y="184" text-anchor="middle">future touch/force</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (torque)</text><text class="dg-s" x="825" y="313">TER-DAgger (force)</text>
 </svg><figcaption>The same six entry points with the methods that use each. DAM-VLA (*) treats force/torque as its high-rate modality.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -268,7 +269,7 @@
 <td>extra training target, world model</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="How many of the 33 methods use each entry point (many use two, so the total is above 33)." class="dg-natural" width="585" height="192" viewBox="0 0 585 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">① VLM input</text><rect class="dg-bar" x="135" y="10" width="169" height="18"/><text class="dg-barval" x="312" y="23">7</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">② After the VLM</text><rect class="dg-bar" x="135" y="40" width="169" height="18"/><text class="dg-barval" x="312" y="53">7</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="135" y="70" width="169" height="18"/><text class="dg-barval" x="312" y="83">7</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">④ Outside the VLA</text><rect class="dg-key" x="135" y="100" width="313" height="18"/><text class="dg-barval" x="456" y="113">13</text><text class="dg-barlabel" x="125" y="143" text-anchor="end">⑤ Training only</text><rect class="dg-bar" x="135" y="130" width="120" height="18"/><text class="dg-barval" x="264" y="143">5</text><text class="dg-barlabel" x="125" y="173" text-anchor="end">⑥ Predicted</text><rect class="dg-bar" x="135" y="160" width="193" height="18"/><text class="dg-barval" x="336" y="173">8</text></svg><figcaption>How many of the 33 methods use each entry point (many use two, so the total is above 33).</figcaption></figure>
 <h2>3. All 33 on one page</h2>
 <figure class="diagram"><svg role="img" aria-label="One row per method, ordered by arXiv date; a dot means the method uses that entry point. Filled yellow dots mark methods that have a full note on this site. Look down a column to see what a design family looks like; look along a row to see how a method combines choices." viewBox="0 0 980 846" xmlns="http://www.w3.org/2000/svg">
@@ -459,7 +460,7 @@
 </svg><figcaption>One row per method, ordered by arXiv date; a dot means the method uses that entry point. Filled yellow dots mark methods that have a full note on this site. Look down a column to see what a design family looks like; look along a row to see how a method combines choices.</figcaption></figure>
 <figure class="diagram compact"><svg role="img" aria-label="New methods per quarter (arXiv first submission, from the 33 below). My search found none for Q4 2025; the surge in Q3 2026 may partly reflect how recent the search was." class="dg-natural" width="516" height="192" viewBox="0 0 516 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Q2 2025</text><rect class="dg-bar" x="66" y="10" width="48" height="18"/><text class="dg-barval" x="122" y="23">2</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">Q3 2025</text><rect class="dg-bar" x="66" y="40" width="120" height="18"/><text class="dg-barval" x="195" y="53">5</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Q4 2025</text><rect class="dg-bar" x="66" y="70" width="2" height="18"/><text class="dg-barval" x="76" y="83">0</text><text class="dg-barlabel" x="56" y="113" text-anchor="end">Q1 2026</text><rect class="dg-bar" x="66" y="100" width="217" height="18"/><text class="dg-barval" x="291" y="113">9</text><text class="dg-barlabel" x="56" y="143" text-anchor="end">Q2 2026</text><rect class="dg-bar" x="66" y="130" width="96" height="18"/><text class="dg-barval" x="171" y="143">4</text><text class="dg-barlabel" x="56" y="173" text-anchor="end">Q3 2026</text><rect class="dg-key" x="66" y="160" width="313" height="18"/><text class="dg-barval" x="387" y="173">13</text></svg><figcaption>New methods per quarter (arXiv first submission, from the 33 below). My search found none for Q4 2025; the surge in Q3 2026 may partly reflect how recent the search was.</figcaption></figure>
 <h2>4. Five patterns that keep showing up</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Pattern</th>
@@ -500,7 +501,7 @@
 <td>ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Which note should I read? A scenario map</h2>
 <p>Pick the row that looks most like your robot and your task. ● means start there, ○ means read it next.</p>
 <figure class="diagram"><svg role="img" aria-label="Ten concrete situations against the posts on this site. Each situation is explained in the table below." viewBox="0 0 980 464" xmlns="http://www.w3.org/2000/svg">
@@ -577,7 +578,7 @@
 <circle cx="30" cy="444" r="8" class="dg-key"/><text class="dg-s" x="46" y="448">start here</text>
 <circle cx="170" cy="444" r="7" class="dg-box"/><text class="dg-s" x="186" y="448">read next</text>
 </svg><figcaption>Ten concrete situations against the posts on this site. Each situation is explained in the table below.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Scenario: a concrete picture</th>
@@ -648,11 +649,11 @@
 <td><a href="ter-dagger.html">TER-DAgger</a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two cautions. The numbers in the "start with" column come from different papers, with different tasks and robots, so they show the size of a gain <em>inside</em> each paper, not which method is best (<a href="survey-force-output.html">Survey 3</a> shows ForceVLA alone scoring 12% to 60.5% depending on who ran it). And if no row fits, go to <a href="survey-force-sensing.html">Survey 2</a> to find your sensor, then <a href="survey-force-output.html">Survey 3</a> to choose what the policy should output.</p>
 <h2>6. The full table</h2>
 <p>"Read": <strong>full</strong> = detailed note on this site, checked against the full text; <strong>abstract+</strong> = abstract plus a targeted look at the full text for the fields marked n/s; <strong>abstract</strong> = classified from the arXiv abstract only. n/s = not stated in what I read. The number in the first column is the reference number at the end of this page.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -997,7 +998,7 @@
 <td>abstract</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>7. Caveats</h2>
 <ul>
 <li>13 of the 33 rows come from abstracts only and 7 from abstracts plus a targeted look at the full text (only for fields that were unclear); "n/s" means I could not tell, not that the paper lacks it.</li>
@@ -1082,7 +1083,7 @@
 <rect class="dg-grp" x="660" y="208" width="300" height="136"/><text class="dg-t" x="676" y="232">Đọc sâu</text>
 <text class="dg-s" x="676" y="256">Nền tảng, π0, Survey 1,</text><text class="dg-s" x="676" y="272">rồi các bài paper của</text><text class="dg-s" x="676" y="288">điểm đi vào bạn chọn.</text><text class="dg-s dg-mute" x="676" y="324">Mục tiêu: tái hiện hoặc mở rộng.</text>
 </svg><figcaption>Đọc phần cơ bản một lần, rồi đến π0, rồi đến bản đồ này. Survey 2 và 3 phóng to vào hai câu hỏi mà bản đồ gợi ra. Các bài về từng paper để cuối, chọn theo chỗ lực đi vào mà bạn quan tâm.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Lộ trình</th>
@@ -1111,14 +1112,14 @@
 <td>đủ để tái hiện hoặc mở rộng một phương pháp</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>1. Vì sao một con số lực bị bỏ qua</h2>
 <p>Hình dung một cuộc họp 789 người, trong đó một người có điều rất quan trọng cần nói nhưng chỉ nói to bằng mọi người khác. Chẳng ai để ý. Attention của transformer cũng vậy: mọi token tranh nhau sự chú ý, và một token lực phải tranh với hàng trăm token ảnh.</p>
 <figure class="diagram flow"><svg role="img" aria-label="Đây là khuôn mẫu đứng sau gần như mọi thiết kế trong survey này." class="dg-natural" width="780" height="192" viewBox="0 0 780 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="32">Cách ngây thơ</text><text class="dg-lab dg-red" x="14" y="46">lực lẫn trong đám đông</text><rect class="dg-box" x="179" y="15" width="239" height="38"/><text class="dg-t" x="298" y="38" text-anchor="middle">768 token ảnh + 20 token chữ</text><path class="dg-a" d="M418 34 H450"/><rect class="dg-badbox" x="452" y="15" width="125" height="38"/><text class="dg-t" x="514" y="38" text-anchor="middle">+ 1 token lực</text><path class="dg-a" d="M576 34 H608"/><rect class="dg-box" x="610" y="15" width="155" height="38"/><text class="dg-t" x="688" y="38" text-anchor="middle">Attention của VLM</text><text class="dg-note dg-red" x="178.8" y="72">✗ chỉ nhận khoảng 0,1% attention</text><text class="dg-lab dg-green" x="14" y="129">Đa số phương pháp</text><rect class="dg-box" x="179" y="106" width="96" height="38"/><text class="dg-t" x="227" y="129" text-anchor="middle">lực</text><path class="dg-a" d="M275 125 H307"/><rect class="dg-key" x="309" y="98" width="250" height="54"/><text class="dg-t" x="434" y="121" text-anchor="middle">Đường đi riêng</text><text class="dg-s" x="434" y="137" text-anchor="middle">MoE, adapter, bypass, bộ điều khiển</text><path class="dg-a" d="M559 125 H591"/><rect class="dg-box" x="593" y="106" width="96" height="38"/><text class="dg-t" x="641" y="129" text-anchor="middle">Hành động</text><text class="dg-note dg-green" x="178.8" y="170">✓ lực không bị nhấn chìm</text></svg><figcaption>Đây là khuôn mẫu đứng sau gần như mọi thiết kế trong survey này.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một token lực nhận được bao nhiêu attention, và nó phải "to tiếng" hơn bao nhiêu mới có trọng lượng? Câu trả lời giải thích vì sao nhiều phương pháp dựng riêng một đường cho lực.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -1147,7 +1148,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (softmax, mọi điểm khác bằng nhau)</p>
 <p>$$p_F = \frac{e^{\Delta}}{e^{\Delta} + (N - 1)}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -1203,7 +1204,7 @@
 <rect class="dg-box" x="815" y="148" width="150" height="250"/><text class="dg-t" x="890" y="168" text-anchor="middle">⑥ Dự đoán</text><text class="dg-s" x="890" y="184" text-anchor="middle">xúc giác/lực tương lai</text>
 <text class="dg-s" x="825" y="208">DexTacWAM</text><text class="dg-s" x="825" y="223">TacPAC</text><text class="dg-s" x="825" y="238">UniTacVLA</text><text class="dg-s" x="825" y="253">DeCAL</text><text class="dg-s" x="825" y="268">H-Tac</text><text class="dg-s" x="825" y="283">TORL-VLA (wrench)</text><text class="dg-s" x="825" y="298">TA-VLA (mô-men)</text><text class="dg-s" x="825" y="313">TER-DAgger (lực)</text>
 </svg><figcaption>Cùng sáu điểm đó, kèm các phương pháp dùng từng điểm. DAM-VLA (*) coi F/T là tín hiệu tốc độ cao của nó.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -1250,7 +1251,7 @@
 <td>mục tiêu phụ, world model</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Số phương pháp (trong 33) dùng mỗi điểm đi vào. Nhiều phương pháp dùng hai điểm nên tổng lớn hơn 33." class="dg-natural" width="606" height="192" viewBox="0 0 606 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="146" y="23" text-anchor="end">① Đầu vào VLM</text><rect class="dg-bar" x="156" y="10" width="169" height="18"/><text class="dg-barval" x="333" y="23">7</text><text class="dg-barlabel" x="146" y="53" text-anchor="end">② Sau VLM</text><rect class="dg-bar" x="156" y="40" width="169" height="18"/><text class="dg-barval" x="333" y="53">7</text><text class="dg-barlabel" x="146" y="83" text-anchor="end">③ Action expert</text><rect class="dg-bar" x="156" y="70" width="169" height="18"/><text class="dg-barval" x="333" y="83">7</text><text class="dg-barlabel" x="146" y="113" text-anchor="end">④ Ngoài VLA</text><rect class="dg-key" x="156" y="100" width="313" height="18"/><text class="dg-barval" x="477" y="113">13</text><text class="dg-barlabel" x="146" y="143" text-anchor="end">⑤ Chỉ khi huấn luyện</text><rect class="dg-bar" x="156" y="130" width="120" height="18"/><text class="dg-barval" x="284" y="143">5</text><text class="dg-barlabel" x="146" y="173" text-anchor="end">⑥ Được dự đoán</text><rect class="dg-bar" x="156" y="160" width="193" height="18"/><text class="dg-barval" x="357" y="173">8</text></svg><figcaption>Số phương pháp (trong 33) dùng mỗi điểm đi vào. Nhiều phương pháp dùng hai điểm nên tổng lớn hơn 33.</figcaption></figure>
 <h2>3. Cả 33 phương pháp trên một trang</h2>
 <figure class="diagram"><svg role="img" aria-label="Mỗi hàng là một phương pháp, xếp theo ngày đăng arXiv; chấm tròn nghĩa là phương pháp dùng điểm đi vào đó. Chấm vàng đặc là những phương pháp đã có bài riêng trên site này. Nhìn dọc một cột để thấy một họ thiết kế trông ra sao; nhìn ngang một hàng để thấy phương pháp đó kết hợp các lựa chọn thế nào." viewBox="0 0 980 846" xmlns="http://www.w3.org/2000/svg">
@@ -1441,7 +1442,7 @@
 </svg><figcaption>Mỗi hàng là một phương pháp, xếp theo ngày đăng arXiv; chấm tròn nghĩa là phương pháp dùng điểm đi vào đó. Chấm vàng đặc là những phương pháp đã có bài riêng trên site này. Nhìn dọc một cột để thấy một họ thiết kế trông ra sao; nhìn ngang một hàng để thấy phương pháp đó kết hợp các lựa chọn thế nào.</figcaption></figure>
 <figure class="diagram compact"><svg role="img" aria-label="Số phương pháp mới theo quý (lần đăng arXiv đầu tiên, tính trên 33 phương pháp bên dưới). Lần tìm của mình không thấy phương pháp nào ở Q4/2025; đợt tăng ở Q3/2026 có thể một phần do lần tìm này còn mới." class="dg-natural" width="516" height="192" viewBox="0 0 516 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Q2/2025</text><rect class="dg-bar" x="66" y="10" width="48" height="18"/><text class="dg-barval" x="122" y="23">2</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">Q3/2025</text><rect class="dg-bar" x="66" y="40" width="120" height="18"/><text class="dg-barval" x="195" y="53">5</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Q4/2025</text><rect class="dg-bar" x="66" y="70" width="2" height="18"/><text class="dg-barval" x="76" y="83">0</text><text class="dg-barlabel" x="56" y="113" text-anchor="end">Q1/2026</text><rect class="dg-bar" x="66" y="100" width="217" height="18"/><text class="dg-barval" x="291" y="113">9</text><text class="dg-barlabel" x="56" y="143" text-anchor="end">Q2/2026</text><rect class="dg-bar" x="66" y="130" width="96" height="18"/><text class="dg-barval" x="171" y="143">4</text><text class="dg-barlabel" x="56" y="173" text-anchor="end">Q3/2026</text><rect class="dg-key" x="66" y="160" width="313" height="18"/><text class="dg-barval" x="387" y="173">13</text></svg><figcaption>Số phương pháp mới theo quý (lần đăng arXiv đầu tiên, tính trên 33 phương pháp bên dưới). Lần tìm của mình không thấy phương pháp nào ở Q4/2025; đợt tăng ở Q3/2026 có thể một phần do lần tìm này còn mới.</figcaption></figure>
 <h2>4. Năm khuôn mẫu lặp đi lặp lại</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khuôn mẫu</th>
@@ -1482,7 +1483,7 @@
 <td>ForceVLA2 [15], Tabero [17], Tactile-VLA [3], Opt2VLA [32], CompVLA [31]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Mình nên đọc bài nào? Bản đồ theo tình huống</h2>
 <p>Hãy chọn hàng giống nhất với robot và tác vụ của bạn. ● nghĩa là bắt đầu từ đó, ○ nghĩa là đọc tiếp sau đó.</p>
 <figure class="diagram"><svg role="img" aria-label="Mười tình huống cụ thể đặt cạnh các bài trên site này. Từng tình huống được giải thích trong bảng bên dưới." viewBox="0 0 980 464" xmlns="http://www.w3.org/2000/svg">
@@ -1559,7 +1560,7 @@
 <circle cx="30" cy="444" r="8" class="dg-key"/><text class="dg-s" x="46" y="448">bắt đầu ở đây</text>
 <circle cx="170" cy="444" r="7" class="dg-box"/><text class="dg-s" x="186" y="448">đọc tiếp</text>
 </svg><figcaption>Mười tình huống cụ thể đặt cạnh các bài trên site này. Từng tình huống được giải thích trong bảng bên dưới.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tình huống: một hình dung cụ thể</th>
@@ -1630,11 +1631,11 @@
 <td><a href="ter-dagger.html">TER-DAgger</a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Hai điều cần lưu ý. Các con số ở cột "bắt đầu từ đâu" đến từ những paper khác nhau, với tác vụ và robot khác nhau, nên chúng cho thấy mức cải thiện <em>trong</em> từng paper chứ không cho biết phương pháp nào tốt nhất (<a href="survey-force-output.html">Survey 3</a> cho thấy riêng ForceVLA đạt từ 12% đến 60,5% tùy ai chạy). Và nếu không hàng nào khớp, hãy sang <a href="survey-force-sensing.html">Survey 2</a> để xác định cảm biến của bạn, rồi <a href="survey-force-output.html">Survey 3</a> để chọn chính sách nên xuất ra gì.</p>
 <h2>6. Bảng đầy đủ</h2>
 <p>"Đã đọc": <strong>full</strong> = có bài ghi chú chi tiết trên site, đã đối chiếu toàn văn; <strong>abstract+</strong> = abstract cộng với việc xem có chủ đích toàn văn cho các ô ghi n/s; <strong>abstract</strong> = chỉ phân loại từ abstract trên arXiv. n/s = trong phần mình đọc không thấy nói. Số ở cột đầu là số thứ tự của tài liệu tham khảo ở cuối trang.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -1979,7 +1980,7 @@
 <td>abstract</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>7. Lưu ý</h2>
 <ul>
 <li>13 trên 33 hàng chỉ dựa vào abstract và 7 hàng dựa vào abstract cộng việc xem có chủ đích toàn văn (chỉ cho các ô chưa rõ); "n/s" nghĩa là mình không biết, chứ không phải paper không có.</li>

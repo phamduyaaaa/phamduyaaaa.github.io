@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Action Chunking: Predict k Steps, Blend the Overlaps">
 <meta property="og:description" content="A single-step policy makes a decision at every step, so small errors compound. ACT predicts a chunk of k future actions, which shrinks the effective horizon k-fold, and blends overlapping chunks into smooth motion.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -103,7 +104,7 @@
 <path class="dg-a" d="M730 222 H790"/>
 <text class="dg-note dg-green" x="560" y="290">Chunk of k: effective horizon shrinks k-fold</text>
 </svg><figcaption>Top: a single-step policy decides every step. Bottom: ACT predicts a chunk, but is still queried at every step, so the current step gets several predictions, which are blended.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -144,13 +145,13 @@
 <td>smoothness at no training cost</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Teleoperation and recording run at 50 Hz; the model has about 80M parameters and is trained from scratch per task (paper's figures).</p>
 <figure class="diagram compact"><svg role="img" aria-label="Final-stage success on two real tasks, human demonstrations only (paper's Table I; 25 evaluations)." class="dg-natural" width="640" height="102" viewBox="0 0 640 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="180" y="23" text-anchor="end">Slide Ziploc, ACT</text><rect class="dg-bar" x="190" y="10" width="317" height="18"/><text class="dg-barval" x="515" y="23">88%</text><text class="dg-barlabel" x="180" y="53" text-anchor="end">Slot Battery, ACT</text><rect class="dg-bar" x="190" y="40" width="346" height="18"/><text class="dg-barval" x="544" y="53">96%</text><text class="dg-barlabel" x="180" y="83" text-anchor="end">Both tasks, other methods</text><rect class="dg-bar" x="190" y="70" width="2" height="18"/><text class="dg-barval" x="200" y="83">0%</text></svg><figcaption>Final-stage success on two real tasks, human demonstrations only (paper's Table I; 25 evaluations).</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How does temporal ensembling turn several overlapping predictions for the same step into one action? This is the step that makes chunked motion smooth.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -185,7 +186,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$</p>
 <p><strong>Steps</strong></p>
@@ -249,7 +250,7 @@
 <path class="dg-a" d="M730 222 H790"/>
 <text class="dg-note dg-green" x="560" y="290">Chunk dài k: số lần quyết định giảm k lần</text>
 </svg><figcaption>Trên: chính sách từng bước quyết định mỗi bước. Dưới: ACT dự đoán một đoạn nhưng vẫn được truy vấn ở mọi bước, nên bước hiện tại nhận nhiều dự đoán và được trộn lại.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -290,13 +291,13 @@
 <td>mượt mà, không tốn huấn luyện</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Teleoperation và ghi dữ liệu chạy 50 Hz; mô hình khoảng 80M tham số, huấn luyện từ đầu cho từng tác vụ (số liệu của paper).</p>
 <figure class="diagram compact"><svg role="img" aria-label="Thành công ở giai đoạn cuối trên hai tác vụ thật, chỉ dùng demo của người (Bảng I của paper; 25 lần đánh giá)." class="dg-natural" width="682" height="102" viewBox="0 0 682 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Slide Ziploc, ACT</text><rect class="dg-bar" x="232" y="10" width="317" height="18"/><text class="dg-barval" x="557" y="23">88%</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Slot Battery, ACT</text><rect class="dg-bar" x="232" y="40" width="346" height="18"/><text class="dg-barval" x="586" y="53">96%</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Cả hai tác vụ, phương pháp khác</text><rect class="dg-bar" x="232" y="70" width="2" height="18"/><text class="dg-barval" x="242" y="83">0%</text></svg><figcaption>Thành công ở giai đoạn cuối trên hai tác vụ thật, chỉ dùng demo của người (Bảng I của paper; 25 lần đánh giá).</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Temporal ensembling biến nhiều dự đoán chồng nhau cho cùng một bước thành một hành động thế nào? Đây là bước làm cho chuyển động theo đoạn mượt.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -331,7 +332,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$w_i = e^{-m\,i}, \qquad a_t = \frac{\sum_i w_i\, A_t[i]}{\sum_i w_i}$$</p>
 <p><strong>Các bước</strong></p>

@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Octo: An Open Generalist Policy You Can Re-wire When Fine-tuning">
 <meta property="og:description" content="Octo is a 27M/93M transformer policy pre-trained on 800k Open X-Embodiment episodes, with a diffusion action head. Its block-wise attention lets you add a new sensor (a wrist F/T sensor for 1.5 mm peg insertion) or a new action space at fine-tuning time, with ~100 demos and about 5 hours on one GPU.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -99,7 +100,7 @@
 <text class="dg-l" x="580" y="270">dashed: added at fine-tuning time, with ~100 demos,</text>
 <text class="dg-l" x="580" y="288">without re-initialising the backbone</text>
 </svg><figcaption>Each input becomes its own group of tokens. Observation tokens attend causally to earlier steps and to the task; readout tokens only read. A small diffusion head turns the readout embedding into an action chunk.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -140,12 +141,12 @@
 <td>ViT-B sized model: 300k steps, batch 2048, 14 h on a TPU v4-128 pod; fine-tuning ~5 h on one 24 GB A5000</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Lessons the paper lists that recur on this site: action chunking helped (temporal ensembling added nothing on top); <strong>adding proprioception generally made policies worse</strong>, which the authors attribute to causal confusion between state and future actions (the <a href="proprioception.html">copycat problem</a>); diffusion beat MSE and discretised heads.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> To fine-tune Octo on a robot with a wrist F/T sensor, a new tokenizer turns the 6-number wrench into a token of the backbone's width. How many new parameters is that, compared with the whole model? (Illustrative: one linear layer per reading; the paper does not spell out its F/T tokenizer.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -180,7 +181,7 @@
 <td>93M</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$P_{new} = k \times D + D$$</p>
 <p><strong>Steps</strong></p>
@@ -195,7 +196,7 @@
 </div>
 <h2>3. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Average over six fine-tuning setups, ~100 demos each, 20 trials per setup (Table I)." class="dg-natural" width="516" height="102" viewBox="0 0 516 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="56" y="23" text-anchor="end">Scratch</text><rect class="dg-bar" x="66" y="10" width="72" height="18"/><text class="dg-barval" x="146" y="23">20%</text><text class="dg-barlabel" x="56" y="53" text-anchor="end">VC-1</text><rect class="dg-bar" x="66" y="40" width="54" height="18"/><text class="dg-barval" x="128" y="53">15%</text><text class="dg-barlabel" x="56" y="83" text-anchor="end">Octo</text><rect class="dg-key" x="66" y="70" width="259" height="18"/><text class="dg-barval" x="334" y="83">72%</text></svg><figcaption>Average over six fine-tuning setups, ~100 demos each, 20 trials per setup (Table I).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Fine-tuning setup (20 trials each)</th>
@@ -249,7 +250,7 @@
 <td>14-D joint actions, two arms</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The insertion task is the one closest to contact-rich work: insert a pre-grasped peg into a slot with <strong>1.5 mm tolerance</strong>, searching through contact. The policy sees one side camera, the end-effector twist and the <strong>end-effector force/torque</strong>, and outputs end-effector twists at 5 Hz, which a 1 kHz impedance controller tracks. Fine-tuning data: 100 human demos from the FMB dataset.</p>
 <h2>4. For a UR10e reader</h2>
 <p>This is the most direct "generalist + F/T sensor" recipe among the classic VLA-era papers: a UR-type arm is in the pre-training mix (the Berkeley UR5 dataset is 1.5% of it) and the paper ran zero-shot evaluations on a UR5. The insertion setup maps onto a UR10e with its built-in F/T sensor: wrench in, twist or pose delta out, a compliant low-level controller underneath. Two warnings from the paper itself: proprioceptive inputs can cause copycat behaviour, and Octo has no VLM, so its language understanding is limited to what t5 embeddings and robot data give.</p>
@@ -291,7 +292,7 @@
 <text class="dg-l" x="580" y="270">nét đứt: thêm lúc fine-tune, với ~100 demo,</text>
 <text class="dg-l" x="580" y="288">không khởi tạo lại backbone</text>
 </svg><figcaption>Mỗi đầu vào thành một nhóm token riêng. Token quan sát chú ý nhân quả tới các bước trước và tới tác vụ; token readout chỉ đọc. Một đầu diffusion nhỏ biến embedding của readout thành chunk hành động.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phần</th>
@@ -332,12 +333,12 @@
 <td>cỡ ViT-B: 300k bước, batch 2048, 14 giờ trên TPU v4-128; fine-tune ~5 giờ trên một A5000 24 GB</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Những bài học paper liệt kê mà trang này gặp lại nhiều lần: action chunking có ích (temporal ensembling không thêm gì); <strong>thêm cảm thụ bản thể thường làm policy tệ hơn</strong>, tác giả cho là do nhầm lẫn nhân quả giữa trạng thái và hành động tương lai (<a href="proprioception.html">bài toán copycat</a>); diffusion thắng đầu MSE và đầu rời rạc.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Để fine-tune Octo cho robot có cảm biến F/T cổ tay, một tokenizer mới biến wrench 6 số thành một token có độ rộng của backbone. Nó thêm bao nhiêu tham số so với toàn mô hình? (Minh họa: một lớp tuyến tính cho mỗi lần đọc; paper không mô tả chi tiết tokenizer F/T.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -372,7 +373,7 @@
 <td>93M</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$P_{new} = k \times D + D$$</p>
 <p><strong>Các bước</strong></p>
@@ -387,7 +388,7 @@
 </div>
 <h2>3. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Trung bình trên sáu bộ fine-tune, ~100 demo mỗi bộ, 20 lượt thử mỗi bộ (Bảng I)." class="dg-natural" width="537" height="102" viewBox="0 0 537 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="77" y="23" text-anchor="end">Học từ đầu</text><rect class="dg-bar" x="87" y="10" width="72" height="18"/><text class="dg-barval" x="167" y="23">20%</text><text class="dg-barlabel" x="77" y="53" text-anchor="end">VC-1</text><rect class="dg-bar" x="87" y="40" width="54" height="18"/><text class="dg-barval" x="149" y="53">15%</text><text class="dg-barlabel" x="77" y="83" text-anchor="end">Octo</text><rect class="dg-key" x="87" y="70" width="259" height="18"/><text class="dg-barval" x="354" y="83">72%</text></svg><figcaption>Trung bình trên sáu bộ fine-tune, ~100 demo mỗi bộ, 20 lượt thử mỗi bộ (Bảng I).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ fine-tune (20 lượt mỗi bộ)</th>
@@ -441,7 +442,7 @@
 <td>hành động khớp 14 chiều, hai tay</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Bài lắp chốt là bài gần với công việc nhiều tiếp xúc nhất: cắm một chốt đã kẹp sẵn vào khe với <strong>dung sai 1,5 mm</strong>, dò tìm bằng tiếp xúc. Policy thấy một camera bên, twist của đầu cuối và <strong>lực/mô-men ở đầu cuối</strong>, và xuất twist đầu cuối ở 5 Hz, được một bộ điều khiển trở kháng 1 kHz bám theo. Dữ liệu fine-tune: 100 demo người từ bộ FMB.</p>
 <h2>4. Với người dùng UR10e</h2>
 <p>Đây là công thức "policy tổng quát + cảm biến F/T" trực tiếp nhất trong các paper VLA kinh điển: tay kiểu UR có trong dữ liệu tiền huấn luyện (bộ Berkeley UR5 chiếm 1,5%) và paper có đánh giá không fine-tune trên UR5. Bài lắp chốt ánh xạ thẳng lên UR10e với cảm biến F/T tích hợp: wrench vào, twist hoặc delta tư thế ra, bên dưới là một bộ điều khiển mềm. Hai cảnh báo từ chính paper: đầu vào cảm thụ bản thể có thể gây hành vi copycat, và Octo không có VLM, nên khả năng hiểu ngôn ngữ chỉ giới hạn ở những gì embedding t5 và dữ liệu robot cho.</p>

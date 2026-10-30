@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ForceVLA2: Hybrid Force-Position Control with Force Awareness">
 <meta property="og:description" content="ForceVLA reads force but answers only with a pose. ForceVLA2 outputs a pose change and a target force, and feeds force at two scales: 66% vs 18% for π0.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -115,7 +116,7 @@
 <rect class="dg-box" x="870" y="360" width="100" height="40"/><text class="dg-t" x="920" y="378" text-anchor="middle">s_t ∈ [0,1]</text><text class="dg-s" x="920" y="392" text-anchor="middle">subtask progress</text>
 <path class="dg-a" d="M860 334 V347 H770 V360"/><path class="dg-a" d="M910 334 V347 H920 V360"/>
 </svg><figcaption>Force enters as a text-like force prompt in the VLM and as force tokens next to the EE pose; the Cross-Scale MoE fuses VLM output, state and force, with a bypass that keeps the raw force signal.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -168,12 +169,12 @@
 <td>action + subtask progress</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: why a pose-only output gets the force wrong</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Show how a small error in where the surface is turns into a large force error when the policy can only output a pose. This is the reason ForceVLA2 adds $f_t$ to the output.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -214,7 +215,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (contact modelled as a spring)</p>
 <p>$$\Delta x = \frac{F^*}{K}, \qquad F_{real} = K\,(\Delta x \pm \delta)$$</p>
 <p><strong>Steps</strong></p>
@@ -229,7 +230,7 @@
 <h2>4. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Average success, five tasks × 20 trials: press bottle, clean vase, clean board, retrieve plate, assemble gears." class="dg-natural" width="565" height="132" viewBox="0 0 565 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="105" y="23" text-anchor="end">π0 + raw force</text><rect class="dg-bar" x="115" y="10" width="61" height="18"/><text class="dg-barval" x="184" y="23">17%</text><text class="dg-barlabel" x="105" y="53" text-anchor="end">π0</text><rect class="dg-bar" x="115" y="40" width="65" height="18"/><text class="dg-barval" x="187" y="53">18%</text><text class="dg-barlabel" x="105" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="115" y="70" width="112" height="18"/><text class="dg-barval" x="234" y="83">31%</text><text class="dg-barlabel" x="105" y="113" text-anchor="end">ForceVLA2</text><rect class="dg-key" x="115" y="100" width="238" height="18"/><text class="dg-barval" x="360" y="113">66%</text></svg><figcaption>Average success, five tasks × 20 trials: press bottle, clean vase, clean board, retrieve plate, assemble gears.</figcaption></figure>
 <h2>5. Training and data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -254,7 +255,7 @@
 <td>F/T at 300 Hz; two D455 + one wrist D435 cameras</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Caveats</h2>
 <ul>
 <li>The text says the gate "activates the most relevant expert", but the equation sums all three experts.</li>
@@ -309,7 +310,7 @@
 <rect class="dg-box" x="870" y="360" width="100" height="40"/><text class="dg-t" x="920" y="378" text-anchor="middle">s_t ∈ [0,1]</text><text class="dg-s" x="920" y="392" text-anchor="middle">tiến độ tác vụ</text>
 <path class="dg-a" d="M860 334 V347 H770 V360"/><path class="dg-a" d="M910 334 V347 H920 V360"/>
 </svg><figcaption>Lực vào dưới dạng force prompt giống văn bản trong VLM và dưới dạng force token cạnh pose EE; Cross-Scale MoE gộp đầu ra VLM, state và lực, kèm bypass giữ nguyên lực thô.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -362,12 +363,12 @@
 <td>hành động + tiến độ subtask</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: vì sao chỉ xuất pose thì sai lực</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Cho thấy một sai số nhỏ về vị trí bề mặt biến thành sai số lực lớn khi chính sách chỉ xuất được pose. Đây là lý do ForceVLA2 thêm $f_t$ vào đầu ra.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -408,7 +409,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (coi tiếp xúc như lò xo)</p>
 <p>$$\Delta x = \frac{F^*}{K}, \qquad F_{real} = K\,(\Delta x \pm \delta)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -423,7 +424,7 @@
 <h2>4. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình, năm task × 20 lượt: ấn chai, lau bình, lau bảng, lấy đĩa, lắp bánh răng." class="dg-natural" width="551" height="132" viewBox="0 0 551 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="91" y="23" text-anchor="end">π0 + lực thô</text><rect class="dg-bar" x="101" y="10" width="61" height="18"/><text class="dg-barval" x="170" y="23">17%</text><text class="dg-barlabel" x="91" y="53" text-anchor="end">π0</text><rect class="dg-bar" x="101" y="40" width="65" height="18"/><text class="dg-barval" x="174" y="53">18%</text><text class="dg-barlabel" x="91" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="101" y="70" width="112" height="18"/><text class="dg-barval" x="220" y="83">31%</text><text class="dg-barlabel" x="91" y="113" text-anchor="end">ForceVLA2</text><rect class="dg-key" x="101" y="100" width="238" height="18"/><text class="dg-barval" x="346" y="113">66%</text></svg><figcaption>Thành công trung bình, năm task × 20 lượt: ấn chai, lau bình, lau bảng, lấy đĩa, lắp bánh răng.</figcaption></figure>
 <h2>5. Huấn luyện và dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -448,7 +449,7 @@
 <td>F/T 300 Hz; hai camera D455 + một D435 cổ tay</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Văn bản nói gate "kích hoạt expert liên quan nhất", nhưng công thức cộng cả ba expert.</li>

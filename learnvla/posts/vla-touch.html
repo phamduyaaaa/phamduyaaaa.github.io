@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="VLA-Touch: Dual-level Tactile Feedback Without Retraining the VLA">
 <meta property="og:description" content="Adding touch usually means fine-tuning the VLA on paired tactile data. VLA-Touch leaves RDT unchanged and adds touch twice: as words for a GPT-4o planner, and as force for a small refiner of the action chunk.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -104,7 +105,7 @@
 <text class="dg-h" x="20" y="300">OUTER LOOP: instruction done or max steps → tactile text → planner → next instruction</text>
 <text class="dg-h" x="20" y="318">INNER LOOP: VLA chunk → refine first 48 of 64 steps with tactile force → execute</text>
 </svg><figcaption>Outer loop: tactile text updates the GPT-4o instruction. Inner loop: tactile force refines the chunk from RDT.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -145,12 +146,12 @@
 <td>correct contact, ≤ 8 Hz</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: turning markers into $m_t$</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The refiner runs at up to 8 Hz and cannot digest a tactile image each step. VLA-Touch compresses the gel's marker motion into three numbers: total shear in $x$, in $y$, and its size.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -179,7 +180,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$</p>
 <p><strong>Steps</strong></p>
@@ -198,7 +199,7 @@
 <li>Removing touch from the controller cut cup placement by 50%.</li>
 </ul>
 <h2>5. Training</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -219,7 +220,7 @@
 <td>Run RDT on task data to collect chunks; train the refiner with MSE against expert actions</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Caveats</h2>
 <ul>
 <li>High-frequency touch (25 Hz and up) is not used yet; data were logged at 10 Hz.</li>
@@ -263,7 +264,7 @@
 <text class="dg-h" x="20" y="300">VÒNG NGOÀI: xong câu lệnh hoặc hết bước → chữ xúc giác → planner → câu lệnh kế</text>
 <text class="dg-h" x="20" y="318">VÒNG TRONG: chunk VLA → tinh chỉnh 48/64 bước đầu bằng lực xúc giác → thực thi</text>
 </svg><figcaption>Vòng ngoài: văn bản xúc giác cập nhật chỉ dẫn của GPT-4o. Vòng trong: lực xúc giác tinh chỉnh chunk từ RDT.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -304,12 +305,12 @@
 <td>sửa tiếp xúc, ≤ 8 Hz</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: từ marker ra $m_t$</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Bộ tinh chỉnh chạy tới 8 Hz và không thể nuốt một ảnh xúc giác mỗi bước. VLA-Touch nén chuyển động của marker trên gel thành ba con số: tổng lực trượt theo $x$, theo $y$, và độ lớn.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -338,7 +339,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$X = \sum_i x_i, \qquad Y = \sum_i y_i, \qquad M = \sqrt{X^2 + Y^2}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -357,7 +358,7 @@
 <li>Bỏ xúc giác khỏi bộ điều khiển làm giảm 50% ở bước đặt cốc.</li>
 </ul>
 <h2>5. Huấn luyện</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bước</th>
@@ -378,7 +379,7 @@
 <td>Chạy RDT trên dữ liệu task để thu chunk; huấn luyện bộ tinh chỉnh bằng MSE so với hành động chuyên gia</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Chưa dùng xúc giác tần số cao (từ 25 Hz trở lên); dữ liệu ghi ở 10 Hz.</li>

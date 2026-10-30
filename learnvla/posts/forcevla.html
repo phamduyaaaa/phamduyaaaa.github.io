@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ForceVLA: Force-aware MoE for Contact-rich Manipulation">
 <meta property="og:description" content="Appending force to π0's state barely helps. ForceVLA gives force its own token and fuses it after the VLM with a 4-expert MoE: 60.5% vs 37.3% on five contact tasks.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -114,7 +115,7 @@
 <path class="dg-a" d="M330 226 H280"/>
 <text class="dg-l" x="580" y="168" text-anchor="middle">force enters AFTER the VLM</text>
 </svg><figcaption>The force token joins the VLM output, passes an encoder and a top-1 MoE, and is added to the action expert's input before flow-matching decoding.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -161,12 +162,12 @@
 <td>generate actions</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: one top-1 routing step</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The FVLMoE router sends each token to one of 4 experts. Computing it shows how a "touching" token and a "moving" token end up in different experts without any label.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -207,7 +208,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$</p>
 <p><strong>Steps</strong> for a free-space token, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:</p>
@@ -228,7 +229,7 @@
 <li>Under visual occlusion ForceVLA keeps 90% success.</li>
 </ul>
 <h2>5. Training and data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -253,7 +254,7 @@
 <td>Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k steps, bfloat16</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Caveats</h2>
 <ul>
 <li>Checked against the full text: multi-task training used Adam with a peak learning rate of 2.5e-5 for 30,000 steps (about 12 hours on 2 GPUs), and the cameras run at 30 FPS. Control rate, chunk length and frozen modules are still not stated.</li>
@@ -307,7 +308,7 @@
 <path class="dg-a" d="M330 226 H280"/>
 <text class="dg-l" x="580" y="168" text-anchor="middle">lực đi vào SAU VLM</text>
 </svg><figcaption>Token lực nhập vào đầu ra của VLM, qua một encoder và MoE top-1, rồi được cộng vào đầu vào của action expert trước khi giải mã flow-matching.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -354,12 +355,12 @@
 <td>sinh hành động</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: một bước định tuyến top-1</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Router của FVLMoE gửi mỗi token tới một trong 4 expert. Tính thử để thấy token "đang chạm" và token "đang di chuyển" đi tới hai expert khác nhau mà không cần nhãn nào.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -400,7 +401,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$p_k = \frac{e^{r_k}}{\sum_{j=1}^{4} e^{r_j}}, \qquad k^* = \arg\max_k p_k, \qquad \text{out} = h + E_{k^*}(h)$$</p>
 <p><strong>Từng bước</strong> với token di chuyển tự do, $r = (2.0,\ 0.5,\ 0.1,\ -1.0)$:</p>
@@ -421,7 +422,7 @@
 <li>Khi camera bị che, ForceVLA vẫn giữ 90% thành công.</li>
 </ul>
 <h2>5. Huấn luyện và dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -446,7 +447,7 @@
 <td>Adam, LR $2.5\times10^{-5} \to 2.5\times10^{-6}$, 30k bước, bfloat16</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Đã đối chiếu với toàn văn: huấn luyện đa tác vụ dùng Adam, learning rate đỉnh 2,5e-5, 30.000 bước (khoảng 12 giờ trên 2 GPU), camera chạy 30 FPS. Tần số điều khiển, độ dài chunk và module bị đóng băng vẫn không được nêu.</li>

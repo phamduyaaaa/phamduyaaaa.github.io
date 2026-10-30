@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="VLM: Giving a Language Model Eyes">
 <meta property="og:description" content="A language model reads words; a vision encoder produces vectors in a different space. A small projector maps image vectors into the language model's input space, and the pair becomes a vision-language model. Worked: the size of PaliGemma's projector and a VLA's token budget.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -99,7 +100,7 @@
 <text class="dg-l" x="20" y="270">step 1: train the projector so image vectors land where the language model expects words</text>
 <text class="dg-l" x="20" y="292">step 2: fine-tune on instructions (VLM), or on robot demonstrations with an action output (VLA)</text>
 </svg><figcaption>Encoder, projector, language model. A VLA keeps this front and changes the back: either actions as tokens (RT-2, OpenVLA) or a separate action expert (π0).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -129,11 +130,11 @@
 <td>the prompt can use the whole image; the answer is written left to right</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How big is the part that joins the two models, and how much of a VLA's sequence do images take? Both numbers explain design choices in robot VLAs.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -180,7 +181,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$P = d_v \times d_l + d_l, \qquad N = 256\,C + T$$</p>
 <p><strong>Steps</strong></p>
@@ -231,7 +232,7 @@
 <text class="dg-l" x="20" y="270">bước 1: huấn luyện projector để vector ảnh rơi vào chỗ mô hình ngôn ngữ chờ từ ngữ</text>
 <text class="dg-l" x="20" y="292">bước 2: fine-tune trên câu lệnh (VLM), hoặc trên demo robot với đầu ra hành động (VLA)</text>
 </svg><figcaption>Bộ mã hóa, bộ chiếu, mô hình ngôn ngữ. VLA giữ phần đầu này và đổi phần đuôi: hoặc hành động dạng token (RT-2, OpenVLA), hoặc một action expert riêng (π0).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ phận</th>
@@ -261,11 +262,11 @@
 <td>câu lệnh dùng được cả bức ảnh; câu trả lời được viết từ trái sang phải</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Phần nối hai mô hình lớn cỡ nào, và ảnh chiếm bao nhiêu trong dãy của một VLA? Cả hai con số giải thích các lựa chọn thiết kế trong VLA cho robot.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -312,7 +313,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$P = d_v \times d_l + d_l, \qquad N = 256\,C + T$$</p>
 <p><strong>Từng bước</strong></p>

@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="FD-VLA: Force Distilled from Vision and State">
 <meta property="og:description" content="ForceVLA and Tactile-VLA need a force sensor on the deployed robot. FD-VLA learns to predict a force token from images and arm state, using the sensor only during training: 61.1% vs 23.3% for SmolVLA.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -110,7 +111,7 @@
 <path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
 <text class="dg-h" x="170" y="372">AT INFERENCE: no force sensor. FDM predicts f^pF from vision + state only.</text>
 </svg><figcaption>The Force Distillation Module predicts a force token from vision and state; in training it is pulled towards the encoding of real force; at inference only the prediction branch runs.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -151,12 +152,12 @@
 <td>flow-matching decoder</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: one single-query attention step</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The FDM is one attention step with a single query. Computing it shows how the predicted force token is a weighted mix of what the image and the arm state say, and how the distillation loss corrects that mix.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -203,7 +204,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = \lVert Z - f^{aF} \rVert_2^2$$</p>
 <p><strong>Steps</strong></p>
@@ -218,7 +219,7 @@
 <h2>4. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Mean success: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 trials each, UR5e." class="dg-natural" width="592" height="132" viewBox="0 0 592 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="132" y="23" text-anchor="end">DP3</text><rect class="dg-bar" x="142" y="10" width="40" height="18"/><text class="dg-barval" x="190" y="23">11.1%</text><text class="dg-barlabel" x="132" y="53" text-anchor="end">SmolVLA (no force)</text><rect class="dg-bar" x="142" y="40" width="84" height="18"/><text class="dg-barval" x="234" y="53">23.3%</text><text class="dg-barlabel" x="132" y="83" text-anchor="end">π0 (no force)</text><rect class="dg-bar" x="142" y="70" width="168" height="18"/><text class="dg-barval" x="318" y="83">46.7%</text><text class="dg-barlabel" x="132" y="113" text-anchor="end">FD-VLA</text><rect class="dg-key" x="142" y="100" width="220" height="18"/><text class="dg-barval" x="370" y="113">61.1%</text></svg><figcaption>Mean success: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 trials each, UR5e.</figcaption></figure>
 <h2>5. Training</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -243,7 +244,7 @@
 <td>about one tenth of π0's parameters</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Caveats</h2>
 <ul>
 <li>Gains reported for baselines given raw force ("+15.6%", "+20.0%") are ambiguous (points or relative).</li>
@@ -293,7 +294,7 @@
 <path class="dg-a" d="M630 190 H695 V252"/><path class="dg-a" d="M600 320 H695 V304"/>
 <text class="dg-h" x="170" y="372">KHI SUY LUẬN: không có cảm biến lực. FDM đoán f^pF chỉ từ ảnh + trạng thái.</text>
 </svg><figcaption>Force Distillation Module dự đoán token lực từ thị giác và state; lúc huấn luyện nó bị kéo về phía mã hóa của lực thật; lúc suy luận chỉ chạy nhánh dự đoán.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -334,12 +335,12 @@
 <td>bộ giải mã flow-matching</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: một bước attention một query</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> FDM là một bước attention với một query duy nhất. Tính nó để thấy token lực dự đoán là một hỗn hợp có trọng số giữa thông tin ảnh và state cánh tay, và loss chưng cất sửa hỗn hợp đó ra sao.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -386,7 +387,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\alpha = \text{softmax}(s), \qquad Z = \sum_i \alpha_i v_i, \qquad L_{dist} = \lVert Z - f^{aF} \rVert_2^2$$</p>
 <p><strong>Từng bước</strong></p>
@@ -401,7 +402,7 @@
 <h2>4. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 lượt mỗi task, UR5e." class="dg-natural" width="599" height="132" viewBox="0 0 599 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">DP3</text><rect class="dg-bar" x="149" y="10" width="40" height="18"/><text class="dg-barval" x="197" y="23">11,1%</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">SmolVLA (không lực)</text><rect class="dg-bar" x="149" y="40" width="84" height="18"/><text class="dg-barval" x="241" y="53">23,3%</text><text class="dg-barlabel" x="139" y="83" text-anchor="end">π0 (không lực)</text><rect class="dg-bar" x="149" y="70" width="168" height="18"/><text class="dg-barval" x="325" y="83">46,7%</text><text class="dg-barlabel" x="139" y="113" text-anchor="end">FD-VLA</text><rect class="dg-key" x="149" y="100" width="220" height="18"/><text class="dg-barval" x="377" y="113">61,1%</text></svg><figcaption>Thành công trung bình: Clean Whiteboard, Press Emergency Button, Insert Plug; 30 lượt mỗi task, UR5e.</figcaption></figure>
 <h2>5. Huấn luyện</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -426,7 +427,7 @@
 <td>khoảng một phần mười số tham số của π0</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Lưu ý</h2>
 <ul>
 <li>Mức tăng bài nêu cho baseline có lực thô ("+15,6%", "+20,0%") không rõ là điểm hay tương đối.</li>

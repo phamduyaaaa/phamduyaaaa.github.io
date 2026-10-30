@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Force and Tactile Sensing: What Each Sensor Actually Measures">
 <meta property="og:description" content="A wrist F/T sensor, joint torques, a pressure array and a gel camera all say something about contact, but not the same thing. Where each one sits, what it reports, and two worked corrections a policy needs: removing the tool's weight, and estimating force from joint torques.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -96,7 +97,7 @@
 <rect class="dg-badbox" x="20" y="220" width="440" height="70"/><text class="dg-t" x="240" y="246" text-anchor="middle">common mistakes</text><text class="dg-s" x="240" y="266" text-anchor="middle">reading the tool's weight as contact force; forgetting the frame;</text><text class="dg-s" x="240" y="282" text-anchor="middle">zeroing once and then tilting the tool</text>
 <rect class="dg-box" x="500" y="220" width="460" height="70"/><text class="dg-t" x="730" y="246" text-anchor="middle">what a policy should receive</text><text class="dg-s" x="730" y="266" text-anchor="middle">gravity-compensated, bias-free wrench in a known frame,</text><text class="dg-s" x="730" y="282" text-anchor="middle">normalised, often as a short history window</text>
 </svg><figcaption>From base to fingertip: cheaper and already present near the base, richer and more fragile near the fingertip.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Sensor</th>
@@ -136,11 +137,11 @@
 <td>force must be inferred; gels wear</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Two corrections a force-aware policy depends on. First, removing the tool's weight from a wrist reading, and what happens if the tool tilts after zeroing. Second, estimating contact force from joint torques with the Jacobian, on the same two-link arm as in <a href="proprioception.html">proprioception</a>.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -187,7 +188,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$F_z^{contact} = F_z^{meas} - m g \cos\phi, \qquad \tau = J^\top F$$</p>
 <p><strong>Steps</strong></p>
@@ -237,7 +238,7 @@
 <rect class="dg-badbox" x="20" y="220" width="440" height="70"/><text class="dg-t" x="240" y="246" text-anchor="middle">lỗi thường gặp</text><text class="dg-s" x="240" y="266" text-anchor="middle">coi trọng lượng dụng cụ là lực tiếp xúc; quên hệ trục;</text><text class="dg-s" x="240" y="282" text-anchor="middle">về 0 một lần rồi nghiêng dụng cụ</text>
 <rect class="dg-box" x="500" y="220" width="460" height="70"/><text class="dg-t" x="730" y="246" text-anchor="middle">policy nên nhận gì</text><text class="dg-s" x="730" y="266" text-anchor="middle">wrench đã bù trọng lực, đã trừ bias, trong hệ trục rõ ràng,</text><text class="dg-s" x="730" y="282" text-anchor="middle">đã chuẩn hóa, thường là một cửa sổ lịch sử ngắn</text>
 </svg><figcaption>Từ đế tới đầu ngón: gần đế thì rẻ hơn và có sẵn, gần đầu ngón thì giàu thông tin hơn và dễ hỏng hơn.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Cảm biến</th>
@@ -277,11 +278,11 @@
 <td>lực phải suy ra; gel bị mòn</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Hai hiệu chỉnh mà một chính sách nhận biết lực phụ thuộc vào. Thứ nhất, trừ trọng lượng dụng cụ khỏi số đọc cổ tay, và chuyện gì xảy ra nếu dụng cụ nghiêng sau khi đặt 0. Thứ hai, ước lượng lực tiếp xúc từ mô-men khớp bằng Jacobian, trên cùng cánh tay hai khâu như ở bài <a href="proprioception.html">proprioception</a>.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -328,7 +329,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$F_z^{contact} = F_z^{meas} - m g \cos\phi, \qquad \tau = J^\top F$$</p>
 <p><strong>Từng bước</strong></p>

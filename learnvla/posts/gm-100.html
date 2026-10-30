@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="GM-100: 100 Long-Tail Tasks on Real Robots">
 <meta property="og:description" content="Most robot datasets and evaluations are dominated by "pick and hold". GM-100 designs 100 detail-oriented tasks from interaction primitives and affordances, collects 13K+ real trajectories on two dual-arm platforms, and scores success, partial success and action error. On ten tasks, π0.5 reaches 24.9% success and 53.9% partial success.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -97,7 +98,7 @@
 <path class="dg-a" d="M870 124 V142 H160 V170"/><path class="dg-a" d="M470 142 V170"/><path class="dg-a" d="M610 210 H640"/>
 <text class="dg-l" x="20" y="290">tasks are chosen by physical common sense and how-level affordance, not by how useful they are in a home</text>
 </svg><figcaption>The task list is derived systematically; data is collected on two different dual-arm platforms; each task is scored three ways.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -130,8 +131,8 @@
 <td>MSE and L1 on the 30 held-out demonstrations, on an overlapping prediction window</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Xtrainer, average of tasks 1–10</th>
@@ -160,11 +161,11 @@
 <td>0.0029</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> π0 gets 44.6% PSR but 3.3% SR on one task. How can both be true, and how much does one success in 30 trials tell us?</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -199,7 +200,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\text{PSR} = \frac{1}{N}\sum_{i=1}^{N}\frac{c_i}{K}, \qquad \text{SR} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}[c_i = K]$$</p>
 <p><strong>Steps</strong></p>
@@ -253,7 +254,7 @@
 <path class="dg-a" d="M870 124 V142 H160 V170"/><path class="dg-a" d="M470 142 V170"/><path class="dg-a" d="M610 210 H640"/>
 <text class="dg-l" x="20" y="290">tác vụ được chọn theo lẽ thường vật lý và affordance mức làm-thế-nào, không theo độ hữu ích trong nhà</text>
 </svg><figcaption>Danh sách tác vụ được suy ra có hệ thống; dữ liệu thu trên hai nền tảng hai tay khác nhau; mỗi tác vụ được chấm theo ba cách.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -286,8 +287,8 @@
 <td>MSE và L1 trên 30 demo giữ lại, trong một cửa sổ dự đoán chung</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Xtrainer, trung bình tác vụ 1–10</th>
@@ -316,11 +317,11 @@
 <td>0,0029</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> π0 đạt 44,6% PSR nhưng 3,3% SR ở một tác vụ. Làm sao cả hai cùng đúng, và một lần thành công trên 30 lần thử nói lên được bao nhiêu?</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -355,7 +356,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\text{PSR} = \frac{1}{N}\sum_{i=1}^{N}\frac{c_i}{K}, \qquad \text{SR} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}[c_i = K]$$</p>
 <p><strong>Các bước</strong></p>

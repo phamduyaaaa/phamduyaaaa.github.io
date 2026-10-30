@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="SimplerEnv: Does the Simulator Rank Policies Like the Real Robot?">
 <meta property="og:description" content="SimplerEnv evaluates policies trained on real data in simulators tuned to two real setups (Google Robot, WidowX Bridge). It is judged by whether the simulated ranking matches the real ranking, measured with a new metric, MMRV.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <text class="dg-l" x="20" y="268">the simulator matters most for the order of the policies, not the exact success rates</text>
 <text class="dg-s" x="20" y="290">not a sim-to-real training environment: the policies never train in it</text>
 </svg><figcaption>The two gaps are closed separately, then the same real-trained policies are run both in reality and in simulation, and the rankings are compared.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Gap</th>
@@ -123,9 +124,9 @@
 <td>"Variant Aggregation": randomise backgrounds, lighting, textures and average. It worked worse than Visual Matching</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Tasks: Google Robot (pick coke can, move near, open/close drawer, put object in drawer) and WidowX + BridgeData V2 (spoon on towel, carrot on plate, stack cubes, eggplant in basket).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Google Robot (Table I)</th>
@@ -165,13 +166,13 @@
 <td>0.924</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. The metric: MMRV</h2>
 <p>Pearson $r$ asks whether sim and real success lie on a line. The paper points out two problems with that: a simulator that gets the order right but not the line is penalised, and when several policies have nearly the same real success, noise dominates $r$. MMRV looks only at mistakes in order, weighted by how much they matter in reality.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Compute MMRV by hand for three policies, to see that a swap between two similar policies costs little and a swap between very different ones costs a lot.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -206,7 +207,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\text{RV}(i,j) = |R_i - R_j| \cdot \mathbb{1}\big[(R_{S,i} &lt; R_{S,j}) \ne (R_i &lt; R_j)\big], \qquad \text{MMRV} = \frac{1}{N}\sum_{i=1}^{N} \max_j \text{RV}(i,j)$$</p>
 <p><strong>Steps</strong></p>
@@ -264,7 +265,7 @@
 <text class="dg-l" x="20" y="268">điều quan trọng nhất là thứ tự các policy, không phải tỉ lệ thành công chính xác</text>
 <text class="dg-s" x="20" y="290">không phải môi trường học sim-to-real: policy không bao giờ học trong đó</text>
 </svg><figcaption>Hai khoảng cách được xử lý riêng, rồi cùng các policy học từ dữ liệu thật được chạy cả ngoài đời lẫn trong mô phỏng, và so thứ hạng.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khoảng cách</th>
@@ -289,9 +290,9 @@
 <td>"Variant Aggregation": ngẫu nhiên hóa nền, ánh sáng, vân rồi lấy trung bình. Kém hơn Visual Matching</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Tác vụ: Google Robot (gắp lon coca, đưa lại gần, mở/đóng ngăn kéo, bỏ vật vào ngăn kéo) và WidowX + BridgeData V2 (thìa lên khăn, cà rốt lên đĩa, xếp khối, cà tím vào rổ).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Google Robot (Bảng I)</th>
@@ -331,13 +332,13 @@
 <td>0,924</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Thước đo: MMRV</h2>
 <p>Pearson $r$ hỏi xem thành công mô phỏng và thật có nằm trên một đường thẳng không. Paper chỉ ra hai vấn đề: trình mô phỏng đúng thứ tự nhưng không thẳng hàng vẫn bị phạt, và khi nhiều policy có thành công thật gần bằng nhau thì nhiễu lấn át $r$. MMRV chỉ nhìn vào lỗi thứ tự, có trọng số theo mức độ quan trọng ngoài đời.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Tính tay MMRV cho ba policy, để thấy đảo thứ tự hai policy gần bằng nhau thì tốn ít, còn đảo hai policy rất khác nhau thì tốn nhiều.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -372,7 +373,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\text{RV}(i,j) = |R_i - R_j| \cdot \mathbb{1}\big[(R_{S,i} &lt; R_{S,j}) \ne (R_i &lt; R_j)\big], \qquad \text{MMRV} = \frac{1}{N}\sum_{i=1}^{N} \max_j \text{RV}(i,j)$$</p>
 <p><strong>Các bước</strong></p>

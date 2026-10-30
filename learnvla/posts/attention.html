@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Attention: Letting Each Token Look at the Others">
 <meta property="og:description" content="Earlier encoder-decoder models squeezed a whole sentence into one fixed vector. Attention lets the decoder look back at every input position and weight them. Worked by hand with two tokens.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -100,7 +101,7 @@
 <path class="dg-a" d="M750 218 H810"/>
 <text class="dg-note dg-red" x="400" y="170">Cost: n × n scores = n² pairs</text>
 </svg><figcaption>Each token makes a query (what it needs), a key (what it offers) and a value (what it carries). Scores come from query·key; softmax gives weights; the output is a weighted mix of values.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -141,11 +142,11 @@
 <td>context-aware token vectors</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> What does attention output for two tokens? This shows that the output is a <em>weighted average</em> of the values.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -186,7 +187,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$</p>
 <p><strong>Steps</strong> (token 1)</p>
@@ -239,7 +240,7 @@
 <path class="dg-a" d="M750 218 H810"/>
 <text class="dg-note dg-red" x="400" y="170">Chi phí: n × n điểm = n² cặp</text>
 </svg><figcaption>Mỗi token tạo ra một query (cần gì), một key (có gì) và một value (mang gì). Điểm lấy từ query·key; softmax cho trọng số; đầu ra là tổ hợp có trọng số của các value.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -280,11 +281,11 @@
 <td>vector token có ngữ cảnh</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Attention cho ra gì với hai token? Ví dụ cho thấy đầu ra là một <em>trung bình có trọng số</em> của các value.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -325,7 +326,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$A = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right), \qquad O = A\,V$$</p>
 <p><strong>Các bước</strong> (token 1)</p>

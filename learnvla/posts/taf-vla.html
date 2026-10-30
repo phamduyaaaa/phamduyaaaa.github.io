@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="TaF-VLA: Aligning Tactile Images with Force Before the VLA">
 <meta property="og:description" content="Earlier visuo-tactile policies such as FreeTacMan read a gel image as texture. TaF-VLA first aligns tactile images with real force over 10 million paired frames, then plugs the frozen adapter into π0.5: 64.8% vs 42.8%.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -109,7 +110,7 @@
 <rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Action chunk a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">Euler integration τ: 0→1</text>
 <path class="dg-a" d="M640 292 H720"/>
 </svg><figcaption>Stage (a) aligns a tactile encoder with quantised force codes by InfoNCE; stage (b) plugs the frozen adapter into the π0.5 action expert.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -144,12 +145,12 @@
 <td>policy, Euler step 0.1</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: one InfoNCE term</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> InfoNCE is the loss that teaches the tactile encoder to agree with real force. Computing it shows when it is small (well aligned) and when it is large.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -190,7 +191,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (batch of two pairs)</p>
 <p>$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$</p>
 <p><strong>Steps</strong></p>
@@ -210,7 +211,7 @@
 <li>Ablation (whiteboard): full 60.0%, no history 26.7%, one shared codebook 13.3%.</li>
 </ul>
 <h2>5. Data</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -231,11 +232,11 @@
 <td>&gt; 10,000 force-aware episodes, &gt; 20 scenarios</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Can I use this on my robot?</h2>
 <p><strong>Short answer.</strong> You can reuse the idea with a modest setup, but not the result. The 64.8% came from a gel touch sensor on the robot, a pretrained adapter that needs a custom rig and about 10 million frames to reproduce, and a fine-tuned π0.5. "Stated" means the paper says it; "not stated" means I looked in the full text and it is not there, so I do not guess.</p>
 <p><strong>Hardware at run time</strong></p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Need</th>
@@ -282,9 +283,9 @@
 <td>Stated</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Data and training</strong></p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Need</th>
@@ -331,7 +332,7 @@
 <td>Estimate</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What the sensor and the task must allow</strong></p>
 <ul>
 <li><strong>Does the task need force at all?</strong> The paper says it depends: for light objects such as chocolate, vision-only π0.5 did about as well. Gains were largest where force must be actively controlled (heavy part lifting, power bank extraction, where vision-only degraded a lot, and tweezer weights, where it failed completely).</li>
@@ -389,7 +390,7 @@
 <rect class="dg-box" x="720" y="270" width="200" height="44"/><text class="dg-t" x="820" y="288" text-anchor="middle">Chunk hành động a_t</text><text class="dg-s" x="820" y="302" text-anchor="middle">tích phân Euler τ: 0→1</text>
 <path class="dg-a" d="M640 292 H720"/>
 </svg><figcaption>Giai đoạn (a) căn bộ mã hóa xúc giác với mã lực đã lượng tử hóa bằng InfoNCE; giai đoạn (b) gắn adapter đóng băng vào action expert của π0.5.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -424,12 +425,12 @@
 <td>chính sách, bước Euler 0,1</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: một số hạng InfoNCE</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> InfoNCE là loss dạy bộ mã hóa xúc giác khớp với lực thật. Tính nó để thấy khi nào loss nhỏ (căn tốt) và khi nào lớn.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -470,7 +471,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (batch hai cặp)</p>
 <p>$$L_1 = -\log \frac{e^{s_+/\tau}}{e^{s_+/\tau} + e^{s_-/\tau}} = \log\left(1 + e^{(s_- - s_+)/\tau}\right)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -490,7 +491,7 @@
 <li>Ablation (lau bảng): đầy đủ 60,0%, không lịch sử 26,7%, dùng chung một codebook 13,3%.</li>
 </ul>
 <h2>5. Dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -511,11 +512,11 @@
 <td>&gt; 10.000 episode có lực, &gt; 20 kịch bản</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Mình có dùng được cho robot của bạn không?</h2>
 <p><strong>Trả lời ngắn.</strong> Ý tưởng dùng lại được với một bộ thiết bị khiêm tốn, nhưng kết quả thì chưa chắc. Con số 64,8% đến từ một cảm biến chạm kiểu gel gắn trên robot, một adapter đã pretrain mà muốn tự làm lại phải có thiết bị riêng và khoảng 10 triệu khung, cùng một π0.5 đã fine-tune. "Có nêu" nghĩa là bài báo viết rõ; "không nêu" nghĩa là mình đã tìm trong toàn văn mà không thấy, nên không đoán.</p>
 <p><strong>Phần cứng khi chạy thật</strong></p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Cần</th>
@@ -562,9 +563,9 @@
 <td>Có nêu</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Dữ liệu và huấn luyện</strong></p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Cần</th>
@@ -611,7 +612,7 @@
 <td>Ước lượng</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Cảm biến và tác vụ phải cho phép</strong></p>
 <ul>
 <li><strong>Tác vụ của bạn có cần lực không?</strong> Bài nói là tùy: với vật nhẹ như sô-cô-la, π0.5 chỉ thị giác làm gần bằng. Mức tăng lớn nhất ở tác vụ phải chủ động điều khiển lực (nhấc chi tiết nặng, lấy pin dự phòng, nơi chỉ thị giác kém đi nhiều, và gắp quả cân bằng nhíp, nơi nó thất bại hoàn toàn).</li>

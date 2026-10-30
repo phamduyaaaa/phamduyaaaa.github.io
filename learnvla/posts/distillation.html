@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Distillation: Teaching a Student What the Teacher Knows">
 <meta property="og:description" content="A big model, or a model with a sensor the robot will not carry, can teach a smaller or sensor-free one. The trick is to copy the teacher's soft outputs, not only the right answer. Temperature worked by hand, and how FD-VLA and HapticVLA distil force and touch away.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -97,7 +98,7 @@
 <rect class="dg-box" x="790" y="170" width="170" height="84"/><text class="dg-t" x="875" y="198" text-anchor="middle">deploy student</text><text class="dg-s" x="875" y="218" text-anchor="middle">faster, or no sensor</text><text class="dg-s" x="875" y="234" text-anchor="middle">needed on the robot</text>
 <path class="dg-a" d="M730 212 H790"/>
 </svg><figcaption>The teacher sees more (a bigger network, or privileged signals). The student is trained to reproduce the teacher's soft outputs or internal features and is the only one deployed.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Term</th>
@@ -126,11 +127,11 @@
 <td>match an internal vector instead of output probabilities (FD-VLA's force token)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> See what temperature does to a teacher's output, and compute the student's soft-target loss.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -171,7 +172,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$p^T_i = \frac{e^{z_i/T}}{\sum_j e^{z_j/T}}, \qquad L = -T^2 \sum_i p^T_i \log q^T_i$$</p>
 <p><strong>Steps</strong></p>
@@ -222,7 +223,7 @@
 <rect class="dg-box" x="790" y="170" width="170" height="84"/><text class="dg-t" x="875" y="198" text-anchor="middle">triển khai trò</text><text class="dg-s" x="875" y="218" text-anchor="middle">nhanh hơn, hoặc robot</text><text class="dg-s" x="875" y="234" text-anchor="middle">không cần cảm biến</text>
 <path class="dg-a" d="M730 212 H790"/>
 </svg><figcaption>Người thầy thấy nhiều hơn (mạng lớn hơn, hoặc tín hiệu đặc quyền). Học trò được huấn luyện để tái tạo đầu ra mềm hoặc đặc trưng bên trong của thầy, và chỉ học trò được triển khai.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Thuật ngữ</th>
@@ -251,11 +252,11 @@
 <td>khớp một vector bên trong thay vì xác suất đầu ra (token lực của FD-VLA)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Xem nhiệt độ làm gì với đầu ra của người thầy, và tính loss mục tiêu mềm của học trò.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -296,7 +297,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$p^T_i = \frac{e^{z_i/T}}{\sum_j e^{z_j/T}}, \qquad L = -T^2 \sum_i p^T_i \log q^T_i$$</p>
 <p><strong>Từng bước</strong></p>

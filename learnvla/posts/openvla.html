@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="OpenVLA: The RT-2 Recipe, Open and at 7B">
 <meta property="og:description" content="OpenVLA fine-tunes an open 7B VLM (Llama 2 with fused DINOv2 + SigLIP vision) on 970k Open X-Embodiment episodes to output 7 binned action tokens. It beats the closed 55B RT-2-X by 16.5 points over 29 tasks, fine-tunes with LoRA on one GPU, and runs in 7 GB at 4-bit.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -97,7 +98,7 @@
 <text class="dg-s" x="20" y="240">bins span the 1st-99th percentile of each action dimension; the 256 least-used Llama tokens are overwritten as bin tokens</text>
 <text class="dg-l" x="20" y="268">trained 27 epochs on 64 A100s for 14 days; fine-tune with LoRA on one GPU; int4 inference in 7 GB</text>
 </svg><figcaption>One image and an instruction go through a fused vision encoder, a projector and Llama 2. The model writes 7 action tokens that are mapped back to bin centres.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Choice</th>
@@ -147,11 +148,11 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> OpenVLA bins each action dimension between its 1st and 99th percentile instead of its min and max. How much resolution does one outlier cost with min–max bins? (Illustrative numbers.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -186,7 +187,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$w = \frac{\text{upper} - \text{lower}}{B}$$</p>
 <p><strong>Steps</strong></p>
@@ -249,7 +250,7 @@
 <text class="dg-s" x="20" y="240">bin trải từ phân vị 1 tới 99 của mỗi chiều hành động; 256 token Llama ít dùng nhất bị ghi đè làm token bin</text>
 <text class="dg-l" x="20" y="268">học 27 epoch trên 64 A100 trong 14 ngày; fine-tune LoRA trên một GPU; suy luận int4 trong 7 GB</text>
 </svg><figcaption>Một ảnh và một câu lệnh đi qua bộ mã hóa ảnh ghép, projector và Llama 2. Mô hình viết 7 token hành động, rồi ánh xạ ngược về tâm của bin.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Lựa chọn</th>
@@ -299,11 +300,11 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> OpenVLA chia bin mỗi chiều hành động giữa phân vị 1 và 99 thay vì giữa min và max. Một giá trị ngoại lai làm mất bao nhiêu độ phân giải nếu dùng min–max? (Số minh họa.)</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -338,7 +339,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$w = \frac{\text{cận trên} - \text{cận dưới}}{B}$$</p>
 <p><strong>Các bước</strong></p>

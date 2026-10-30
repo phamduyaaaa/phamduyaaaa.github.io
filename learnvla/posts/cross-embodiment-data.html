@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Cross-Embodiment Data: Training One Policy on Many Robots">
 <meta property="og:description" content="One lab's robot data is small; pooling data from many robots is large but messy: different arms, cameras, action sizes and rates. How Open X-Embodiment, π0 and GR00T make it one dataset, and π0's re-weighting of big and small datasets worked by hand.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -100,7 +101,7 @@
 <rect class="dg-box" x="790" y="100" width="170" height="102"/><text class="dg-t" x="875" y="140" text-anchor="middle">fine-tune</text><text class="dg-s" x="875" y="160" text-anchor="middle">on your robot</text><text class="dg-s" x="875" y="176" text-anchor="middle">small dataset</text>
 <path class="dg-a" d="M730 151 H790"/>
 </svg><figcaption>Format, size, scale and weight must be unified before one model can learn from all of them.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Problem</th>
@@ -129,11 +130,11 @@
 <td>keep the rate per dataset; chunk length in time differs</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Two task–robot combinations, one with a million samples and one with ten thousand. Compare their share of training batches when sampled in proportion to size and with π0's $n^{0.43}$ weighting.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -162,7 +163,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$s_A = \frac{w_A}{w_A + w_B}, \qquad w = n^{0.43}$$</p>
 <p><strong>Steps</strong></p>
@@ -214,7 +215,7 @@
 <rect class="dg-box" x="790" y="100" width="170" height="102"/><text class="dg-t" x="875" y="140" text-anchor="middle">fine-tune</text><text class="dg-s" x="875" y="160" text-anchor="middle">trên robot của bạn</text><text class="dg-s" x="875" y="176" text-anchor="middle">bộ dữ liệu nhỏ</text>
 <path class="dg-a" d="M730 151 H790"/>
 </svg><figcaption>Định dạng, kích thước, thang đo và trọng số phải được thống nhất trước khi một mô hình học được từ tất cả.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Vấn đề</th>
@@ -243,11 +244,11 @@
 <td>giữ tần số theo từng bộ dữ liệu; độ dài chunk tính theo thời gian sẽ khác nhau</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Hai tổ hợp tác vụ–robot, một có một triệu mẫu và một có mười nghìn. So sánh phần batch huấn luyện của chúng khi lấy mẫu theo tỉ lệ kích thước và khi dùng trọng số $n^{0{,}43}$ của π0.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -276,7 +277,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$s_A = \frac{w_A}{w_A + w_B}, \qquad w = n^{0{,}43}$$</p>
 <p><strong>Từng bước</strong></p>

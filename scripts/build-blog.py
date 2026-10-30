@@ -230,6 +230,8 @@ def render_markdown(text: str, diagram_dir: Path = None, lang: str = "en") -> st
         html = html.replace(f"@@MATH{i}@@", safe)
     for i, fig in enumerate(figs):
         html = html.replace(f"<p>@@FIG{i}@@</p>", fig).replace(f"@@FIG{i}@@", fig)
+    html = re.sub(r"<table>", '<div class="table-scroll"><table>', html)
+    html = re.sub(r"</table>", "</table></div>", html)
     return html
 
 
@@ -305,7 +307,7 @@ def render_post_html(post: dict, section: str) -> str:
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="{post['title_en']}">
 <meta property="og:description" content="{post['excerpt_en']}">
@@ -313,6 +315,7 @@ def render_post_html(post: dict, section: str) -> str:
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="{section_styles}">
+<link rel="stylesheet" href="{blog_url}styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="{extras_styles}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>

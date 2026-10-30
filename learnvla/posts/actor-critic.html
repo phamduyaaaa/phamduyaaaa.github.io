@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Actor-Critic RL: Improving a Policy by Trial and a Learned Judge">
 <meta property="og:description" content="Imitation can only copy the demonstrator. Reinforcement learning improves on it from reward, but raw trial and error is noisy. A critic learns how good states are, the actor follows what beat the critic's expectation, and PPO keeps each update small. Discount, TD error and the PPO clip worked by hand.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -99,7 +100,7 @@
 <rect class="dg-box" x="820" y="110" width="140" height="70"/><text class="dg-t" x="890" y="138" text-anchor="middle">PPO: clip</text><text class="dg-s" x="890" y="158" text-anchor="middle">small steps only</text>
 <path class="dg-ad" d="M780 79 H890 V110"/>
 </svg><figcaption>The actor acts; the environment returns a reward and a new state; the critic's estimate turns that into a "better or worse than expected" signal that updates the actor.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Term</th>
@@ -140,11 +141,11 @@
 <td>learns from a replay buffer of older data, more sample-efficient</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Three small calculations that make up one actor-critic update: what a delayed reward is worth, how surprising one step was, and how much PPO lets the policy change.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -185,7 +186,7 @@
 <td>0.2 (the paper's best setting)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$G = \gamma^{k} r_{t+k}, \qquad \delta = r + \gamma V(s') - V(s), \qquad L^{CLIP} = \min\big(\rho A,\ \mathrm{clip}(\rho, 1-\epsilon, 1+\epsilon)\,A\big)$$</p>
 <p><strong>Steps</strong></p>
@@ -237,7 +238,7 @@
 <rect class="dg-box" x="820" y="110" width="140" height="70"/><text class="dg-t" x="890" y="138" text-anchor="middle">PPO: clip</text><text class="dg-s" x="890" y="158" text-anchor="middle">chỉ bước nhỏ</text>
 <path class="dg-ad" d="M780 79 H890 V110"/>
 </svg><figcaption>Actor hành động; môi trường trả về phần thưởng và trạng thái mới; ước lượng của critic biến điều đó thành tín hiệu "tốt hơn hay tệ hơn kỳ vọng" để cập nhật actor.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Thuật ngữ</th>
@@ -278,11 +279,11 @@
 <td>học từ bộ đệm replay chứa dữ liệu cũ hơn, tiết kiệm mẫu hơn</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Ba phép tính nhỏ tạo nên một lần cập nhật actor-critic: một phần thưởng đến muộn đáng giá bao nhiêu, một bước gây bất ngờ tới đâu, và PPO cho chính sách thay đổi bao nhiêu.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -323,7 +324,7 @@
 <td>0,2 (thiết lập tốt nhất của paper)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$G = \gamma^{k} r_{t+k}, \qquad \delta = r + \gamma V(s') - V(s), \qquad L^{CLIP} = \min\big(\rho A,\ \mathrm{clip}(\rho, 1-\epsilon, 1+\epsilon)\,A\big)$$</p>
 <p><strong>Từng bước</strong></p>

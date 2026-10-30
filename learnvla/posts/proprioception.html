@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Proprioception: What the Robot Knows About Its Own Body">
 <meta property="og:description" content="Cameras miss the exact joint angles, the gripper opening and the force at the wrist; the robot's own sensors give them directly. Which signals go into the state vector, how forward kinematics turns angles into a gripper pose, and why a long state history can make a policy lazy.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <path class="dg-a" d="M710 159 H770"/>
 <text class="dg-note dg-red" x="520" y="250">a long state history lets the policy copy its last action</text>
 </svg><figcaption>The robot's own sensors give the state directly; forward kinematics turns joint angles into a gripper pose. The policy reads it next to the camera tokens.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Signal</th>
@@ -145,11 +146,11 @@
 <td>contact force and torque at the tool (<a href="force-tactile-sensing.html">force sensing</a>)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The camera sees the gripper; the encoders give the angles. Forward kinematics computes the gripper position from the angles, and the same formula shows how a tiny angle error turns into millimetres at the tool.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -184,7 +185,7 @@
 <td>0.1°</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$x = l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2), \qquad y = l_1\sin\theta_1 + l_2\sin(\theta_1+\theta_2)$$</p>
 <p><strong>Steps</strong></p>
@@ -238,7 +239,7 @@
 <path class="dg-a" d="M710 159 H770"/>
 <text class="dg-note dg-red" x="520" y="250">lịch sử trạng thái dài cho phép policy chép lại hành động trước</text>
 </svg><figcaption>Cảm biến của chính robot cho trạng thái trực tiếp; động học thuận biến góc khớp thành pose tay kẹp. Chính sách đọc nó bên cạnh các token camera.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tín hiệu</th>
@@ -285,11 +286,11 @@
 <td>lực và mô-men tiếp xúc ở dụng cụ (<a href="force-tactile-sensing.html">cảm biến lực</a>)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Camera thấy tay kẹp; encoder cho góc khớp. Động học thuận tính vị trí tay kẹp từ góc khớp, và cùng công thức đó cho thấy một sai số góc rất nhỏ biến thành vài milimét ở đầu dụng cụ.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -324,7 +325,7 @@
 <td>0,1°</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$x = l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2), \qquad y = l_1\sin\theta_1 + l_2\sin(\theta_1+\theta_2)$$</p>
 <p><strong>Từng bước</strong></p>

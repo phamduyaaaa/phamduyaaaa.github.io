@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Survey 2: What Is Measured, and How It Becomes a Token">
 <meta property="og:description" content="'Force' in a force-aware VLA can mean five different measurements, and each reaches the network in one of six forms, from a raw number to a sentence. Includes the joint-torque-to-force calculation, a speed comparison and references.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -83,7 +84,7 @@
 </div>
 <h2>1. Five kinds of measurement</h2>
 <p>Think of what a hand can feel. A wrist sensor is like holding a tool and sensing the total push. Joint torque is like feeling how hard your muscles work. A gel sensor is like pressing a finger into clay and looking at the dent. A pressure array is a patch of skin with a few dozen pressure points. The fifth option is a numb hand that has learned what contact feels like.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Measurement</th>
@@ -130,7 +131,7 @@
 <td>FD-VLA [10], HapticVLA [16], CompVLA [31]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="How often each part runs, in Hz, as reported by the papers read in full. Sensors are fast; the model that reads them is slow. That gap shapes the designs in [Survey 3](survey-force-output.html)." class="dg-natural" width="682" height="192" viewBox="0 0 682 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Force/torque sensor (ForceVLA2)</text><rect class="dg-bar" x="232" y="10" width="313" height="18"/><text class="dg-barval" x="553" y="23">300 Hz</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Torque estimator (FWBC-VLA)</text><rect class="dg-bar" x="232" y="40" width="209" height="18"/><text class="dg-barval" x="449" y="53">200 Hz</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Pressure taxels (HapticVLA)</text><rect class="dg-bar" x="232" y="70" width="125" height="18"/><text class="dg-barval" x="365" y="83">120 Hz</text><text class="dg-barlabel" x="222" y="113" text-anchor="end">Gel images (TaF-VLA)</text><rect class="dg-bar" x="232" y="100" width="31" height="18"/><text class="dg-barval" x="271" y="113">30 Hz</text><text class="dg-barlabel" x="222" y="143" text-anchor="end">VLA planner (FWBC-VLA)</text><rect class="dg-bar" x="232" y="130" width="16" height="18"/><text class="dg-barval" x="256" y="143">15 Hz</text><text class="dg-barlabel" x="222" y="173" text-anchor="end">Base policy (TER-DAgger)</text><rect class="dg-key" x="232" y="160" width="2" height="18"/><text class="dg-barval" x="242" y="173">1 Hz</text></svg><figcaption>How often each part runs, in Hz, as reported by the papers read in full. Sensors are fast; the model that reads them is slow. That gap shapes the designs in [Survey 3](survey-force-output.html).</figcaption></figure>
 <h2>2. Getting force without a force sensor</h2>
 <p>The idea in one line: the motors know how hard they push. If you subtract the push needed just to move the arm, what is left is the world pushing back.</p>
@@ -138,7 +139,7 @@
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Recover the fingertip force from joint torques on a planar two-link arm. This is the core step of every sensorless method, and it shows why the free-motion model matters.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -185,7 +186,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (statics: $\tau = J^\top F$)</p>
 <p>$$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, \qquad (J^\top)^{-1} = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}$$</p>
 <p><strong>Steps</strong></p>
@@ -212,7 +213,7 @@
 <text class="dg-note dg-red" x="20" y="274">Cost of moving right: the policy depends more on the encoder, the language model or the training set.</text>
 <text class="dg-note dg-green" x="20" y="298">Benefit: a VLM can use the signal without learning a new physical vocabulary from a few demos.</text>
 </svg><figcaption>Left forms stay close to the raw signal; right forms are closer to meaning.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -266,7 +267,7 @@
 <td>FD-VLA [10], HapticVLA [16], TORL-VLA [18], TA-VLA [7], DexTacWAM [33]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>4. Caveats</h2>
 <ul>
 <li>FAVLA [12], LIFT [22] and CompliantVLA-adaptor [8] say "force/torque" or "6D force" without saying where it is measured; they may estimate it from joint torques.</li>
@@ -332,7 +333,7 @@
 </div>
 <h2>1. Năm loại phép đo</h2>
 <p>Hãy nghĩ xem một bàn tay cảm nhận được gì. Cảm biến cổ tay giống như cầm một dụng cụ và cảm nhận tổng lực đẩy. Mô-men khớp giống như cảm nhận cơ bắp đang gắng sức đến đâu. Cảm biến gel giống như ấn ngón tay vào đất sét rồi nhìn vết lõm. Lưới áp suất là một mảng da có vài chục điểm cảm nhận. Lựa chọn thứ năm là một bàn tay tê dại nhưng đã học được tiếp xúc "thường cảm thấy thế nào".</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phép đo</th>
@@ -379,7 +380,7 @@
 <td>FD-VLA [10], HapticVLA [16], CompVLA [31]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Mỗi bộ phận chạy bao nhiêu lần mỗi giây (Hz), theo các paper đã đọc đầy đủ. Cảm biến thì nhanh; mô hình đọc chúng lại chậm. Khoảng cách này định hình các thiết kế ở [Survey 3](survey-force-output.html)." class="dg-natural" width="675" height="192" viewBox="0 0 675 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="215" y="23" text-anchor="end">Cảm biến F/T (ForceVLA2)</text><rect class="dg-bar" x="225" y="10" width="313" height="18"/><text class="dg-barval" x="546" y="23">300 Hz</text><text class="dg-barlabel" x="215" y="53" text-anchor="end">Bộ ước lượng mô-men (FWBC-VLA)</text><rect class="dg-bar" x="225" y="40" width="209" height="18"/><text class="dg-barval" x="442" y="53">200 Hz</text><text class="dg-barlabel" x="215" y="83" text-anchor="end">Taxel áp suất (HapticVLA)</text><rect class="dg-bar" x="225" y="70" width="125" height="18"/><text class="dg-barval" x="358" y="83">120 Hz</text><text class="dg-barlabel" x="215" y="113" text-anchor="end">Ảnh gel (TaF-VLA)</text><rect class="dg-bar" x="225" y="100" width="31" height="18"/><text class="dg-barval" x="264" y="113">30 Hz</text><text class="dg-barlabel" x="215" y="143" text-anchor="end">Planner VLA (FWBC-VLA)</text><rect class="dg-bar" x="225" y="130" width="16" height="18"/><text class="dg-barval" x="249" y="143">15 Hz</text><text class="dg-barlabel" x="215" y="173" text-anchor="end">Chính sách nền (TER-DAgger)</text><rect class="dg-key" x="225" y="160" width="2" height="18"/><text class="dg-barval" x="235" y="173">1 Hz</text></svg><figcaption>Mỗi bộ phận chạy bao nhiêu lần mỗi giây (Hz), theo các paper đã đọc đầy đủ. Cảm biến thì nhanh; mô hình đọc chúng lại chậm. Khoảng cách này định hình các thiết kế ở [Survey 3](survey-force-output.html).</figcaption></figure>
 <h2>2. Lấy lực mà không cần cảm biến lực</h2>
 <p>Ý chính trong một câu: động cơ biết nó đang đẩy mạnh bao nhiêu. Trừ đi phần lực cần để chỉ riêng việc di chuyển cánh tay, phần còn lại chính là thế giới đẩy ngược lại.</p>
@@ -387,7 +388,7 @@
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Tìm lại lực tại đầu ngón từ mô-men khớp trên một cánh tay phẳng hai khâu. Đây là bước lõi của mọi phương pháp không cảm biến, và nó cho thấy vì sao mô hình chuyển động tự do quan trọng.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -434,7 +435,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (tĩnh học: $\tau = J^\top F$)</p>
 <p>$$\tau_{ext} = \tau_{meas} - \tau_{free}, \qquad F = (J^\top)^{-1}\,\tau_{ext}, \qquad (J^\top)^{-1} = \begin{pmatrix} 0 &amp; -1 \\ 1 &amp; -1 \end{pmatrix}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -461,7 +462,7 @@
 <text class="dg-note dg-red" x="20" y="274">Cái giá khi sang phải: policy phụ thuộc nhiều hơn vào bộ mã hóa, mô hình ngôn ngữ hoặc tập huấn luyện.</text>
 <text class="dg-note dg-green" x="20" y="298">Lợi ích: VLM dùng được tín hiệu mà không phải học từ vựng vật lý mới từ vài demo.</text>
 </svg><figcaption>Các dạng bên trái còn sát tín hiệu thô; các dạng bên phải gần với ý nghĩa hơn.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -515,7 +516,7 @@
 <td>FD-VLA [10], HapticVLA [16], TORL-VLA [18], TA-VLA [7], DexTacWAM [33]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>4. Lưu ý</h2>
 <ul>
 <li>FAVLA [12], LIFT [22] và CompliantVLA-adaptor [8] ghi "lực/mô-men" hay "lực 6D" mà không nói đo ở đâu; có thể chúng ước lượng từ mô-men khớp.</li>

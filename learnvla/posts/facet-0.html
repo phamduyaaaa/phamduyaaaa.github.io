@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Facet-0: Predict the Wrench, Then Value It">
 <meta property="og:description" content="Feeding the wrist force to a VLA as an input barely helps (9–14%), because the force only records contact that already happened. Facet-0 makes the policy predict the wrench its actions will cause, scores that pair with a critic and adapts on the robot: 82% vs 15% on five sub-millimetre assembly tasks.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -104,7 +105,7 @@
 <rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Adapt</text><text class="dg-s" x="815" y="390" text-anchor="middle">small bounded actor on frozen tokens,</text><text class="dg-s" x="815" y="406" text-anchor="middle">learns on the robot from 10 demos</text>
 <path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
 </svg><figcaption>Wrench history joins vision, language and pose in one representation. The action expert outputs actions and the wrench they should cause; only the actions are sent to a compliant controller.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -145,13 +146,13 @@
 <td>200 Hz, regulates force along the directions the sub-goal marks</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The coarse chunk comes at 5–10 Hz at about 5 mm resolution; a refinement expert updates it at 20 Hz at about 0.5 mm. Training loss: flow matching on the action columns plus $\lambda_{pre} = 0.1$ times flow matching on the wrench columns, so lowering the wrench error forces the policy to encode how its motion changes contact.</p>
 <h2>3. Work it by hand: the reward that charges for forcing</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The critic learns from one per-step signal: credit for finishing a sub-goal, more if it is quick, less if the wrench exceeded its limit. Computing two cases shows why forcing through is worse than a gentle insert.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -192,7 +193,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$r_t = \Omega_t\Big(1 + \beta\big[1 - \tfrac{\Delta t}{T_{max}}\big]_+\Big) - \alpha\big[\lVert w_t\rVert_\phi - 1\big]_+,\qquad [x]_+ = \max(x, 0)$$</p>
 <p><strong>Steps</strong></p>
@@ -206,7 +207,7 @@
 </div>
 <h2>4. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Mean success over five tasks, 20 trials per cell. Each stage adds: representation 16, value-guided refinement 38, local adaptation 82." class="dg-natural" width="634" height="252" viewBox="0 0 634 252" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="174" y="23" text-anchor="end">GR00T N1.7</text><rect class="dg-bar" x="184" y="10" width="14" height="18"/><text class="dg-barval" x="206" y="23">4%</text><text class="dg-barlabel" x="174" y="53" text-anchor="end">π0.5+F (wrench as input)</text><rect class="dg-bar" x="184" y="40" width="32" height="18"/><text class="dg-barval" x="224" y="53">9%</text><text class="dg-barlabel" x="174" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="184" y="70" width="36" height="18"/><text class="dg-barval" x="228" y="83">10%</text><text class="dg-barlabel" x="174" y="113" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="184" y="100" width="50" height="18"/><text class="dg-barval" x="242" y="113">14%</text><text class="dg-barlabel" x="174" y="143" text-anchor="end">π0.5+RECAP-style</text><rect class="dg-bar" x="184" y="130" width="54" height="18"/><text class="dg-barval" x="246" y="143">15%</text><text class="dg-barlabel" x="174" y="173" text-anchor="end">Facet-0 Align only</text><rect class="dg-bar" x="184" y="160" width="58" height="18"/><text class="dg-barval" x="249" y="173">16%</text><text class="dg-barlabel" x="174" y="203" text-anchor="end">Facet-0 +RL</text><rect class="dg-bar" x="184" y="190" width="137" height="18"/><text class="dg-barval" x="328" y="203">38%</text><text class="dg-barlabel" x="174" y="233" text-anchor="end">Facet-0 Full</text><rect class="dg-key" x="184" y="220" width="295" height="18"/><text class="dg-barval" x="487" y="233">82%</text></svg><figcaption>Mean success over five tasks, 20 trials per cell. Each stage adds: representation 16, value-guided refinement 38, local adaptation 82.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Success (%), 20 trials</th>
@@ -265,7 +266,7 @@
 <td><strong>82</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>Post-training against matched advantage-weighted BC on the Disk task: success 20% → 65%, recovery 44% → 81%, human intervention 47% → 24%.</li>
 <li>Unseen RAM module with a different mass and latch, 10 demonstrations and 3 hours: Facet-0 45% (updating 6.6% of the parameters) against 5% for the best baseline.</li>
@@ -273,7 +274,7 @@
 <li>Deployment: 50 ms per command against 150 ms for π0.5, 0.5 mm against about 5 mm placement accuracy, and 40% faster than an expert teleoperator.</li>
 </ul>
 <h2>5. Data and tasks</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -302,10 +303,10 @@
 <td>RAM, CPU, Disk, GPU installs and a CPU-socket lever: 23 sub-goals, 14 contact-critical, clearances 0.10–0.30 mm, force limits 8–70 N</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Can I use this on my robot?</h2>
 <p><strong>Short answer.</strong> This is the closest match so far to a precision push-in task with a wrist F/T sensor: code, weights and data are public and the stack builds on openpi. But the released weights were trained on their computer-assembly cells, and the paper does not say how to port the controller. "Not stated" means I looked in the paper, project page and repo and did not find it.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Need</th>
@@ -355,7 +356,7 @@
 <td>GPU type and pretraining time: not stated</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Which part to expect from.</strong> In their ablation, the representation alone gave 16% and the value-guided stage 38%. Most of the 82% came from the last stage, the on-robot adaptation (+44 points on average). So for a new task such as pressing a cap, the full gain needs rollouts, interventions and a working compliant controller, not just the released weights.</p>
 <h2>7. Caveats</h2>
 <ul>
@@ -403,7 +404,7 @@
 <rect class="dg-box" x="670" y="348" width="290" height="70"/><text class="dg-t" x="815" y="372" text-anchor="middle">03 Thích nghi</text><text class="dg-s" x="815" y="390" text-anchor="middle">actor nhỏ có giới hạn trên token đóng băng,</text><text class="dg-s" x="815" y="406" text-anchor="middle">học trên robot từ 10 demo</text>
 <path class="dg-a" d="M310 383 H345"/><path class="dg-a" d="M635 383 H670"/>
 </svg><figcaption>Lịch sử wrench nhập với thị giác, ngôn ngữ và pose vào một biểu diễn. Action expert xuất hành động và wrench mà chúng sẽ gây ra; chỉ hành động được gửi tới bộ điều khiển mềm.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -444,13 +445,13 @@
 <td>200 Hz, điều chỉnh lực theo các hướng mà sub-goal chỉ định</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Chunk thô ra ở 5–10 Hz với độ phân giải khoảng 5 mm; một refinement expert cập nhật nó ở 20 Hz với khoảng 0,5 mm. Hàm loss huấn luyện: flow matching trên các cột hành động cộng $\lambda_{pre} = 0{,}1$ lần flow matching trên các cột wrench, nên muốn giảm sai số wrench thì chính sách buộc phải mã hóa cách chuyển động của nó làm đổi tiếp xúc.</p>
 <h2>3. Tính tay: reward tính phí việc ép mạnh</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Critic học từ một tín hiệu mỗi bước: thưởng khi xong một sub-goal, thưởng nhiều hơn nếu nhanh, bị giảm nếu wrench vượt giới hạn. Tính hai trường hợp để thấy vì sao ép qua tệ hơn một lần cắm nhẹ.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -491,7 +492,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$r_t = \Omega_t\Big(1 + \beta\big[1 - \tfrac{\Delta t}{T_{max}}\big]_+\Big) - \alpha\big[\lVert w_t\rVert_\phi - 1\big]_+,\qquad [x]_+ = \max(x, 0)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -505,7 +506,7 @@
 </div>
 <h2>4. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Thành công trung bình trên năm tác vụ, 20 lượt mỗi ô. Mỗi giai đoạn cộng thêm: biểu diễn 16, tinh chỉnh theo giá trị 38, thích nghi cục bộ 82." class="dg-natural" width="640" height="252" viewBox="0 0 640 252" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="180" y="23" text-anchor="end">GR00T N1.7</text><rect class="dg-bar" x="190" y="10" width="14" height="18"/><text class="dg-barval" x="213" y="23">4%</text><text class="dg-barlabel" x="180" y="53" text-anchor="end">π0.5+F (wrench làm input)</text><rect class="dg-bar" x="190" y="40" width="32" height="18"/><text class="dg-barval" x="231" y="53">9%</text><text class="dg-barlabel" x="180" y="83" text-anchor="end">π0.5</text><rect class="dg-bar" x="190" y="70" width="36" height="18"/><text class="dg-barval" x="234" y="83">10%</text><text class="dg-barlabel" x="180" y="113" text-anchor="end">TA-VLA</text><rect class="dg-bar" x="190" y="100" width="50" height="18"/><text class="dg-barval" x="249" y="113">14%</text><text class="dg-barlabel" x="180" y="143" text-anchor="end">π0.5+kiểu RECAP</text><rect class="dg-bar" x="190" y="130" width="54" height="18"/><text class="dg-barval" x="252" y="143">15%</text><text class="dg-barlabel" x="180" y="173" text-anchor="end">Facet-0 chỉ Align</text><rect class="dg-bar" x="190" y="160" width="58" height="18"/><text class="dg-barval" x="256" y="173">16%</text><text class="dg-barlabel" x="180" y="203" text-anchor="end">Facet-0 +RL</text><rect class="dg-bar" x="190" y="190" width="137" height="18"/><text class="dg-barval" x="335" y="203">38%</text><text class="dg-barlabel" x="180" y="233" text-anchor="end">Facet-0 đầy đủ</text><rect class="dg-key" x="190" y="220" width="295" height="18"/><text class="dg-barval" x="494" y="233">82%</text></svg><figcaption>Thành công trung bình trên năm tác vụ, 20 lượt mỗi ô. Mỗi giai đoạn cộng thêm: biểu diễn 16, tinh chỉnh theo giá trị 38, thích nghi cục bộ 82.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Thành công (%), 20 lượt</th>
@@ -564,7 +565,7 @@
 <td><strong>82</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li>Hậu huấn luyện so với BC có trọng số lợi thế (AWR) cùng ngân sách, trên tác vụ Disk: thành công 20% → 65%, phục hồi 44% → 81%, can thiệp của người 47% → 24%.</li>
 <li>Mô-đun RAM chưa từng thấy với khối lượng và chốt khác, 10 demo và 3 giờ: Facet-0 45% (chỉ cập nhật 6,6% tham số) so với 5% của baseline tốt nhất.</li>
@@ -572,7 +573,7 @@
 <li>Triển khai: 50 ms mỗi lệnh so với 150 ms của π0.5, độ chính xác đặt 0,5 mm so với khoảng 5 mm, và nhanh hơn 40% so với một chuyên gia teleoperation.</li>
 </ul>
 <h2>5. Dữ liệu và tác vụ</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mục</th>
@@ -601,10 +602,10 @@
 <td>lắp RAM, CPU, Disk, GPU và một cần gạt ổ CPU: 23 sub-goal, 14 sub-goal tiếp xúc quan trọng, khe hở 0,10–0,30 mm, giới hạn lực 8–70 N</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Mình có dùng được cho robot của bạn không?</h2>
 <p><strong>Trả lời ngắn.</strong> Đây là bài gần nhất cho tới giờ với việc ấn chính xác có cảm biến F/T ở cổ tay: code, trọng số và dữ liệu đều công khai và toàn bộ xây trên openpi. Nhưng trọng số công bố được huấn luyện trên các trạm lắp máy tính của họ, và bài không nói cách chuyển bộ điều khiển sang robot khác. "Không nêu" nghĩa là mình đã tìm trong paper, trang dự án và repo mà không thấy.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Cần</th>
@@ -654,7 +655,7 @@
 <td>Loại GPU và thời gian pretraining: không nêu</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Nên kỳ vọng phần nào.</strong> Theo ablation của họ, riêng biểu diễn cho 16% và giai đoạn tinh chỉnh theo giá trị cho 38%. Phần lớn trong 82% đến từ giai đoạn cuối, thích nghi trên robot (thêm 44 điểm trung bình). Vì vậy với tác vụ mới như ấn nắp, lợi ích đầy đủ cần các lượt chạy thật, can thiệp của người và một bộ điều khiển mềm hoạt động, chứ không chỉ trọng số công bố.</p>
 <h2>7. Lưu ý</h2>
 <ul>

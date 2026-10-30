@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Tabero: Gentle Manipulation with Closed-Loop Force Feedback">
 <meta property="og:description" content="Told 'gently', a position-only VLA cannot squeeze less. Tabero replays LIBERO in a tactile simulator to get force data, and its VTLA outputs pose plus force targets for a fixed hybrid controller: 89% less grip force when asked.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -108,7 +109,7 @@
 <path class="dg-a" d="M850 114 V126"/><path class="dg-a" d="M850 202 V258"/>
 <path class="dg-ad" d="M745 280 H85 V192"/><text class="dg-l" x="415" y="272" text-anchor="middle">measured force + tactile feedback</text>
 </svg><figcaption>Vision, language, marker-field and force tokens enter a LoRA-tuned π0; it predicts pose and force targets; a fixed hybrid controller tracks them.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -149,12 +150,12 @@
 <td>feedforward + deadzone</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Work it by hand: two forces from two fingertips</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> The controller needs two separate numbers: how hard the gripper <em>squeezes</em> and how hard it <em>pushes</em> the object. Tabero derives both from the two fingertip force vectors. This split is what lets a policy ask for a gentle squeeze and a firm press at once.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -189,7 +190,7 @@
 <td>0.6 (paper)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L + F_R), \qquad F^{target}_{grip} = (1 + k_{ff})\,F^{pred}_{grip}$$</p>
 <p><strong>Steps</strong></p>
@@ -202,7 +203,7 @@
 <p><strong>Why it matters.</strong> Taking the <strong>smaller</strong> finger makes $F_{grip}$ follow the weaker contact (5 N and 3 N give 6 N), which is the one that slips first.</p>
 </div>
 <h2>4. The benchmark pipeline</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -227,7 +228,7 @@
 <td>success, average and peak grip force, average and peak applied force</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Caveats</h2>
 <ul>
 <li>Checked against the full text: data in the simulator are sampled at 20 Hz. Policy and controller rates and the run-time chunk length are not stated.</li>
@@ -275,7 +276,7 @@
 <path class="dg-a" d="M850 114 V126"/><path class="dg-a" d="M850 202 V258"/>
 <path class="dg-ad" d="M745 280 H85 V192"/><text class="dg-l" x="415" y="272" text-anchor="middle">phản hồi lực đo + xúc giác</text>
 </svg><figcaption>Token thị giác, ngôn ngữ, trường marker và lực vào π0 tinh chỉnh LoRA; mô hình dự đoán pose và lực mục tiêu; bộ điều khiển lai cố định bám theo.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -316,12 +317,12 @@
 <td>feedforward + vùng chết</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>3. Tính tay: hai lực từ hai đầu ngón</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Bộ điều khiển cần hai con số riêng: kẹp đang <em>siết</em> mạnh đến đâu và đang <em>đẩy</em> vật mạnh đến đâu. Tabero suy ra cả hai từ hai vector lực đầu ngón. Việc tách này cho phép chính sách đòi siết nhẹ và ấn mạnh cùng lúc.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -356,7 +357,7 @@
 <td>0.6 (của bài)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$F_{grip} = 2\min\left(|F_{L,z}|,\ |F_{R,z}|\right), \qquad F_{applied} = -(F_L + F_R), \qquad F^{target}_{grip} = (1 + k_{ff})\,F^{pred}_{grip}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -369,7 +370,7 @@
 <p><strong>Ý nghĩa.</strong> Lấy ngón <strong>nhỏ hơn</strong> khiến $F_{grip}$ bám theo tiếp xúc yếu hơn (5 N và 3 N cho 6 N), tức ngón sẽ trượt trước.</p>
 </div>
 <h2>4. Pipeline benchmark</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bước</th>
@@ -394,7 +395,7 @@
 <td>thành công, lực kẹp trung bình và đỉnh, lực tác dụng trung bình và đỉnh</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Lưu ý</h2>
 <ul>
 <li>Đã đối chiếu với toàn văn: dữ liệu trong mô phỏng lấy mẫu ở 20 Hz. Tần số chính sách, tần số bộ điều khiển và độ dài chunk lúc chạy không được nêu.</li>

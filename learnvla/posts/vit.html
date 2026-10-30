@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="ViT: When an Image Becomes Tokens">
 <meta property="og:description" content="A Transformer reads a sequence, an image is a grid, and one token per pixel is far too many. ViT cuts the image into patches, projects each one and adds a position vector. Worked by hand on a 4×4 image.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -98,7 +99,7 @@
 <text class="dg-l" x="220" y="190">one token per 14 x 14 patch: 16 x 16 = 256 tokens, 65,536 pairs</text>
 <text class="dg-note dg-red" x="220" y="230">without the position vectors, shuffling the patches gives the same set of outputs</text>
 </svg><figcaption>Cut, flatten, project, add position, then plain self-attention. In code, "cut and project" is one convolution whose kernel size and stride both equal the patch size.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Step</th>
@@ -139,12 +140,12 @@
 <td>patches exchange information</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Tokens for a 224×224 image. Patches cut the count by about 200×, and attention pairs by about 40,000×." class="dg-natural" width="696" height="102" viewBox="0 0 696 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="236" y="23" text-anchor="end">One token per pixel</text><rect class="dg-bar" x="246" y="10" width="313" height="18"/><text class="dg-barval" x="567" y="23">50176 tokens</text><text class="dg-barlabel" x="236" y="53" text-anchor="end">16×16 patches (original ViT)</text><rect class="dg-bar" x="246" y="40" width="2" height="18"/><text class="dg-barval" x="256" y="53">196 tokens</text><text class="dg-barlabel" x="236" y="83" text-anchor="end">14×14 patches (SigLIP, PaliGemma)</text><rect class="dg-key" x="246" y="70" width="2" height="18"/><text class="dg-barval" x="256" y="83">256 tokens</text></svg><figcaption>Tokens for a 224×224 image. Patches cut the count by about 200×, and attention pairs by about 40,000×.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Follow one tiny image all the way to tokens: a 4×4 grayscale image, 2×2 patches, $d = 2$. It shows that projection is pattern matching and that the position vector is what tells the patches apart.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -185,7 +186,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The image (made-up numbers) and its four patches:</p>
 <p>$$\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix},\ B=\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix},\ C=\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix},\ D=\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}$$</p>
 <p><strong>Formula</strong></p>
@@ -240,7 +241,7 @@
 <text class="dg-l" x="220" y="190">mỗi ô 14 x 14 một token: 16 x 16 = 256 token, 65.536 cặp</text>
 <text class="dg-note dg-red" x="220" y="230">không có vector vị trí, xáo trộn các ô vẫn cho cùng một tập đầu ra</text>
 </svg><figcaption>Cắt, duỗi phẳng, chiếu, cộng vị trí, rồi self-attention bình thường. Trong code, "cắt và chiếu" là một phép tích chập có kích thước kernel và bước nhảy đều bằng cỡ patch.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bước</th>
@@ -281,12 +282,12 @@
 <td>các patch trao đổi thông tin</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Số token của ảnh 224×224. Patch giảm số token khoảng 200 lần và số cặp attention khoảng 40.000 lần." class="dg-natural" width="682" height="102" viewBox="0 0 682 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="222" y="23" text-anchor="end">Mỗi pixel một token</text><rect class="dg-bar" x="232" y="10" width="313" height="18"/><text class="dg-barval" x="553" y="23">50176 token</text><text class="dg-barlabel" x="222" y="53" text-anchor="end">Patch 16×16 (ViT gốc)</text><rect class="dg-bar" x="232" y="40" width="2" height="18"/><text class="dg-barval" x="242" y="53">196 token</text><text class="dg-barlabel" x="222" y="83" text-anchor="end">Patch 14×14 (SigLIP, PaliGemma)</text><rect class="dg-key" x="232" y="70" width="2" height="18"/><text class="dg-barval" x="242" y="83">256 token</text></svg><figcaption>Số token của ảnh 224×224. Patch giảm số token khoảng 200 lần và số cặp attention khoảng 40.000 lần.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Đi theo một ảnh tí hon tới tận token: ảnh xám 4×4, patch 2×2, $d = 2$. Phép tính cho thấy phép chiếu là so khớp khuôn mẫu, và vector vị trí là thứ giúp phân biệt các patch.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -327,7 +328,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Ảnh (số bịa để minh họa) và bốn patch của nó:</p>
 <p>$$\begin{pmatrix} 1&amp;2&amp;5&amp;6\\ 3&amp;4&amp;7&amp;8\\ 9&amp;0&amp;3&amp;2\\ 1&amp;8&amp;4&amp;6 \end{pmatrix} \Rightarrow A=\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix},\ B=\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix},\ C=\begin{pmatrix}9&amp;0\\1&amp;8\end{pmatrix},\ D=\begin{pmatrix}3&amp;2\\4&amp;6\end{pmatrix}$$</p>
 <p><strong>Công thức</strong></p>

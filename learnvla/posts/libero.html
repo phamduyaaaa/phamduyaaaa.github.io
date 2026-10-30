@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="LIBERO: The Simulation Benchmark Most VLAs Report">
 <meta property="og:description" content="LIBERO was built to study lifelong learning with four 10-task suites, and became the standard sim score for VLAs. What each suite tests, what the usual protocol is, and why a 2-point gap near 90% needs about 900 trials to mean anything.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -96,7 +97,7 @@
 <rect class="dg-key" x="700" y="190" width="260" height="80"/><text class="dg-t" x="830" y="214" text-anchor="middle">report</text><text class="dg-s" x="830" y="234" text-anchor="middle">success rate per suite</text><text class="dg-s" x="830" y="252" text-anchor="middle">+ the average of the four</text>
 <path class="dg-a" d="M320 230 H360"/><path class="dg-a" d="M660 230 H700"/>
 </svg><figcaption>Spatial, Object and Goal hold all but one factor fixed. Long mixes them over long horizons and is usually the hardest suite.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Suite</th>
@@ -136,7 +137,7 @@
 <td>50</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>In the original paper, LIBERO-90 is the pre-training source and LIBERO-Long is the downstream lifelong-learning test, scored by forward transfer, backward transfer and area under the success curve. VLA papers ignore that lifelong protocol: they fine-tune once per suite and report plain success rates.</p>
 <h2>3. The VLA protocol, and where it varies</h2>
 <p>OpenVLA's appendix fixed what most later papers copy, and also shows how many hidden choices there are:</p>
@@ -145,7 +146,7 @@
 <li><strong>Inputs.</strong> Only the third-person camera (no wrist camera) in OpenVLA; images rotated 180° because the simulator renders them upside down.</li>
 <li><strong>Trials.</strong> OpenVLA: 500 trials per suite × 3 seeds. SmolVLA: 10 trials per task, so 100 per suite.</li>
 </ul>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Policy (as reported in SmolVLA, Table 2)</th>
@@ -204,12 +205,12 @@
 <td>87.3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The first three rows are copied from OpenVLA (1,500 trials each); the last two come from a different protocol with 100 trials per suite. Putting them in one table is common practice, and it is exactly the kind of comparison the <a href="danh-gia-vla.html">evaluation post</a> warns about.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Near the top of LIBERO, papers differ by 1-3 points. How many trials per suite does it take before a gap that small is larger than the noise?</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -250,7 +251,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (normal approximation, good enough when $np$ and $n(1-p)$ are both above about 10)</p>
 <p>$$n = \frac{z^2\,p(1-p)}{d^2}, \qquad h = z\sqrt{\frac{p(1-p)}{n}}$$</p>
 <p><strong>Steps</strong></p>
@@ -303,7 +304,7 @@
 <rect class="dg-key" x="700" y="190" width="260" height="80"/><text class="dg-t" x="830" y="214" text-anchor="middle">báo cáo</text><text class="dg-s" x="830" y="234" text-anchor="middle">tỉ lệ thành công mỗi bộ</text><text class="dg-s" x="830" y="252" text-anchor="middle">+ trung bình của bốn bộ</text>
 <path class="dg-a" d="M320 230 H360"/><path class="dg-a" d="M660 230 H700"/>
 </svg><figcaption>Spatial, Object và Goal giữ cố định mọi yếu tố trừ một. Long trộn chúng trên tầm dài và thường là bộ khó nhất.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ</th>
@@ -343,7 +344,7 @@
 <td>50</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Trong paper gốc, LIBERO-90 là nguồn tiền huấn luyện, còn LIBERO-Long là bài kiểm tra học suốt đời, chấm bằng chuyển giao xuôi, chuyển giao ngược và diện tích dưới đường tỉ lệ thành công. Các paper VLA bỏ qua giao thức học suốt đời đó: fine-tune một lần cho mỗi bộ và báo cáo tỉ lệ thành công thuần.</p>
 <h2>3. Quy trình của VLA, và chỗ nó khác nhau</h2>
 <p>Phụ lục của OpenVLA chốt quy trình mà phần lớn paper sau chép lại, đồng thời cho thấy có bao nhiêu lựa chọn ẩn:</p>
@@ -352,7 +353,7 @@
 <li><strong>Đầu vào.</strong> OpenVLA chỉ dùng camera góc thứ ba (không dùng camera cổ tay); ảnh xoay 180° vì trình mô phỏng xuất ảnh lộn ngược.</li>
 <li><strong>Số lần thử.</strong> OpenVLA: 500 lần mỗi bộ × 3 seed. SmolVLA: 10 lần mỗi tác vụ, tức 100 lần mỗi bộ.</li>
 </ul>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Policy (theo Bảng 2 của SmolVLA)</th>
@@ -411,12 +412,12 @@
 <td>87,3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Ba dòng đầu chép từ OpenVLA (1.500 lần thử mỗi số); hai dòng cuối theo quy trình khác, 100 lần mỗi bộ. Gộp chung một bảng là chuyện thường gặp, và đúng là kiểu so sánh mà <a href="danh-gia-vla.html">bài đánh giá</a> cảnh báo.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Ở vùng điểm cao của LIBERO, các paper chênh nhau 1-3 điểm. Cần bao nhiêu lần thử mỗi bộ thì khoảng chênh nhỏ như vậy mới lớn hơn nhiễu?</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -457,7 +458,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (xấp xỉ chuẩn, đủ dùng khi $np$ và $n(1-p)$ đều trên khoảng 10)</p>
 <p>$$n = \frac{z^2\,p(1-p)}{d^2}, \qquad h = z\sqrt{\frac{p(1-p)}{n}}$$</p>
 <p><strong>Các bước</strong></p>

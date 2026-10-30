@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="How to Evaluate a VLA: Success Rate Is Not Enough">
 <meta property="og:description" content="A bare success rate from 15 trials hides huge uncertainty, and the same method scores 12% to 60.5% across papers. A cheatsheet of what to report, how to read a confidence interval, and which benchmark measures what.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -84,7 +85,7 @@
 <h2>1. The problem: a number without error bars</h2>
 <figure class="diagram flow"><svg role="img" aria-label="The change is to say how sure we are, and under which conditions." class="dg-natural" width="675" height="206" viewBox="0 0 675 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Typical report</text><rect class="dg-box" x="128" y="14" width="96" height="54"/><text class="dg-t" x="176" y="37" text-anchor="middle">Run</text><text class="dg-s" x="176" y="53" text-anchor="middle">15 trials</text><path class="dg-a" d="M224 41 H256"/><rect class="dg-badbox" x="258" y="14" width="186" height="54"/><text class="dg-t" x="351" y="37" text-anchor="middle">One success %</text><text class="dg-s" x="351" y="53" text-anchor="middle">no interval, own protocol</text><path class="dg-a" d="M444 41 H476"/><rect class="dg-box" x="478" y="22" width="96" height="38"/><text class="dg-t" x="526" y="45" text-anchor="middle">Ranking</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ "A beats B" from overlapping noise</text><text class="dg-lab dg-green" x="14" y="143">Better report</text><rect class="dg-box" x="128" y="120" width="117" height="38"/><text class="dg-t" x="186" y="143" text-anchor="middle">Run n trials</text><path class="dg-a" d="M245 139 H277"/><rect class="dg-key" x="279" y="112" width="246" height="54"/><text class="dg-t" x="402" y="135" text-anchor="middle">Success + interval + progress</text><text class="dg-s" x="402" y="151" text-anchor="middle">+ protocol, + splits</text><path class="dg-a" d="M525 139 H557"/><rect class="dg-box" x="559" y="120" width="102" height="38"/><text class="dg-t" x="610" y="143" text-anchor="middle">Comparison</text><text class="dg-note dg-green" x="127.60000000000001" y="184">✓ only claim what the interval supports</text></svg><figcaption>The change is to say how sure we are, and under which conditions.</figcaption></figure>
 <h2>2. What to measure</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Metric</th>
@@ -138,10 +139,10 @@
 <td>needs a separate test set</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Rule of thumb: a force-sensitive task can "succeed" while crushing the object, so contact papers should also report force, not only pass/fail.</p>
 <h2>3. Which benchmark measures what</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Benchmark</th>
@@ -188,12 +189,12 @@
 <td>closest to deployment, least comparable</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Simulation is cheap and repeatable. Real robots show what simulation hides (friction, sensor noise), but a lab's setup cannot be copied exactly.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> With $n$ rollouts and $k$ successes, how wide is the plausible range for the true success rate? This decides whether "9/15 beats 6/15" means anything. We use the Wilson interval, which behaves well for small $n$.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -234,7 +235,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\text{centre} = \frac{\hat p + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}, \qquad \text{half-width} = \frac{z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
 <p><strong>Steps</strong> ($n = 15$, $k = 9$)</p>
@@ -277,7 +278,7 @@
 <h2>1. Vấn đề: con số không có thanh sai số</h2>
 <figure class="diagram flow"><svg role="img" aria-label="Thay đổi là nói rõ ta chắc đến đâu, và trong điều kiện nào." class="dg-natural" width="690" height="206" viewBox="0 0 690 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Báo cáo thường gặp</text><rect class="dg-box" x="153" y="14" width="96" height="54"/><text class="dg-t" x="201" y="37" text-anchor="middle">Chạy</text><text class="dg-s" x="201" y="53" text-anchor="middle">15 lần</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="263" height="54"/><text class="dg-t" x="415" y="37" text-anchor="middle">Một % thành công</text><text class="dg-s" x="415" y="53" text-anchor="middle">không khoảng tin cậy, quy trình riêng</text><path class="dg-a" d="M546 41 H578"/><rect class="dg-box" x="580" y="22" width="96" height="38"/><text class="dg-t" x="628" y="45" text-anchor="middle">Xếp hạng</text><text class="dg-note dg-red" x="153.2" y="86">✗ "A hơn B" từ nhiễu chồng lấn</text><text class="dg-lab dg-green" x="14" y="143">Báo cáo tốt hơn</text><rect class="dg-box" x="153" y="120" width="102" height="38"/><text class="dg-t" x="204" y="143" text-anchor="middle">Chạy n lần</text><path class="dg-a" d="M255 139 H287"/><rect class="dg-key" x="289" y="112" width="246" height="54"/><text class="dg-t" x="412" y="135" text-anchor="middle">Thành công + khoảng + tiến độ</text><text class="dg-s" x="412" y="151" text-anchor="middle">+ quy trình, + các split</text><path class="dg-a" d="M536 139 H568"/><rect class="dg-box" x="570" y="120" width="96" height="38"/><text class="dg-t" x="618" y="143" text-anchor="middle">So sánh</text><text class="dg-note dg-green" x="153.2" y="184">✓ chỉ khẳng định điều khoảng tin cậy ủng hộ</text></svg><figcaption>Thay đổi là nói rõ ta chắc đến đâu, và trong điều kiện nào.</figcaption></figure>
 <h2>2. Đo cái gì</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Chỉ số</th>
@@ -331,10 +332,10 @@
 <td>cần tập kiểm tra riêng</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Quy tắc: tác vụ nhạy lực có thể "thành công" mà vẫn bóp nát vật, nên paper về tiếp xúc cần báo cáo cả lực, không chỉ pass/fail.</p>
 <h2>3. Benchmark nào đo gì</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Benchmark</th>
@@ -381,12 +382,12 @@
 <td>gần triển khai nhất, khó so sánh nhất</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Mô phỏng rẻ và lặp lại được. Robot thật cho thấy điều mô phỏng che (ma sát, nhiễu cảm biến), nhưng thiết lập của một phòng thí nghiệm không sao chép nguyên được.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Với $n$ lần chạy và $k$ thành công, khoảng hợp lý cho tỉ lệ thành công thật rộng bao nhiêu? Điều này quyết định "9/15 hơn 6/15" có ý nghĩa không. Dùng khoảng Wilson, hoạt động tốt với $n$ nhỏ.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -427,7 +428,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\text{tâm} = \frac{\hat p + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}, \qquad \text{nửa rộng} = \frac{z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$</p>
 <p><strong>Các bước</strong> ($n = 15$, $k = 9$)</p>

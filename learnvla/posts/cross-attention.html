@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Cross-Attention: Letting One Sequence Read Another">
 <meta property="og:description" content="An action expert has to read hundreds of VLM tokens without rewriting them. Cross-attention takes queries from one sequence and keys and values from the other. Worked cost: why caching the VLM side makes ten denoising steps cheap, and why π0's block mask costs the same.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -97,7 +98,7 @@
 <path class="dg-a" d="M720 150 H790"/>
 <text class="dg-note" x="20" y="280">the VLM keys and values do not change between denoising steps, so they are computed once and cached</text>
 </svg><figcaption>Queries come from the action tokens, keys and values from the VLM tokens. The arithmetic is the same as self-attention; only the sources differ.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Block</th>
@@ -132,12 +133,12 @@
 <td>scene information added to the actions</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>A one-line example: an action query $q = (1, 0)$ meets a "cup" token with $k = (1, 0)$, $v = (5, 0)$ and a "table" token with $k = (0, 1)$, $v = (0, 5)$. With $d = 2$ the scores are $0.707$ and $0$, the weights $0.67$ and $0.33$, and the output $(3.35,\ 1.65)$: mostly cup, a little table.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> A flow-matching action expert runs 10 denoising steps per chunk. Count attention pairs with and without caching the VLM side, and compare cross-attention with π0's single-Transformer design.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -172,7 +173,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$P_{\text{no cache}} = S\,(n+m)^2, \qquad P_{\text{cache}} = m^2 + S\,(n\,m + n^2)$$</p>
 <p><strong>Steps</strong></p>
@@ -222,7 +223,7 @@
 <path class="dg-a" d="M720 150 H790"/>
 <text class="dg-note" x="20" y="280">key và value của VLM không đổi giữa các bước khử nhiễu, nên chỉ tính một lần rồi lưu đệm</text>
 </svg><figcaption>Query đến từ token hành động, key và value đến từ token VLM. Phép tính giống self-attention; chỉ có nguồn là khác.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khối</th>
@@ -257,12 +258,12 @@
 <td>thông tin khung cảnh được cộng vào hành động</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Ví dụ một dòng: query hành động $q = (1, 0)$ gặp token "cốc" có $k = (1, 0)$, $v = (5, 0)$ và token "bàn" có $k = (0, 1)$, $v = (0, 5)$. Với $d = 2$ điểm là $0{,}707$ và $0$, trọng số $0{,}67$ và $0{,}33$, đầu ra $(3{,}35;\ 1{,}65)$: chủ yếu là cốc, một chút bàn.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một action expert flow matching chạy 10 bước khử nhiễu cho mỗi chunk. Đếm số cặp attention khi có và không có lưu đệm phía VLM, và so cross-attention với thiết kế một-Transformer của π0.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -297,7 +298,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$P_{\text{không đệm}} = S\,(n+m)^2, \qquad P_{\text{có đệm}} = m^2 + S\,(n\,m + n^2)$$</p>
 <p><strong>Từng bước</strong></p>

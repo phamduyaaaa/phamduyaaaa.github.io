@@ -68,7 +68,7 @@
     <span class="lg lg-adapt"><i></i><span data-en>Needs adapting: a different signal or robot (joint torque, wrench from other sensors)</span><span data-vi>Cần chỉnh: tín hiệu hoặc robot khác (mô-men khớp, wrench từ cảm biến khác)</span></span>
   </aside>
 
-  <section id="postList" class="toc" aria-live="polite">
+  <section id="postList" class="toc">
     <!-- Mục lục render từ learnvla/toc.json; bài có trong posts.json sẽ thành link -->
   </section>
 
@@ -146,7 +146,8 @@ function toggleMenu(force) {
         var t = '<span class="toc-label">' + escapeHtml(it.title) +
           (it.date ? '<small class="toc-date">' + escapeHtml(it.venue || 'arXiv') + ' · ' + escapeHtml(it.date) + '</small>' : '') + '</span>';
         var fitCls = it.fit ? ' fit-' + it.fit : '';
-        var fitTag = it.fit ? '<span class="toc-fit" aria-hidden="true">UR10e</span>' : '';
+        var fitWord = it.fit === 'direct' ? 'Direct' : (it.fit === 'adapt' ? 'Adapt' : '');
+        var fitTag = it.fit ? '<span class="toc-fit">UR10e · ' + fitWord + '</span>' : '';
         if (done[it.slug]) {
           ready++;
           return '<li><a class="toc-item' + fitCls + '" href="posts/' + encodeURIComponent(it.slug) + '.html">' +

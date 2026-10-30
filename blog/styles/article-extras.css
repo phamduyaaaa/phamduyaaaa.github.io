@@ -51,9 +51,14 @@
 .dg-barval { fill: var(--ink); font: 700 11.5px var(--font-mono); }
 
 /* ---------- Bảng ---------- */
-.post-body table { border-collapse: collapse; margin: 18px 0; font-size: 14.5px; line-height: 1.5; }
+.post-body .table-scroll { overflow-x: auto; margin: 18px 0; }
+.post-body table { border-collapse: collapse; margin: 0; font-size: 14.5px; line-height: 1.5; }
 .post-body th, .post-body td { padding: 6px 16px 6px 0; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
-.post-body th { font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; color: var(--ink-4); text-transform: uppercase; }
+.post-body th { font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; color: var(--ink-4); text-transform: uppercase; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .post-body figure.diagram svg.dg-natural { min-width: 420px; }
+}
 
 /* ---------- Thẻ TL;DR ---------- */
 .post-body .tldr {

@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Action Spaces: Joints or Pose, Absolute or Delta, and How to Write a Rotation">
 <meta property="og:description" content="The same motion can be written as joint angles or a gripper pose, as a target or a step, with rotation in Euler angles, quaternions or six numbers. These choices decide what a network can learn. Two worked examples: the Euler jump at 180°, and normalising an action.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -93,7 +94,7 @@
 <rect class="dg-ext" x="260" y="190" width="460" height="56"/><text class="dg-t" x="490" y="214" text-anchor="middle">one action vector a_t, then a chunk a_t ... a_t+H-1</text><text class="dg-s" x="490" y="232" text-anchor="middle">the policy only learns well if every dataset uses the same convention</text>
 <path class="dg-a" d="M130 140 V170 H490 V190"/><path class="dg-a" d="M370 140 V170"/><path class="dg-a" d="M610 140 V170"/><path class="dg-a" d="M850 140 V170 H490"/>
 </svg><figcaption>Every action vector hides four decisions. They have to match across all the datasets one model is trained on.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Choice</th>
@@ -123,11 +124,11 @@
 <td>dimensions with large ranges dominate the loss unless each is normalised</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card 1: why Euler angles hurt</p>
 <p><strong>What and why.</strong> A gripper turns from yaw 179° to yaw −179°, a 2° turn. Compare how the Euler number and the 6D representation change.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -150,7 +151,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong> (rotation about $z$ only)</p>
 <p>$$r_1 = (\cos\psi,\ \sin\psi,\ 0), \qquad r_2 = (-\sin\psi,\ \cos\psi,\ 0)$$</p>
 <p><strong>Steps</strong></p>
@@ -166,7 +167,7 @@
 <div class="calc">
 <p>Calculation card 2: normalising one action dimension</p>
 <p><strong>What and why.</strong> Positions in metres, rotations in radians and gripper widths have very different ranges. Mapping each dimension's typical range to $[-1, 1]$ makes them comparable, using percentiles so one outlier does not stretch the scale (as OpenVLA and FAST do).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -195,7 +196,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\tilde a = 2\,\frac{a - q_{01}}{q_{99} - q_{01}} - 1$$</p>
 <p><strong>Steps</strong></p>
@@ -243,7 +244,7 @@
 <rect class="dg-ext" x="260" y="190" width="460" height="56"/><text class="dg-t" x="490" y="214" text-anchor="middle">một vector hành động a_t, rồi một chunk a_t ... a_t+H-1</text><text class="dg-s" x="490" y="232" text-anchor="middle">policy chỉ học tốt khi mọi bộ dữ liệu dùng cùng một quy ước</text>
 <path class="dg-a" d="M130 140 V170 H490 V190"/><path class="dg-a" d="M370 140 V170"/><path class="dg-a" d="M610 140 V170"/><path class="dg-a" d="M850 140 V170 H490"/>
 </svg><figcaption>Mỗi vector hành động giấu bốn quyết định. Chúng phải khớp nhau trên mọi bộ dữ liệu mà một mô hình được huấn luyện.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Lựa chọn</th>
@@ -273,11 +274,11 @@
 <td>các chiều có khoảng giá trị lớn sẽ lấn át loss nếu không chuẩn hóa từng chiều</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay 1: vì sao góc Euler gây hại</p>
 <p><strong>Tính gì và vì sao.</strong> Tay kẹp xoay từ yaw 179° sang yaw −179°, một cú xoay 2°. So sánh con số Euler và cách biểu diễn 6D thay đổi ra sao.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -300,7 +301,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong> (chỉ quay quanh $z$)</p>
 <p>$$r_1 = (\cos\psi,\ \sin\psi,\ 0), \qquad r_2 = (-\sin\psi,\ \cos\psi,\ 0)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -316,7 +317,7 @@
 <div class="calc">
 <p>Thẻ tính tay 2: chuẩn hóa một chiều hành động</p>
 <p><strong>Tính gì và vì sao.</strong> Vị trí tính bằng mét, phép quay bằng radian và độ mở tay kẹp có khoảng giá trị rất khác nhau. Ánh xạ khoảng điển hình của mỗi chiều về $[-1, 1]$ làm chúng so sánh được, dùng phân vị để một giá trị ngoại lai không kéo giãn thang đo (như OpenVLA và FAST làm).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -345,7 +346,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\tilde a = 2\,\frac{a - q_{01}}{q_{99} - q_{01}} - 1$$</p>
 <p><strong>Từng bước</strong></p>

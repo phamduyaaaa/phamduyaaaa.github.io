@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Diffusion Policy: Generating Actions by Removing Noise">
 <meta property="og:description" content="Demonstrations often contain several right ways to act, and a regression head averages them. Diffusion Policy learns to remove noise from an action sequence, so sampling from noise lands on one valid way. The noising step and the noise target worked by hand.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -99,7 +100,7 @@
 <path class="dg-a" d="M180 198 H220"/><path class="dg-a" d="M410 198 H450"/><path class="dg-a" d="M640 198 H680"/><path class="dg-a" d="M820 198 H850"/>
 <text class="dg-l" x="20" y="270">different starting noise ends in different valid actions: the policy samples, it does not average</text>
 </svg><figcaption>Top: training adds noise of a random level to a demonstration and asks the network to name the noise. Bottom: sampling starts from noise and repeatedly removes the predicted noise.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -140,11 +141,11 @@
 <td>plan $T_p$ steps, run $T_a$, observe, plan again</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> One training example in one dimension: make the noisy input, then check that predicting the noise is the same as knowing the clean action.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -191,7 +192,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formulas</strong></p>
 <p>$$a_k = \sqrt{\bar\alpha_k}\,a_0 + \sqrt{1-\bar\alpha_k}\,\varepsilon, \qquad \hat a_0 = \frac{a_k - \sqrt{1-\bar\alpha_k}\,\hat\varepsilon}{\sqrt{\bar\alpha_k}}$$</p>
 <p><strong>Steps</strong></p>
@@ -244,7 +245,7 @@
 <path class="dg-a" d="M180 198 H220"/><path class="dg-a" d="M410 198 H450"/><path class="dg-a" d="M640 198 H680"/><path class="dg-a" d="M820 198 H850"/>
 <text class="dg-l" x="20" y="270">nhiễu khởi đầu khác cho ra hành động hợp lệ khác: policy lấy mẫu, không lấy trung bình</text>
 </svg><figcaption>Trên: huấn luyện cộng nhiễu ở một mức ngẫu nhiên vào một demo và bắt mạng gọi tên phần nhiễu. Dưới: lấy mẫu bắt đầu từ nhiễu và lặp đi lặp lại việc gỡ phần nhiễu được dự đoán.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ phận</th>
@@ -285,11 +286,11 @@
 <td>lên kế hoạch $T_p$ bước, chạy $T_a$, quan sát, lên kế hoạch lại</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một mẫu huấn luyện một chiều: tạo đầu vào nhiễu, rồi kiểm tra rằng đoán đúng nhiễu cũng chính là biết được hành động sạch.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -336,7 +337,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$a_k = \sqrt{\bar\alpha_k}\,a_0 + \sqrt{1-\bar\alpha_k}\,\varepsilon, \qquad \hat a_0 = \frac{a_k - \sqrt{1-\bar\alpha_k}\,\hat\varepsilon}{\sqrt{\bar\alpha_k}}$$</p>
 <p><strong>Từng bước</strong></p>

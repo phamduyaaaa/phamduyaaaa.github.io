@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Survey 3: What the Policy Outputs, and How It Learns">
 <meta property="og:description" content="A VLA that reads force perfectly can still fail if it can only answer with a pose. Four output interfaces, seven ways of learning from force, the speed gap, a decision chart for choosing, and references.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -117,7 +118,7 @@
 <rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
 <text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
 </svg><figcaption>Four ways a force-aware policy can talk to the robot.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Interface</th>
@@ -152,12 +153,12 @@
 <td>ForceDelta-VLA [29], ForceRFT [30], TER-DAgger [13], VLA-Touch [4], MoDE-VLA [14], TacPAC [26]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>2. Work it by hand: one spring, three interfaces</h2>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Model contact as a spring and compare the force error of interfaces (a), (c) and (b) when the policy is wrong about where the surface is. This is the trade-off each interface makes.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -204,7 +205,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$\Delta x = \frac{F^*}{K}, \qquad e_F = K\,\delta, \qquad d = \frac{2\ \text{N}}{K}$$</p>
 <p><strong>Steps</strong></p>
@@ -219,7 +220,7 @@
 <figure class="diagram compact"><svg role="img" aria-label="Force error in newtons when the surface estimate is 5 mm off. Smaller is better." class="dg-natural" width="578" height="102" viewBox="0 0 578 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">(a) Stiff K=1000</text><rect class="dg-bar" x="128" y="10" width="313" height="18"/><text class="dg-barval" x="449" y="23">5 N</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">(c) Soft K=200</text><rect class="dg-bar" x="128" y="40" width="63" height="18"/><text class="dg-barval" x="199" y="53">1 N</text><text class="dg-barlabel" x="118" y="83" text-anchor="end">(b) Force target</text><rect class="dg-key" x="128" y="70" width="2" height="18"/><text class="dg-barval" x="138" y="83">0 N</text></svg><figcaption>Force error in newtons when the surface estimate is 5 mm off. Smaller is better.</figcaption></figure>
 <figure class="diagram compact"><svg role="img" aria-label="Free-space drift in millimetres under a 2 N disturbance. This is the price of being soft." class="dg-natural" width="578" height="72" viewBox="0 0 578 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">(a) Stiff K=1000</text><rect class="dg-bar" x="128" y="10" width="63" height="18"/><text class="dg-barval" x="199" y="23">2 mm</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">(c) Soft K=200</text><rect class="dg-key" x="128" y="40" width="313" height="18"/><text class="dg-barval" x="449" y="53">10 mm</text></svg><figcaption>Free-space drift in millimetres under a 2 N disturbance. This is the price of being soft.</figcaption></figure>
 <h2>3. The speed gap</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>System</th>
@@ -249,10 +250,10 @@
 <td>100 Hz action head reading latent buffers</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Sensors in these papers report at 30-300 Hz while VLAs replan a few times per second. Every "outside the VLA" design in <a href="survey-force-map.html">Survey 1</a> is a way to close this gap.</p>
 <h2>4. Seven ways to learn from force</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Regime</th>
@@ -297,10 +298,10 @@
 <td>DexTacWAM [33], H-Tac / TTP [21]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. What is still missing</h2>
 <figure class="diagram compact"><svg role="img" aria-label="The same baseline, ForceVLA, as measured in five places on different tasks and robots. These numbers cannot be compared with each other." class="dg-natural" width="703" height="162" viewBox="0 0 703 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="243" y="23" text-anchor="end">Reported by ForceVLA itself [2]</text><rect class="dg-bar" x="253" y="10" width="218" height="18"/><text class="dg-barval" x="478" y="23">60.5%</text><text class="dg-barlabel" x="243" y="53" text-anchor="end">In ForceDelta-VLA [29]</text><rect class="dg-bar" x="253" y="40" width="196" height="18"/><text class="dg-barval" x="456" y="53">54.4%</text><text class="dg-barlabel" x="243" y="83" text-anchor="end">In TORL-VLA [18] (15/30 full task)</text><rect class="dg-bar" x="253" y="70" width="180" height="18"/><text class="dg-barval" x="441" y="83">50%</text><text class="dg-barlabel" x="243" y="113" text-anchor="end">In FWBC-VLA [25] (whiteboard)</text><rect class="dg-bar" x="253" y="100" width="86" height="18"/><text class="dg-barval" x="347" y="113">24%</text><text class="dg-barlabel" x="243" y="143" text-anchor="end">In FWBC-VLA [25] (door)</text><rect class="dg-bar" x="253" y="130" width="43" height="18"/><text class="dg-barval" x="304" y="143">12%</text></svg><figcaption>The same baseline, ForceVLA, as measured in five places on different tasks and robots. These numbers cannot be compared with each other.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Gap</th>
@@ -321,7 +322,7 @@
 <td>a method tuned to one sensor may not transfer; TaF-VLA's [9] cross-sensor test is a start</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. How to choose</h2>
 <figure class="diagram"><svg role="img" aria-label="Start at the top left and follow the answers. This chart is a reading aid built from the surveyed papers, not a controlled comparison." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-key" x="20" y="20" width="200" height="50"/><text class="dg-t" x="120" y="50" text-anchor="middle">Start: my task</text>
@@ -342,7 +343,7 @@
 <rect class="dg-grp" x="680" y="320" width="280" height="62"/><text class="dg-t" x="820" y="346" text-anchor="middle">Same contact keeps failing?</text><text class="dg-s" x="820" y="364" text-anchor="middle">add human corrections, refine online</text>
 <path class="dg-ad" d="M560 351 H680"/>
 </svg><figcaption>Start at the top left and follow the answers. This chart is a reading aid built from the surveyed papers, not a controlled comparison.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Situation</th>
@@ -377,7 +378,7 @@
 <td>TORL-VLA [18], ForceRFT [30], TER-DAgger [13]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Check question:</strong> with $K = 500$ N/m, $\delta = 4$ mm, $F^* = 10$ N, what are $\Delta x$ and $e_F$ for a pose-only policy?</p>
 <details>
 <summary>Answer</summary>
@@ -470,7 +471,7 @@
 <rect class="dg-ext" x="760" y="214" width="180" height="32"/><text class="dg-t" x="850" y="235" text-anchor="middle">Robot</text>
 <text class="dg-s" x="850" y="274" text-anchor="middle">ForceDelta · ForceRFT · TER-DAgger</text><text class="dg-s" x="850" y="290" text-anchor="middle">VLA-Touch · MoDE-VLA · TacPAC</text>
 </svg><figcaption>Bốn cách để một chính sách có nhận biết lực nói chuyện với robot.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Giao diện</th>
@@ -505,12 +506,12 @@
 <td>ForceDelta-VLA [29], ForceRFT [30], TER-DAgger [13], VLA-Touch [4], MoDE-VLA [14], TacPAC [26]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>2. Tự tính tay: một chiếc lò xo, ba giao diện</h2>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Coi tiếp xúc như một lò xo, rồi so sai số lực của các giao diện (a), (c) và (b) khi chính sách đoán sai vị trí bề mặt. Đó chính là sự đánh đổi mà mỗi giao diện chọn.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -557,7 +558,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$\Delta x = \frac{F^*}{K}, \qquad e_F = K\,\delta, \qquad d = \frac{2\ \text{N}}{K}$$</p>
 <p><strong>Từng bước</strong></p>
@@ -572,7 +573,7 @@
 <figure class="diagram compact"><svg role="img" aria-label="Sai số lực (N) khi ước lượng bề mặt lệch 5 mm. Càng nhỏ càng tốt." class="dg-natural" width="578" height="102" viewBox="0 0 578 102" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="118" y="23" text-anchor="end">(a) Cứng K=1000</text><rect class="dg-bar" x="128" y="10" width="313" height="18"/><text class="dg-barval" x="449" y="23">5 N</text><text class="dg-barlabel" x="118" y="53" text-anchor="end">(c) Mềm K=200</text><rect class="dg-bar" x="128" y="40" width="63" height="18"/><text class="dg-barval" x="199" y="53">1 N</text><text class="dg-barlabel" x="118" y="83" text-anchor="end">(b) Lực mục tiêu</text><rect class="dg-key" x="128" y="70" width="2" height="18"/><text class="dg-barval" x="138" y="83">0 N</text></svg><figcaption>Sai số lực (N) khi ước lượng bề mặt lệch 5 mm. Càng nhỏ càng tốt.</figcaption></figure>
 <figure class="diagram compact"><svg role="img" aria-label="Độ trôi (mm) trong không gian tự do khi bị nhiễu 2 N. Đây là cái giá của việc mềm." class="dg-natural" width="572" height="72" viewBox="0 0 572 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="112" y="23" text-anchor="end">(a) Cứng K=1000</text><rect class="dg-bar" x="122" y="10" width="63" height="18"/><text class="dg-barval" x="192" y="23">2 mm</text><text class="dg-barlabel" x="112" y="53" text-anchor="end">(c) Mềm K=200</text><rect class="dg-key" x="122" y="40" width="313" height="18"/><text class="dg-barval" x="443" y="53">10 mm</text></svg><figcaption>Độ trôi (mm) trong không gian tự do khi bị nhiễu 2 N. Đây là cái giá của việc mềm.</figcaption></figure>
 <h2>3. Khoảng cách tốc độ</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Hệ thống</th>
@@ -602,10 +603,10 @@
 <td>đầu hành động 100 Hz đọc các bộ đệm ẩn</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Cảm biến trong các paper này báo cáo ở 30-300 Hz, trong khi VLA lập lại kế hoạch vài lần mỗi giây. Mọi thiết kế "ngoài VLA" ở <a href="survey-force-map.html">Survey 1</a> đều là một cách để lấp khoảng cách này.</p>
 <h2>4. Bảy cách học từ lực</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Cách học</th>
@@ -650,10 +651,10 @@
 <td>DexTacWAM [33], H-Tac / TTP [21]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Còn thiếu gì</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Cùng một baseline, ForceVLA, được đo ở năm nơi với tác vụ và robot khác nhau. Các con số này không thể so với nhau." class="dg-natural" width="723" height="162" viewBox="0 0 723 162" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="263" y="23" text-anchor="end">ForceVLA tự báo cáo [2]</text><rect class="dg-bar" x="273" y="10" width="218" height="18"/><text class="dg-barval" x="499" y="23">60,5%</text><text class="dg-barlabel" x="263" y="53" text-anchor="end">Trong ForceDelta-VLA [29]</text><rect class="dg-bar" x="273" y="40" width="196" height="18"/><text class="dg-barval" x="477" y="53">54,4%</text><text class="dg-barlabel" x="263" y="83" text-anchor="end">Trong TORL-VLA [18] (15/30 cả tác vụ)</text><rect class="dg-bar" x="273" y="70" width="180" height="18"/><text class="dg-barval" x="461" y="83">50%</text><text class="dg-barlabel" x="263" y="113" text-anchor="end">Trong FWBC-VLA [25] (bảng trắng)</text><rect class="dg-bar" x="273" y="100" width="86" height="18"/><text class="dg-barval" x="368" y="113">24%</text><text class="dg-barlabel" x="263" y="143" text-anchor="end">Trong FWBC-VLA [25] (cửa)</text><rect class="dg-bar" x="273" y="130" width="43" height="18"/><text class="dg-barval" x="324" y="143">12%</text></svg><figcaption>Cùng một baseline, ForceVLA, được đo ở năm nơi với tác vụ và robot khác nhau. Các con số này không thể so với nhau.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Khoảng trống</th>
@@ -674,7 +675,7 @@
 <td>phương pháp chỉnh cho một cảm biến có thể không chuyển sang loại khác; thử nghiệm đa cảm biến của TaF-VLA [9] là bước đầu</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>6. Cách chọn</h2>
 <figure class="diagram"><svg role="img" aria-label="Bắt đầu từ góc trên bên trái rồi đi theo các câu trả lời. Sơ đồ này chỉ là công cụ giúp đọc, dựng từ các paper đã khảo sát, không phải một so sánh có kiểm soát." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
 <rect class="dg-key" x="20" y="20" width="200" height="50"/><text class="dg-t" x="120" y="50" text-anchor="middle">Bắt đầu: tác vụ của tôi</text>
@@ -695,7 +696,7 @@
 <rect class="dg-grp" x="680" y="320" width="280" height="62"/><text class="dg-t" x="820" y="346" text-anchor="middle">Cùng một tiếp xúc cứ hỏng?</text><text class="dg-s" x="820" y="364" text-anchor="middle">thêm sửa của người, tinh chỉnh online</text>
 <path class="dg-ad" d="M560 351 H680"/>
 </svg><figcaption>Bắt đầu từ góc trên bên trái rồi đi theo các câu trả lời. Sơ đồ này chỉ là công cụ giúp đọc, dựng từ các paper đã khảo sát, không phải một so sánh có kiểm soát.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tình huống</th>
@@ -730,7 +731,7 @@
 <td>TORL-VLA [18], ForceRFT [30], TER-DAgger [13]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Câu hỏi kiểm tra:</strong> với $K = 500$ N/m, $\delta = 4$ mm, $F^* = 10$ N, một chính sách chỉ xuất pose có $\Delta x$ và $e_F$ bằng bao nhiêu?</p>
 <details>
 <summary>Đáp án</summary>

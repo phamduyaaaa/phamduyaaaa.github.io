@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="GelSight: A Camera Under a Gel Skin That Sees Shape and Force">
 <meta property="og:description" content="Pressure-array tactile sensors tell a robot where it is pressed and how hard, in cells about 5 mm wide. GelSight puts a camera behind a soft gel and reads the gel's deformation instead: shape at 20-30 micrometres, plus shear, torque and slip.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -112,7 +113,7 @@
 <rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">For a force that does not depend on the object's shape:</text><text class="dg-s" x="695" y="366" text-anchor="middle">a CNN reads the difference image (now minus untouched) and outputs Fx, Fy, Fz, Tz</text>
 <path class="dg-ad" d="M900 264 V320"/>
 </svg><figcaption>Left: an object presses the gel; coloured lights from different sides make the deformed skin look different in each colour channel; a camera below records it. Right: the same image is used twice, once for shape and once for force.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -165,12 +166,12 @@
 <td>spread = normal force, common shift = shear, rotation = torque</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Photometric stereo in one sentence.</strong> If you know how a surface of a given slope looks under each light, then the three colour values at a pixel tell you the slope; integrate the slopes and you get the shape.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Calibration presses a ball of known size on the sensor, so the true surface normal at every pixel is known; this pairs each colour with a normal in the lookup table. Compute the normal the ball gives at a chosen pixel.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -211,7 +212,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$g = \frac{r}{\sqrt{R^2 - r^2}}, \qquad \theta = \arctan g, \qquad \text{normal} \propto \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, -1\right)$$</p>
 <p><strong>Steps</strong></p>
@@ -230,7 +231,7 @@
 <li><strong>Why a network:</strong> that proportionality only holds for a fixed contact shape. For unknown shapes the paper trains a CNN (VGG-16 pre-trained on ImageNet, last layer replaced by four outputs: $F_x$, $F_y$, $F_z$, torque $T_z$) on the difference between the current image and the untouched one, with mean squared error.</li>
 <li><strong>Slip alarm:</strong> slip starts at the edge of the contact patch, so markers there move less than markers in the middle. The paper measures how uneven the marker motion is with entropy, $H(X) = -\int p(x)\log p(x)\,dx$, and says a warning threshold on $H$ can prevent slip.</li>
 </ul>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Marker motion in the contact patch</th>
@@ -250,10 +251,10 @@
 <td>$H = \ln 4 = 1.39$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>(Illustrative numbers; the paper reports that entropy keeps increasing as partial slip grows.)</p>
 <h2>4. Versions of the sensor</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Version</th>
@@ -288,7 +289,7 @@
 <td>3D-printable, drawings open-sourced</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. What the paper reports</h2>
 <ul>
 <li><strong>Force sensitivity:</strong> mostly below 0.05 N (one case, a soft flat contact read from shape, needs 0.08 N), calibrated with an ATI Nano-17 F/T sensor, which itself limits the test to 0.05 N.</li>
@@ -348,7 +349,7 @@
 <rect class="dg-box" x="430" y="320" width="530" height="66"/><text class="dg-t" x="695" y="346" text-anchor="middle">Để có lực không phụ thuộc hình dạng vật:</text><text class="dg-s" x="695" y="366" text-anchor="middle">một CNN đọc ảnh hiệu (hiện tại trừ lúc chưa chạm) và xuất Fx, Fy, Fz, Tz</text>
 <path class="dg-ad" d="M900 264 V320"/>
 </svg><figcaption>Trái: một vật ấn vào gel; đèn nhiều màu từ các phía làm lớp da biến dạng hiện khác nhau ở từng kênh màu; camera bên dưới ghi lại. Phải: cùng một ảnh được dùng hai lần, một lần cho hình dạng và một lần cho lực.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Bộ phận</th>
@@ -401,12 +402,12 @@
 <td>tỏa ra = lực pháp tuyến, cùng dịch = lực cắt, xoay = mô-men</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Photometric stereo trong một câu.</strong> Nếu biết một bề mặt có độ dốc nhất định trông thế nào dưới từng đèn, thì ba giá trị màu tại một pixel cho biết độ dốc; tích phân các độ dốc là ra hình dạng.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Hiệu chuẩn ấn một quả bóng có kích thước đã biết lên cảm biến, nên pháp tuyến thật tại mọi pixel là biết trước; điều này ghép mỗi màu với một pháp tuyến trong bảng tra. Hãy tính pháp tuyến mà quả bóng cho ở một pixel chọn trước.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -447,7 +448,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$g = \frac{r}{\sqrt{R^2 - r^2}}, \qquad \theta = \arctan g, \qquad \text{pháp tuyến} \propto \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, -1\right)$$</p>
 <p><strong>Từng bước</strong></p>
@@ -466,7 +467,7 @@
 <li><strong>Vì sao cần mạng nơ-ron:</strong> sự tỉ lệ đó chỉ đúng khi hình dạng tiếp xúc cố định. Với hình dạng chưa biết, paper huấn luyện một CNN (VGG-16 tiền huấn luyện trên ImageNet, lớp cuối thay bằng bốn đầu ra: $F_x$, $F_y$, $F_z$, mô-men $T_z$) trên hiệu của ảnh hiện tại và ảnh lúc chưa chạm, với sai số bình phương trung bình.</li>
 <li><strong>Chuông báo trượt:</strong> sự trượt bắt đầu từ rìa vùng tiếp xúc, nên các chấm ở rìa dịch chuyển ít hơn các chấm ở giữa. Paper đo độ không đồng đều của chuyển động chấm bằng entropy, $H(X) = -\int p(x)\log p(x)\,dx$, và nói có thể đặt ngưỡng cảnh báo trên $H$ để ngăn trượt.</li>
 </ul>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Chuyển động chấm trong vùng tiếp xúc</th>
@@ -486,10 +487,10 @@
 <td>$H = \ln 4 = 1{,}39$</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>(Số minh họa; paper báo cáo entropy tăng liên tục khi trượt từng phần tăng.)</p>
 <h2>4. Các phiên bản của cảm biến</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phiên bản</th>
@@ -524,7 +525,7 @@
 <td>in 3D được, bản vẽ mở nguồn</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>5. Paper báo cáo gì</h2>
 <ul>
 <li><strong>Độ nhạy lực:</strong> phần lớn dưới 0,05 N (một trường hợp, tiếp xúc phẳng mềm đọc từ hình dạng, cần 0,08 N), hiệu chuẩn bằng cảm biến F/T ATI Nano-17, chính cảm biến này cũng giới hạn phép thử ở 0,05 N.</li>

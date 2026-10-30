@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Token: One Currency for Text, Images and Actions">
 <meta property="og:description" content="A token is a small piece of input turned into a vector by table lookup. Once text, image patches and actions are all tokens, one Transformer can read them together. Worked example: turning an action value into a token id.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -84,7 +85,7 @@
 <h2>1. The problem: three modalities, one network</h2>
 <figure class="diagram flow"><svg role="img" aria-label="The change is the shared interface: everything becomes a list of vectors of the same size $d$." class="dg-natural" width="727" height="206" viewBox="0 0 727 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Separate models</text><rect class="dg-box" x="134" y="22" width="170" height="38"/><text class="dg-t" x="219" y="45" text-anchor="middle">Text, image, action</text><path class="dg-a" d="M304 41 H336"/><rect class="dg-badbox" x="338" y="14" width="186" height="54"/><text class="dg-t" x="431" y="37" text-anchor="middle">One model each</text><text class="dg-s" x="431" y="53" text-anchor="middle">RNN, CNN, regression head</text><path class="dg-a" d="M524 41 H556"/><rect class="dg-box" x="558" y="22" width="132" height="38"/><text class="dg-t" x="625" y="45" text-anchor="middle">Fusion by hand</text><text class="dg-note dg-red" x="134.0" y="86">✗ glued together manually</text><text class="dg-lab dg-green" x="14" y="143">Tokens</text><rect class="dg-box" x="134" y="120" width="186" height="38"/><text class="dg-t" x="227" y="143" text-anchor="middle">Text / image / action</text><path class="dg-a" d="M320 139 H352"/><rect class="dg-key" x="354" y="112" width="186" height="54"/><text class="dg-t" x="446" y="135" text-anchor="middle">Cut into pieces → ids</text><text class="dg-s" x="446" y="151" text-anchor="middle">lookup table</text><path class="dg-a" d="M539 139 H571"/><rect class="dg-box" x="573" y="120" width="140" height="38"/><text class="dg-t" x="643" y="143" text-anchor="middle">One Transformer</text><text class="dg-note dg-green" x="134.0" y="184">✓ one sequence, one model</text></svg><figcaption>The change is the shared interface: everything becomes a list of vectors of the same size $d$.</figcaption></figure>
 <h2>2. Three ways to make a token</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Modality</th>
@@ -113,12 +114,12 @@
 <td>one token per dimension per step</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Tokens for a 224×224 image. Patches cut the count by 256×." class="dg-natural" width="599" height="72" viewBox="0 0 599 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">One token per pixel</text><rect class="dg-bar" x="149" y="10" width="313" height="18"/><text class="dg-barval" x="470" y="23">50176 tokens</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">16×16 patches</text><rect class="dg-key" x="149" y="40" width="2" height="18"/><text class="dg-barval" x="159" y="53">196 tokens</text></svg><figcaption>Tokens for a 224×224 image. Patches cut the count by 256×.</figcaption></figure>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> How is a continuous action value turned into a token id, and how much is lost? This is the simplest "action tokenizer", binning (used with 256 bins per dimension in RT-1/RT-2-style models).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -153,7 +154,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$i = \left\lfloor \frac{a+1}{2}\,K \right\rfloor \qquad \hat a = \frac{i + 0.5}{K}\cdot 2 - 1$$</p>
 <p><strong>Steps</strong></p>
@@ -187,7 +188,7 @@
 <h2>1. Vấn đề: ba phương thức, một mạng</h2>
 <figure class="diagram flow"><svg role="img" aria-label="Thay đổi nằm ở giao diện chung: mọi thứ thành một danh sách vector cùng kích thước $d$." class="dg-natural" width="694" height="206" viewBox="0 0 694 206" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Mô hình riêng</text><rect class="dg-box" x="124" y="22" width="170" height="38"/><text class="dg-t" x="209" y="45" text-anchor="middle">Chữ, ảnh, hành động</text><path class="dg-a" d="M294 41 H326"/><rect class="dg-badbox" x="328" y="14" width="170" height="54"/><text class="dg-t" x="414" y="37" text-anchor="middle">Mỗi thứ một mô hình</text><text class="dg-s" x="414" y="53" text-anchor="middle">RNN, CNN, đầu hồi quy</text><path class="dg-a" d="M499 41 H531"/><rect class="dg-box" x="533" y="22" width="125" height="38"/><text class="dg-t" x="595" y="45" text-anchor="middle">Ghép bằng tay</text><text class="dg-note dg-red" x="124" y="86">✗ phải ghép thủ công</text><text class="dg-lab dg-green" x="14" y="143">Token</text><rect class="dg-box" x="124" y="120" width="186" height="38"/><text class="dg-t" x="217" y="143" text-anchor="middle">Chữ / ảnh / hành động</text><path class="dg-a" d="M310 139 H342"/><rect class="dg-key" x="344" y="112" width="163" height="54"/><text class="dg-t" x="425" y="135" text-anchor="middle">Cắt thành mẩu → id</text><text class="dg-s" x="425" y="151" text-anchor="middle">bảng tra</text><path class="dg-a" d="M506 139 H538"/><rect class="dg-box" x="540" y="120" width="140" height="38"/><text class="dg-t" x="610" y="143" text-anchor="middle">Một Transformer</text><text class="dg-note dg-green" x="124" y="184">✓ một chuỗi, một mô hình</text></svg><figcaption>Thay đổi nằm ở giao diện chung: mọi thứ thành một danh sách vector cùng kích thước $d$.</figcaption></figure>
 <h2>2. Ba cách tạo token</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phương thức</th>
@@ -216,12 +217,12 @@
 <td>một token mỗi chiều mỗi bước</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figure class="diagram compact"><svg role="img" aria-label="Số token của ảnh 224×224. Patch giảm số token 256 lần." class="dg-natural" width="599" height="72" viewBox="0 0 599 72" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="139" y="23" text-anchor="end">Một token mỗi pixel</text><rect class="dg-bar" x="149" y="10" width="313" height="18"/><text class="dg-barval" x="470" y="23">50176 token</text><text class="dg-barlabel" x="139" y="53" text-anchor="end">patch 16×16</text><rect class="dg-key" x="149" y="40" width="2" height="18"/><text class="dg-barval" x="159" y="53">196 token</text></svg><figcaption>Số token của ảnh 224×224. Patch giảm số token 256 lần.</figcaption></figure>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Một giá trị hành động liên tục được đổi thành id token thế nào, và mất bao nhiêu? Đây là "tokenizer hành động" đơn giản nhất, chia bin (256 bin mỗi chiều như các mô hình kiểu RT-1/RT-2).</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -256,7 +257,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$i = \left\lfloor \frac{a+1}{2}\,K \right\rfloor \qquad \hat a = \frac{i + 0{,}5}{K}\cdot 2 - 1$$</p>
 <p><strong>Các bước</strong></p>

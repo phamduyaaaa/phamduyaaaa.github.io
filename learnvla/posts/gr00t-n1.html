@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="GR00T N1: A Dual-System VLA Trained on a Data Pyramid">
 <meta property="og:description" content="NVIDIA's GR00T N1 pairs a 10 Hz vision-language model (System 2) with a 120 Hz flow-matching diffusion transformer (System 1) and per-robot adapters. It fills the gap in robot data with human videos and generated videos labelled by latent actions. On a real GR-1 humanoid, it reaches 76.8% vs 46.4% for Diffusion Policy, and 42.6% with only 10% of the data.">
@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="../../styles/main.css?v=vi-type">
 <link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
 <link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -99,7 +100,7 @@
 <path class="dg-a" d="M190 180 H220"/><path class="dg-a" d="M190 256 H220"/><path class="dg-a" d="M390 180 H430"/><path class="dg-a" d="M390 256 H430"/><path class="dg-a" d="M605 104 V150"/><path class="dg-a" d="M710 218 H750"/>
 <text class="dg-l" x="20" y="316">action-less data (human videos, generated videos) gets labels from a latent-action VQ-VAE or an inverse dynamics model</text>
 </svg><figcaption>The VLM runs slowly and is read through cross-attention; the DiT denoises state + action tokens fast; small MLPs adapt the model to each body.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Part</th>
@@ -136,12 +137,12 @@
 <td>one A6000 enough when tuning adapters + DiT (batch up to 200)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Compared with <a href="pi0.html">π0</a>: both use a VLM plus a flow-matching action module. π0's expert shares attention layers with the VLM; GR00T's DiT is a separate network reading the VLM through cross-attention (see <a href="cross-attention.html">cross-attention</a>), so the two can run at different rates.</p>
 <div class="calc">
 <p>Calculation card</p>
 <p><strong>What and why.</strong> Can System 1 keep up with 120 Hz control? Compare how long a chunk lasts on the robot with how long it takes to compute.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Symbol</th>
@@ -182,7 +183,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Formula</strong></p>
 <p>$$T_{chunk} = \frac{H}{f}, \qquad u = \frac{t_{inf}}{T_{chunk}}$$</p>
 <p><strong>Steps</strong></p>
@@ -195,7 +196,7 @@
 <p><strong>Why it matters.</strong> The next chunk can be computed while the current one is running, so the robot never waits. With $K = 10$ steps, as in π0, the same arithmetic would leave much less margin; few-step flow matching is what makes 120 Hz feasible.</p>
 </div>
 <h2>3. The data pyramid</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Layer</th>
@@ -220,11 +221,11 @@
 <td>real actions</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Neural trajectories multiplied the in-house teleoperation data about 10×, from 88 hours to 827 hours, with counterfactual scenes and new instructions.</p>
 <h2>4. Results</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Real GR-1 humanoid, average over four task groups (Table 3)." class="dg-natural" width="565" height="132" viewBox="0 0 565 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="105" y="23" text-anchor="end">DP 10% data</text><rect class="dg-bar" x="115" y="10" width="37" height="18"/><text class="dg-barval" x="159" y="23">10.2%</text><text class="dg-barlabel" x="105" y="53" text-anchor="end">GR00T 10% data</text><rect class="dg-key" x="115" y="40" width="153" height="18"/><text class="dg-barval" x="276" y="53">42.6%</text><text class="dg-barlabel" x="105" y="83" text-anchor="end">DP full</text><rect class="dg-bar" x="115" y="70" width="167" height="18"/><text class="dg-barval" x="290" y="83">46.4%</text><text class="dg-barlabel" x="105" y="113" text-anchor="end">GR00T full</text><rect class="dg-key" x="115" y="100" width="276" height="18"/><text class="dg-barval" x="399" y="113">76.8%</text></svg><figcaption>Real GR-1 humanoid, average over four task groups (Table 3).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Simulation, 100 demos per task (Table 2)</th>
@@ -257,7 +258,7 @@
 <td>45.0%</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Real-world task groups: pick-and-place, articulated objects, industrial, bimanual coordination; 10 trials per task. With 10% of the data GR00T is only 3.8 points below Diffusion Policy trained on all of it.</p>
 <h2>5. Caveats</h2>
 <ul>
@@ -298,7 +299,7 @@
 <path class="dg-a" d="M190 180 H220"/><path class="dg-a" d="M190 256 H220"/><path class="dg-a" d="M390 180 H430"/><path class="dg-a" d="M390 256 H430"/><path class="dg-a" d="M605 104 V150"/><path class="dg-a" d="M710 218 H750"/>
 <text class="dg-l" x="20" y="316">dữ liệu không có hành động (video người, video sinh) được gán nhãn bằng VQ-VAE latent action hoặc mô hình động lực học ngược</text>
 </svg><figcaption>VLM chạy chậm và được đọc qua cross-attention; DiT khử nhiễu token trạng thái + hành động thật nhanh; các MLP nhỏ thích nghi mô hình cho từng thân.</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Phần</th>
@@ -335,12 +336,12 @@
 <td>một A6000 là đủ khi chỉnh adapter + DiT (batch tới 200)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>So với <a href="pi0.html">π0</a>: cả hai dùng VLM cộng một mô-đun hành động flow matching. Expert của π0 dùng chung các lớp attention với VLM; DiT của GR00T là một mạng riêng đọc VLM qua cross-attention (xem <a href="cross-attention.html">cross-attention</a>), nên hai phần chạy được ở tần số khác nhau.</p>
 <div class="calc">
 <p>Thẻ tính tay</p>
 <p><strong>Tính gì và vì sao.</strong> Hệ 1 có theo kịp điều khiển 120 Hz không? So thời gian một chunk kéo dài trên robot với thời gian để tính nó.</p>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Ký hiệu</th>
@@ -381,7 +382,7 @@
 <td>–</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Công thức</strong></p>
 <p>$$T_{chunk} = \frac{H}{f}, \qquad u = \frac{t_{inf}}{T_{chunk}}$$</p>
 <p><strong>Các bước</strong></p>
@@ -394,7 +395,7 @@
 <p><strong>Vì sao quan trọng.</strong> Chunk kế tiếp được tính trong lúc chunk hiện tại đang chạy, nên robot không phải chờ. Với $K = 10$ bước như π0, cùng phép tính đó sẽ để lại ít dư địa hơn nhiều; flow matching ít bước là thứ làm 120 Hz khả thi.</p>
 </div>
 <h2>3. Kim tự tháp dữ liệu</h2>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Tầng</th>
@@ -419,11 +420,11 @@
 <td>hành động thật</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Quỹ đạo neural nhân dữ liệu điều khiển từ xa nội bộ lên khoảng 10 lần, từ 88 giờ lên 827 giờ, với cảnh giả định và câu lệnh mới.</p>
 <h2>4. Kết quả</h2>
 <figure class="diagram compact"><svg role="img" aria-label="Người máy GR-1 thật, trung bình trên bốn nhóm tác vụ (Bảng 3)." class="dg-natural" width="585" height="132" viewBox="0 0 585 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="125" y="23" text-anchor="end">DP 10% dữ liệu</text><rect class="dg-bar" x="135" y="10" width="37" height="18"/><text class="dg-barval" x="180" y="23">10,2%</text><text class="dg-barlabel" x="125" y="53" text-anchor="end">GR00T 10% dữ liệu</text><rect class="dg-key" x="135" y="40" width="153" height="18"/><text class="dg-barval" x="297" y="53">42,6%</text><text class="dg-barlabel" x="125" y="83" text-anchor="end">DP đầy đủ</text><rect class="dg-bar" x="135" y="70" width="167" height="18"/><text class="dg-barval" x="310" y="83">46,4%</text><text class="dg-barlabel" x="125" y="113" text-anchor="end">GR00T đầy đủ</text><rect class="dg-key" x="135" y="100" width="276" height="18"/><text class="dg-barval" x="420" y="113">76,8%</text></svg><figcaption>Người máy GR-1 thật, trung bình trên bốn nhóm tác vụ (Bảng 3).</figcaption></figure>
-<table>
+<div class="table-scroll"><table>
 <thead>
 <tr>
 <th>Mô phỏng, 100 demo mỗi tác vụ (Bảng 2)</th>
@@ -456,7 +457,7 @@
 <td>45,0%</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nhóm tác vụ thật: gắp-đặt, vật có khớp, công nghiệp, phối hợp hai tay; 10 lượt mỗi tác vụ. Với 10% dữ liệu, GR00T chỉ kém Diffusion Policy học trên toàn bộ dữ liệu 3,8 điểm.</p>
 <h2>5. Lưu ý</h2>
 <ul>
