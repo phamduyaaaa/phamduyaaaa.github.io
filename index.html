@@ -327,6 +327,28 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="Microduck bipedal robot walking in MuJoCo simulation">
+          <source src="assets/robot6.webm" type="video/webm">
+        </video>
+        <div class="project-thumb-placeholder" aria-hidden="true">Bipedal Locomotion · Sim</div>
+      </div>
+      <div class="project-body">
+        <div>
+          <div class="project-type">Reinforcement Learning · Sim-to-Real</div>
+          <div class="project-title">Microduck Bipedal Locomotion</div>
+          <div class="project-desc">Velocity-tracking walking policy for Microduck, a 25 cm, 14-servo bipedal robot. Trained with <strong>PPO on 4096 parallel MuJoCo Warp environments</strong> (mjlab) against a voltage-controlled servo actuator model, with domain randomization for sim-to-real transfer. Exported to ONNX and validated in a CPU MuJoCo rehearsal before deployment on hardware.</div>
+          <div class="project-pills">
+            <span class="pill">Python</span><span class="pill">PyTorch</span>
+            <span class="pill">MuJoCo</span><span class="pill">PPO</span><span class="pill">ONNX</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/pollen-robotics/microduck" class="project-link" target="_blank" rel="noopener noreferrer">Robot</a>
+        </div>
+      </div>
+    </div>
+    <div class="project-card" data-reveal>
+      <div class="project-thumb">
         <div class="project-thumb-placeholder" aria-hidden="true">RL Path Planning — Gazebo</div>
       </div>
       <div class="project-body">
