@@ -1,0 +1,23 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SUY LUẬN: BỘ LẬP KẾ HOẠCH TIỀM ẨN CHẬM, BỘ GIẢI MÃ XÚC GIÁC NHANH</text>
+<rect class="dg-ext" x="20" y="46" width="230" height="60"/><text class="dg-t" x="135" y="70" text-anchor="middle">ảnh + xúc giác + trạng thái</text><text class="dg-s" x="135" y="88" text-anchor="middle">2 khung ở 12 Hz</text>
+<rect class="dg-box" x="270" y="46" width="230" height="60"/><text class="dg-t" x="385" y="70" text-anchor="middle">Latent Diffusion Policy</text><text class="dg-s" x="385" y="88" text-anchor="middle">chậm: 1-2 Hz, khoảng 100 ms</text>
+<rect class="dg-box" x="550" y="46" width="200" height="60"/><text class="dg-t" x="650" y="70" text-anchor="middle">chunk tiềm ẩn Z</text><text class="dg-s" x="650" y="88" text-anchor="middle">ngắn hơn hành động 4 lần</text>
+<path class="dg-a" d="M250 76 H270"/><path class="dg-a" d="M500 76 H550"/>
+<rect class="dg-key" x="20" y="150" width="200" height="60"/><text class="dg-t" x="120" y="174" text-anchor="middle">xúc giác hoặc wrench</text><text class="dg-s" x="120" y="192" text-anchor="middle">24 Hz: PCA-15 hoặc 6 chiều</text>
+<rect class="dg-key" x="550" y="150" width="200" height="60"/><text class="dg-t" x="650" y="174" text-anchor="middle">bộ giải mã AT (GRU)</text><text class="dg-s" x="650" y="192" text-anchor="middle">nhanh: dưới 1 ms mỗi bước</text>
+<rect class="dg-box" x="800" y="150" width="160" height="60"/><text class="dg-t" x="880" y="174" text-anchor="middle">hành động kế tiếp</text><text class="dg-s" x="880" y="192" text-anchor="middle">pose EE tương đối</text>
+<path class="dg-a" d="M220 180 H550"/><text class="dg-s" x="240" y="172">xúc giác mới nhất ở mỗi bước</text>
+<path class="dg-a" d="M650 106 V150"/><path class="dg-a" d="M750 180 H800"/>
+<rect class="dg-grp" x="800" y="240" width="160" height="50"/><text class="dg-t" x="880" y="262" text-anchor="middle">robot</text><text class="dg-s" x="880" y="279" text-anchor="middle">nội suy lên 500+ Hz</text>
+<path class="dg-a" d="M880 210 V240"/>
+<text class="dg-l" x="20" y="270">latent mang chiến lược; bộ giải mã đặt dụng cụ theo xúc giác trực tiếp</text>
+<text class="dg-h" x="20" y="322">HUẤN LUYỆN: TOKENIZER TRƯỚC, RỒI CHÍNH SÁCH CHẬM TRÊN LATENT CỦA NÓ</text>
+<rect class="dg-ext" x="20" y="338" width="180" height="56"/><text class="dg-t" x="110" y="362" text-anchor="middle">chunk demo A</text><text class="dg-s" x="110" y="380" text-anchor="middle">32 bước ở 24 Hz</text>
+<rect class="dg-box" x="240" y="338" width="180" height="56"/><text class="dg-t" x="330" y="362" text-anchor="middle">bộ mã hóa CNN 1D</text><text class="dg-s" x="330" y="380" text-anchor="middle">không nhận xúc giác</text>
+<rect class="dg-box" x="460" y="338" width="140" height="56"/><text class="dg-t" x="530" y="362" text-anchor="middle">latent Z</text><text class="dg-s" x="530" y="380" text-anchor="middle">Z = E(A)</text>
+<rect class="dg-key" x="640" y="338" width="170" height="56"/><text class="dg-t" x="725" y="362" text-anchor="middle">bộ giải mã GRU</text><text class="dg-s" x="725" y="380" text-anchor="middle">Z + xúc giác</text>
+<rect class="dg-box" x="850" y="338" width="110" height="56"/><text class="dg-t" x="905" y="362" text-anchor="middle">hàm mất mát</text><text class="dg-s" x="905" y="380" text-anchor="middle">L1 + KL rất nhỏ</text>
+<path class="dg-a" d="M200 366 H240"/><path class="dg-a" d="M420 366 H460"/><path class="dg-a" d="M600 366 H640"/><path class="dg-a" d="M810 366 H850"/>
+<text class="dg-l" x="20" y="424">chính sách chậm khi đó là một Diffusion Policy khử nhiễu Z thay vì hành động thô</text>
+</svg>

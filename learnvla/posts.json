@@ -1,5 +1,76 @@
 [
   {
+    "slug": "farm",
+    "date": "2026-11-02",
+    "date_display": "02 Nov 2026",
+    "title_en": "FARM: Putting Grip Force into the Action, Measured with a GelSight Finger",
+    "title_vi": "FARM: Đưa lực kẹp vào hành động, đo bằng một ngón GelSight",
+    "excerpt_en": "Most tactile policies read touch but command only a gripper width, so the force they apply is an accident. FARM records force with a GelSight finger on a hand-held UMI gripper and predicts pose, grip width and grip force together; a force PID takes over once contact is detected. Screw tightening: 100% vs 40% for touch-as-observation and 0% for vision only.",
+    "excerpt_vi": "Phần lớn chính sách xúc giác đọc xúc giác nhưng chỉ ra lệnh độ mở tay kẹp, nên lực thực tế tác dụng là ngẫu nhiên. FARM ghi lực bằng một ngón GelSight trên tay kẹp UMI cầm tay và dự đoán cùng lúc pose, độ mở và lực kẹp; một bộ PID lực tiếp quản khi phát hiện tiếp xúc. Vặn vít: 100% so với 40% khi xúc giác chỉ là quan sát và 0% khi chỉ có thị giác.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Diffusion",
+      "Action Space",
+      "Paper Notes"
+    ],
+    "read_min": 8
+  },
+  {
+    "slug": "mimictouch",
+    "date": "2026-11-02",
+    "date_display": "02 Nov 2026",
+    "title_en": "MimicTouch: Recording Touch on a Human Finger, Then Closing the Gap with Residual RL",
+    "title_vi": "MimicTouch: Ghi xúc giác trên ngón tay người, rồi lấp khoảng cách bằng residual RL",
+    "excerpt_en": "Teleoperation is slow and the operator cannot feel what the robot feels. MimicTouch puts a GelSight Mini on a human fingertip and a contact microphone under the hole, copies the demonstrations by nearest-neighbour lookup, then corrects them on the robot with a small residual SAC policy: 96% insertion after 3 hours of online RL.",
+    "excerpt_vi": "Teleoperation chậm và người điều khiển không cảm nhận được những gì robot cảm nhận. MimicTouch gắn GelSight Mini lên đầu ngón tay người và một micro tiếp xúc dưới lỗ, chép demo bằng tra cứu láng giềng gần nhất, rồi sửa trên robot bằng một chính sách SAC residual nhỏ: chèn thành công 96% sau 3 giờ RL trực tuyến.",
+    "tags": [
+      "VLA",
+      "Tactile",
+      "Human Data",
+      "Residual RL",
+      "Paper Notes"
+    ],
+    "read_min": 8
+  },
+  {
+    "slug": "reactive-diffusion-policy",
+    "date": "2026-11-02",
+    "date_display": "02 Nov 2026",
+    "title_en": "Reactive Diffusion Policy: A Slow Planner and a Fast Tactile Reflex",
+    "title_vi": "Reactive Diffusion Policy: Một bộ lập kế hoạch chậm và một phản xạ xúc giác nhanh",
+    "excerpt_en": "An action chunk runs open loop, so the policy cannot react to touch until the next chunk. RDP plans latent chunks at 1–2 Hz and lets a tiny decoder turn them into actions at 24 Hz using the latest tactile or wrench reading: peeling 0.95 vs 0.44 for Diffusion Policy, bimanual lifting 0.70 vs 0.",
+    "excerpt_vi": "Một action chunk chạy vòng hở, nên chính sách không phản ứng được với xúc giác cho tới chunk sau. RDP lập kế hoạch chunk tiềm ẩn ở 1–2 Hz và để một bộ giải mã nhỏ biến chúng thành hành động ở 24 Hz bằng giá trị xúc giác hoặc wrench mới nhất: gọt vỏ 0,95 so với 0,44 của Diffusion Policy, nâng bằng hai tay 0,70 so với 0.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Tactile",
+      "Diffusion",
+      "Action Chunking",
+      "Paper Notes"
+    ],
+    "read_min": 9
+  },
+  {
+    "slug": "tdc",
+    "date": "2026-11-02",
+    "date_display": "02 Nov 2026",
+    "title_en": "TDC: Learn the Direction of Compliance in Simulation, Set the Magnitude by Hand",
+    "title_vi": "TDC: Học hướng mềm dẻo trong mô phỏng, đặt độ lớn bằng tay",
+    "excerpt_en": "Contact forces do not transfer from simulation, but which axis should be soft, stiff or force-controlled does. TDC trains a VLA only on simulated demonstrations to output a task frame and a per-axis control mode, and an admittance controller adds a hand-set stiffness and target force: 95% on four real tasks vs at most 71% for the baselines.",
+    "excerpt_vi": "Lực tiếp xúc không chuyển được từ mô phỏng, nhưng việc trục nào cần mềm, cứng hay điều khiển lực thì chuyển được. TDC huấn luyện một VLA chỉ trên demo mô phỏng để xuất một khung tác vụ và một chế độ điều khiển cho từng trục, và một bộ điều khiển admittance thêm độ cứng và lực mục tiêu đặt bằng tay: 95% trên bốn tác vụ thật so với tối đa 71% của các baseline.",
+    "tags": [
+      "VLA",
+      "Force",
+      "Sim-to-Real",
+      "Compliance",
+      "Admittance",
+      "Paper Notes"
+    ],
+    "read_min": 10
+  },
+  {
     "slug": "action-spaces",
     "date": "2026-10-21",
     "date_display": "21 Oct 2026",

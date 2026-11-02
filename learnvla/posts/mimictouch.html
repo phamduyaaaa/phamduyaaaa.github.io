@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Teleoperation is slow and the operator cannot feel what the robot feels. MimicTouch puts a GelSight Mini on a human fingertip and a contact microphone under the hole, copies the demonstrations by nearest-neighbour lookup, then corrects them on the robot with a small residual SAC policy: 96% insertion after 3 hours of online RL.">
+<title>MimicTouch: Recording Touch on a Human Finger, Then Closing the Gap with Residual RL · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="MimicTouch: Recording Touch on a Human Finger, Then Closing the Gap with Residual RL">
+<meta property="og:description" content="Teleoperation is slow and the operator cannot feel what the robot feels. MimicTouch puts a GelSight Mini on a human fingertip and a contact microphone under the hole, copies the demonstrations by nearest-neighbour lookup, then corrects them on the robot with a small residual SAC policy: 96% insertion after 3 hours of online RL.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">02 Nov 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">8 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>MimicTouch: Recording Touch on a Human Finger, Then Closing the Gap with Residual RL</h1>
+    <h1 data-vi>MimicTouch: Ghi xúc giác trên ngón tay người, rồi lấp khoảng cách bằng residual RL</h1>
+
+    <p class="post-excerpt-lead" data-en>Teleoperation is slow and the operator cannot feel what the robot feels. MimicTouch puts a GelSight Mini on a human fingertip and a contact microphone under the hole, copies the demonstrations by nearest-neighbour lookup, then corrects them on the robot with a small residual SAC policy: 96% insertion after 3 hours of online RL.</p>
+    <p class="post-excerpt-lead" data-vi>Teleoperation chậm và người điều khiển không cảm nhận được những gì robot cảm nhận. MimicTouch gắn GelSight Mini lên đầu ngón tay người và một micro tiếp xúc dưới lỗ, chép demo bằng tra cứu láng giềng gần nhất, rồi sửa trên robot bằng một chính sách SAC residual nhỏ: chèn thành công 96% sau 3 giờ RL trực tuyến.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Tactile</span><span class="pill">Human Data</span><span class="pill">Residual RL</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Yu, Han, Wang, Saxena, Xu, Zhao, <a href="https://arxiv.org/abs/2310.16917">arXiv 2310.16917</a> · v1 25 Oct 2023, v4 6 Feb 2025 · <strong>CoRL 2024</strong> (PMLR 270); Best Paper, NeurIPS 2023 Touch Processing Workshop · Georgia Tech · <a href="https://sites.google.com/view/mimictouch">project page</a> · no code or dataset released</p>
+<p><strong>PROBLEM</strong> Contact-rich insertion needs touch, but tactile demonstrations are usually collected by teleoperation: slow, hard to learn, and the operator steers by sight while the robot records touch, so the data does not reflect a touch-driven strategy.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Teleoperated tactile imitation (MULSA) assumes a small action space such as 3D translation; its policy reached 16% here. Pure tactile RL learns from scratch and produces quasi-static, limited motions.</p>
+<p><strong>IDEA</strong> Let a person do the task with a GelSight Mini on the fingertip while a contact microphone listens at the hole. Learn tactile and audio embeddings by self-supervision (BYOL), copy actions by nearest-neighbour lookup in the demonstration library, then train a bounded residual policy online on the robot with SAC to cover the human-to-gripper gap.</p>
+<p><strong>RESULT</strong> Human demonstrations are collected 5.5× faster than with a SpaceMouse (104 vs 19 usable per hour). The offline policy alone succeeds 40% (10/25); after 3 hours of residual RL it reaches 96% (24/25), and keeps 52–93% on unseen tilts, shapes and materials.</p>
+</div>
+<h2>1. The problem: teleoperation records touch the operator never used</h2>
+<figure class="diagram flow"><svg role="img" aria-label="The person's own sense of touch decides each move, so the demonstrations contain a real touch-guided strategy; RL fixes only what changes between a finger and a gripper." class="dg-natural" width="870" height="304" viewBox="0 0 870 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Teleoperation</text><rect class="dg-box" x="124" y="22" width="231" height="38"/><text class="dg-t" x="240" y="45" text-anchor="middle">SpaceMouse operator watches</text><path class="dg-a" d="M355 41 H387"/><rect class="dg-badbox" x="389" y="14" width="244" height="54"/><text class="dg-t" x="511" y="37" text-anchor="middle">Robot moves</text><text class="dg-s" x="511" y="53" text-anchor="middle">touch recorded, not used to decide</text><path class="dg-a" d="M633 41 H665"/><rect class="dg-box" x="667" y="22" width="140" height="38"/><text class="dg-t" x="737" y="45" text-anchor="middle">Tactile dataset</text><text class="dg-note dg-red" x="124" y="86">✗ 19 usable demos/h; policy 12%</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Tactile RL</text><rect class="dg-box" x="124" y="120" width="117" height="38"/><text class="dg-t" x="183" y="143" text-anchor="middle">Random start</text><path class="dg-a" d="M241 139 H273"/><rect class="dg-badbox" x="275" y="112" width="163" height="54"/><text class="dg-t" x="357" y="135" text-anchor="middle">Learn from scratch</text><text class="dg-s" x="357" y="151" text-anchor="middle">no motion prior</text><path class="dg-a" d="M438 139 H470"/><rect class="dg-box" x="472" y="120" width="96" height="38"/><text class="dg-t" x="520" y="143" text-anchor="middle">Policy</text><text class="dg-note dg-red" x="124" y="184">✗ quasi-static, small action space</text><text class="dg-lab dg-green" x="14" y="241">MimicTouch</text><rect class="dg-box" x="124" y="218" width="163" height="38"/><text class="dg-t" x="205" y="241" text-anchor="middle">Human finger feels</text><path class="dg-a" d="M287 237 H319"/><rect class="dg-key" x="321" y="210" width="186" height="54"/><text class="dg-t" x="414" y="233" text-anchor="middle">Tactile + audio demos</text><text class="dg-s" x="414" y="249" text-anchor="middle">104 usable/h</text><path class="dg-a" d="M506 237 H538"/><rect class="dg-key" x="540" y="218" width="186" height="38"/><text class="dg-t" x="633" y="241" text-anchor="middle">NN copy + residual RL</text><path class="dg-a" d="M726 237 H758"/><rect class="dg-box" x="760" y="218" width="96" height="38"/><text class="dg-t" x="808" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 96% after 3 h</text></svg><figcaption>The person's own sense of touch decides each move, so the demonstrations contain a real touch-guided strategy; RL fixes only what changes between a finger and a gripper.</figcaption></figure>
+<h2>2. Pipeline</h2>
+<figure class="diagram"><svg role="img" aria-label="Three stages: human data without a robot, an offline nearest-neighbour policy, and a small residual learned online on the robot." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">STAGE 1: HUMAN TACTILE DEMONSTRATIONS, NO ROBOT</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">GelSight on fingertip</text><text class="dg-s" x="120" y="86" text-anchor="middle">15 Hz, 400x300</text>
+<rect class="dg-ext" x="240" y="46" width="200" height="54"/><text class="dg-t" x="340" y="68" text-anchor="middle">contact microphone</text><text class="dg-s" x="340" y="86" text-anchor="middle">at the hole, 44.1 kHz</text>
+<rect class="dg-ext" x="460" y="46" width="200" height="54"/><text class="dg-t" x="560" y="68" text-anchor="middle">fingertip pose</text><text class="dg-s" x="560" y="86" text-anchor="middle">RealSense + ArUco</text>
+<rect class="dg-box" x="740" y="46" width="220" height="54"/><text class="dg-t" x="850" y="68" text-anchor="middle">demo library</text><text class="dg-s" x="850" y="86" text-anchor="middle">20 successful demos</text>
+<path class="dg-a" d="M660 73 H740"/>
+<text class="dg-h" x="20" y="138">STAGE 2: OFFLINE POLICY BY NEAREST NEIGHBOUR</text>
+<rect class="dg-key" x="20" y="156" width="200" height="54"/><text class="dg-t" x="120" y="178" text-anchor="middle">BYOL tactile encoder</text><text class="dg-s" x="120" y="196" text-anchor="middle">2048-D embedding</text>
+<rect class="dg-key" x="240" y="156" width="200" height="54"/><text class="dg-t" x="340" y="178" text-anchor="middle">BYOL-A audio encoder</text><text class="dg-s" x="340" y="196" text-anchor="middle">mel-spectrogram, 2048-D</text>
+<rect class="dg-box" x="460" y="156" width="200" height="54"/><text class="dg-t" x="560" y="178" text-anchor="middle">nearest neighbour</text><text class="dg-s" x="560" y="196" text-anchor="middle">query vs library</text>
+<rect class="dg-box" x="740" y="156" width="220" height="54"/><text class="dg-t" x="850" y="178" text-anchor="middle">offline action a_o</text><text class="dg-s" x="850" y="196" text-anchor="middle">6-D delta EE pose, 5 Hz</text>
+<path class="dg-a" d="M440 183 H460"/><path class="dg-a" d="M120 210 V226 H560 V210"/>
+<path class="dg-a" d="M850 100 V128 H700 V183 H660"/>
+<path class="dg-a" d="M660 196 H740"/>
+<text class="dg-h" x="20" y="252">STAGE 3: ONLINE RESIDUAL RL ON THE ROBOT (SAC)</text>
+<rect class="dg-box" x="20" y="270" width="220" height="54"/><text class="dg-t" x="130" y="292" text-anchor="middle">residual policy (MLP)</text><text class="dg-s" x="130" y="310" text-anchor="middle">touch, audio, pose, last action</text>
+<rect class="dg-box" x="290" y="270" width="200" height="54"/><text class="dg-t" x="390" y="292" text-anchor="middle">residual a_r</text><text class="dg-s" x="390" y="310" text-anchor="middle">clipped: 0.15 cm, 3 deg</text>
+<rect class="dg-key" x="540" y="270" width="200" height="54"/><text class="dg-t" x="640" y="292" text-anchor="middle">a = a_o + a_r</text><text class="dg-s" x="640" y="310" text-anchor="middle">IK to Franka Panda</text>
+<rect class="dg-ext" x="790" y="270" width="170" height="54"/><text class="dg-t" x="875" y="292" text-anchor="middle">reward</text><text class="dg-s" x="875" y="310" text-anchor="middle">distance, angle, penalty</text>
+<path class="dg-a" d="M240 297 H290"/><path class="dg-a" d="M490 297 H540"/><path class="dg-a" d="M740 297 H790"/>
+<path class="dg-a" d="M850 210 V244 H640 V270"/>
+<path class="dg-ad" d="M875 324 V344 H130 V324"/>
+<text class="dg-l" x="300" y="366">only the residual learns on the robot; a_o stays fixed</text>
+</svg><figcaption>Three stages: human data without a robot, an offline nearest-neighbour policy, and a small residual learned online on the robot.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Human rig</td>
+<td>GelSight Mini on the fingertip (15 Hz, 400×300), contact microphone at the hole base (44.1 kHz), RealSense + ArUco for fingertip pose (60 Hz)</td>
+<td>synchronised streams, resampled to 15 Hz</td>
+<td>demonstrations without a robot</td>
+</tr>
+<tr>
+<td>Tactile encoder</td>
+<td>GelSight image, 256×256</td>
+<td>2,048-D embedding</td>
+<td>BYOL; only blur and crop augmentation, because colour jitter would change the tactile signal</td>
+</tr>
+<tr>
+<td>Audio encoder</td>
+<td>0.5 s mel-spectrogram, 64 bins</td>
+<td>2,048-D embedding</td>
+<td>BYOL-A</td>
+</tr>
+<tr>
+<td>Offline policy</td>
+<td>tactile and audio embeddings plus EE pose</td>
+<td>6-D delta EE pose $a_o$</td>
+<td>nearest-neighbour lookup in the library of 20 demonstrations; inputs normalised to unit maximum distance</td>
+</tr>
+<tr>
+<td>Residual policy</td>
+<td>the same features plus the previous action</td>
+<td>$a_r$, clipped to ±0.15 cm and ±3° per axis</td>
+<td>MLP trained with SAC on the real robot</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>$a = a_o + a_r$ at 5 Hz</td>
+<td>joint commands via IK</td>
+<td>Franka Panda; no camera during execution</td>
+</tr>
+</tbody>
+</table></div>
+<p>The residual is trained with a shaped reward: $d = 1 - \tanh(10\,\lVert\Delta p\rVert)$ for distance to the target, $o = 1 - \tanh(7.5\,\lVert\Delta q\rVert)$ for orientation, a 0.2 term for a blocked step (written in the paper as a penalty $c$ that is 0.2 when the step completes and 0 when it cannot complete within 0.5 s), a 0.5 penalty when the tactile embedding jumps (slip), and a trajectory term $D_{KL}$ that keeps the robot near the expert. Overall $R = 1$ on success, otherwise $R = 0.5\,D_{KL} + 0.3\,d + 0.2\,o - c - s$, as printed.</p>
+<h2>3. Work it by hand: data speed and how far the residual can move</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Two numbers decide whether the method is practical: how long collecting the 20 demonstrations takes, and how much the residual can correct, since it is the only part that learns on the robot.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$r$</td>
+<td>usable demonstrations per hour (Table 1)</td>
+<td>measured</td>
+<td>19 (SpaceMouse), 44 (hand-guided), 104 (human tactile)</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>demonstrations needed</td>
+<td>constant</td>
+<td>20</td>
+</tr>
+<tr>
+<td>$\delta$</td>
+<td>residual limit per step, translation</td>
+<td>constant</td>
+<td>0.15 cm</td>
+</tr>
+<tr>
+<td>$f$</td>
+<td>control rate</td>
+<td>constant</td>
+<td>5 Hz</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>distance reward term</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Formulas</strong></p>
+<p>$$T = \frac{N}{r},\qquad v_{max} = \delta\, f,\qquad d = 1 - \tanh(10\,\lVert\Delta p\rVert)$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>SpaceMouse: $20 / 19 = 1.05$ h, about 63 minutes, after about 5 hours of operator practice.</li>
+<li>Human tactile: $20 / 104 = 0.19$ h, about 11.5 minutes. Ratio $104 / 19 = 5.5$.</li>
+<li>Residual speed: $0.15 \times 5 = 0.75$ cm/s per axis at most.</li>
+<li>Distance reward with $\lVert\Delta p\rVert$ = 0.01 m (1 cm, assuming metres): $\tanh(0.1) = 0.0997$, so $d = 0.90$; at 0.05 m: $\tanh(0.5) = 0.462$, $d = 0.54$.</li>
+</ol>
+<p><strong>Result.</strong> About 12 minutes of human demonstrations against an hour of SpaceMouse; the residual can shift the plan by at most 0.75 cm/s.</p>
+<p><strong>Why it matters.</strong> The residual is small on purpose: it can fix a millimetre-scale offset between a finger and a gripper, but it cannot invent a new strategy. Whatever the human did must already be close to right.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Cylinder insertion, 25 trials each. Every policy is the same nearest-neighbour method; only the source of the 20 demonstrations differs." class="dg-natural" width="661" height="222" viewBox="0 0 661 222" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="201" y="23" text-anchor="end">SpaceMouse demos, offline</text><rect class="dg-bar" x="211" y="10" width="43" height="18"/><text class="dg-barval" x="262" y="23">12%</text><text class="dg-barlabel" x="201" y="53" text-anchor="end">Hand-guided demos, offline</text><rect class="dg-bar" x="211" y="40" width="101" height="18"/><text class="dg-barval" x="320" y="53">28%</text><text class="dg-barlabel" x="201" y="83" text-anchor="end">Human tactile demos, offline</text><rect class="dg-bar" x="211" y="70" width="144" height="18"/><text class="dg-barval" x="363" y="83">40%</text><text class="dg-barlabel" x="201" y="113" text-anchor="end">SpaceMouse + RL 2 h</text><rect class="dg-bar" x="211" y="100" width="115" height="18"/><text class="dg-barval" x="334" y="113">32%</text><text class="dg-barlabel" x="201" y="143" text-anchor="end">Hand-guided + RL 2 h</text><rect class="dg-bar" x="211" y="130" width="216" height="18"/><text class="dg-barval" x="435" y="143">60%</text><text class="dg-barlabel" x="201" y="173" text-anchor="end">Human tactile + RL 2 h</text><rect class="dg-bar" x="211" y="160" width="317" height="18"/><text class="dg-barval" x="536" y="173">88%</text><text class="dg-barlabel" x="201" y="203" text-anchor="end">Human tactile + RL 3 h</text><rect class="dg-key" x="211" y="190" width="346" height="18"/><text class="dg-barval" x="565" y="203">96%</text></svg><figcaption>Cylinder insertion, 25 trials each. Every policy is the same nearest-neighbour method; only the source of the 20 demonstrations differs.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Data collection (20 usable demos)</th>
+<th>Usable per hour</th>
+<th>Usable share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SpaceMouse teleoperation</td>
+<td>19</td>
+<td>38.5% (20/52)</td>
+</tr>
+<tr>
+<td>Hand-guided teleoperation</td>
+<td>44</td>
+<td>58.8% (20/34)</td>
+</tr>
+<tr>
+<td>Human tactile demonstration</td>
+<td>104</td>
+<td>83.3% (20/24)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Offline policy against the MULSA baseline on the same demonstrations: action MSE 0.21 vs 1.53, success 40% vs 16%.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Zero-shot generalisation (final policy)</th>
+<th>Open-loop replay</th>
+<th>MimicTouch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hole shifted 0.8 cm</td>
+<td>24/40</td>
+<td>37/40</td>
+</tr>
+<tr>
+<td>Hole tilted 10°</td>
+<td>14/25</td>
+<td>23/25</td>
+</tr>
+<tr>
+<td>Hole tilted 20°</td>
+<td>10/25</td>
+<td>20/25</td>
+</tr>
+<tr>
+<td>Two-stage dense packing</td>
+<td>13/25</td>
+<td>22/25</td>
+</tr>
+<tr>
+<td>Rigid multi-material box</td>
+<td>13/25</td>
+<td>20/25</td>
+</tr>
+<tr>
+<td>Soft multi-material box</td>
+<td>9/25</td>
+<td>16/25</td>
+</tr>
+<tr>
+<td>Furniture assembly (insertion part)</td>
+<td>8/25</td>
+<td>19/25</td>
+</tr>
+<tr>
+<td>Furniture assembly (full)</td>
+<td>3/25</td>
+<td>13/25</td>
+</tr>
+</tbody>
+</table></div>
+<p>"Open-loop replay" executes five successful insertion trajectories five times each. Failures shown by the authors: joint limits at 20° tilt, a sponge too soft to give a contact signal, a hole that is too small.</p>
+<h2>5. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Representation learning set</td>
+<td>100 human trajectories of about 5 s: 7,657 tactile images, 1,000 audio clips, including failed and sub-optimal ones</td>
+</tr>
+<tr>
+<td>Policy library</td>
+<td>20 successful demonstrations</td>
+</tr>
+<tr>
+<td>Main task</td>
+<td>cylinder of radius 17.5 mm into a hole of radius 20 mm, 40 mm deep</td>
+</tr>
+<tr>
+<td>Pose processing</td>
+<td>hand-eye calibration from six poses, IQR outlier removal, median filter, 2 Hz low-pass</td>
+</tr>
+<tr>
+<td>Online RL</td>
+<td>each iteration: 5 new trajectories plus 5 from the replay buffer; evaluation every ~20 min; start pose randomised</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> The idea yes, the system no. There is no code, the tasks are single insertions, and the method needs a GelSight Mini on the gripper finger plus a microphone near the hole; a wrist F/T sensor is not part of it. The useful lesson is the recipe: collect demonstrations with your own hand, then learn a small bounded residual on the robot. "Not stated" means I did not find it in the paper or project page.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arm</td>
+<td>Franka Panda, 6-D delta pose through IK</td>
+<td>A UR10e takes the same delta-pose command</td>
+</tr>
+<tr>
+<td>Touch</td>
+<td>GelSight Mini on the human finger and on the robot</td>
+<td>The UR10e's wrist F/T is not a substitute for the tactile image; you would need a fingertip sensor</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>HOYUJI TD-11 contact microphone at the hole base</td>
+<td>Cheap, but tied to the fixture, not the robot</td>
+</tr>
+<tr>
+<td>Online RL</td>
+<td>several hours of real-robot SAC per task</td>
+<td>Needs resets and safety supervision for each task</td>
+</tr>
+<tr>
+<td>Gripper</td>
+<td>Not stated</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code, data</td>
+<td>Not released</td>
+<td>Re-implementation from the paper</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Caveats</h2>
+<ul>
+<li>25 trials per setting; 96% (24/25) has a Wilson interval of about 80–99% (my arithmetic).</li>
+<li>The RL reward contains $+0.5\,D_{KL}$ to the expert trajectory, which as written rewards divergence; the text says it is meant to keep the robot close to the expert, and the paper does not say how $D_{KL}$ is estimated.</li>
+<li>The method is task-specific: the authors list several hours of RL per task and no transfer of the tactile strategy across tasks as the main limits.</li>
+<li>No camera during execution, so the hole must already be roughly within reach of the start pose.</li>
+</ul>
+<p><strong>Carry forward:</strong> MimicTouch shows how to collect tactile demonstrations without a robot. <a href="farm.html">FARM</a> takes the same idea further with a hand-held gripper that records force, and <a href="fact.html">FACT</a> scales human touch to 2,000 hours with gloves. The residual step is explained in <a href="residual-policy.html">Residual Policy</a> and <a href="actor-critic.html">Actor-Critic RL</a>.</p>
+<p><strong>Check question:</strong> With 44 usable hand-guided demonstrations per hour, how long do 20 take, and how much faster is the human tactile rig?</p>
+<details>
+<summary>Answer</summary>
+<p>$20/44 = 0.45$ h, about 27 minutes; $104/44 = 2.4$ times faster.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Yu, Han, Wang, Saxena, Xu, Zhao, <a href="https://arxiv.org/abs/2310.16917">arXiv 2310.16917</a> · v1 25/10/2023, v4 6/2/2025 · <strong>CoRL 2024</strong> (PMLR 270); Best Paper, NeurIPS 2023 Touch Processing Workshop · Georgia Tech · <a href="https://sites.google.com/view/mimictouch">trang dự án</a> · không công bố code hay dữ liệu</p>
+<p><strong>VẤN ĐỀ</strong> Thao tác chèn nhiều tiếp xúc cần xúc giác, nhưng demo xúc giác thường được thu bằng teleoperation: chậm, khó học, và người điều khiển lái bằng mắt trong khi robot ghi xúc giác, nên dữ liệu không phản ánh một chiến lược dựa trên xúc giác.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Bắt chước xúc giác bằng teleoperation (MULSA) giả định không gian hành động nhỏ như tịnh tiến 3D; chính sách của nó chỉ đạt 16% ở đây. RL xúc giác thuần học từ đầu và tạo ra chuyển động gần tĩnh, hạn chế.</p>
+<p><strong>Ý TƯỞNG</strong> Cho một người làm tác vụ với GelSight Mini gắn ở đầu ngón tay trong khi một micro tiếp xúc nghe ở lỗ. Học embedding xúc giác và âm thanh bằng tự giám sát (BYOL), chép hành động bằng tra cứu láng giềng gần nhất trong thư viện demo, rồi huấn luyện trực tuyến trên robot một chính sách residual có giới hạn bằng SAC để lấp khoảng cách giữa ngón tay người và tay kẹp.</p>
+<p><strong>KẾT QUẢ</strong> Demo của người thu nhanh gấp 5,5 lần SpaceMouse (104 so với 19 demo dùng được mỗi giờ). Riêng chính sách offline thành công 40% (10/25); sau 3 giờ residual RL đạt 96% (24/25), và giữ 52–93% với độ nghiêng, hình dạng và vật liệu chưa thấy.</p>
+</div>
+<h2>1. Vấn đề: teleoperation ghi lại xúc giác mà người điều khiển không hề dùng</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Chính xúc giác của người quyết định từng bước, nên demo chứa một chiến lược thật sự dựa trên xúc giác; RL chỉ sửa phần khác nhau giữa ngón tay và tay kẹp." class="dg-natural" width="931" height="304" viewBox="0 0 931 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Teleoperation</text><rect class="dg-box" x="124" y="22" width="216" height="38"/><text class="dg-t" x="232" y="45" text-anchor="middle">Người cầm SpaceMouse nhìn</text><path class="dg-a" d="M340 41 H372"/><rect class="dg-badbox" x="374" y="14" width="301" height="54"/><text class="dg-t" x="525" y="37" text-anchor="middle">Robot di chuyển</text><text class="dg-s" x="525" y="53" text-anchor="middle">xúc giác được ghi, không dùng để quyết định</text><path class="dg-a" d="M675 41 H707"/><rect class="dg-box" x="709" y="22" width="148" height="38"/><text class="dg-t" x="783" y="45" text-anchor="middle">Dữ liệu xúc giác</text><text class="dg-note dg-red" x="124" y="86">✗ 19 demo dùng được/giờ; chính sách 12%</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">RL xúc giác</text><rect class="dg-box" x="124" y="120" width="170" height="38"/><text class="dg-t" x="209" y="143" text-anchor="middle">Khởi đầu ngẫu nhiên</text><path class="dg-a" d="M294 139 H326"/><rect class="dg-badbox" x="328" y="112" width="231" height="54"/><text class="dg-t" x="444" y="135" text-anchor="middle">Học từ đầu</text><text class="dg-s" x="444" y="151" text-anchor="middle">không có tiên nghiệm chuyển động</text><path class="dg-a" d="M559 139 H591"/><rect class="dg-box" x="593" y="120" width="102" height="38"/><text class="dg-t" x="644" y="143" text-anchor="middle">Chính sách</text><text class="dg-note dg-red" x="124" y="184">✗ gần tĩnh, không gian hành động nhỏ</text><text class="dg-lab dg-green" x="14" y="241">MimicTouch</text><rect class="dg-box" x="124" y="218" width="201" height="38"/><text class="dg-t" x="224" y="241" text-anchor="middle">Ngón tay người cảm nhận</text><path class="dg-a" d="M325 237 H357"/><rect class="dg-key" x="359" y="210" width="208" height="54"/><text class="dg-t" x="463" y="233" text-anchor="middle">Demo xúc giác + âm thanh</text><text class="dg-s" x="463" y="249" text-anchor="middle">104 dùng được/giờ</text><path class="dg-a" d="M567 237 H599"/><rect class="dg-key" x="601" y="218" width="186" height="38"/><text class="dg-t" x="694" y="241" text-anchor="middle">Chép NN + residual RL</text><path class="dg-a" d="M787 237 H819"/><rect class="dg-box" x="821" y="218" width="96" height="38"/><text class="dg-t" x="869" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 96% sau 3 giờ</text></svg><figcaption>Chính xúc giác của người quyết định từng bước, nên demo chứa một chiến lược thật sự dựa trên xúc giác; RL chỉ sửa phần khác nhau giữa ngón tay và tay kẹp.</figcaption></figure>
+<h2>2. Quy trình</h2>
+<figure class="diagram"><svg role="img" aria-label="Ba giai đoạn: dữ liệu người không cần robot, một chính sách láng giềng gần nhất offline, và một residual nhỏ học trực tuyến trên robot." viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">GIAI ĐOẠN 1: DEMO XÚC GIÁC CỦA NGƯỜI, KHÔNG CẦN ROBOT</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">GelSight ở đầu ngón</text><text class="dg-s" x="120" y="86" text-anchor="middle">15 Hz, 400x300</text>
+<rect class="dg-ext" x="240" y="46" width="200" height="54"/><text class="dg-t" x="340" y="68" text-anchor="middle">micro tiếp xúc</text><text class="dg-s" x="340" y="86" text-anchor="middle">ở lỗ, 44,1 kHz</text>
+<rect class="dg-ext" x="460" y="46" width="200" height="54"/><text class="dg-t" x="560" y="68" text-anchor="middle">pose đầu ngón</text><text class="dg-s" x="560" y="86" text-anchor="middle">RealSense + ArUco</text>
+<rect class="dg-box" x="740" y="46" width="220" height="54"/><text class="dg-t" x="850" y="68" text-anchor="middle">thư viện demo</text><text class="dg-s" x="850" y="86" text-anchor="middle">20 demo thành công</text>
+<path class="dg-a" d="M660 73 H740"/>
+<text class="dg-h" x="20" y="138">GIAI ĐOẠN 2: CHÍNH SÁCH OFFLINE BẰNG LÁNG GIỀNG GẦN NHẤT</text>
+<rect class="dg-key" x="20" y="156" width="200" height="54"/><text class="dg-t" x="120" y="178" text-anchor="middle">mã hóa xúc giác BYOL</text><text class="dg-s" x="120" y="196" text-anchor="middle">embedding 2048 chiều</text>
+<rect class="dg-key" x="240" y="156" width="200" height="54"/><text class="dg-t" x="340" y="178" text-anchor="middle">mã hóa âm thanh BYOL-A</text><text class="dg-s" x="340" y="196" text-anchor="middle">mel-spectrogram, 2048 chiều</text>
+<rect class="dg-box" x="460" y="156" width="200" height="54"/><text class="dg-t" x="560" y="178" text-anchor="middle">láng giềng gần nhất</text><text class="dg-s" x="560" y="196" text-anchor="middle">so truy vấn với thư viện</text>
+<rect class="dg-box" x="740" y="156" width="220" height="54"/><text class="dg-t" x="850" y="178" text-anchor="middle">hành động offline a_o</text><text class="dg-s" x="850" y="196" text-anchor="middle">delta pose EE 6 chiều, 5 Hz</text>
+<path class="dg-a" d="M440 183 H460"/><path class="dg-a" d="M120 210 V226 H560 V210"/>
+<path class="dg-a" d="M850 100 V128 H700 V183 H660"/>
+<path class="dg-a" d="M660 196 H740"/>
+<text class="dg-h" x="20" y="252">GIAI ĐOẠN 3: RESIDUAL RL TRỰC TUYẾN TRÊN ROBOT (SAC)</text>
+<rect class="dg-box" x="20" y="270" width="220" height="54"/><text class="dg-t" x="130" y="292" text-anchor="middle">chính sách residual (MLP)</text><text class="dg-s" x="130" y="310" text-anchor="middle">xúc giác, âm thanh, pose, a cũ</text>
+<rect class="dg-box" x="290" y="270" width="200" height="54"/><text class="dg-t" x="390" y="292" text-anchor="middle">residual a_r</text><text class="dg-s" x="390" y="310" text-anchor="middle">bị chặn: 0,15 cm, 3 độ</text>
+<rect class="dg-key" x="540" y="270" width="200" height="54"/><text class="dg-t" x="640" y="292" text-anchor="middle">a = a_o + a_r</text><text class="dg-s" x="640" y="310" text-anchor="middle">IK cho Franka Panda</text>
+<rect class="dg-ext" x="790" y="270" width="170" height="54"/><text class="dg-t" x="875" y="292" text-anchor="middle">phần thưởng</text><text class="dg-s" x="875" y="310" text-anchor="middle">khoảng cách, hướng, phạt</text>
+<path class="dg-a" d="M240 297 H290"/><path class="dg-a" d="M490 297 H540"/><path class="dg-a" d="M740 297 H790"/>
+<path class="dg-a" d="M850 210 V244 H640 V270"/>
+<path class="dg-ad" d="M875 324 V344 H130 V324"/>
+<text class="dg-l" x="300" y="366">chỉ residual học trên robot; a_o giữ nguyên</text>
+</svg><figcaption>Ba giai đoạn: dữ liệu người không cần robot, một chính sách láng giềng gần nhất offline, và một residual nhỏ học trực tuyến trên robot.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ thu của người</td>
+<td>GelSight Mini ở đầu ngón (15 Hz, 400×300), micro tiếp xúc ở đáy lỗ (44,1 kHz), RealSense + ArUco cho pose đầu ngón (60 Hz)</td>
+<td>các luồng đồng bộ, lấy mẫu lại 15 Hz</td>
+<td>demo không cần robot</td>
+</tr>
+<tr>
+<td>Bộ mã hóa xúc giác</td>
+<td>ảnh GelSight, 256×256</td>
+<td>embedding 2.048 chiều</td>
+<td>BYOL; chỉ tăng cường bằng làm mờ và cắt, vì đổi màu sẽ thay đổi tín hiệu xúc giác</td>
+</tr>
+<tr>
+<td>Bộ mã hóa âm thanh</td>
+<td>mel-spectrogram 0,5 s, 64 dải</td>
+<td>embedding 2.048 chiều</td>
+<td>BYOL-A</td>
+</tr>
+<tr>
+<td>Chính sách offline</td>
+<td>embedding xúc giác và âm thanh cộng pose EE</td>
+<td>delta pose EE 6 chiều $a_o$</td>
+<td>tra láng giềng gần nhất trong thư viện 20 demo; input chuẩn hóa để khoảng cách lớn nhất bằng 1</td>
+</tr>
+<tr>
+<td>Chính sách residual</td>
+<td>cùng các đặc trưng cộng hành động trước</td>
+<td>$a_r$, bị chặn ở ±0,15 cm và ±3° mỗi trục</td>
+<td>MLP huấn luyện bằng SAC trên robot thật</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>$a = a_o + a_r$ ở 5 Hz</td>
+<td>lệnh khớp qua IK</td>
+<td>Franka Panda; không dùng camera khi thực thi</td>
+</tr>
+</tbody>
+</table></div>
+<p>Residual được huấn luyện với phần thưởng định hình: $d = 1 - \tanh(10\,\lVert\Delta p\rVert)$ cho khoảng cách tới đích, $o = 1 - \tanh(7{,}5\,\lVert\Delta q\rVert)$ cho hướng, một số hạng 0,2 cho bước bị chặn (bài viết thành phạt $c$ bằng 0,2 khi bước hoàn thành và 0 khi không hoàn thành trong 0,5 s), phạt 0,5 khi embedding xúc giác nhảy mạnh (trượt), và một số hạng quỹ đạo $D_{KL}$ giữ robot gần chuyên gia. Tổng $R = 1$ khi thành công, ngược lại $R = 0{,}5\,D_{KL} + 0{,}3\,d + 0{,}2\,o - c - s$, đúng như in trong bài.</p>
+<h2>3. Tính tay: tốc độ thu dữ liệu và residual dịch được bao xa</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hai con số quyết định phương pháp có thực tế không: thu 20 demo mất bao lâu, và residual sửa được bao nhiêu, vì nó là phần duy nhất học trên robot.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$r$</td>
+<td>số demo dùng được mỗi giờ (Bảng 1)</td>
+<td>đo được</td>
+<td>19 (SpaceMouse), 44 (dẫn tay), 104 (xúc giác người)</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>số demo cần</td>
+<td>hằng số</td>
+<td>20</td>
+</tr>
+<tr>
+<td>$\delta$</td>
+<td>giới hạn residual mỗi bước, tịnh tiến</td>
+<td>hằng số</td>
+<td>0,15 cm</td>
+</tr>
+<tr>
+<td>$f$</td>
+<td>tần số điều khiển</td>
+<td>hằng số</td>
+<td>5 Hz</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>số hạng thưởng khoảng cách</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Công thức</strong></p>
+<p>$$T = \frac{N}{r},\qquad v_{max} = \delta\, f,\qquad d = 1 - \tanh(10\,\lVert\Delta p\rVert)$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>SpaceMouse: $20 / 19 = 1{,}05$ giờ, khoảng 63 phút, sau khoảng 5 giờ người điều khiển tập luyện.</li>
+<li>Xúc giác người: $20 / 104 = 0{,}19$ giờ, khoảng 11,5 phút. Tỉ lệ $104 / 19 = 5{,}5$.</li>
+<li>Tốc độ residual: tối đa $0{,}15 \times 5 = 0{,}75$ cm/s mỗi trục.</li>
+<li>Thưởng khoảng cách với $\lVert\Delta p\rVert$ = 0,01 m (1 cm, giả sử đơn vị mét): $\tanh(0{,}1) = 0{,}0997$, nên $d = 0{,}90$; ở 0,05 m: $\tanh(0{,}5) = 0{,}462$, $d = 0{,}54$.</li>
+</ol>
+<p><strong>Kết quả.</strong> Khoảng 12 phút demo của người so với một giờ SpaceMouse; residual chỉ dịch kế hoạch tối đa 0,75 cm/s.</p>
+<p><strong>Ý nghĩa.</strong> Residual được cố ý giữ nhỏ: nó sửa được độ lệch cỡ milimét giữa ngón tay và tay kẹp, nhưng không tự nghĩ ra chiến lược mới được. Những gì người làm phải gần đúng sẵn.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Chèn trụ, 25 lượt mỗi cột. Mọi chính sách dùng cùng phương pháp láng giềng gần nhất; chỉ nguồn của 20 demo khác nhau." class="dg-natural" width="661" height="222" viewBox="0 0 661 222" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="201" y="23" text-anchor="end">Demo SpaceMouse, offline</text><rect class="dg-bar" x="211" y="10" width="43" height="18"/><text class="dg-barval" x="262" y="23">12%</text><text class="dg-barlabel" x="201" y="53" text-anchor="end">Demo dẫn tay, offline</text><rect class="dg-bar" x="211" y="40" width="101" height="18"/><text class="dg-barval" x="320" y="53">28%</text><text class="dg-barlabel" x="201" y="83" text-anchor="end">Demo xúc giác người, offline</text><rect class="dg-bar" x="211" y="70" width="144" height="18"/><text class="dg-barval" x="363" y="83">40%</text><text class="dg-barlabel" x="201" y="113" text-anchor="end">SpaceMouse + RL 2 giờ</text><rect class="dg-bar" x="211" y="100" width="115" height="18"/><text class="dg-barval" x="334" y="113">32%</text><text class="dg-barlabel" x="201" y="143" text-anchor="end">Dẫn tay + RL 2 giờ</text><rect class="dg-bar" x="211" y="130" width="216" height="18"/><text class="dg-barval" x="435" y="143">60%</text><text class="dg-barlabel" x="201" y="173" text-anchor="end">Xúc giác người + RL 2 giờ</text><rect class="dg-bar" x="211" y="160" width="317" height="18"/><text class="dg-barval" x="536" y="173">88%</text><text class="dg-barlabel" x="201" y="203" text-anchor="end">Xúc giác người + RL 3 giờ</text><rect class="dg-key" x="211" y="190" width="346" height="18"/><text class="dg-barval" x="565" y="203">96%</text></svg><figcaption>Chèn trụ, 25 lượt mỗi cột. Mọi chính sách dùng cùng phương pháp láng giềng gần nhất; chỉ nguồn của 20 demo khác nhau.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Thu dữ liệu (20 demo dùng được)</th>
+<th>Dùng được mỗi giờ</th>
+<th>Tỉ lệ dùng được</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Teleoperation SpaceMouse</td>
+<td>19</td>
+<td>38,5% (20/52)</td>
+</tr>
+<tr>
+<td>Teleoperation dẫn tay</td>
+<td>44</td>
+<td>58,8% (20/34)</td>
+</tr>
+<tr>
+<td>Demo xúc giác của người</td>
+<td>104</td>
+<td>83,3% (20/24)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Chính sách offline so với baseline MULSA trên cùng demo: MSE hành động 0,21 so với 1,53, thành công 40% so với 16%.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Tổng quát hóa zero-shot (chính sách cuối)</th>
+<th>Phát lại vòng hở</th>
+<th>MimicTouch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lỗ dịch 0,8 cm</td>
+<td>24/40</td>
+<td>37/40</td>
+</tr>
+<tr>
+<td>Lỗ nghiêng 10°</td>
+<td>14/25</td>
+<td>23/25</td>
+</tr>
+<tr>
+<td>Lỗ nghiêng 20°</td>
+<td>10/25</td>
+<td>20/25</td>
+</tr>
+<tr>
+<td>Xếp chặt hai tầng</td>
+<td>13/25</td>
+<td>22/25</td>
+</tr>
+<tr>
+<td>Hộp nhiều vật liệu cứng</td>
+<td>13/25</td>
+<td>20/25</td>
+</tr>
+<tr>
+<td>Hộp nhiều vật liệu mềm</td>
+<td>9/25</td>
+<td>16/25</td>
+</tr>
+<tr>
+<td>Lắp đồ nội thất (phần chèn)</td>
+<td>8/25</td>
+<td>19/25</td>
+</tr>
+<tr>
+<td>Lắp đồ nội thất (đầy đủ)</td>
+<td>3/25</td>
+<td>13/25</td>
+</tr>
+</tbody>
+</table></div>
+<p>"Phát lại vòng hở" chạy năm quỹ đạo chèn thành công, mỗi quỹ đạo năm lần. Thất bại tác giả nêu: chạm giới hạn khớp khi nghiêng 20°, miếng bọt biển quá mềm không cho tín hiệu tiếp xúc, lỗ quá nhỏ.</p>
+<h2>5. Dữ liệu</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tập học biểu diễn</td>
+<td>100 quỹ đạo người khoảng 5 s: 7.657 ảnh xúc giác, 1.000 đoạn âm thanh, gồm cả lần thất bại và chưa tối ưu</td>
+</tr>
+<tr>
+<td>Thư viện chính sách</td>
+<td>20 demo thành công</td>
+</tr>
+<tr>
+<td>Tác vụ chính</td>
+<td>trụ bán kính 17,5 mm vào lỗ bán kính 20 mm, sâu 40 mm</td>
+</tr>
+<tr>
+<td>Xử lý pose</td>
+<td>hiệu chuẩn hand-eye từ sáu pose, loại ngoại lai bằng IQR, lọc trung vị, lọc thông thấp 2 Hz</td>
+</tr>
+<tr>
+<td>RL trực tuyến</td>
+<td>mỗi vòng: 5 quỹ đạo mới cộng 5 quỹ đạo từ replay buffer; đánh giá khoảng 20 phút một lần; pose bắt đầu ngẫu nhiên</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Ý tưởng thì có, hệ thống thì không. Không có code, tác vụ chỉ là chèn đơn lẻ, và phương pháp cần GelSight Mini trên ngón tay kẹp cộng một micro gần lỗ; cảm biến F/T cổ tay không nằm trong đó. Bài học hữu ích là công thức: thu demo bằng chính tay mình, rồi học một residual nhỏ có giới hạn trên robot. "Không nêu" nghĩa là mình không tìm thấy trong paper hay trang dự án.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cánh tay</td>
+<td>Franka Panda, delta pose 6 chiều qua IK</td>
+<td>UR10e nhận cùng kiểu lệnh delta pose</td>
+</tr>
+<tr>
+<td>Xúc giác</td>
+<td>GelSight Mini trên ngón tay người và trên robot</td>
+<td>F/T cổ tay của UR10e không thay được ảnh xúc giác; bạn sẽ cần cảm biến ở đầu ngón</td>
+</tr>
+<tr>
+<td>Âm thanh</td>
+<td>Micro tiếp xúc HOYUJI TD-11 ở đáy lỗ</td>
+<td>Rẻ, nhưng gắn với đồ gá, không gắn với robot</td>
+</tr>
+<tr>
+<td>RL trực tuyến</td>
+<td>vài giờ SAC trên robot thật cho mỗi tác vụ</td>
+<td>Cần reset và giám sát an toàn cho từng tác vụ</td>
+</tr>
+<tr>
+<td>Tay kẹp</td>
+<td>Không nêu</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Code, dữ liệu</td>
+<td>Không công bố</td>
+<td>Phải tự cài lại từ paper</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>25 lượt mỗi thiết lập; 96% (24/25) có khoảng Wilson khoảng 80–99% (phép tính của mình).</li>
+<li>Phần thưởng RL chứa $+0{,}5\,D_{KL}$ so với quỹ đạo chuyên gia, nếu đọc đúng như in thì là thưởng cho việc lệch xa; phần chữ nói nó dùng để giữ robot gần chuyên gia, và bài không nói $D_{KL}$ được ước lượng thế nào.</li>
+<li>Phương pháp gắn với từng tác vụ: tác giả nêu vài giờ RL mỗi tác vụ và việc chiến lược xúc giác không chuyển được giữa các tác vụ là giới hạn chính.</li>
+<li>Không có camera khi thực thi, nên lỗ phải nằm gần pose bắt đầu sẵn.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> MimicTouch cho thấy cách thu demo xúc giác không cần robot. <a href="farm.html">FARM</a> đi xa hơn với tay kẹp cầm tay ghi được lực, và <a href="fact.html">FACT</a> mở rộng xúc giác của người lên 2.000 giờ bằng găng tay. Bước residual được giải thích ở <a href="residual-policy.html">Residual Policy</a> và <a href="actor-critic.html">Actor-Critic RL</a>.</p>
+<p><strong>Câu kiểm tra:</strong> Với 44 demo dẫn tay dùng được mỗi giờ, thu 20 demo mất bao lâu, và bộ thu xúc giác của người nhanh hơn bao nhiêu lần?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$20/44 = 0{,}45$ giờ, khoảng 27 phút; $104/44 = 2{,}4$ lần.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

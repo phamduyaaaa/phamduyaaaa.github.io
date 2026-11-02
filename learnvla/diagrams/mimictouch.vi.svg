@@ -1,0 +1,25 @@
+<svg viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">GIAI ĐOẠN 1: DEMO XÚC GIÁC CỦA NGƯỜI, KHÔNG CẦN ROBOT</text>
+<rect class="dg-ext" x="20" y="46" width="200" height="54"/><text class="dg-t" x="120" y="68" text-anchor="middle">GelSight ở đầu ngón</text><text class="dg-s" x="120" y="86" text-anchor="middle">15 Hz, 400x300</text>
+<rect class="dg-ext" x="240" y="46" width="200" height="54"/><text class="dg-t" x="340" y="68" text-anchor="middle">micro tiếp xúc</text><text class="dg-s" x="340" y="86" text-anchor="middle">ở lỗ, 44,1 kHz</text>
+<rect class="dg-ext" x="460" y="46" width="200" height="54"/><text class="dg-t" x="560" y="68" text-anchor="middle">pose đầu ngón</text><text class="dg-s" x="560" y="86" text-anchor="middle">RealSense + ArUco</text>
+<rect class="dg-box" x="740" y="46" width="220" height="54"/><text class="dg-t" x="850" y="68" text-anchor="middle">thư viện demo</text><text class="dg-s" x="850" y="86" text-anchor="middle">20 demo thành công</text>
+<path class="dg-a" d="M660 73 H740"/>
+<text class="dg-h" x="20" y="138">GIAI ĐOẠN 2: CHÍNH SÁCH OFFLINE BẰNG LÁNG GIỀNG GẦN NHẤT</text>
+<rect class="dg-key" x="20" y="156" width="200" height="54"/><text class="dg-t" x="120" y="178" text-anchor="middle">mã hóa xúc giác BYOL</text><text class="dg-s" x="120" y="196" text-anchor="middle">embedding 2048 chiều</text>
+<rect class="dg-key" x="240" y="156" width="200" height="54"/><text class="dg-t" x="340" y="178" text-anchor="middle">mã hóa âm thanh BYOL-A</text><text class="dg-s" x="340" y="196" text-anchor="middle">mel-spectrogram, 2048 chiều</text>
+<rect class="dg-box" x="460" y="156" width="200" height="54"/><text class="dg-t" x="560" y="178" text-anchor="middle">láng giềng gần nhất</text><text class="dg-s" x="560" y="196" text-anchor="middle">so truy vấn với thư viện</text>
+<rect class="dg-box" x="740" y="156" width="220" height="54"/><text class="dg-t" x="850" y="178" text-anchor="middle">hành động offline a_o</text><text class="dg-s" x="850" y="196" text-anchor="middle">delta pose EE 6 chiều, 5 Hz</text>
+<path class="dg-a" d="M440 183 H460"/><path class="dg-a" d="M120 210 V226 H560 V210"/>
+<path class="dg-a" d="M850 100 V128 H700 V183 H660"/>
+<path class="dg-a" d="M660 196 H740"/>
+<text class="dg-h" x="20" y="252">GIAI ĐOẠN 3: RESIDUAL RL TRỰC TUYẾN TRÊN ROBOT (SAC)</text>
+<rect class="dg-box" x="20" y="270" width="220" height="54"/><text class="dg-t" x="130" y="292" text-anchor="middle">chính sách residual (MLP)</text><text class="dg-s" x="130" y="310" text-anchor="middle">xúc giác, âm thanh, pose, a cũ</text>
+<rect class="dg-box" x="290" y="270" width="200" height="54"/><text class="dg-t" x="390" y="292" text-anchor="middle">residual a_r</text><text class="dg-s" x="390" y="310" text-anchor="middle">bị chặn: 0,15 cm, 3 độ</text>
+<rect class="dg-key" x="540" y="270" width="200" height="54"/><text class="dg-t" x="640" y="292" text-anchor="middle">a = a_o + a_r</text><text class="dg-s" x="640" y="310" text-anchor="middle">IK cho Franka Panda</text>
+<rect class="dg-ext" x="790" y="270" width="170" height="54"/><text class="dg-t" x="875" y="292" text-anchor="middle">phần thưởng</text><text class="dg-s" x="875" y="310" text-anchor="middle">khoảng cách, hướng, phạt</text>
+<path class="dg-a" d="M240 297 H290"/><path class="dg-a" d="M490 297 H540"/><path class="dg-a" d="M740 297 H790"/>
+<path class="dg-a" d="M850 210 V244 H640 V270"/>
+<path class="dg-ad" d="M875 324 V344 H130 V324"/>
+<text class="dg-l" x="300" y="366">chỉ residual học trên robot; a_o giữ nguyên</text>
+</svg>

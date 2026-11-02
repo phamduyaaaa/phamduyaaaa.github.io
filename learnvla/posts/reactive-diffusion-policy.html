@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An action chunk runs open loop, so the policy cannot react to touch until the next chunk. RDP plans latent chunks at 1–2 Hz and lets a tiny decoder turn them into actions at 24 Hz using the latest tactile or wrench reading: peeling 0.95 vs 0.44 for Diffusion Policy, bimanual lifting 0.70 vs 0.">
+<title>Reactive Diffusion Policy: A Slow Planner and a Fast Tactile Reflex · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Reactive Diffusion Policy: A Slow Planner and a Fast Tactile Reflex">
+<meta property="og:description" content="An action chunk runs open loop, so the policy cannot react to touch until the next chunk. RDP plans latent chunks at 1–2 Hz and lets a tiny decoder turn them into actions at 24 Hz using the latest tactile or wrench reading: peeling 0.95 vs 0.44 for Diffusion Policy, bimanual lifting 0.70 vs 0.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">02 Nov 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">9 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>Reactive Diffusion Policy: A Slow Planner and a Fast Tactile Reflex</h1>
+    <h1 data-vi>Reactive Diffusion Policy: Một bộ lập kế hoạch chậm và một phản xạ xúc giác nhanh</h1>
+
+    <p class="post-excerpt-lead" data-en>An action chunk runs open loop, so the policy cannot react to touch until the next chunk. RDP plans latent chunks at 1–2 Hz and lets a tiny decoder turn them into actions at 24 Hz using the latest tactile or wrench reading: peeling 0.95 vs 0.44 for Diffusion Policy, bimanual lifting 0.70 vs 0.</p>
+    <p class="post-excerpt-lead" data-vi>Một action chunk chạy vòng hở, nên chính sách không phản ứng được với xúc giác cho tới chunk sau. RDP lập kế hoạch chunk tiềm ẩn ở 1–2 Hz và để một bộ giải mã nhỏ biến chúng thành hành động ở 24 Hz bằng giá trị xúc giác hoặc wrench mới nhất: gọt vỏ 0,95 so với 0,44 của Diffusion Policy, nâng bằng hai tay 0,70 so với 0.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Diffusion</span><span class="pill">Action Chunking</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Xue, Ren, Chen et al., <a href="https://arxiv.org/abs/2503.02881">arXiv 2503.02881</a> · v1 4 Mar 2025, v3 23 Apr 2025 · <strong>RSS 2025, Best Student Paper Finalist</strong> · Shanghai Jiao Tong, Tsinghua IIIS, Shanghai Qi Zhi, Shanghai AI Lab · <a href="https://reactive-diffusion-policy.github.io/">project page</a> · <a href="https://github.com/xiaoxiaoxh/reactive_diffusion_policy">code</a>, <a href="https://huggingface.co/datasets/WendiChen/reactive_diffusion_policy_dataset">data</a> and <a href="https://huggingface.co/WendiChen/reactive_diffusion_policy_model">models</a> released</p>
+<p><strong>PROBLEM</strong> <a href="action-chunking.html">Action chunking</a> makes imitation policies smooth and good at multi-modal behaviour, but while a chunk executes the robot is open loop: a contact change in the middle of the chunk is ignored until the next one.</p>
+<p><strong>WHAT FAILED BEFORE</strong> Adding touch to the observation of <a href="diffusion-policy.html">Diffusion Policy</a> does not help (peeling 0.39–0.41 vs 0.44 without touch), because touch only matters at chunk boundaries. Shorter chunks (8 → 2) drop grasp success from 100% to 20%; temporal ensembling is very sensitive to its coefficient.</p>
+<p><strong>IDEA</strong> Split the policy in two. A slow <strong>Latent Diffusion Policy</strong> predicts a chunk in a compressed latent space at 1–2 Hz. A fast <strong>Asymmetric Tokenizer</strong> decoder turns that latent into real actions at 24 Hz, and only the decoder sees the newest tactile or wrench signal. Demonstrations come from <strong>TactAR</strong>, a Quest 3 AR teleoperation that shows contact force as arrows.</p>
+<p><strong>RESULT</strong> Peeling 0.95 vs 0.44 for DP, wiping 0.87 vs 0.57, bimanual lifting 0.70 vs 0.00 (scores, 10 trials per condition). The best variant uses the arm's joint-torque-estimated wrench, not an optical tactile sensor.</p>
+</div>
+<h2>1. The problem: a chunk is a promise the robot cannot break</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Scores are for peeling with a push after contact. RDP keeps the chunk for planning but lets touch change each executed action." class="dg-natural" width="908" height="304" viewBox="0 0 908 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">DP</text><rect class="dg-box" x="124" y="22" width="125" height="38"/><text class="dg-t" x="186" y="45" text-anchor="middle">Image + state</text><path class="dg-a" d="M249 41 H281"/><rect class="dg-badbox" x="283" y="14" width="163" height="54"/><text class="dg-t" x="364" y="37" text-anchor="middle">Chunk of 8 actions</text><text class="dg-s" x="364" y="53" text-anchor="middle">executed open loop</text><path class="dg-a" d="M446 41 H478"/><rect class="dg-box" x="480" y="22" width="96" height="38"/><text class="dg-t" x="528" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ peeling after a push: 0.19</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">DP + touch</text><rect class="dg-box" x="124" y="120" width="186" height="38"/><text class="dg-t" x="217" y="143" text-anchor="middle">Image + touch + state</text><path class="dg-a" d="M310 139 H342"/><rect class="dg-badbox" x="344" y="112" width="212" height="54"/><text class="dg-t" x="449" y="135" text-anchor="middle">Chunk of 8 actions</text><text class="dg-s" x="449" y="151" text-anchor="middle">touch read only at boundaries</text><path class="dg-a" d="M555 139 H587"/><rect class="dg-box" x="589" y="120" width="96" height="38"/><text class="dg-t" x="637" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="184">✗ 0.15</text><text class="dg-lab dg-green" x="14" y="241">RDP</text><rect class="dg-box" x="124" y="218" width="186" height="38"/><text class="dg-t" x="217" y="241" text-anchor="middle">Image + touch + state</text><path class="dg-a" d="M310 237 H342"/><rect class="dg-key" x="344" y="210" width="155" height="54"/><text class="dg-t" x="421" y="233" text-anchor="middle">Slow latent chunk</text><text class="dg-s" x="421" y="249" text-anchor="middle">1–2 Hz</text><path class="dg-a" d="M499 237 H531"/><rect class="dg-key" x="533" y="210" width="231" height="54"/><text class="dg-t" x="648" y="233" text-anchor="middle">Fast decoder + latest touch</text><text class="dg-s" x="648" y="249" text-anchor="middle">24 Hz</text><path class="dg-a" d="M764 237 H796"/><rect class="dg-box" x="798" y="218" width="96" height="38"/><text class="dg-t" x="846" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 0.88</text></svg><figcaption>Scores are for peeling with a push after contact. RDP keeps the chunk for planning but lets touch change each executed action.</figcaption></figure>
+<p>The authors' failure modes for DP: "large force" (the arm keeps pushing into the cucumber), "get stuck" (DP with touch becomes cautious and stops), and "lose contact" (after a push, the rest of the chunk runs blind and leaves skin or ink behind).</p>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The tokenizer is trained first; the slow policy then learns to generate its latents. At run time, the decoder runs every step with the newest touch." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">INFERENCE: SLOW LATENT PLANNER, FAST TACTILE DECODER</text>
+<rect class="dg-ext" x="20" y="46" width="230" height="60"/><text class="dg-t" x="135" y="70" text-anchor="middle">image + touch + state</text><text class="dg-s" x="135" y="88" text-anchor="middle">2 frames at 12 Hz</text>
+<rect class="dg-box" x="270" y="46" width="230" height="60"/><text class="dg-t" x="385" y="70" text-anchor="middle">Latent Diffusion Policy</text><text class="dg-s" x="385" y="88" text-anchor="middle">slow: 1-2 Hz, about 100 ms</text>
+<rect class="dg-box" x="550" y="46" width="200" height="60"/><text class="dg-t" x="650" y="70" text-anchor="middle">latent chunk Z</text><text class="dg-s" x="650" y="88" text-anchor="middle">4x shorter than actions</text>
+<path class="dg-a" d="M250 76 H270"/><path class="dg-a" d="M500 76 H550"/>
+<rect class="dg-key" x="20" y="150" width="200" height="60"/><text class="dg-t" x="120" y="174" text-anchor="middle">tactile or wrench</text><text class="dg-s" x="120" y="192" text-anchor="middle">24 Hz: PCA-15 or 6-D</text>
+<rect class="dg-key" x="550" y="150" width="200" height="60"/><text class="dg-t" x="650" y="174" text-anchor="middle">AT decoder (GRU)</text><text class="dg-s" x="650" y="192" text-anchor="middle">fast: under 1 ms per step</text>
+<rect class="dg-box" x="800" y="150" width="160" height="60"/><text class="dg-t" x="880" y="174" text-anchor="middle">next action</text><text class="dg-s" x="880" y="192" text-anchor="middle">relative EE pose</text>
+<path class="dg-a" d="M220 180 H550"/><text class="dg-s" x="240" y="172">latest touch at every step</text>
+<path class="dg-a" d="M650 106 V150"/><path class="dg-a" d="M750 180 H800"/>
+<rect class="dg-grp" x="800" y="240" width="160" height="50"/><text class="dg-t" x="880" y="262" text-anchor="middle">robot</text><text class="dg-s" x="880" y="279" text-anchor="middle">interpolated to 500+ Hz</text>
+<path class="dg-a" d="M880 210 V240"/>
+<text class="dg-l" x="20" y="270">the latent carries the strategy; the decoder places the tool from live touch</text>
+<text class="dg-h" x="20" y="322">TRAINING: TOKENIZER FIRST, THEN THE SLOW POLICY ON ITS LATENTS</text>
+<rect class="dg-ext" x="20" y="338" width="180" height="56"/><text class="dg-t" x="110" y="362" text-anchor="middle">demo chunk A</text><text class="dg-s" x="110" y="380" text-anchor="middle">32 steps at 24 Hz</text>
+<rect class="dg-box" x="240" y="338" width="180" height="56"/><text class="dg-t" x="330" y="362" text-anchor="middle">1D-CNN encoder</text><text class="dg-s" x="330" y="380" text-anchor="middle">no touch input</text>
+<rect class="dg-box" x="460" y="338" width="140" height="56"/><text class="dg-t" x="530" y="362" text-anchor="middle">latent Z</text><text class="dg-s" x="530" y="380" text-anchor="middle">Z = E(A)</text>
+<rect class="dg-key" x="640" y="338" width="170" height="56"/><text class="dg-t" x="725" y="362" text-anchor="middle">GRU decoder</text><text class="dg-s" x="725" y="380" text-anchor="middle">Z + touch</text>
+<rect class="dg-box" x="850" y="338" width="110" height="56"/><text class="dg-t" x="905" y="362" text-anchor="middle">loss</text><text class="dg-s" x="905" y="380" text-anchor="middle">L1 + tiny KL</text>
+<path class="dg-a" d="M200 366 H240"/><path class="dg-a" d="M420 366 H460"/><path class="dg-a" d="M600 366 H640"/><path class="dg-a" d="M810 366 H850"/>
+<text class="dg-l" x="20" y="424">the slow policy is then a Diffusion Policy that denoises Z instead of raw actions</text>
+</svg><figcaption>The tokenizer is trained first; the slow policy then learns to generate its latents. At run time, the decoder runs every step with the newest touch.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tactile representation</td>
+<td>GelSight Mini or MCTac image</td>
+<td>marker flow $F_t = [d_x, d_y]$, reduced by PCA to 15 numbers</td>
+<td>robust to lighting and gel replacement; first components read as shear, torsion and normal force</td>
+</tr>
+<tr>
+<td>Force representation</td>
+<td>robot's estimated TCP wrench, 120 Hz</td>
+<td>6-D wrench, resampled to 24 Hz</td>
+<td>used directly, no PCA</td>
+</tr>
+<tr>
+<td>AT encoder $\mathcal{E}$</td>
+<td>action chunk $A$ (32 steps, 24 Hz)</td>
+<td>latent $Z \in \mathbb{R}^{t \times d}$, 4× downsampled, $d$ = 4 or 8</td>
+<td>1D CNN; <strong>gets no touch</strong></td>
+</tr>
+<tr>
+<td>AT decoder $\mathcal{D}$ (fast policy)</td>
+<td>$Z$ and the touch sequence</td>
+<td>actions $\hat A$</td>
+<td>GRU, under 1 ms per call</td>
+</tr>
+<tr>
+<td>Latent Diffusion Policy (slow policy)</td>
+<td>image, touch or wrench, state (2 frames at 12 Hz)</td>
+<td>a latent chunk $Z$</td>
+<td>CNN Diffusion Policy with FiLM, 100 ms on an RTX 4090</td>
+</tr>
+</tbody>
+</table></div>
+<p>The asymmetry is the design. Because the encoder never sees touch, the latent has to describe the strategy ("follow the surface, keep contact"), and the decoder must use the live touch to place the tool exactly. The paper calls the corrections "sub-millimeter".</p>
+<p>Losses (Eq. 2 and 3 of the paper):</p>
+<p>$$\mathcal{L}_{AT} = \mathbb{E}\big[\lVert A - \mathcal{D}(Z, F^{reduced})\rVert_1 + \lambda_{KL}\,\mathcal{L}_{KL}\big],\qquad \mathcal{L}_{LDP} = \mathbb{E}\,\lVert \varepsilon^k - \varepsilon_\theta(O,\ Z^0 + \varepsilon^k,\ k)\rVert_2$$</p>
+<p>$\lambda_{KL}$ is kept tiny (1e-6) so the latent space is smooth but the tokenizer does not become a generative model. Two practical tricks the authors stress: actions are <strong>relative</strong> end-effector trajectories, and <strong>latency matching</strong> discards the first actions of each new chunk that are already in the past when inference finishes.</p>
+<h2>3. Work it by hand: how often can touch change the action?</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Compare how long a contact change can go unanswered in DP and in RDP, and how many steps latency matching throws away.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_{DP}$, $f_{DP}$</td>
+<td>DP chunk executed per call, and its rate</td>
+<td>constants</td>
+<td>8 steps, 12 Hz</td>
+</tr>
+<tr>
+<td>$f_{fast}$</td>
+<td>fast decoder rate (GelSight runs at 25 FPS)</td>
+<td>constant</td>
+<td>24 Hz</td>
+</tr>
+<tr>
+<td>$t_{slow}$</td>
+<td>slow policy inference time, RTX 4090</td>
+<td>measured</td>
+<td>100 ms</td>
+</tr>
+<tr>
+<td>$t_{blind}$</td>
+<td>longest time touch cannot change the action</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$n_{drop}$</td>
+<td>steps discarded by latency matching</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Formulas</strong></p>
+<p>$$t_{blind}^{DP} = \frac{n_{DP}}{f_{DP}},\qquad t_{blind}^{RDP} = \frac{1}{f_{fast}},\qquad n_{drop} = \left\lceil t_{slow}\, f_{fast} \right\rceil$$</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>DP: $8 / 12 = 0.67$ s per chunk, during which touch is not read.</li>
+<li>RDP: $1 / 24 = 0.042$ s, the decoder re-reads touch every step.</li>
+<li>Ratio: $0.67 / 0.042 = 16$.</li>
+<li>Latency: $0.1 \times 24 = 2.4$, so about 3 steps of every new chunk are already stale when it arrives (my arithmetic; the paper says only that it drops "the first few action steps").</li>
+</ol>
+<p><strong>Result.</strong> DP can stay blind for 0.67 s; RDP for 42 ms, 16 times shorter.</p>
+<p><strong>Why it matters.</strong> At an illustrative 1 cm/s of relative motion (my example, not the paper's), 0.67 s is 6.7 mm of uncorrected error, larger than a peeler's cutting depth; 42 ms is 0.4 mm.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Peeling, overall score (fraction of skin peeled, normalised by the demonstrations), 30 trials per method." class="dg-natural" width="620" height="192" viewBox="0 0 620 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="160" y="23" text-anchor="end">DP</text><rect class="dg-bar" x="170" y="10" width="145" height="18"/><text class="dg-barval" x="323" y="23">0.44</text><text class="dg-barlabel" x="160" y="53" text-anchor="end">DP + tactile image</text><rect class="dg-bar" x="170" y="40" width="135" height="18"/><text class="dg-barval" x="313" y="53">0.41</text><text class="dg-barlabel" x="160" y="83" text-anchor="end">DP + tactile embedding</text><rect class="dg-bar" x="170" y="70" width="129" height="18"/><text class="dg-barval" x="306" y="83">0.39</text><text class="dg-barlabel" x="160" y="113" text-anchor="end">RDP (GelSight)</text><rect class="dg-bar" x="170" y="100" width="297" height="18"/><text class="dg-barval" x="474" y="113">0.9</text><text class="dg-barlabel" x="160" y="143" text-anchor="end">RDP (MCTac)</text><rect class="dg-bar" x="170" y="130" width="290" height="18"/><text class="dg-barval" x="468" y="143">0.88</text><text class="dg-barlabel" x="160" y="173" text-anchor="end">RDP (wrench)</text><rect class="dg-key" x="170" y="160" width="313" height="18"/><text class="dg-barval" x="491" y="173">0.95</text></svg><figcaption>Peeling, overall score (fraction of skin peeled, normalised by the demonstrations), 30 trials per method.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Peeling score</th>
+<th>No push</th>
+<th>Push before contact</th>
+<th>Push after contact</th>
+<th>All</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0.56</td>
+<td>0.58</td>
+<td>0.19</td>
+<td>0.44</td>
+</tr>
+<tr>
+<td>DP + tactile embedding</td>
+<td>0.48</td>
+<td>0.55</td>
+<td>0.15</td>
+<td>0.39</td>
+</tr>
+<tr>
+<td>RDP (GelSight)</td>
+<td>0.98</td>
+<td>0.93</td>
+<td>0.80</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0.99</td>
+<td>0.98</td>
+<td>0.88</td>
+<td>0.95</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Wiping score</th>
+<th>No push</th>
+<th>Push before contact</th>
+<th>Push after contact</th>
+<th>All</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0.75</td>
+<td>0.70</td>
+<td>0.25</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td>DP + tactile embedding</td>
+<td>0.60</td>
+<td>0.75</td>
+<td>0.15</td>
+<td>0.50</td>
+</tr>
+<tr>
+<td>RDP (GelSight)</td>
+<td>0.85</td>
+<td>0.95</td>
+<td>0.50</td>
+<td>0.77</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0.95</td>
+<td>0.85</td>
+<td>0.80</td>
+<td>0.87</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Bimanual lifting of a paper cup</th>
+<th>Soft cup score</th>
+<th>Hard cup score</th>
+<th>All</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0.00</td>
+<td>0.00</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td>DP + tactile embedding</td>
+<td>0.10</td>
+<td>0.05</td>
+<td>0.08</td>
+</tr>
+<tr>
+<td>RDP (GelSight + MCTac)</td>
+<td>0.55</td>
+<td>0.40</td>
+<td>0.48</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0.80</td>
+<td>0.60</td>
+<td>0.70</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Chunk size is not the fix.</strong> On wiping with a push after contact, DP + touch scores 0.15 with chunk 8 and 0.10 with chunk 2 (grasp success falls to 20%). Temporal ensembling gives 0.05, 0.00 and 0.15 for $\tau$ = 0.2, 0.5, 0.8. RDP with chunk 8 scores 0.50.</li>
+<li><strong>Sensor does not matter much.</strong> GelSight Mini ($549) and the authors' MCTac (about $50) give 0.90 and 0.88 on peeling.</li>
+<li><strong>Wrench beats optical touch</strong> in all three tasks, although it is estimated from joint torques and is noisy during fast motion. The authors suspect lower latency and fewer dimensions.</li>
+<li><strong>Feedback during teleoperation matters.</strong> Training on 60 demonstrations collected without AR force feedback cut the score by more than 30%.</li>
+</ul>
+<h2>5. Data and TactAR</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Demonstrations</td>
+<td>60 peeling, 80 wiping, 50 bimanual lifting (appendix)</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>Meta Quest 3 ($499) in colour pass-through; tactile deformation field or force arrows drawn at the end-effector in AR; ROS2 synchronises sensors and robot</td>
+</tr>
+<tr>
+<td>Effect on data</td>
+<td>10 users × 10 trials × 2 modes: peeled length 0.72 → 0.91, share of stable-force time 0.58 → 0.87 with feedback</td>
+</tr>
+<tr>
+<td>Rates</td>
+<td>images and slow policy 12 Hz; touch, wrench and fast policy 24 Hz; robot commands interpolated above 500 Hz</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>two Flexiv Rizon 4 arms with joint torque sensors, Flexiv Grav grippers, RealSense D435 wrist cameras (plus D415 for bimanual)</td>
+</tr>
+<tr>
+<td>Compute</td>
+<td>one RTX 4090 for collection, training and evaluation</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> Yes, it is one of the most usable papers in this list. The best variant takes exactly what a UR10e gives, a 6-D wrist wrench, and code, data and checkpoints are public. You still need your own demonstrations with force feedback, and it is one policy per task. "Not stated" means I did not find it in the paper or project page.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arm</td>
+<td>Flexiv Rizon 4, commands streamed above 500 Hz</td>
+<td>UR10e with RTDE servo at 500 Hz is the same pattern; relative EE actions transfer</td>
+</tr>
+<tr>
+<td>Force</td>
+<td>TCP wrench estimated from joint torques, 120 Hz → 24 Hz</td>
+<td>The UR10e's wrist F/T is the same 6 numbers, probably less noisy</td>
+</tr>
+<tr>
+<td>Tactile (optional)</td>
+<td>GelSight Mini or MCTac on the fingertips</td>
+<td>Skip it: the wrench variant scored higher</td>
+</tr>
+<tr>
+<td>Gripper</td>
+<td>Flexiv Grav force-controlled gripper</td>
+<td>The tasks grasp a tool, then hold it; any gripper that holds the tool firmly should work. Not tested by the authors</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>TactAR on Quest 3, <a href="https://github.com/xiaoxiaoxh/TactAR_APP">open source</a></td>
+<td>Without force feedback, expect worse data (over 30% drop in their test)</td>
+</tr>
+<tr>
+<td>Demonstrations</td>
+<td>50–80 per task</td>
+<td>Plan for that per skill</td>
+</tr>
+<tr>
+<td>Code license</td>
+<td>Not stated in the paper</td>
+<td>Check the repository</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Caveats</h2>
+<ul>
+<li>Ten trials per condition. A score of 0.88 vs 0.80 is within noise; the gaps that matter are 0.95 vs 0.44 and 0.70 vs 0.00.</li>
+<li>Baselines are only Diffusion Policy variants; no comparison with other reactive methods.</li>
+<li>The fast policy reacts only to touch and force; images are still read at the slow rate.</li>
+<li>Single-task policies. The authors suggest replacing a VLA's action tokenizer with an asymmetric one as future work; their follow-up <a href="https://implicit-rdp.github.io">ImplicitRDP</a> (RA-L 2026) continues the line.</li>
+</ul>
+<p><strong>Carry forward:</strong> RDP answers "how do I keep chunking and still react to force?". <a href="farm.html">FARM</a> instead puts force into the action itself, and <a href="tdc.html">TDC</a> leaves the fast reaction to an admittance controller. <a href="action-chunking.html">Action chunking</a> and <a href="diffusion-policy.html">Diffusion Policy</a> are the foundations.</p>
+<p><strong>Check question:</strong> If the GelSight were replaced by a 100 Hz sensor and the decoder ran at 100 Hz, what would $t_{blind}^{RDP}$ be, and how many steps would latency matching drop with the same 100 ms slow policy?</p>
+<details>
+<summary>Answer</summary>
+<p>$1/100 = 10$ ms; $\lceil 0.1 \times 100 \rceil = 10$ steps.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Xue, Ren, Chen và cộng sự, <a href="https://arxiv.org/abs/2503.02881">arXiv 2503.02881</a> · v1 4/3/2025, v3 23/4/2025 · <strong>RSS 2025, Best Student Paper Finalist</strong> · Shanghai Jiao Tong, Tsinghua IIIS, Shanghai Qi Zhi, Shanghai AI Lab · <a href="https://reactive-diffusion-policy.github.io/">trang dự án</a> · đã công bố <a href="https://github.com/xiaoxiaoxh/reactive_diffusion_policy">code</a>, <a href="https://huggingface.co/datasets/WendiChen/reactive_diffusion_policy_dataset">dữ liệu</a> và <a href="https://huggingface.co/WendiChen/reactive_diffusion_policy_model">mô hình</a></p>
+<p><strong>VẤN ĐỀ</strong> <a href="action-chunking.html">Action chunking</a> giúp chính sách bắt chước mượt và xử lý tốt hành vi đa mode, nhưng trong lúc một chunk được thực thi thì robot chạy vòng hở: tiếp xúc thay đổi giữa chunk bị bỏ qua cho tới chunk sau.</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Thêm xúc giác vào quan sát của <a href="diffusion-policy.html">Diffusion Policy</a> không giúp gì (gọt vỏ 0,39–0,41 so với 0,44 khi không có xúc giác), vì xúc giác chỉ có tác dụng ở ranh giới chunk. Chunk ngắn hơn (8 → 2) làm tỉ lệ nắm thành công rơi từ 100% xuống 20%; temporal ensembling thì rất nhạy với hệ số của nó.</p>
+<p><strong>Ý TƯỞNG</strong> Tách chính sách làm hai. Một <strong>Latent Diffusion Policy</strong> chậm dự đoán chunk trong không gian tiềm ẩn nén ở 1–2 Hz. Bộ giải mã nhanh của <strong>Asymmetric Tokenizer</strong> biến latent đó thành hành động thật ở 24 Hz, và chỉ bộ giải mã nhìn thấy tín hiệu xúc giác hoặc wrench mới nhất. Demo được thu bằng <strong>TactAR</strong>, teleoperation AR trên Quest 3 hiển thị lực tiếp xúc thành mũi tên.</p>
+<p><strong>KẾT QUẢ</strong> Gọt vỏ 0,95 so với 0,44 của DP, lau 0,87 so với 0,57, nâng bằng hai tay 0,70 so với 0,00 (điểm, 10 lượt mỗi điều kiện). Biến thể tốt nhất dùng wrench ước lượng từ mô-men khớp của cánh tay, không phải cảm biến xúc giác quang học.</p>
+</div>
+<h2>1. Vấn đề: chunk là một lời hứa robot không thể nuốt lời</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Điểm là của tác vụ gọt vỏ khi bị đẩy sau tiếp xúc. RDP giữ chunk để lập kế hoạch nhưng cho xúc giác thay đổi từng hành động được thực thi." class="dg-natural" width="1007" height="304" viewBox="0 0 1007 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">DP</text><rect class="dg-box" x="124" y="22" width="148" height="38"/><text class="dg-t" x="198" y="45" text-anchor="middle">Ảnh + trạng thái</text><path class="dg-a" d="M272 41 H304"/><rect class="dg-badbox" x="306" y="14" width="155" height="54"/><text class="dg-t" x="383" y="37" text-anchor="middle">Chunk 8 hành động</text><text class="dg-s" x="383" y="53" text-anchor="middle">chạy vòng hở</text><path class="dg-a" d="M461 41 H493"/><rect class="dg-box" x="495" y="22" width="96" height="38"/><text class="dg-t" x="543" y="45" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="86">✗ gọt vỏ khi bị đẩy sau tiếp xúc: 0,19</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">DP + xúc giác</text><rect class="dg-box" x="124" y="120" width="231" height="38"/><text class="dg-t" x="240" y="143" text-anchor="middle">Ảnh + xúc giác + trạng thái</text><path class="dg-a" d="M355 139 H387"/><rect class="dg-badbox" x="389" y="112" width="205" height="54"/><text class="dg-t" x="492" y="135" text-anchor="middle">Chunk 8 hành động</text><text class="dg-s" x="492" y="151" text-anchor="middle">chỉ đọc xúc giác ở ranh giới</text><path class="dg-a" d="M594 139 H626"/><rect class="dg-box" x="628" y="120" width="96" height="38"/><text class="dg-t" x="676" y="143" text-anchor="middle">Robot</text><text class="dg-note dg-red" x="124" y="184">✗ 0,15</text><text class="dg-lab dg-green" x="14" y="241">RDP</text><rect class="dg-box" x="124" y="218" width="231" height="38"/><text class="dg-t" x="240" y="241" text-anchor="middle">Ảnh + xúc giác + trạng thái</text><path class="dg-a" d="M355 237 H387"/><rect class="dg-key" x="389" y="210" width="163" height="54"/><text class="dg-t" x="471" y="233" text-anchor="middle">Chunk tiềm ẩn chậm</text><text class="dg-s" x="471" y="249" text-anchor="middle">1–2 Hz</text><path class="dg-a" d="M552 237 H584"/><rect class="dg-key" x="586" y="210" width="277" height="54"/><text class="dg-t" x="724" y="233" text-anchor="middle">Giải mã nhanh + xúc giác mới nhất</text><text class="dg-s" x="724" y="249" text-anchor="middle">24 Hz</text><path class="dg-a" d="M863 237 H895"/><rect class="dg-box" x="897" y="218" width="96" height="38"/><text class="dg-t" x="945" y="241" text-anchor="middle">Robot</text><text class="dg-note dg-green" x="124" y="282">✓ 0,88</text></svg><figcaption>Điểm là của tác vụ gọt vỏ khi bị đẩy sau tiếp xúc. RDP giữ chunk để lập kế hoạch nhưng cho xúc giác thay đổi từng hành động được thực thi.</figcaption></figure>
+<p>Các kiểu thất bại của DP theo tác giả: "lực lớn" (cánh tay cứ ấn vào quả dưa chuột), "kẹt" (DP có xúc giác trở nên dè dặt rồi dừng), và "mất tiếp xúc" (sau một cú đẩy, phần còn lại của chunk chạy mù và để sót vỏ hay vết mực).</p>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Tokenizer được huấn luyện trước; sau đó chính sách chậm học cách sinh ra latent của nó. Khi chạy, bộ giải mã chạy ở mỗi bước với xúc giác mới nhất." viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SUY LUẬN: BỘ LẬP KẾ HOẠCH TIỀM ẨN CHẬM, BỘ GIẢI MÃ XÚC GIÁC NHANH</text>
+<rect class="dg-ext" x="20" y="46" width="230" height="60"/><text class="dg-t" x="135" y="70" text-anchor="middle">ảnh + xúc giác + trạng thái</text><text class="dg-s" x="135" y="88" text-anchor="middle">2 khung ở 12 Hz</text>
+<rect class="dg-box" x="270" y="46" width="230" height="60"/><text class="dg-t" x="385" y="70" text-anchor="middle">Latent Diffusion Policy</text><text class="dg-s" x="385" y="88" text-anchor="middle">chậm: 1-2 Hz, khoảng 100 ms</text>
+<rect class="dg-box" x="550" y="46" width="200" height="60"/><text class="dg-t" x="650" y="70" text-anchor="middle">chunk tiềm ẩn Z</text><text class="dg-s" x="650" y="88" text-anchor="middle">ngắn hơn hành động 4 lần</text>
+<path class="dg-a" d="M250 76 H270"/><path class="dg-a" d="M500 76 H550"/>
+<rect class="dg-key" x="20" y="150" width="200" height="60"/><text class="dg-t" x="120" y="174" text-anchor="middle">xúc giác hoặc wrench</text><text class="dg-s" x="120" y="192" text-anchor="middle">24 Hz: PCA-15 hoặc 6 chiều</text>
+<rect class="dg-key" x="550" y="150" width="200" height="60"/><text class="dg-t" x="650" y="174" text-anchor="middle">bộ giải mã AT (GRU)</text><text class="dg-s" x="650" y="192" text-anchor="middle">nhanh: dưới 1 ms mỗi bước</text>
+<rect class="dg-box" x="800" y="150" width="160" height="60"/><text class="dg-t" x="880" y="174" text-anchor="middle">hành động kế tiếp</text><text class="dg-s" x="880" y="192" text-anchor="middle">pose EE tương đối</text>
+<path class="dg-a" d="M220 180 H550"/><text class="dg-s" x="240" y="172">xúc giác mới nhất ở mỗi bước</text>
+<path class="dg-a" d="M650 106 V150"/><path class="dg-a" d="M750 180 H800"/>
+<rect class="dg-grp" x="800" y="240" width="160" height="50"/><text class="dg-t" x="880" y="262" text-anchor="middle">robot</text><text class="dg-s" x="880" y="279" text-anchor="middle">nội suy lên 500+ Hz</text>
+<path class="dg-a" d="M880 210 V240"/>
+<text class="dg-l" x="20" y="270">latent mang chiến lược; bộ giải mã đặt dụng cụ theo xúc giác trực tiếp</text>
+<text class="dg-h" x="20" y="322">HUẤN LUYỆN: TOKENIZER TRƯỚC, RỒI CHÍNH SÁCH CHẬM TRÊN LATENT CỦA NÓ</text>
+<rect class="dg-ext" x="20" y="338" width="180" height="56"/><text class="dg-t" x="110" y="362" text-anchor="middle">chunk demo A</text><text class="dg-s" x="110" y="380" text-anchor="middle">32 bước ở 24 Hz</text>
+<rect class="dg-box" x="240" y="338" width="180" height="56"/><text class="dg-t" x="330" y="362" text-anchor="middle">bộ mã hóa CNN 1D</text><text class="dg-s" x="330" y="380" text-anchor="middle">không nhận xúc giác</text>
+<rect class="dg-box" x="460" y="338" width="140" height="56"/><text class="dg-t" x="530" y="362" text-anchor="middle">latent Z</text><text class="dg-s" x="530" y="380" text-anchor="middle">Z = E(A)</text>
+<rect class="dg-key" x="640" y="338" width="170" height="56"/><text class="dg-t" x="725" y="362" text-anchor="middle">bộ giải mã GRU</text><text class="dg-s" x="725" y="380" text-anchor="middle">Z + xúc giác</text>
+<rect class="dg-box" x="850" y="338" width="110" height="56"/><text class="dg-t" x="905" y="362" text-anchor="middle">hàm mất mát</text><text class="dg-s" x="905" y="380" text-anchor="middle">L1 + KL rất nhỏ</text>
+<path class="dg-a" d="M200 366 H240"/><path class="dg-a" d="M420 366 H460"/><path class="dg-a" d="M600 366 H640"/><path class="dg-a" d="M810 366 H850"/>
+<text class="dg-l" x="20" y="424">chính sách chậm khi đó là một Diffusion Policy khử nhiễu Z thay vì hành động thô</text>
+</svg><figcaption>Tokenizer được huấn luyện trước; sau đó chính sách chậm học cách sinh ra latent của nó. Khi chạy, bộ giải mã chạy ở mỗi bước với xúc giác mới nhất.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biểu diễn xúc giác</td>
+<td>ảnh GelSight Mini hoặc MCTac</td>
+<td>dòng dịch chuyển marker $F_t = [d_x, d_y]$, giảm bằng PCA còn 15 số</td>
+<td>bền với ánh sáng và việc thay gel; các thành phần đầu đọc được như lực cắt, xoắn và lực pháp tuyến</td>
+</tr>
+<tr>
+<td>Biểu diễn lực</td>
+<td>wrench TCP ước lượng của robot, 120 Hz</td>
+<td>wrench 6 chiều, lấy mẫu lại 24 Hz</td>
+<td>dùng thẳng, không PCA</td>
+</tr>
+<tr>
+<td>Bộ mã hóa AT $\mathcal{E}$</td>
+<td>chunk hành động $A$ (32 bước, 24 Hz)</td>
+<td>latent $Z \in \mathbb{R}^{t \times d}$, giảm mẫu 4 lần, $d$ = 4 hoặc 8</td>
+<td>CNN 1D; <strong>không nhận xúc giác</strong></td>
+</tr>
+<tr>
+<td>Bộ giải mã AT $\mathcal{D}$ (chính sách nhanh)</td>
+<td>$Z$ và chuỗi xúc giác</td>
+<td>hành động $\hat A$</td>
+<td>GRU, dưới 1 ms mỗi lần gọi</td>
+</tr>
+<tr>
+<td>Latent Diffusion Policy (chính sách chậm)</td>
+<td>ảnh, xúc giác hoặc wrench, trạng thái (2 khung ở 12 Hz)</td>
+<td>một chunk tiềm ẩn $Z$</td>
+<td>Diffusion Policy CNN với FiLM, 100 ms trên RTX 4090</td>
+</tr>
+</tbody>
+</table></div>
+<p>Sự bất đối xứng chính là thiết kế. Vì bộ mã hóa không bao giờ thấy xúc giác, latent buộc phải mô tả chiến lược ("bám theo bề mặt, giữ tiếp xúc"), còn bộ giải mã phải dùng xúc giác trực tiếp để đặt dụng cụ chính xác. Bài gọi các hiệu chỉnh này là "dưới milimét".</p>
+<p>Hàm mất mát (Eq. 2 và 3 trong bài):</p>
+<p>$$\mathcal{L}_{AT} = \mathbb{E}\big[\lVert A - \mathcal{D}(Z, F^{reduced})\rVert_1 + \lambda_{KL}\,\mathcal{L}_{KL}\big],\qquad \mathcal{L}_{LDP} = \mathbb{E}\,\lVert \varepsilon^k - \varepsilon_\theta(O,\ Z^0 + \varepsilon^k,\ k)\rVert_2$$</p>
+<p>$\lambda_{KL}$ được giữ rất nhỏ (1e-6) để không gian tiềm ẩn mượt nhưng tokenizer không biến thành mô hình sinh. Hai mẹo thực hành tác giả nhấn mạnh: hành động là quỹ đạo end-effector <strong>tương đối</strong>, và <strong>khớp độ trễ</strong> bỏ đi các hành động đầu của mỗi chunk mới vốn đã thuộc về quá khứ khi suy luận xong.</p>
+<h2>3. Tính tay: xúc giác đổi được hành động thường xuyên tới đâu?</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> So sánh một thay đổi tiếp xúc có thể bị bỏ qua bao lâu ở DP và ở RDP, và khớp độ trễ vứt bỏ bao nhiêu bước.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$n_{DP}$, $f_{DP}$</td>
+<td>số bước DP thực thi mỗi lần gọi, và tần số</td>
+<td>hằng số</td>
+<td>8 bước, 12 Hz</td>
+</tr>
+<tr>
+<td>$f_{fast}$</td>
+<td>tần số bộ giải mã nhanh (GelSight chạy 25 FPS)</td>
+<td>hằng số</td>
+<td>24 Hz</td>
+</tr>
+<tr>
+<td>$t_{slow}$</td>
+<td>thời gian suy luận của chính sách chậm, RTX 4090</td>
+<td>đo được</td>
+<td>100 ms</td>
+</tr>
+<tr>
+<td>$t_{blind}$</td>
+<td>thời gian dài nhất xúc giác không đổi được hành động</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$n_{drop}$</td>
+<td>số bước bị bỏ khi khớp độ trễ</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Công thức</strong></p>
+<p>$$t_{blind}^{DP} = \frac{n_{DP}}{f_{DP}},\qquad t_{blind}^{RDP} = \frac{1}{f_{fast}},\qquad n_{drop} = \left\lceil t_{slow}\, f_{fast} \right\rceil$$</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>DP: $8 / 12 = 0{,}67$ s mỗi chunk, trong lúc đó không đọc xúc giác.</li>
+<li>RDP: $1 / 24 = 0{,}042$ s, bộ giải mã đọc lại xúc giác ở mỗi bước.</li>
+<li>Tỉ lệ: $0{,}67 / 0{,}042 = 16$.</li>
+<li>Độ trễ: $0{,}1 \times 24 = 2{,}4$, nên khoảng 3 bước đầu của mỗi chunk mới đã cũ khi nó tới (phép tính của mình; bài chỉ nói bỏ "vài bước hành động đầu").</li>
+</ol>
+<p><strong>Kết quả.</strong> DP có thể mù 0,67 s; RDP chỉ 42 ms, ngắn hơn 16 lần.</p>
+<p><strong>Ý nghĩa.</strong> Với chuyển động tương đối 1 cm/s (ví dụ minh họa của mình, không phải số của bài), 0,67 s là 6,7 mm sai lệch không được sửa, lớn hơn độ sâu cắt của dao gọt; 42 ms là 0,4 mm.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Gọt vỏ, điểm tổng (tỉ lệ vỏ được gọt, chuẩn hóa theo demo), 30 lượt mỗi phương pháp." class="dg-natural" width="627" height="192" viewBox="0 0 627 192" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="167" y="23" text-anchor="end">DP</text><rect class="dg-bar" x="177" y="10" width="145" height="18"/><text class="dg-barval" x="330" y="23">0,44</text><text class="dg-barlabel" x="167" y="53" text-anchor="end">DP + ảnh xúc giác</text><rect class="dg-bar" x="177" y="40" width="135" height="18"/><text class="dg-barval" x="320" y="53">0,41</text><text class="dg-barlabel" x="167" y="83" text-anchor="end">DP + embedding xúc giác</text><rect class="dg-bar" x="177" y="70" width="129" height="18"/><text class="dg-barval" x="313" y="83">0,39</text><text class="dg-barlabel" x="167" y="113" text-anchor="end">RDP (GelSight)</text><rect class="dg-bar" x="177" y="100" width="297" height="18"/><text class="dg-barval" x="481" y="113">0,9</text><text class="dg-barlabel" x="167" y="143" text-anchor="end">RDP (MCTac)</text><rect class="dg-bar" x="177" y="130" width="290" height="18"/><text class="dg-barval" x="475" y="143">0,88</text><text class="dg-barlabel" x="167" y="173" text-anchor="end">RDP (wrench)</text><rect class="dg-key" x="177" y="160" width="313" height="18"/><text class="dg-barval" x="498" y="173">0,95</text></svg><figcaption>Gọt vỏ, điểm tổng (tỉ lệ vỏ được gọt, chuẩn hóa theo demo), 30 lượt mỗi phương pháp.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Điểm gọt vỏ</th>
+<th>Không đẩy</th>
+<th>Đẩy trước tiếp xúc</th>
+<th>Đẩy sau tiếp xúc</th>
+<th>Tổng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0,56</td>
+<td>0,58</td>
+<td>0,19</td>
+<td>0,44</td>
+</tr>
+<tr>
+<td>DP + embedding xúc giác</td>
+<td>0,48</td>
+<td>0,55</td>
+<td>0,15</td>
+<td>0,39</td>
+</tr>
+<tr>
+<td>RDP (GelSight)</td>
+<td>0,98</td>
+<td>0,93</td>
+<td>0,80</td>
+<td>0,90</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0,99</td>
+<td>0,98</td>
+<td>0,88</td>
+<td>0,95</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Điểm lau</th>
+<th>Không đẩy</th>
+<th>Đẩy trước tiếp xúc</th>
+<th>Đẩy sau tiếp xúc</th>
+<th>Tổng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0,75</td>
+<td>0,70</td>
+<td>0,25</td>
+<td>0,57</td>
+</tr>
+<tr>
+<td>DP + embedding xúc giác</td>
+<td>0,60</td>
+<td>0,75</td>
+<td>0,15</td>
+<td>0,50</td>
+</tr>
+<tr>
+<td>RDP (GelSight)</td>
+<td>0,85</td>
+<td>0,95</td>
+<td>0,50</td>
+<td>0,77</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0,95</td>
+<td>0,85</td>
+<td>0,80</td>
+<td>0,87</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Nâng cốc giấy bằng hai tay</th>
+<th>Điểm cốc mềm</th>
+<th>Điểm cốc cứng</th>
+<th>Tổng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DP</td>
+<td>0,00</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>DP + embedding xúc giác</td>
+<td>0,10</td>
+<td>0,05</td>
+<td>0,08</td>
+</tr>
+<tr>
+<td>RDP (GelSight + MCTac)</td>
+<td>0,55</td>
+<td>0,40</td>
+<td>0,48</td>
+</tr>
+<tr>
+<td>RDP (wrench)</td>
+<td>0,80</td>
+<td>0,60</td>
+<td>0,70</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Đổi kích thước chunk không phải lời giải.</strong> Ở tác vụ lau bị đẩy sau tiếp xúc, DP + xúc giác đạt 0,15 với chunk 8 và 0,10 với chunk 2 (tỉ lệ nắm thành công rơi còn 20%). Temporal ensembling cho 0,05; 0,00 và 0,15 với $\tau$ = 0,2; 0,5; 0,8. RDP với chunk 8 đạt 0,50.</li>
+<li><strong>Loại cảm biến không quan trọng lắm.</strong> GelSight Mini (549 USD) và MCTac của tác giả (khoảng 50 USD) cho 0,90 và 0,88 ở gọt vỏ.</li>
+<li><strong>Wrench thắng xúc giác quang học</strong> ở cả ba tác vụ, dù nó được ước lượng từ mô-men khớp và nhiễu khi chuyển động nhanh. Tác giả cho rằng do độ trễ thấp hơn và ít chiều hơn.</li>
+<li><strong>Phản hồi khi teleoperation quan trọng.</strong> Huấn luyện trên 60 demo thu mà không có phản hồi lực AR làm điểm giảm hơn 30%.</li>
+</ul>
+<h2>5. Dữ liệu và TactAR</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Demo</td>
+<td>60 gọt vỏ, 80 lau, 50 nâng bằng hai tay (phụ lục)</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>Meta Quest 3 (499 USD) ở chế độ pass-through màu; trường biến dạng xúc giác hoặc mũi tên lực vẽ tại end-effector trong AR; ROS2 đồng bộ cảm biến và robot</td>
+</tr>
+<tr>
+<td>Tác động lên dữ liệu</td>
+<td>10 người × 10 lượt × 2 chế độ: chiều dài vỏ gọt được 0,72 → 0,91, tỉ lệ thời gian lực ổn định 0,58 → 0,87 khi có phản hồi</td>
+</tr>
+<tr>
+<td>Tần số</td>
+<td>ảnh và chính sách chậm 12 Hz; xúc giác, wrench và chính sách nhanh 24 Hz; lệnh robot được nội suy trên 500 Hz</td>
+</tr>
+<tr>
+<td>Robot</td>
+<td>hai tay Flexiv Rizon 4 có cảm biến mô-men khớp, tay kẹp Flexiv Grav, camera cổ tay RealSense D435 (thêm D415 cho bài hai tay)</td>
+</tr>
+<tr>
+<td>Tính toán</td>
+<td>một RTX 4090 cho thu thập, huấn luyện và đánh giá</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Có, đây là một trong những paper dễ dùng nhất trong danh sách. Biến thể tốt nhất nhận đúng thứ UR10e cung cấp, một wrench 6 chiều ở cổ tay, và code, dữ liệu, checkpoint đều công khai. Bạn vẫn cần demo của riêng mình có phản hồi lực, và mỗi tác vụ là một chính sách. "Không nêu" nghĩa là mình không tìm thấy trong paper hay trang dự án.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cánh tay</td>
+<td>Flexiv Rizon 4, lệnh được stream trên 500 Hz</td>
+<td>UR10e với RTDE servo 500 Hz là cùng kiểu; hành động EE tương đối chuyển sang được</td>
+</tr>
+<tr>
+<td>Lực</td>
+<td>Wrench TCP ước lượng từ mô-men khớp, 120 Hz → 24 Hz</td>
+<td>F/T cổ tay của UR10e cho đúng 6 số đó, có lẽ ít nhiễu hơn</td>
+</tr>
+<tr>
+<td>Xúc giác (tùy chọn)</td>
+<td>GelSight Mini hoặc MCTac ở đầu ngón</td>
+<td>Bỏ qua được: biến thể wrench đạt điểm cao hơn</td>
+</tr>
+<tr>
+<td>Tay kẹp</td>
+<td>Tay kẹp điều khiển lực Flexiv Grav</td>
+<td>Các tác vụ nắm một dụng cụ rồi giữ nó; tay kẹp nào giữ chắc dụng cụ chắc là được. Tác giả không thử</td>
+</tr>
+<tr>
+<td>Teleoperation</td>
+<td>TactAR trên Quest 3, <a href="https://github.com/xiaoxiaoxh/TactAR_APP">mã nguồn mở</a></td>
+<td>Không có phản hồi lực thì dữ liệu kém hơn (giảm hơn 30% trong thử nghiệm của họ)</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>50–80 mỗi tác vụ</td>
+<td>Lên kế hoạch cỡ đó cho mỗi kỹ năng</td>
+</tr>
+<tr>
+<td>Giấy phép code</td>
+<td>Không nêu trong paper</td>
+<td>Kiểm tra repository</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>Mười lượt mỗi điều kiện. 0,88 so với 0,80 là nằm trong nhiễu; các khoảng cách đáng kể là 0,95 so với 0,44 và 0,70 so với 0,00.</li>
+<li>Baseline chỉ là các biến thể Diffusion Policy; không so với phương pháp phản ứng nhanh nào khác.</li>
+<li>Chính sách nhanh chỉ phản ứng với xúc giác và lực; ảnh vẫn được đọc ở tần số chậm.</li>
+<li>Chính sách đơn tác vụ. Tác giả đề xuất thay tokenizer hành động của một VLA bằng tokenizer bất đối xứng làm hướng tương lai; bài tiếp theo <a href="https://implicit-rdp.github.io">ImplicitRDP</a> (RA-L 2026) đi tiếp hướng này.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> RDP trả lời câu "làm sao giữ chunking mà vẫn phản ứng với lực?". <a href="farm.html">FARM</a> thì đưa lực vào chính hành động, còn <a href="tdc.html">TDC</a> giao phản ứng nhanh cho một bộ điều khiển admittance. <a href="action-chunking.html">Action chunking</a> và <a href="diffusion-policy.html">Diffusion Policy</a> là nền tảng.</p>
+<p><strong>Câu kiểm tra:</strong> Nếu thay GelSight bằng cảm biến 100 Hz và bộ giải mã chạy ở 100 Hz, $t_{blind}^{RDP}$ là bao nhiêu, và khớp độ trễ bỏ bao nhiêu bước với cùng chính sách chậm 100 ms?</p>
+<details>
+<summary>Đáp án</summary>
+<p>$1/100 = 10$ ms; $\lceil 0{,}1 \times 100 \rceil = 10$ bước.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">CHỈ MÔ PHỎNG: CHUYÊN GIA GÁN NHÃN HƯỚNG, KHÔNG GÁN ĐỘ LỚN</text>
+<rect class="dg-ext" x="20" y="46" width="220" height="54"/><text class="dg-t" x="130" y="68" text-anchor="middle">vật quét 3D trong sim</text><text class="dg-s" x="130" y="86" text-anchor="middle">pose, ánh sáng ngẫu nhiên</text>
+<rect class="dg-box" x="290" y="46" width="220" height="54"/><text class="dg-t" x="400" y="68" text-anchor="middle">chuyên gia đặc quyền</text><text class="dg-s" x="400" y="86" text-anchor="middle">luật theo trạng thái tiếp xúc</text>
+<rect class="dg-box" x="560" y="46" width="200" height="54"/><text class="dg-t" x="660" y="68" text-anchor="middle">2.000 demo mỗi tác vụ</text><text class="dg-s" x="660" y="86" text-anchor="middle">khoảng 6 giờ trên một 4090</text>
+<rect class="dg-key" x="810" y="46" width="150" height="54"/><text class="dg-t" x="885" y="68" text-anchor="middle">nhãn</text><text class="dg-s" x="885" y="86" text-anchor="middle">pose, khung, chế độ</text>
+<path class="dg-a" d="M240 73 H290"/><path class="dg-a" d="M510 73 H560"/><path class="dg-a" d="M760 73 H810"/>
+<text class="dg-h" x="20" y="138">CHÍNH SÁCH: E2VLA VỚI LỚP VÀO VÀ RA MỞ RỘNG</text>
+<rect class="dg-ext" x="20" y="156" width="220" height="70"/><text class="dg-t" x="130" y="184" text-anchor="middle">RGB cổ tay + camera ngoài</text><text class="dg-s" x="130" y="204" text-anchor="middle">câu lệnh, pose EE, tay kẹp</text>
+<rect class="dg-key" x="290" y="156" width="220" height="70"/><text class="dg-t" x="400" y="184" text-anchor="middle">action expert của E2VLA</text><text class="dg-s" x="400" y="204" text-anchor="middle">chunk 32, chỉ khung hiện tại</text>
+<rect class="dg-box" x="560" y="156" width="400" height="70"/><text class="dg-t" x="760" y="184" text-anchor="middle">pose X (10) + khung tác vụ T (6) + chế độ C (6)</text><text class="dg-s" x="760" y="204" text-anchor="middle">C mỗi trục: 0 lực, 1 mềm, 4 cứng</text>
+<path class="dg-a" d="M240 191 H290"/><path class="dg-a" d="M510 191 H560"/>
+<text class="dg-h" x="20" y="266">TRIỂN KHAI: BỘ ADMITTANCE THÊM ĐỘ LỚN ĐẶT BẰNG TAY</text>
+<rect class="dg-ext" x="20" y="282" width="240" height="58"/><text class="dg-t" x="140" y="306" text-anchor="middle">người đặt một lần</text><text class="dg-s" x="140" y="324" text-anchor="middle">k = 50/10, lực mục tiêu F_h</text>
+<rect class="dg-key" x="310" y="282" width="340" height="58"/><text class="dg-t" x="480" y="306" text-anchor="middle">admittance trong khung tác vụ</text><text class="dg-s" x="480" y="324" text-anchor="middle">M a + D v + K (p - p_cmd) = F_ext - F_cmd</text>
+<rect class="dg-box" x="700" y="282" width="260" height="58"/><text class="dg-t" x="830" y="306" text-anchor="middle">cánh tay Franka</text><text class="dg-s" x="830" y="324" text-anchor="middle">F_ext từ mô-men khớp</text>
+<path class="dg-a" d="M260 311 H310"/><path class="dg-a" d="M650 311 H700"/>
+<path class="dg-a" d="M760 226 V244 H480 V282"/>
+<text class="dg-l" x="20" y="374">hướng học trong mô phỏng và chuyển được; độ lớn là hai con số chỉnh tay</text>
+</svg>

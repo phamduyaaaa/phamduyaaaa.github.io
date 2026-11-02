@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">SIMULATION ONLY: THE EXPERT LABELS DIRECTION, NOT MAGNITUDE</text>
+<rect class="dg-ext" x="20" y="46" width="220" height="54"/><text class="dg-t" x="130" y="68" text-anchor="middle">scanned objects in sim</text><text class="dg-s" x="130" y="86" text-anchor="middle">randomized poses, lights</text>
+<rect class="dg-box" x="290" y="46" width="220" height="54"/><text class="dg-t" x="400" y="68" text-anchor="middle">privileged expert</text><text class="dg-s" x="400" y="86" text-anchor="middle">rules per contact state</text>
+<rect class="dg-box" x="560" y="46" width="200" height="54"/><text class="dg-t" x="660" y="68" text-anchor="middle">2,000 demos per task</text><text class="dg-s" x="660" y="86" text-anchor="middle">about 6 h on one 4090</text>
+<rect class="dg-key" x="810" y="46" width="150" height="54"/><text class="dg-t" x="885" y="68" text-anchor="middle">labels</text><text class="dg-s" x="885" y="86" text-anchor="middle">pose, frame, mode</text>
+<path class="dg-a" d="M240 73 H290"/><path class="dg-a" d="M510 73 H560"/><path class="dg-a" d="M760 73 H810"/>
+<text class="dg-h" x="20" y="138">POLICY: E2VLA WITH WIDER INPUT AND OUTPUT LAYERS</text>
+<rect class="dg-ext" x="20" y="156" width="220" height="70"/><text class="dg-t" x="130" y="184" text-anchor="middle">wrist + global RGB</text><text class="dg-s" x="130" y="204" text-anchor="middle">instruction, EE pose, gripper</text>
+<rect class="dg-key" x="290" y="156" width="220" height="70"/><text class="dg-t" x="400" y="184" text-anchor="middle">E2VLA action expert</text><text class="dg-s" x="400" y="204" text-anchor="middle">chunk of 32, current frame</text>
+<rect class="dg-box" x="560" y="156" width="400" height="70"/><text class="dg-t" x="760" y="184" text-anchor="middle">pose X (10) + task frame T (6) + mode C (6)</text><text class="dg-s" x="760" y="204" text-anchor="middle">C per axis: 0 force, 1 compliant, 4 stiff</text>
+<path class="dg-a" d="M240 191 H290"/><path class="dg-a" d="M510 191 H560"/>
+<text class="dg-h" x="20" y="266">DEPLOYMENT: ADMITTANCE CONTROLLER ADDS HAND-SET MAGNITUDES</text>
+<rect class="dg-ext" x="20" y="282" width="240" height="58"/><text class="dg-t" x="140" y="306" text-anchor="middle">human sets once</text><text class="dg-s" x="140" y="324" text-anchor="middle">k = 50/10, target force F_h</text>
+<rect class="dg-key" x="310" y="282" width="340" height="58"/><text class="dg-t" x="480" y="306" text-anchor="middle">admittance in the task frame</text><text class="dg-s" x="480" y="324" text-anchor="middle">M a + D v + K (p - p_cmd) = F_ext - F_cmd</text>
+<rect class="dg-box" x="700" y="282" width="260" height="58"/><text class="dg-t" x="830" y="306" text-anchor="middle">Franka arm</text><text class="dg-s" x="830" y="324" text-anchor="middle">F_ext from joint torques</text>
+<path class="dg-a" d="M260 311 H310"/><path class="dg-a" d="M650 311 H700"/>
+<path class="dg-a" d="M760 226 V244 H480 V282"/>
+<text class="dg-l" x="20" y="374">direction is learned in simulation and transfers; magnitude is two hand-tuned numbers</text>
+</svg>

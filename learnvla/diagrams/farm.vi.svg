@@ -1,0 +1,20 @@
+<svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">DEMO: UMI CẦM TAY VỚI MỘT NGÓN GELSIGHT</text>
+<rect class="dg-ext" x="20" y="46" width="220" height="54"/><text class="dg-t" x="130" y="68" text-anchor="middle">tay kẹp UMI cầm tay</text><text class="dg-s" x="130" y="86" text-anchor="middle">người trực tiếp tác dụng lực</text>
+<rect class="dg-ext" x="290" y="46" width="200" height="54"/><text class="dg-t" x="390" y="68" text-anchor="middle">GelSight Mini</text><text class="dg-s" x="390" y="86" text-anchor="middle">320x240, 25 Hz</text>
+<rect class="dg-key" x="540" y="46" width="200" height="54"/><text class="dg-t" x="640" y="68" text-anchor="middle">FEATS (đóng băng)</text><text class="dg-s" x="640" y="86" text-anchor="middle">cắt x, cắt y, pháp tuyến</text>
+<rect class="dg-box" x="790" y="46" width="170" height="54"/><text class="dg-t" x="875" y="68" text-anchor="middle">nhãn lực</text><text class="dg-s" x="875" y="86" text-anchor="middle">trường lực + F_z tổng</text>
+<path class="dg-a" d="M240 73 H290"/><path class="dg-a" d="M490 73 H540"/><path class="dg-a" d="M740 73 H790"/>
+<text class="dg-h" x="20" y="138">CHÍNH SÁCH: DIFFUSION POLICY 7 HZ, DỰ ĐOÁN 32, THỰC THI 16</text>
+<rect class="dg-ext" x="20" y="156" width="230" height="70"/><text class="dg-t" x="135" y="178" text-anchor="middle">2 quan sát gần nhất</text><text class="dg-s" x="135" y="196" text-anchor="middle">RGB 96x96, trường lực 96x96</text><text class="dg-s" x="135" y="212" text-anchor="middle">F_z tổng, pose, độ mở</text>
+<rect class="dg-box" x="290" y="156" width="220" height="70"/><text class="dg-t" x="400" y="184" text-anchor="middle">CNN thời gian 1D</text><text class="dg-s" x="400" y="204" text-anchor="middle">FiLM, DDIM 10 bước</text>
+<rect class="dg-key" x="560" y="156" width="400" height="70"/><text class="dg-t" x="760" y="184" text-anchor="middle">hành động mỗi bước</text><text class="dg-s" x="760" y="204" text-anchor="middle">pose (3 + 6D), độ mở w, lực kẹp F_z</text>
+<path class="dg-a" d="M250 191 H290"/><path class="dg-a" d="M510 191 H560"/>
+<text class="dg-h" x="20" y="264">TAY KẸP: ĐIỀU KHIỂN HAI CHẾ ĐỘ TRÊN UMI CÓ ĐỘNG CƠ</text>
+<rect class="dg-box" x="20" y="282" width="280" height="58"/><text class="dg-t" x="160" y="306" text-anchor="middle">không gian tự do</text><text class="dg-s" x="160" y="324" text-anchor="middle">độ mở w gửi cho PD của động cơ</text>
+<rect class="dg-key" x="340" y="282" width="300" height="58"/><text class="dg-t" x="490" y="306" text-anchor="middle">đang tiếp xúc</text><text class="dg-s" x="490" y="324" text-anchor="middle">mục tiêu và ước lượng dưới -0,5 N</text>
+<rect class="dg-key" x="680" y="282" width="280" height="58"/><text class="dg-t" x="820" y="306" text-anchor="middle">PID lực, 25 Hz</text><text class="dg-s" x="820" y="324" text-anchor="middle">e = ước lượng - mục tiêu, cộng vào độ mở</text>
+<path class="dg-a" d="M300 311 H340"/><path class="dg-a" d="M640 311 H680"/>
+<path class="dg-ad" d="M900 226 V282"/>
+<text class="dg-l" x="20" y="374">cánh tay bám pose bằng trở kháng Descartes; tay kẹp bám lực khi phát hiện tiếp xúc</text>
+</svg>

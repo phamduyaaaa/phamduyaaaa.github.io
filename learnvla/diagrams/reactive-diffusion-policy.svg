@@ -1,0 +1,23 @@
+<svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">INFERENCE: SLOW LATENT PLANNER, FAST TACTILE DECODER</text>
+<rect class="dg-ext" x="20" y="46" width="230" height="60"/><text class="dg-t" x="135" y="70" text-anchor="middle">image + touch + state</text><text class="dg-s" x="135" y="88" text-anchor="middle">2 frames at 12 Hz</text>
+<rect class="dg-box" x="270" y="46" width="230" height="60"/><text class="dg-t" x="385" y="70" text-anchor="middle">Latent Diffusion Policy</text><text class="dg-s" x="385" y="88" text-anchor="middle">slow: 1-2 Hz, about 100 ms</text>
+<rect class="dg-box" x="550" y="46" width="200" height="60"/><text class="dg-t" x="650" y="70" text-anchor="middle">latent chunk Z</text><text class="dg-s" x="650" y="88" text-anchor="middle">4x shorter than actions</text>
+<path class="dg-a" d="M250 76 H270"/><path class="dg-a" d="M500 76 H550"/>
+<rect class="dg-key" x="20" y="150" width="200" height="60"/><text class="dg-t" x="120" y="174" text-anchor="middle">tactile or wrench</text><text class="dg-s" x="120" y="192" text-anchor="middle">24 Hz: PCA-15 or 6-D</text>
+<rect class="dg-key" x="550" y="150" width="200" height="60"/><text class="dg-t" x="650" y="174" text-anchor="middle">AT decoder (GRU)</text><text class="dg-s" x="650" y="192" text-anchor="middle">fast: under 1 ms per step</text>
+<rect class="dg-box" x="800" y="150" width="160" height="60"/><text class="dg-t" x="880" y="174" text-anchor="middle">next action</text><text class="dg-s" x="880" y="192" text-anchor="middle">relative EE pose</text>
+<path class="dg-a" d="M220 180 H550"/><text class="dg-s" x="240" y="172">latest touch at every step</text>
+<path class="dg-a" d="M650 106 V150"/><path class="dg-a" d="M750 180 H800"/>
+<rect class="dg-grp" x="800" y="240" width="160" height="50"/><text class="dg-t" x="880" y="262" text-anchor="middle">robot</text><text class="dg-s" x="880" y="279" text-anchor="middle">interpolated to 500+ Hz</text>
+<path class="dg-a" d="M880 210 V240"/>
+<text class="dg-l" x="20" y="270">the latent carries the strategy; the decoder places the tool from live touch</text>
+<text class="dg-h" x="20" y="322">TRAINING: TOKENIZER FIRST, THEN THE SLOW POLICY ON ITS LATENTS</text>
+<rect class="dg-ext" x="20" y="338" width="180" height="56"/><text class="dg-t" x="110" y="362" text-anchor="middle">demo chunk A</text><text class="dg-s" x="110" y="380" text-anchor="middle">32 steps at 24 Hz</text>
+<rect class="dg-box" x="240" y="338" width="180" height="56"/><text class="dg-t" x="330" y="362" text-anchor="middle">1D-CNN encoder</text><text class="dg-s" x="330" y="380" text-anchor="middle">no touch input</text>
+<rect class="dg-box" x="460" y="338" width="140" height="56"/><text class="dg-t" x="530" y="362" text-anchor="middle">latent Z</text><text class="dg-s" x="530" y="380" text-anchor="middle">Z = E(A)</text>
+<rect class="dg-key" x="640" y="338" width="170" height="56"/><text class="dg-t" x="725" y="362" text-anchor="middle">GRU decoder</text><text class="dg-s" x="725" y="380" text-anchor="middle">Z + touch</text>
+<rect class="dg-box" x="850" y="338" width="110" height="56"/><text class="dg-t" x="905" y="362" text-anchor="middle">loss</text><text class="dg-s" x="905" y="380" text-anchor="middle">L1 + tiny KL</text>
+<path class="dg-a" d="M200 366 H240"/><path class="dg-a" d="M420 366 H460"/><path class="dg-a" d="M600 366 H640"/><path class="dg-a" d="M810 366 H850"/>
+<text class="dg-l" x="20" y="424">the slow policy is then a Diffusion Policy that denoises Z instead of raw actions</text>
+</svg>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Most tactile policies read touch but command only a gripper width, so the force they apply is an accident. FARM records force with a GelSight finger on a hand-held UMI gripper and predicts pose, grip width and grip force together; a force PID takes over once contact is detected. Screw tightening: 100% vs 40% for touch-as-observation and 0% for vision only.">
+<title>FARM: Putting Grip Force into the Action, Measured with a GelSight Finger · Learn VLA · Phạm Đức Duy</title>
+
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="FARM: Putting Grip Force into the Action, Measured with a GelSight Finger">
+<meta property="og:description" content="Most tactile policies read touch but command only a gripper width, so the force they apply is an accident. FARM records force with a GelSight finger on a hand-held UMI gripper and predicts pose, grip width and grip force together; a force PID takes over once contact is detected. Screw tightening: 100% vs 40% for touch-as-observation and 0% for vision only.">
+<meta property="og:type" content="article">
+
+<link rel="stylesheet" href="../../styles/main.css?v=vi-type">
+<link rel="stylesheet" href="../../blog/styles/blog.css">
+<link rel="stylesheet" href="../../blog/styles/cubism.css?v=cubism-2">
+<link rel="stylesheet" href="../../blog/styles/article-extras.css?v=2">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.post-body'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-m" d="M0 0 L10 5 L0 10 z"/></marker></defs></svg>
+<div class="mobile-backdrop" id="mobileBackdrop" onclick="toggleMenu(false)"></div>
+<div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+  <a href="../../blog/" onclick="toggleMenu(false)">Blog</a>
+  <a href="../" onclick="toggleMenu(false)">Learn VLA</a>
+  <a href="../../#projects" onclick="toggleMenu(false)">Projects</a>
+  <a href="../../#contact" onclick="toggleMenu(false)">Contact</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../../" class="nav-logo" aria-label="Về trang chủ"><span class="nav-dot"></span>Phạm Đức Duy</a>
+    <ul class="nav-links" role="navigation" aria-label="Main navigation">
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../">Learn VLA</a></li>
+      <li><a href="../../#projects">Projects</a></li>
+      <li><a href="../../#contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language switch">
+      <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      <button class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <button class="nav-mobile-btn" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="post-header">
+    <a href="../" class="post-back">← <span data-en>Back to all posts</span><span data-vi>Về danh sách bài viết</span></a>
+
+    <div class="post-meta-row">
+      <span class="post-meta-date">02 Nov 2026</span>
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-read">8 <span data-en>min read</span><span data-vi>phút đọc</span></span>
+    </div>
+
+    <h1 data-en>FARM: Putting Grip Force into the Action, Measured with a GelSight Finger</h1>
+    <h1 data-vi>FARM: Đưa lực kẹp vào hành động, đo bằng một ngón GelSight</h1>
+
+    <p class="post-excerpt-lead" data-en>Most tactile policies read touch but command only a gripper width, so the force they apply is an accident. FARM records force with a GelSight finger on a hand-held UMI gripper and predicts pose, grip width and grip force together; a force PID takes over once contact is detected. Screw tightening: 100% vs 40% for touch-as-observation and 0% for vision only.</p>
+    <p class="post-excerpt-lead" data-vi>Phần lớn chính sách xúc giác đọc xúc giác nhưng chỉ ra lệnh độ mở tay kẹp, nên lực thực tế tác dụng là ngẫu nhiên. FARM ghi lực bằng một ngón GelSight trên tay kẹp UMI cầm tay và dự đoán cùng lúc pose, độ mở và lực kẹp; một bộ PID lực tiếp quản khi phát hiện tiếp xúc. Vặn vít: 100% so với 40% khi xúc giác chỉ là quan sát và 0% khi chỉ có thị giác.</p>
+
+    <div class="post-tags-row"><span class="pill">VLA</span><span class="pill">Force</span><span class="pill">Tactile</span><span class="pill">Diffusion</span><span class="pill">Action Space</span><span class="pill">Paper Notes</span></div>
+  </header>
+
+  <article class="post-body">
+    <div data-en>
+<div class="tldr">
+<p><strong>PAPER</strong> Helmut, Funk, Schneider, de Farias, Peters, <em>Tactile-Conditioned Diffusion Policy for Force-Aware Robotic Manipulation</em>, <a href="https://arxiv.org/abs/2510.13324">arXiv 2510.13324</a> · v1 15 Oct 2025 · TU Darmstadt, DFKI, Hessian.AI · <a href="https://tactile-farm.github.io">project page</a> · venue: "submitted to the IEEE" (I found no confirmation of ICRA 2026) · code and design files announced, project page shows "coming soon" (checked 2026-11-02)</p>
+<p><strong>PROBLEM</strong> Fragile and deformable objects need the right grip force throughout a task, but imitation policies treat touch only as an extra observation and command a width. The force is then "an uncontrolled consequence of gripper commands".</p>
+<p><strong>WHAT FAILED BEFORE</strong> Vision with a binary gripper crushes every grape (0%). Feeding the raw GelSight image as an observation but commanding only width reaches 60% on grapes and 40% on screw tightening.</p>
+<p><strong>IDEA</strong> Demonstrate with a hand-held UMI gripper whose finger is a GelSight Mini, so the human applies the force directly. A frozen estimator (FEATS) turns each tactile image into a shear and normal force field. A Diffusion Policy predicts pose, grip width and <strong>grip force</strong>; in free space the gripper follows the width, in contact a 25 Hz force PID tracks the predicted force.</p>
+<p><strong>RESULT</strong> 20 rollouts per task on a Franka FR3: plant insertion 95%, grape picking 95%, screw tightening 100%. Applied force is closest to the demonstrations (Wasserstein distance 0.75 N vs 1.66–5.05 N for the baselines).</p>
+</div>
+<h2>1. The problem: a width command does not say how hard to squeeze</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Force is moved from the observation side to the action side, and a low-level loop closes it." class="dg-natural" width="1010" height="304" viewBox="0 0 1010 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Before</text><text class="dg-lab dg-red" x="14" y="53">Vision only</text><rect class="dg-box" x="128" y="22" width="117" height="38"/><text class="dg-t" x="186" y="45" text-anchor="middle">Image + pose</text><path class="dg-a" d="M245 41 H277"/><rect class="dg-badbox" x="279" y="14" width="125" height="54"/><text class="dg-t" x="341" y="37" text-anchor="middle">Open or close</text><text class="dg-s" x="341" y="53" text-anchor="middle">binary gripper</text><path class="dg-a" d="M404 41 H436"/><rect class="dg-box" x="438" y="22" width="96" height="38"/><text class="dg-t" x="486" y="45" text-anchor="middle">Gripper</text><text class="dg-note dg-red" x="127.60000000000001" y="86">✗ grapes crushed: 0%</text><text class="dg-lab dg-red" x="14" y="137">Before</text><text class="dg-lab dg-red" x="14" y="151">Touch as input</text><rect class="dg-box" x="128" y="120" width="178" height="38"/><text class="dg-t" x="217" y="143" text-anchor="middle">Image + raw GelSight</text><path class="dg-a" d="M306 139 H338"/><rect class="dg-badbox" x="340" y="112" width="167" height="54"/><text class="dg-t" x="423" y="135" text-anchor="middle">Width only</text><text class="dg-s" x="423" y="151" text-anchor="middle">force is a side effect</text><path class="dg-a" d="M506 139 H538"/><rect class="dg-box" x="540" y="120" width="96" height="38"/><text class="dg-t" x="588" y="143" text-anchor="middle">Gripper</text><text class="dg-note dg-red" x="127.60000000000001" y="184">✗ screw: 40%</text><text class="dg-lab dg-green" x="14" y="241">FARM</text><rect class="dg-box" x="128" y="218" width="277" height="38"/><text class="dg-t" x="266" y="241" text-anchor="middle">Image + force field + total force</text><path class="dg-a" d="M404 237 H436"/><rect class="dg-key" x="438" y="218" width="216" height="38"/><text class="dg-t" x="546" y="241" text-anchor="middle">Pose + width + grip force</text><path class="dg-a" d="M654 237 H686"/><rect class="dg-key" x="688" y="210" width="178" height="54"/><text class="dg-t" x="777" y="233" text-anchor="middle">Force PID in contact</text><text class="dg-s" x="777" y="249" text-anchor="middle">25 Hz</text><path class="dg-a" d="M866 237 H898"/><rect class="dg-box" x="900" y="218" width="96" height="38"/><text class="dg-t" x="948" y="241" text-anchor="middle">Gripper</text><text class="dg-note dg-green" x="127.60000000000001" y="282">✓ screw: 100%</text></svg><figcaption>Force is moved from the observation side to the action side, and a low-level loop closes it.</figcaption></figure>
+<h2>2. Architecture</h2>
+<figure class="diagram"><svg role="img" aria-label="The same gripper geometry is used for the hand-held demonstrations and on the robot, so no retargeting is needed." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">DEMONSTRATION: HAND-HELD UMI WITH A GELSIGHT FINGER</text>
+<rect class="dg-ext" x="20" y="46" width="220" height="54"/><text class="dg-t" x="130" y="68" text-anchor="middle">hand-held UMI gripper</text><text class="dg-s" x="130" y="86" text-anchor="middle">the human applies the force</text>
+<rect class="dg-ext" x="290" y="46" width="200" height="54"/><text class="dg-t" x="390" y="68" text-anchor="middle">GelSight Mini</text><text class="dg-s" x="390" y="86" text-anchor="middle">320x240, 25 Hz</text>
+<rect class="dg-key" x="540" y="46" width="200" height="54"/><text class="dg-t" x="640" y="68" text-anchor="middle">FEATS (frozen)</text><text class="dg-s" x="640" y="86" text-anchor="middle">shear x, shear y, normal</text>
+<rect class="dg-box" x="790" y="46" width="170" height="54"/><text class="dg-t" x="875" y="68" text-anchor="middle">force labels</text><text class="dg-s" x="875" y="86" text-anchor="middle">field + total F_z</text>
+<path class="dg-a" d="M240 73 H290"/><path class="dg-a" d="M490 73 H540"/><path class="dg-a" d="M740 73 H790"/>
+<text class="dg-h" x="20" y="138">POLICY: DIFFUSION POLICY AT 7 HZ, PREDICT 32, EXECUTE 16</text>
+<rect class="dg-ext" x="20" y="156" width="230" height="70"/><text class="dg-t" x="135" y="178" text-anchor="middle">last 2 observations</text><text class="dg-s" x="135" y="196" text-anchor="middle">RGB 96x96, force field 96x96</text><text class="dg-s" x="135" y="212" text-anchor="middle">total F_z, pose, grip width</text>
+<rect class="dg-box" x="290" y="156" width="220" height="70"/><text class="dg-t" x="400" y="184" text-anchor="middle">1D temporal CNN</text><text class="dg-s" x="400" y="204" text-anchor="middle">FiLM, DDIM 10 steps</text>
+<rect class="dg-key" x="560" y="156" width="400" height="70"/><text class="dg-t" x="760" y="184" text-anchor="middle">action per step</text><text class="dg-s" x="760" y="204" text-anchor="middle">pose (3 + 6D), grip width w, grip force F_z</text>
+<path class="dg-a" d="M250 191 H290"/><path class="dg-a" d="M510 191 H560"/>
+<text class="dg-h" x="20" y="264">GRIPPER: DUAL-MODE CONTROL ON THE ACTUATED UMI</text>
+<rect class="dg-box" x="20" y="282" width="280" height="58"/><text class="dg-t" x="160" y="306" text-anchor="middle">free space</text><text class="dg-s" x="160" y="324" text-anchor="middle">width w sent to the motor PD</text>
+<rect class="dg-key" x="340" y="282" width="300" height="58"/><text class="dg-t" x="490" y="306" text-anchor="middle">in contact</text><text class="dg-s" x="490" y="324" text-anchor="middle">target and estimate below -0.5 N</text>
+<rect class="dg-key" x="680" y="282" width="280" height="58"/><text class="dg-t" x="820" y="306" text-anchor="middle">force PID, 25 Hz</text><text class="dg-s" x="820" y="324" text-anchor="middle">e = estimate - target, added to width</text>
+<path class="dg-a" d="M300 311 H340"/><path class="dg-a" d="M640 311 H680"/>
+<path class="dg-ad" d="M900 226 V282"/>
+<text class="dg-l" x="20" y="374">the arm follows the pose with Cartesian impedance; the grip follows force once contact is detected</text>
+</svg><figcaption>The same gripper geometry is used for the hand-held demonstrations and on the robot, so no retargeting is needed.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FEATS (frozen)</td>
+<td>GelSight Mini image, 320×240, 25 Hz</td>
+<td>force field with shear x, shear y and normal channels; total normal force $F_z$ by integration</td>
+<td>learned from finite-element labels; no load cell needed</td>
+</tr>
+<tr>
+<td>Observation</td>
+<td>last 2 frames: RGB 96×96 (RealSense D405), force field 96×96, $F_z$, grip width from ArUco markers, pose (3 + 6D rotation)</td>
+<td>–</td>
+<td>separate ResNet-18 for RGB and force image</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>observations</td>
+<td>32 future steps, 16 executed</td>
+<td>1D temporal CNN Diffusion Policy with FiLM; DDPM 100 steps for training, DDIM 10 at inference; 7 Hz; 60k iterations</td>
+</tr>
+<tr>
+<td>Action per step</td>
+<td>–</td>
+<td>position (3), 6D rotation (6), grip width $w^d$ (1), grip force $F_z^d$ (1)</td>
+<td>11 numbers (my sum; the paper does not give a total)</td>
+</tr>
+<tr>
+<td>Gripper controller</td>
+<td>$w^d$, $F_z^d$, estimate $\hat F_z$</td>
+<td>motor position</td>
+<td>free space: width to the DYNAMIXEL PD; contact: PID with anti-windup on $e = \hat F_z - F_z^d$, added to the current width</td>
+</tr>
+<tr>
+<td>Arm</td>
+<td>pose</td>
+<td>joint torques</td>
+<td>Franka Research 3, Cartesian impedance (franky)</td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. Work it by hand: when force control switches on, and how the force is scored</h2>
+<div class="calc">
+<p>Calculation card</p>
+<p><strong>What and why.</strong> Two small computations show how FARM works in practice: the rule that switches the gripper into force control, and the metric the paper uses to say its force "looks like" the demonstrations.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$F_z^d$, $\hat F_z$</td>
+<td>predicted target and FEATS estimate of normal force (compression is negative)</td>
+<td>input</td>
+<td>−2.0 N, −1.2 N</td>
+</tr>
+<tr>
+<td>$F_{th}$</td>
+<td>contact threshold, from FEATS noise</td>
+<td>constant</td>
+<td>−0.5 N</td>
+</tr>
+<tr>
+<td>$e$</td>
+<td>force error for the PID</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$W_1$</td>
+<td>1-Wasserstein distance between demo and rollout forces</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Formulas</strong></p>
+<p>$$\text{contact} \iff F_z^d &lt; F_{th}\ \text{and}\ \hat F_z &lt; F_{th},\qquad e = \hat F_z - F_z^d,\qquad W_1 = \frac{1}{n}\sum_{i=1}^{n} \lvert x_{(i)} - y_{(i)}\rvert$$</p>
+<p>The last form holds for two equal-size, equally weighted samples in 1D, with $x_{(i)}$, $y_{(i)}$ sorted.</p>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Target −2.0 N, estimate −1.2 N: both below −0.5 N, so force control is on. $e = -1.2 - (-2.0) = 0.8$ N: the gripper squeezes less than wanted, so the PID closes it further.</li>
+<li>Target −2.0 N, estimate −0.3 N (just touching): the estimate is above −0.5 N, so the gripper stays in width mode and keeps closing to $w^d$.</li>
+<li>Toy $W_1$ (my numbers): demo forces −2, −3, −4 N, rollout −2.5, −3.5, −6 N. Sorted pairs (−4, −6), (−3, −3.5), (−2, −2.5); differences 2, 0.5, 0.5; $W_1 = 3/3 = 1.0$ N.</li>
+</ol>
+<p><strong>Result.</strong> Force control needs both the plan and the sensor to agree that there is contact; $W_1$ is the average gap between matching quantiles of the two force histograms.</p>
+<p><strong>Why it matters.</strong> Requiring both signals prevents a noisy estimate from triggering force control in free space, and stops the policy from squeezing air. The paper's $W_1$ of 0.75 N for FARM vs 5.05 N for vision only means the vision policy's force is, on average, 5 N away from what the human did.</p>
+</div>
+<h2>4. Results</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Screw tightening with an Allen key, 20 rollouts each. This is the task where force must change during the motion." class="dg-natural" width="737" height="132" viewBox="0 0 737 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="277" y="23" text-anchor="end">Vision only</text><rect class="dg-bar" x="287" y="10" width="2" height="18"/><text class="dg-barval" x="297" y="23">0%</text><text class="dg-barlabel" x="277" y="53" text-anchor="end">Tactile-aware (touch in, width out)</text><rect class="dg-bar" x="287" y="40" width="144" height="18"/><text class="dg-barval" x="439" y="53">40%</text><text class="dg-barlabel" x="277" y="83" text-anchor="end">Force-aware (total force in, force out)</text><rect class="dg-bar" x="287" y="70" width="36" height="18"/><text class="dg-barval" x="331" y="83">10%</text><text class="dg-barlabel" x="277" y="113" text-anchor="end">FARM</text><rect class="dg-key" x="287" y="100" width="360" height="18"/><text class="dg-barval" x="655" y="113">100%</text></svg><figcaption>Screw tightening with an Allen key, 20 rollouts each. This is the task where force must change during the motion.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Success, 20 rollouts</th>
+<th>Plant insertion (high force)</th>
+<th>Grape picking (low force)</th>
+<th>Screw tightening (changing force)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision only (binary gripper)</td>
+<td>85%</td>
+<td>0%</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Tactile-aware (raw GelSight in, width out)</td>
+<td>65%</td>
+<td>60%</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>Force-aware (total $F_z$ in, force out)</td>
+<td>95%</td>
+<td>85%</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>FARM (force field + $F_z$ in, force out)</td>
+<td>95%</td>
+<td>95%</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Screw tightening, force distance to demos</th>
+<th>$W_1$ (N)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FARM</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>Force-aware</td>
+<td>1.66</td>
+</tr>
+<tr>
+<td>Tactile-aware</td>
+<td>4.38 (too little force)</td>
+</tr>
+<tr>
+<td>Vision only</td>
+<td>5.05 (too much force)</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Scalar force is enough when force is constant.</strong> Force-aware equals FARM on plant insertion and is close on grapes.</li>
+<li><strong>The force field matters when force changes.</strong> On screws, force-aware often lifts the key out of the screw head (10%); the shear channels tell FARM which way the key is being pushed.</li>
+<li><strong>Vision only fails the opposite way on each task:</strong> opens too early on the plant, crushes the grape, lets go of the screw.</li>
+</ul>
+<h2>5. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hand-held gripper</td>
+<td>UMI with a RealSense D405 instead of GoPro, rigid fingers, a GelSight Mini in one finger and a dummy gel pad on the other, ArUco markers on both fingers</td>
+</tr>
+<tr>
+<td>Pose tracking</td>
+<td>OptiTrack markers on the gripper; hand-eye calibration to the robot base</td>
+</tr>
+<tr>
+<td>Force labels</td>
+<td>FEATS estimates from each tactile frame; no load cell</td>
+</tr>
+<tr>
+<td>Demonstrations</td>
+<td>30 per task, one expert</td>
+</tr>
+<tr>
+<td>Robot gripper</td>
+<td>actuated UMI: one DYNAMIXEL XL430 driving both fingers by belt, springs to open, about 50 Hz, same sensor placement</td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>plant into soil-filled pot; grape from a toothpick into a bowl; Allen key screw, two orientations, stopped above a torque threshold</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Can I use this on my robot?</h2>
+<p><strong>Short answer.</strong> The arm part transfers, the force part needs new hardware. FARM's force is grip force between the fingers, measured by a GelSight in the finger. A UR10e wrist F/T sensor measures the wrench on the whole tool and cannot see grip force, so you would need a tactile finger and a gripper you can position-command at tens of Hz. "Not stated" means I did not find it in the paper or project page.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What the authors used</th>
+<th>If yours differs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arm</td>
+<td>Franka FR3, Cartesian impedance</td>
+<td>A UR10e with a compliant pose controller plays the same role</td>
+</tr>
+<tr>
+<td>Grip force sensing</td>
+<td>GelSight Mini + FEATS</td>
+<td>A wrist F/T cannot replace it; FEATS may not transfer across sensors (the authors' own warning)</td>
+</tr>
+<tr>
+<td>Gripper</td>
+<td>actuated UMI with a DYNAMIXEL, position mode at ~50 Hz</td>
+<td>Any gripper with fast position commands could host the PID; gains: not stated</td>
+</tr>
+<tr>
+<td>Demonstrations</td>
+<td>hand-held UMI + OptiTrack</td>
+<td>Needs motion capture or another pose tracker</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>LeRobot Diffusion Policy, 60k iterations</td>
+<td>GPU and time: not stated</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>announced, "coming soon" on the project page</td>
+<td>Not usable yet</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Caveats</h2>
+<ul>
+<li>One expert, 30 demonstrations and 20 rollouts per task. 95% (19/20) has a Wilson interval of about 76–99% (my arithmetic); the clear gaps are 100% vs 10–40% on screws and 95% vs 0% on grapes.</li>
+<li>Force is the normal grip force only; the arm has no force target. Force along the tool (pressing, wiping) is outside the method.</li>
+<li>The contact threshold depends on FEATS noise, and FEATS may not generalise across GelSight units.</li>
+<li>Venue: some reading lists cite it as ICRA 2026; the arXiv page and the project page do not confirm it.</li>
+</ul>
+<p><strong>Carry forward:</strong> FARM puts force in the action of a gripper. <a href="forcevla.html">ForceVLA</a> and <a href="ta-vla.html">TA-VLA</a> bring force into a VLA, and <a href="tdc.html">TDC</a> puts it in the controller rather than in the action. <a href="reactive-diffusion-policy.html">Reactive Diffusion Policy</a> handles the timing problem FARM leaves to its 25 Hz PID.</p>
+<p><strong>Check question:</strong> The target is −1.0 N and FEATS reads −0.4 N. Is the gripper in force control? What if the reading becomes −0.7 N, and what is $e$ then?</p>
+<details>
+<summary>Answer</summary>
+<p>No: −0.4 N is above −0.5 N, so it stays in width mode. At −0.7 N both are below −0.5 N, force control is on, and $e = -0.7 - (-1.0) = 0.3$ N, so the gripper still needs to squeeze harder.</p>
+</details>
+    </div>
+    <div data-vi>
+<div class="tldr">
+<p><strong>PAPER</strong> Helmut, Funk, Schneider, de Farias, Peters, <em>Tactile-Conditioned Diffusion Policy for Force-Aware Robotic Manipulation</em>, <a href="https://arxiv.org/abs/2510.13324">arXiv 2510.13324</a> · v1 15/10/2025 · TU Darmstadt, DFKI, Hessian.AI · <a href="https://tactile-farm.github.io">trang dự án</a> · nơi đăng: "đã nộp cho IEEE" (mình không tìm thấy xác nhận ICRA 2026) · code và file thiết kế được thông báo, trang dự án ghi "coming soon" (kiểm tra 2/11/2026)</p>
+<p><strong>VẤN ĐỀ</strong> Vật dễ vỡ và biến dạng cần đúng lực kẹp suốt tác vụ, nhưng chính sách bắt chước chỉ coi xúc giác là một quan sát thêm và ra lệnh độ mở. Khi đó lực là "hệ quả không được kiểm soát của lệnh tay kẹp".</p>
+<p><strong>PAPER TRƯỚC HỎNG Ở ĐÂU</strong> Thị giác với tay kẹp nhị phân làm nát mọi quả nho (0%). Đưa ảnh GelSight thô làm quan sát nhưng chỉ ra lệnh độ mở đạt 60% với nho và 40% với vặn vít.</p>
+<p><strong>Ý TƯỞNG</strong> Làm demo bằng tay kẹp UMI cầm tay có một ngón là GelSight Mini, để chính người tác dụng lực. Một bộ ước lượng đóng băng (FEATS) biến mỗi ảnh xúc giác thành trường lực cắt và lực pháp tuyến. Một Diffusion Policy dự đoán pose, độ mở và <strong>lực kẹp</strong>; ngoài không gian tự do tay kẹp theo độ mở, khi tiếp xúc một PID lực 25 Hz bám theo lực dự đoán.</p>
+<p><strong>KẾT QUẢ</strong> 20 lượt mỗi tác vụ trên Franka FR3: cắm cây 95%, hái nho 95%, vặn vít 100%. Lực tác dụng gần với demo nhất (khoảng cách Wasserstein 0,75 N so với 1,66–5,05 N của các baseline).</p>
+</div>
+<h2>1. Vấn đề: lệnh độ mở không nói phải bóp mạnh tới đâu</h2>
+<figure class="diagram flow"><svg role="img" aria-label="Lực được chuyển từ phía quan sát sang phía hành động, và một vòng cấp thấp khép nó lại." class="dg-natural" width="968" height="304" viewBox="0 0 968 304" xmlns="http://www.w3.org/2000/svg"><text class="dg-lab dg-red" x="14" y="39">Trước</text><text class="dg-lab dg-red" x="14" y="53">Chỉ thị giác</text><rect class="dg-box" x="153" y="22" width="102" height="38"/><text class="dg-t" x="204" y="45" text-anchor="middle">Ảnh + pose</text><path class="dg-a" d="M255 41 H287"/><rect class="dg-badbox" x="289" y="14" width="128" height="54"/><text class="dg-t" x="353" y="37" text-anchor="middle">Mở hoặc đóng</text><text class="dg-s" x="353" y="53" text-anchor="middle">tay kẹp nhị phân</text><path class="dg-a" d="M418 41 H450"/><rect class="dg-box" x="452" y="22" width="96" height="38"/><text class="dg-t" x="500" y="45" text-anchor="middle">Tay kẹp</text><text class="dg-note dg-red" x="153.2" y="86">✗ nho bị nát: 0%</text><text class="dg-lab dg-red" x="14" y="137">Trước</text><text class="dg-lab dg-red" x="14" y="151">Xúc giác làm input</text><rect class="dg-box" x="153" y="120" width="163" height="38"/><text class="dg-t" x="235" y="143" text-anchor="middle">Ảnh + GelSight thô</text><path class="dg-a" d="M316 139 H348"/><rect class="dg-badbox" x="350" y="112" width="148" height="54"/><text class="dg-t" x="424" y="135" text-anchor="middle">Chỉ độ mở</text><text class="dg-s" x="424" y="151" text-anchor="middle">lực là tác dụng phụ</text><path class="dg-a" d="M498 139 H530"/><rect class="dg-box" x="532" y="120" width="96" height="38"/><text class="dg-t" x="580" y="143" text-anchor="middle">Tay kẹp</text><text class="dg-note dg-red" x="153.2" y="184">✗ vặn vít: 40%</text><text class="dg-lab dg-green" x="14" y="241">FARM</text><rect class="dg-box" x="153" y="218" width="231" height="38"/><text class="dg-t" x="269" y="241" text-anchor="middle">Ảnh + trường lực + lực tổng</text><path class="dg-a" d="M384 237 H416"/><rect class="dg-key" x="418" y="218" width="193" height="38"/><text class="dg-t" x="515" y="241" text-anchor="middle">Pose + độ mở + lực kẹp</text><path class="dg-a" d="M612 237 H644"/><rect class="dg-key" x="646" y="210" width="178" height="54"/><text class="dg-t" x="735" y="233" text-anchor="middle">PID lực khi tiếp xúc</text><text class="dg-s" x="735" y="249" text-anchor="middle">25 Hz</text><path class="dg-a" d="M824 237 H856"/><rect class="dg-box" x="858" y="218" width="96" height="38"/><text class="dg-t" x="906" y="241" text-anchor="middle">Tay kẹp</text><text class="dg-note dg-green" x="153.2" y="282">✓ vặn vít: 100%</text></svg><figcaption>Lực được chuyển từ phía quan sát sang phía hành động, và một vòng cấp thấp khép nó lại.</figcaption></figure>
+<h2>2. Kiến trúc</h2>
+<figure class="diagram"><svg role="img" aria-label="Cùng một hình học tay kẹp được dùng cho demo cầm tay và trên robot, nên không cần retargeting." viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg">
+<text class="dg-h" x="20" y="26">DEMO: UMI CẦM TAY VỚI MỘT NGÓN GELSIGHT</text>
+<rect class="dg-ext" x="20" y="46" width="220" height="54"/><text class="dg-t" x="130" y="68" text-anchor="middle">tay kẹp UMI cầm tay</text><text class="dg-s" x="130" y="86" text-anchor="middle">người trực tiếp tác dụng lực</text>
+<rect class="dg-ext" x="290" y="46" width="200" height="54"/><text class="dg-t" x="390" y="68" text-anchor="middle">GelSight Mini</text><text class="dg-s" x="390" y="86" text-anchor="middle">320x240, 25 Hz</text>
+<rect class="dg-key" x="540" y="46" width="200" height="54"/><text class="dg-t" x="640" y="68" text-anchor="middle">FEATS (đóng băng)</text><text class="dg-s" x="640" y="86" text-anchor="middle">cắt x, cắt y, pháp tuyến</text>
+<rect class="dg-box" x="790" y="46" width="170" height="54"/><text class="dg-t" x="875" y="68" text-anchor="middle">nhãn lực</text><text class="dg-s" x="875" y="86" text-anchor="middle">trường lực + F_z tổng</text>
+<path class="dg-a" d="M240 73 H290"/><path class="dg-a" d="M490 73 H540"/><path class="dg-a" d="M740 73 H790"/>
+<text class="dg-h" x="20" y="138">CHÍNH SÁCH: DIFFUSION POLICY 7 HZ, DỰ ĐOÁN 32, THỰC THI 16</text>
+<rect class="dg-ext" x="20" y="156" width="230" height="70"/><text class="dg-t" x="135" y="178" text-anchor="middle">2 quan sát gần nhất</text><text class="dg-s" x="135" y="196" text-anchor="middle">RGB 96x96, trường lực 96x96</text><text class="dg-s" x="135" y="212" text-anchor="middle">F_z tổng, pose, độ mở</text>
+<rect class="dg-box" x="290" y="156" width="220" height="70"/><text class="dg-t" x="400" y="184" text-anchor="middle">CNN thời gian 1D</text><text class="dg-s" x="400" y="204" text-anchor="middle">FiLM, DDIM 10 bước</text>
+<rect class="dg-key" x="560" y="156" width="400" height="70"/><text class="dg-t" x="760" y="184" text-anchor="middle">hành động mỗi bước</text><text class="dg-s" x="760" y="204" text-anchor="middle">pose (3 + 6D), độ mở w, lực kẹp F_z</text>
+<path class="dg-a" d="M250 191 H290"/><path class="dg-a" d="M510 191 H560"/>
+<text class="dg-h" x="20" y="264">TAY KẸP: ĐIỀU KHIỂN HAI CHẾ ĐỘ TRÊN UMI CÓ ĐỘNG CƠ</text>
+<rect class="dg-box" x="20" y="282" width="280" height="58"/><text class="dg-t" x="160" y="306" text-anchor="middle">không gian tự do</text><text class="dg-s" x="160" y="324" text-anchor="middle">độ mở w gửi cho PD của động cơ</text>
+<rect class="dg-key" x="340" y="282" width="300" height="58"/><text class="dg-t" x="490" y="306" text-anchor="middle">đang tiếp xúc</text><text class="dg-s" x="490" y="324" text-anchor="middle">mục tiêu và ước lượng dưới -0,5 N</text>
+<rect class="dg-key" x="680" y="282" width="280" height="58"/><text class="dg-t" x="820" y="306" text-anchor="middle">PID lực, 25 Hz</text><text class="dg-s" x="820" y="324" text-anchor="middle">e = ước lượng - mục tiêu, cộng vào độ mở</text>
+<path class="dg-a" d="M300 311 H340"/><path class="dg-a" d="M640 311 H680"/>
+<path class="dg-ad" d="M900 226 V282"/>
+<text class="dg-l" x="20" y="374">cánh tay bám pose bằng trở kháng Descartes; tay kẹp bám lực khi phát hiện tiếp xúc</text>
+</svg><figcaption>Cùng một hình học tay kẹp được dùng cho demo cầm tay và trên robot, nên không cần retargeting.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Input</th>
+<th>Output</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FEATS (đóng băng)</td>
+<td>ảnh GelSight Mini, 320×240, 25 Hz</td>
+<td>trường lực với kênh cắt x, cắt y và pháp tuyến; lực pháp tuyến tổng $F_z$ bằng tích phân</td>
+<td>học từ nhãn phần tử hữu hạn; không cần cảm biến lực</td>
+</tr>
+<tr>
+<td>Quan sát</td>
+<td>2 khung gần nhất: RGB 96×96 (RealSense D405), trường lực 96×96, $F_z$, độ mở từ marker ArUco, pose (3 + quay 6D)</td>
+<td>–</td>
+<td>ResNet-18 riêng cho RGB và ảnh lực</td>
+</tr>
+<tr>
+<td>Chính sách</td>
+<td>các quan sát</td>
+<td>32 bước tương lai, thực thi 16</td>
+<td>Diffusion Policy CNN thời gian 1D với FiLM; DDPM 100 bước khi huấn luyện, DDIM 10 bước khi suy luận; 7 Hz; 60 nghìn vòng lặp</td>
+</tr>
+<tr>
+<td>Hành động mỗi bước</td>
+<td>–</td>
+<td>vị trí (3), quay 6D (6), độ mở $w^d$ (1), lực kẹp $F_z^d$ (1)</td>
+<td>11 số (mình tự cộng; bài không nêu tổng)</td>
+</tr>
+<tr>
+<td>Bộ điều khiển tay kẹp</td>
+<td>$w^d$, $F_z^d$, ước lượng $\hat F_z$</td>
+<td>vị trí động cơ</td>
+<td>không gian tự do: độ mở gửi cho PD của DYNAMIXEL; tiếp xúc: PID có chống bão hòa trên $e = \hat F_z - F_z^d$, cộng vào độ mở hiện tại</td>
+</tr>
+<tr>
+<td>Cánh tay</td>
+<td>pose</td>
+<td>mô-men khớp</td>
+<td>Franka Research 3, trở kháng Descartes (franky)</td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. Tính tay: khi nào điều khiển lực bật, và lực được chấm điểm ra sao</h2>
+<div class="calc">
+<p>Thẻ tính tay</p>
+<p><strong>Tính gì và vì sao.</strong> Hai phép tính nhỏ cho thấy FARM chạy thế nào trong thực tế: quy tắc chuyển tay kẹp sang điều khiển lực, và thước đo bài dùng để nói lực của nó "giống" demo.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Nghĩa</th>
+<th>Loại</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$F_z^d$, $\hat F_z$</td>
+<td>lực pháp tuyến mục tiêu dự đoán và ước lượng FEATS (nén là âm)</td>
+<td>input</td>
+<td>−2,0 N, −1,2 N</td>
+</tr>
+<tr>
+<td>$F_{th}$</td>
+<td>ngưỡng tiếp xúc, theo nhiễu của FEATS</td>
+<td>hằng số</td>
+<td>−0,5 N</td>
+</tr>
+<tr>
+<td>$e$</td>
+<td>sai số lực cho PID</td>
+<td>output</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$W_1$</td>
+<td>khoảng cách Wasserstein-1 giữa lực demo và lực khi chạy</td>
+<td>output</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Công thức</strong></p>
+<p>$$\text{tiếp xúc} \iff F_z^d &lt; F_{th}\ \text{và}\ \hat F_z &lt; F_{th},\qquad e = \hat F_z - F_z^d,\qquad W_1 = \frac{1}{n}\sum_{i=1}^{n} \lvert x_{(i)} - y_{(i)}\rvert$$</p>
+<p>Dạng cuối đúng cho hai mẫu 1 chiều cùng kích thước, trọng số bằng nhau, với $x_{(i)}$, $y_{(i)}$ đã sắp xếp.</p>
+<p><strong>Từng bước</strong></p>
+<ol>
+<li>Mục tiêu −2,0 N, ước lượng −1,2 N: cả hai dưới −0,5 N, nên điều khiển lực bật. $e = -1{,}2 - (-2{,}0) = 0{,}8$ N: tay kẹp bóp nhẹ hơn mong muốn, nên PID khép thêm.</li>
+<li>Mục tiêu −2,0 N, ước lượng −0,3 N (vừa chạm): ước lượng nằm trên −0,5 N, nên tay kẹp vẫn ở chế độ độ mở và tiếp tục khép tới $w^d$.</li>
+<li>$W_1$ ví dụ (số của mình): lực demo −2, −3, −4 N, khi chạy −2,5; −3,5; −6 N. Cặp đã sắp xếp (−4, −6), (−3, −3,5), (−2, −2,5); chênh lệch 2; 0,5; 0,5; $W_1 = 3/3 = 1{,}0$ N.</li>
+</ol>
+<p><strong>Kết quả.</strong> Điều khiển lực cần cả kế hoạch lẫn cảm biến đồng ý là có tiếp xúc; $W_1$ là khoảng cách trung bình giữa các phân vị tương ứng của hai histogram lực.</p>
+<p><strong>Ý nghĩa.</strong> Đòi cả hai tín hiệu giúp một ước lượng nhiễu không bật điều khiển lực ngoài không gian tự do, và chính sách không bóp vào không khí. $W_1$ của FARM là 0,75 N so với 5,05 N của bản chỉ thị giác, nghĩa là lực của chính sách thị giác trung bình lệch 5 N so với những gì người làm.</p>
+</div>
+<h2>4. Kết quả</h2>
+<figure class="diagram compact"><svg role="img" aria-label="Vặn vít bằng lục giác, 20 lượt mỗi cột. Đây là tác vụ mà lực phải đổi trong lúc chuyển động." class="dg-natural" width="730" height="132" viewBox="0 0 730 132" xmlns="http://www.w3.org/2000/svg"><text class="dg-barlabel" x="270" y="23" text-anchor="end">Chỉ thị giác</text><rect class="dg-bar" x="280" y="10" width="2" height="18"/><text class="dg-barval" x="290" y="23">0%</text><text class="dg-barlabel" x="270" y="53" text-anchor="end">Tactile-aware (xúc giác vào, độ mở ra)</text><rect class="dg-bar" x="280" y="40" width="144" height="18"/><text class="dg-barval" x="432" y="53">40%</text><text class="dg-barlabel" x="270" y="83" text-anchor="end">Force-aware (lực tổng vào, lực ra)</text><rect class="dg-bar" x="280" y="70" width="36" height="18"/><text class="dg-barval" x="324" y="83">10%</text><text class="dg-barlabel" x="270" y="113" text-anchor="end">FARM</text><rect class="dg-key" x="280" y="100" width="360" height="18"/><text class="dg-barval" x="648" y="113">100%</text></svg><figcaption>Vặn vít bằng lục giác, 20 lượt mỗi cột. Đây là tác vụ mà lực phải đổi trong lúc chuyển động.</figcaption></figure>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Thành công, 20 lượt</th>
+<th>Cắm cây (lực lớn)</th>
+<th>Hái nho (lực nhỏ)</th>
+<th>Vặn vít (lực thay đổi)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chỉ thị giác (tay kẹp nhị phân)</td>
+<td>85%</td>
+<td>0%</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Tactile-aware (GelSight thô vào, độ mở ra)</td>
+<td>65%</td>
+<td>60%</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>Force-aware ($F_z$ tổng vào, lực ra)</td>
+<td>95%</td>
+<td>85%</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>FARM (trường lực + $F_z$ vào, lực ra)</td>
+<td>95%</td>
+<td>95%</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Vặn vít, khoảng cách lực tới demo</th>
+<th>$W_1$ (N)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FARM</td>
+<td>0,75</td>
+</tr>
+<tr>
+<td>Force-aware</td>
+<td>1,66</td>
+</tr>
+<tr>
+<td>Tactile-aware</td>
+<td>4,38 (lực quá nhỏ)</td>
+</tr>
+<tr>
+<td>Chỉ thị giác</td>
+<td>5,05 (lực quá lớn)</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Lực vô hướng là đủ khi lực không đổi.</strong> Force-aware ngang FARM ở cắm cây và gần bằng ở hái nho.</li>
+<li><strong>Trường lực quan trọng khi lực thay đổi.</strong> Với vít, force-aware thường nhấc lục giác ra khỏi đầu vít (10%); các kênh lực cắt cho FARM biết lục giác đang bị đẩy về phía nào.</li>
+<li><strong>Chỉ thị giác hỏng theo kiểu ngược nhau ở từng tác vụ:</strong> mở quá sớm với cây, bóp nát nho, buông vít.</li>
+</ul>
+<h2>5. Dữ liệu</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tay kẹp cầm tay</td>
+<td>UMI với RealSense D405 thay GoPro, ngón cứng, một GelSight Mini ở một ngón và miếng gel giả ở ngón kia, marker ArUco trên cả hai ngón</td>
+</tr>
+<tr>
+<td>Theo dõi pose</td>
+<td>marker OptiTrack trên tay kẹp; hiệu chuẩn hand-eye về đế robot</td>
+</tr>
+<tr>
+<td>Nhãn lực</td>
+<td>ước lượng FEATS từ mỗi khung xúc giác; không có cảm biến lực</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>30 mỗi tác vụ, một chuyên gia</td>
+</tr>
+<tr>
+<td>Tay kẹp robot</td>
+<td>UMI có động cơ: một DYNAMIXEL XL430 kéo cả hai ngón bằng dây đai, lò xo để mở, khoảng 50 Hz, vị trí cảm biến giống hệt</td>
+</tr>
+<tr>
+<td>Tác vụ</td>
+<td>cắm cây vào chậu đất; gỡ nho khỏi tăm bỏ vào bát; vặn vít lục giác, hai hướng, dừng khi vượt ngưỡng mô-men</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Mình có dùng được cho robot của bạn không?</h2>
+<p><strong>Trả lời ngắn.</strong> Phần cánh tay chuyển được, phần lực cần phần cứng mới. Lực của FARM là lực kẹp giữa hai ngón, đo bằng GelSight trong ngón. Cảm biến F/T cổ tay của UR10e đo wrench lên cả dụng cụ và không thấy được lực kẹp, nên bạn cần một ngón xúc giác và một tay kẹp ra lệnh vị trí được ở vài chục Hz. "Không nêu" nghĩa là mình không tìm thấy trong paper hay trang dự án.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cần</th>
+<th>Các tác giả dùng</th>
+<th>Nếu bạn khác</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cánh tay</td>
+<td>Franka FR3, trở kháng Descartes</td>
+<td>UR10e với bộ điều khiển pose mềm đóng vai trò tương tự</td>
+</tr>
+<tr>
+<td>Đo lực kẹp</td>
+<td>GelSight Mini + FEATS</td>
+<td>F/T cổ tay không thay được; FEATS có thể không chuyển được giữa các cảm biến (chính tác giả cảnh báo)</td>
+</tr>
+<tr>
+<td>Tay kẹp</td>
+<td>UMI có động cơ với DYNAMIXEL, chế độ vị trí khoảng 50 Hz</td>
+<td>Tay kẹp nào nhận lệnh vị trí nhanh đều chứa được PID; hệ số: không nêu</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>UMI cầm tay + OptiTrack</td>
+<td>Cần motion capture hoặc bộ theo dõi pose khác</td>
+</tr>
+<tr>
+<td>Huấn luyện</td>
+<td>Diffusion Policy của LeRobot, 60 nghìn vòng lặp</td>
+<td>GPU và thời gian: không nêu</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>đã thông báo, trang dự án ghi "coming soon"</td>
+<td>Chưa dùng được</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. Lưu ý</h2>
+<ul>
+<li>Một chuyên gia, 30 demo và 20 lượt mỗi tác vụ. 95% (19/20) có khoảng Wilson khoảng 76–99% (phép tính của mình); khoảng cách rõ là 100% so với 10–40% ở vặn vít và 95% so với 0% ở hái nho.</li>
+<li>Lực chỉ là lực kẹp pháp tuyến; cánh tay không có mục tiêu lực. Lực dọc dụng cụ (ấn, lau) nằm ngoài phương pháp.</li>
+<li>Ngưỡng tiếp xúc phụ thuộc nhiễu của FEATS, và FEATS có thể không tổng quát qua các bộ GelSight khác.</li>
+<li>Nơi đăng: một số danh sách đọc ghi là ICRA 2026; trang arXiv và trang dự án không xác nhận điều này.</li>
+</ul>
+<p><strong>Mang sang bài sau:</strong> FARM đưa lực vào hành động của tay kẹp. <a href="forcevla.html">ForceVLA</a> và <a href="ta-vla.html">TA-VLA</a> đưa lực vào một VLA, còn <a href="tdc.html">TDC</a> đặt lực vào bộ điều khiển thay vì vào hành động. <a href="reactive-diffusion-policy.html">Reactive Diffusion Policy</a> xử lý bài toán thời gian mà FARM giao cho PID 25 Hz.</p>
+<p><strong>Câu kiểm tra:</strong> Mục tiêu là −1,0 N và FEATS đọc −0,4 N. Tay kẹp có đang điều khiển lực không? Nếu số đọc thành −0,7 N thì sao, và $e$ khi đó là bao nhiêu?</p>
+<details>
+<summary>Đáp án</summary>
+<p>Không: −0,4 N nằm trên −0,5 N, nên vẫn ở chế độ độ mở. Ở −0,7 N cả hai đều dưới −0,5 N, điều khiển lực bật, và $e = -0{,}7 - (-1{,}0) = 0{,}3$ N, nên tay kẹp vẫn cần bóp mạnh hơn.</p>
+</details>
+    </div>
+  </article>
+
+  <div class="post-footer">
+    <a href="../" class="btn btn-ghost">← <span data-en>All posts</span><span data-vi>Tất cả bài viết</span></a>
+    <a href="mailto:duypham.robotics@gmail.com" class="btn btn-amber"><span data-en>Get in touch</span><span data-vi>Liên hệ</span> ↗</a>
+  </div>
+
+  <footer style="margin-top: var(--sp-16);">
+    <div class="footer-inner">
+      <div class="footer-copy">© <span id="footerYear"></span> Phạm Đức Duy</div>
+      <div class="footer-built"><span data-en>Built with</span><span data-vi>Xây dựng bằng</span> <span>HTML + Vanilla JS</span> · <span data-en>No frameworks.</span><span data-vi>Không framework.</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
+<script src="../../blog/js/i18n.js"></script>
+<script>
+function toggleMenu(force) {
+  var menu = document.getElementById('mobileMenu');
+  var backdrop = document.getElementById('mobileBackdrop');
+  var hamBtn = document.getElementById('hamburgerBtn');
+  var isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
+  menu.classList.toggle('open', isOpen);
+  backdrop.classList.toggle('open', isOpen);
+  hamBtn.classList.toggle('open', isOpen);
+  hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+</script>
+</body>
+</html>
