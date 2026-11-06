@@ -327,8 +327,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="UR5e arm with a Robotiq gripper picking up a red peg and inserting it into a hole in MuJoCo simulation">
-          <source src="assets/robot7.webm" type="video/webm">
+        <video autoplay loop muted playsinline disablePictureInPicture disableRemotePlayback aria-label="Sixteen parallel mjlab environments, then a UR5e arm with a Robotiq gripper picking up a red peg and inserting it into a hole">
+          <source src="assets/robot8.webm" type="video/webm">
         </video>
         <div class="project-thumb-placeholder" aria-hidden="true">Peg-in-Hole · Sim</div>
       </div>
@@ -336,7 +336,7 @@
         <div>
           <div class="project-type">Reinforcement Learning · Manipulation</div>
           <div class="project-title">UR5e Force-Aware Peg-in-Hole</div>
-          <div class="project-desc">Pick-and-insert task for a UR5e with a Robotiq 2F-85 gripper and a wrist force/torque sensor. A state-based <strong>PPO policy</strong> grasps a randomly placed peg and inserts it into a randomly placed hole with <strong>0.5 mm radial clearance</strong>, trained in MuJoCo Warp (mjlab) with a curriculum that tightens the hole clearance. The environment exposes observations and actions in ForceVLA format for force-aware imitation learning.</div>
+          <div class="project-desc">Pick-and-insert task for a UR5e with a Robotiq 2F-85 gripper and a wrist force/torque sensor. A state-based <strong>PPO policy</strong> grasps a randomly placed peg and inserts it into a randomly placed hole with <strong>0.5 mm radial clearance</strong>, trained on 2048 parallel environments in MuJoCo Warp (mjlab) with a curriculum that tightens the hole clearance. The environment exposes observations and actions in ForceVLA format for force-aware imitation learning.</div>
           <div class="project-pills">
             <span class="pill">Python</span><span class="pill">PyTorch</span>
             <span class="pill">MuJoCo</span><span class="pill">PPO</span><span class="pill">Force/Torque</span>
