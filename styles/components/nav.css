@@ -32,6 +32,7 @@ nav {
   content: ''; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
   width: 4px; height: 4px; border-radius: 50%; background: var(--amber);
 }
+.nav-external-indicator { margin-left: 5px; color: var(--amber-a11y); font-family: var(--font-mono); font-size: 11px; }
 .nav-cta {
   font-family: var(--font-body); font-size: 13.5px; font-weight: 600; background: var(--amber);
   padding: 0 var(--sp-5); border-radius: 0; color: var(--cream);

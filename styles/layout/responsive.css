@@ -5,6 +5,7 @@
   .hero-orbit { inset: 12% -12% auto 12%; width: 100%; opacity: 0.45; }
   .hero-layout { grid-template-columns: 1fr; gap: var(--sp-12); }
   .hero-text { max-width: 680px; margin: 0 auto; text-align: center; }
+  .hero-showreel { max-width: 680px; margin: 0 auto; }
   .hero-text::before { left: 50%; transform: translateX(-50%); }
   .hero-eyebrow { margin-bottom: var(--sp-4); }
   .hero-rule-line { margin: var(--sp-6) auto; }
@@ -23,12 +24,29 @@
 @media (max-width: 768px) {
   .project-card.featured { flex-direction: column; }
   .project-card.featured .project-thumb { width: 100%; min-height: 240px; border-right: none; border-bottom: 2px solid var(--ink); border-radius: 0; }
+  .project-card.featured .project-media-trigger { min-height: 240px; }
 }
 @media (max-width: 480px) {
-  .btn-group { flex-direction: column; }
+  .projects-grid { grid-template-columns: minmax(0, 1fr); }
+  .project-card, .project-body { min-width: 0; }
+  .contact-layout > *, .contact-aside, .contact-links, .contact-link { min-width: 0; }
+  .contact-link { align-items: flex-start; flex-direction: column; gap: var(--sp-1); }
+  .contact-value { overflow-wrap: anywhere; }
+  .hero-layout { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .hero-text { display: contents; }
+  .hero-text::before { display: none; }
+  .hero-eyebrow { order: 1; text-align: center; }
+  .hero-text h1 { order: 2; width: 100%; text-align: center; }
+  .hero-rule-line { order: 3; }
+  .hero-role { order: 4; text-align: center; }
+  .hero-showreel { order: 5; margin: 0 auto var(--sp-6); padding: 6px; transform: none; }
+  .hero-showreel video { aspect-ratio: 16 / 9; }
+  .hero-bio { order: 6; margin-bottom: var(--sp-6); }
+  .btn-group { order: 7; display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+  .btn-group .btn-primary { grid-column: 1 / -1; }
   .btn { width: 100%; }
-  .contact-aside { grid-template-columns: 1fr; }
-  .contact-photo { width: 180px; justify-self: center; }
+  .about-text { grid-template-columns: 1fr; }
+  .about-photo { width: 152px; justify-self: center; }
   .footer-inner { flex-direction: column; text-align: center; }
   .xp-item { grid-template-columns: 1fr; gap: var(--sp-2); margin: 0; padding-left: 0; padding-right: 0; border-radius: 0; }
   .xp-item:hover { background: transparent; }
