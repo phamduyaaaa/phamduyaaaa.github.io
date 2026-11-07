@@ -29,27 +29,20 @@
 .pub-venue { font-family: var(--font-mono); color: var(--ink-4); }
 .pub-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: var(--sp-2); }
 .pub-desc { margin-bottom: 0; }
-/* Certifications */
-.cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); }
-.cert-card { background: var(--cream); padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-2); transition: transform var(--t), box-shadow var(--t), border-color var(--t); border-radius: 0; border: 2px solid var(--ink); box-shadow: var(--shadow-sm); }
-.cert-card:hover { border-color: var(--ink-4); box-shadow: var(--shadow-hover); }
-.cert-issuer { font-family: var(--font-mono); color: var(--amber-a11y); }
-.cert-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--ink); line-height: var(--lh-heading); }
-.cert-link-na { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-4); margin-top: auto; padding-top: var(--sp-2); }
-.project-card, .pub-card, .cert-card {
+.project-card, .pub-card {
     transition: box-shadow var(--t), border-color var(--t), background var(--t);
     transform-style: preserve-3d;
     perspective: 1000px;
 }
 
-.project-card.is-tilting, .pub-card.is-tilting, .cert-card.is-tilting {
+.project-card.is-tilting, .pub-card.is-tilting {
     border-color: var(--amber);
     box-shadow: 11px 11px 0 var(--cubist-vermilion, var(--amber));
 }
 .project-thumb {
   border-radius: calc(var(--r-lg) - 1.5px) calc(var(--r-lg) - 1.5px) 0 0;
 }
-.project-card, .pub-card, .cert-card {
+.project-card, .pub-card {
   border-radius: 0;
   border: 2px solid var(--ink);
   box-shadow: var(--shadow-sm);

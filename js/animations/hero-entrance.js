@@ -52,13 +52,7 @@ function initHeroEntrance() {
       stagger: 0.14,
       duration: 0.65,
       ease: 'back.out(1.7)',
-    }, '-=0.3')
-    .from('.metrics-bar', {
-      opacity: 0,
-      y: 35,
-      scale: 0.95,
-      duration: 0.8,
-    }, '-=0.2');
+    }, '-=0.3');
 
   timeline.timeScale(1.8);
 

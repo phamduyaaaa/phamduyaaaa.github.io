@@ -23,13 +23,12 @@
 @media (max-width: 768px) {
   .project-card.featured { flex-direction: column; }
   .project-card.featured .project-thumb { width: 100%; min-height: 240px; border-right: none; border-bottom: 2px solid var(--ink); border-radius: 0; }
-  .metrics-bar { grid-template-columns: repeat(2, 1fr); border-radius: 0; }
-  .metric-cell:nth-child(2n+1) { border-left: none; }
-  .metric-cell:first-child, .metric-cell:last-child { border-radius: 0; }
 }
 @media (max-width: 480px) {
   .btn-group { flex-direction: column; }
   .btn { width: 100%; }
+  .contact-aside { grid-template-columns: 1fr; }
+  .contact-photo { width: 180px; justify-self: center; }
   .footer-inner { flex-direction: column; text-align: center; }
   .xp-item { grid-template-columns: 1fr; gap: var(--sp-2); margin: 0; padding-left: 0; padding-right: 0; border-radius: 0; }
   .xp-item:hover { background: transparent; }

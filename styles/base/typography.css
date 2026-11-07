@@ -35,14 +35,6 @@ h1 .name-last {
   font-style: italic;
 }
 
-.metrics-bar {
-  border-radius: 0;
-}
-.metric-cell:first-child,
-.metric-cell:last-child {
-  border-radius: 0;
-}
-
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

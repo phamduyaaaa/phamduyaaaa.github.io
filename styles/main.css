@@ -1,15 +1,15 @@
 @import url("./base/tokens.css");
 @import url("./base/reset.css");
-@import url("./base/typography.css");
+@import url("./base/typography.css?v=contact-update");
 
 @import url("./components/nav.css");
-@import url("./components/hero.css");
+@import url("./components/hero.css?v=contact-update");
 @import url("./components/buttons.css");
-@import url("./components/sections.css");
-@import url("./components/cards.css?v=research-figure");
+@import url("./components/sections.css?v=contact-update");
+@import url("./components/cards.css?v=contact-update");
 
-@import url("./layout/responsive.css");
+@import url("./layout/responsive.css?v=contact-update");
 @import url("./effects/cursor.css?v=cursor-fix");
 @import url("./effects/boot-screen.css");
-@import url("./effects/cubism.css");
+@import url("./effects/cubism.css?v=contact-update");
 @import url("./base/vietnamese.css");

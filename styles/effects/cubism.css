@@ -32,8 +32,7 @@ body::before {
 #top,
 #about,
 #experience,
-#publications,
-#certifications {
+#publications {
   background:
     repeating-linear-gradient(117deg, transparent 0 92px, rgba(54, 52, 46, 0.045) 93px 94px, transparent 95px 156px),
     var(--cream);
@@ -42,8 +41,7 @@ body::before {
 #top::after,
 #about::after,
 #experience::after,
-#publications::after,
-#certifications::after {
+#publications::after {
   content: 'ANALYTICAL / 1908—1912';
   position: absolute;
   top: var(--sp-6);
@@ -119,15 +117,8 @@ body::before {
     repeating-linear-gradient(135deg, transparent 0 48px, rgba(54, 52, 46, 0.1) 49px 50px);
 }
 
-.metrics-bar {
-  background: var(--cubist-paper);
-  box-shadow: 8px 8px 0 var(--cubist-blue);
-  transform: skewX(-2deg);
-}
-
 .project-card,
-.pub-card,
-.cert-card {
+.pub-card {
   background: var(--cubist-paper);
   box-shadow: 7px 7px 0 var(--cubist-graphite);
 }
@@ -143,8 +134,7 @@ body::before {
 }
 
 .project-card:hover,
-.pub-card:hover,
-.cert-card:hover {
+.pub-card:hover {
   box-shadow: 11px 11px 0 var(--cubist-vermilion);
 }
 
@@ -193,7 +183,6 @@ body::before {
   #about::after,
   #experience::after,
   #publications::after,
-  #certifications::after,
   #projects::before,
   #contact::before {
     display: none;

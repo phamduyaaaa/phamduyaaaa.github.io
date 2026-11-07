@@ -5,7 +5,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.project-card, .pub-card, .cert-card');
+    const cards = document.querySelectorAll('.project-card, .pub-card');
     
     cards.forEach(card => {
         const thumb = card.querySelector('.project-thumb');

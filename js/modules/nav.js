@@ -15,7 +15,7 @@ function toggleMenu(force) {
 window.toggleMenu = toggleMenu;
 
 (function initNavActiveState() {
-  const sections = ['about', 'experience', 'projects', 'publications', 'certifications', 'contact'];
+  const sections = ['about', 'experience', 'projects', 'publications', 'contact'];
   const navLinks = {};
   sections.forEach(id => {
     const link = document.querySelector(`.nav-links a[data-section="${id}"]`);
