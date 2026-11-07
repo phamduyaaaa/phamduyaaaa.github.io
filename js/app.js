@@ -4,8 +4,8 @@ if (window.gsap && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 import './modules/boot-screen.js';
 import './modules/nav.js';
-import './modules/showreel.js';
-import './modules/media-lightbox.js';
+import './modules/showreel.js?v=video-autoplay-20261108-3';
+import './modules/media-lightbox.js?v=video-autoplay-20261108-3';
 import './modules/cursor.js';
 import './animations/scroll-reveal.js';
 import './animations/hero-entrance.js';

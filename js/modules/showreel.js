@@ -9,7 +9,6 @@ if (video && toggle && label) {
     { src: 'assets/robot8.mp4', poster: 'assets/robot8-poster.jpg', label: 'UR5e robot arm performing a peg-in-hole task' },
     { src: 'assets/robot6.mp4', poster: 'assets/robot6-poster.jpg', label: 'Microduck bipedal robot walking in simulation' },
   ];
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let clipIndex = 0;
   let isPlaying = false;
   let timer;
@@ -69,12 +68,10 @@ if (video && toggle && label) {
 
   updateToggle();
 
-  if (!prefersReducedMotion) {
-    const bootScreen = document.getElementById('ros-boot-screen');
-    if (bootScreen?.style.display === 'none') {
-      play();
-    } else {
-      window.addEventListener('boot:complete', play, { once: true });
-    }
+  const bootScreen = document.getElementById('ros-boot-screen');
+  if (bootScreen?.style.display === 'none') {
+    play();
+  } else {
+    window.addEventListener('boot:complete', play, { once: true });
   }
 }

@@ -5,6 +5,33 @@ const status = document.getElementById('mediaLightboxStatus');
 
 if (dialog && video && title && status) {
   const closeButton = dialog.querySelector('.media-lightbox-close');
+  const previews = document.querySelectorAll('.project-preview');
+
+  function playPreview(preview) {
+    preview.play().catch(() => {
+      preview.closest('.project-thumb')?.classList.add('preview-unavailable');
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    const previewObserver = new IntersectionObserver((entries) => {
+      entries.forEach(({ target, isIntersecting }) => {
+        if (isIntersecting) {
+          target.load();
+          playPreview(target);
+        } else {
+          target.pause();
+        }
+      });
+    }, { rootMargin: '100px 0px', threshold: 0.1 });
+
+    previews.forEach((preview) => previewObserver.observe(preview));
+  } else {
+    previews.forEach((preview) => {
+      preview.load();
+      playPreview(preview);
+    });
+  }
 
   document.querySelectorAll('.project-media-trigger').forEach((trigger) => {
     trigger.addEventListener('click', () => {
