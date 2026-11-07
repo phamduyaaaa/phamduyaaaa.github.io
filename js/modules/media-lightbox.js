@@ -10,7 +10,18 @@ if (dialog && video && title && status) {
     trigger.addEventListener('click', () => {
       title.textContent = trigger.dataset.mediaTitle;
       status.textContent = '';
-      video.src = trigger.dataset.mediaSrc;
+      const sources = [
+        { src: trigger.dataset.mediaSrc, type: 'video/mp4' },
+        { src: trigger.dataset.mediaFallbackSrc, type: 'video/webm' },
+      ].filter((source) => source.src);
+
+      video.replaceChildren(...sources.map(({ src, type }) => {
+        const source = document.createElement('source');
+        source.src = src;
+        source.type = type;
+        return source;
+      }));
+      video.load();
       dialog.showModal();
       video.play().catch(() => {
         status.textContent = 'Press play to start the video.';
@@ -32,6 +43,7 @@ if (dialog && video && title && status) {
   dialog.addEventListener('close', () => {
     video.pause();
     video.removeAttribute('src');
+    video.replaceChildren();
     video.load();
     status.textContent = '';
   });

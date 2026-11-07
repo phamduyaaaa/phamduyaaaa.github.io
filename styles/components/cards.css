@@ -11,8 +11,8 @@
 .project-card.research-card .project-thumb { aspect-ratio: 1.07; }
 .project-card.research-card .project-thumb::before, .project-card.research-card .project-thumb::after { content: none; }
 .project-card.research-card .project-thumb img { filter: invert(1) hue-rotate(180deg) brightness(.5) contrast(1.18) saturate(.65); }
-.project-media-trigger { position: relative; z-index: 1; display: flex; width: 100%; height: 100%; min-height: 210px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; border: 0; color: var(--code-ink); background: linear-gradient(135deg, rgba(49,95,104,.45), transparent 48%), repeating-linear-gradient(135deg, transparent 0 42px, rgba(238,233,220,.08) 43px 44px, transparent 45px 82px), var(--code-bg); cursor: pointer; font-family: var(--font-mono); text-align: center; }
-.project-card.featured .project-media-trigger { min-height: 280px; }
+.project-thumb .project-preview { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; background: var(--code-bg); }
+.project-media-trigger { position: absolute; inset: 0; z-index: 2; display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; border: 0; color: var(--code-ink); background: rgba(15,18,24,.2); cursor: pointer; font-family: var(--font-mono); text-align: center; }
 .project-media-trigger:hover { background-color: #22283a; }
 .project-media-trigger:focus-visible { outline: 3px solid var(--amber); outline-offset: -6px; }
 .project-play-icon { width: 54px; height: 54px; display: grid; place-items: center; border: 1px solid rgba(238,233,220,.7); border-radius: 50%; transition: transform var(--t), background var(--t); }

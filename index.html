@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://phamduyaaaa.github.io/assets/og-image.jpg"> <meta property="og:url" content="https://phamduyaaaa.github.io/">
 <meta property="og:type" content="website">
 
-<link rel="stylesheet" href="styles/main.css?v=ux-20261108">
+<link rel="stylesheet" href="styles/main.css?v=ux-20261108-v2">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
 </head>
@@ -82,7 +82,7 @@
         </div>
       </div>
       <figure class="hero-showreel">
-        <video id="heroShowreel" src="assets/robot1.webm" muted playsinline preload="metadata" aria-label="Robots navigating, manipulating objects, and walking"></video>
+        <video id="heroShowreel" src="assets/robot1.mp4" poster="assets/robot1-poster.jpg" muted playsinline preload="metadata" aria-label="Robots navigating, manipulating objects, and walking"></video>
         <button class="showreel-toggle" id="showreelToggle" type="button" aria-label="Play showreel" aria-pressed="false">
           <span class="showreel-toggle-icon" aria-hidden="true"></span>
           <span class="showreel-toggle-label">Play showreel</span>
@@ -243,7 +243,8 @@
   <div class="projects-grid" data-stagger>
     <div class="project-card featured" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot1.webm" data-media-title="Service Robot Platform — Hospitality &amp; Healthcare" aria-label="Play demo: Service Robot Platform">
+        <video class="project-preview" poster="assets/robot1-poster.jpg" muted playsinline preload="none" aria-label="Service robot navigating an indoor environment"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot1.mp4" data-media-fallback-src="assets/robot1.webm" data-media-title="Service Robot Platform — Hospitality &amp; Healthcare" aria-label="Play demo: Service Robot Platform">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Hospital Navigation Demo</span>
           <span class="project-media-action">Play demo</span>
@@ -266,7 +267,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot2.webm" data-media-title="HG-Dagger Obstacle Avoidance" aria-label="Play demo: HG-Dagger Obstacle Avoidance">
+        <video class="project-preview" poster="assets/robot2-poster.jpg" muted playsinline preload="none" aria-label="HG-Dagger obstacle avoidance demonstration"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot2.mp4" data-media-fallback-src="assets/robot2.webm" data-media-title="HG-Dagger Obstacle Avoidance" aria-label="Play demo: HG-Dagger Obstacle Avoidance">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Imitation Learning Demo</span>
           <span class="project-media-action">Play demo</span>
@@ -290,7 +292,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot3.webm" data-media-title="Skid-Steer Field Robot" aria-label="Play demo: Skid-Steer Field Robot">
+        <video class="project-preview" poster="assets/robot3-poster.jpg" muted playsinline preload="none" aria-label="Skid-steer outdoor robot"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot3.mp4" data-media-fallback-src="assets/robot3.webm" data-media-title="Skid-Steer Field Robot" aria-label="Play demo: Skid-Steer Field Robot">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Outdoor Navigation Demo</span>
           <span class="project-media-action">Play demo</span>
@@ -314,7 +317,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot8.webm" data-media-title="UR5e Force-Aware Peg-in-Hole" aria-label="Play demo: UR5e Force-Aware Peg-in-Hole">
+        <video class="project-preview" poster="assets/robot8-poster.jpg" muted playsinline preload="none" aria-label="UR5e force-aware peg-in-hole manipulation"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot8.mp4" data-media-fallback-src="assets/robot8.webm" data-media-title="UR5e Force-Aware Peg-in-Hole" aria-label="Play demo: UR5e Force-Aware Peg-in-Hole">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Peg-in-Hole · Sim</span>
           <span class="project-media-action">Play demo</span>
@@ -334,7 +338,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot6.webm" data-media-title="Microduck Bipedal Locomotion" aria-label="Play demo: Microduck Bipedal Locomotion">
+        <video class="project-preview" poster="assets/robot6-poster.jpg" muted playsinline preload="none" aria-label="Microduck bipedal robot walking in simulation"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot6.mp4" data-media-fallback-src="assets/robot6.webm" data-media-title="Microduck Bipedal Locomotion" aria-label="Play demo: Microduck Bipedal Locomotion">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Bipedal Locomotion · Sim</span>
           <span class="project-media-action">Play demo</span>
@@ -376,7 +381,8 @@
     </div>
     <div class="project-card" data-reveal>
       <div class="project-thumb">
-        <button class="project-media-trigger" type="button" data-media-src="assets/robot5.webm" data-media-title="Atari Agent — Double DQN" aria-label="Play demo: Atari Agent, Double DQN">
+        <video class="project-preview" poster="assets/robot5-poster.jpg" muted playsinline preload="none" aria-label="Atari Double DQN agent gameplay"></video>
+        <button class="project-media-trigger" type="button" data-media-src="assets/robot5.mp4" data-media-fallback-src="assets/robot5.webm" data-media-title="Atari Agent — Double DQN" aria-label="Play demo: Atari Agent, Double DQN">
           <span class="project-play-icon" aria-hidden="true"></span>
           <span class="project-media-label">Atari · Double DQN</span>
           <span class="project-media-action">Play demo</span>
