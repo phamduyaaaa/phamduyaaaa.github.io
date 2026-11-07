@@ -58,15 +58,7 @@ function initHeroEntrance() {
       y: 35,
       scale: 0.95,
       duration: 0.8,
-    }, '-=0.2')
-    .from('.hero-media', {
-      opacity: 0,
-      x: 100,
-      rotationY: -12,
-      scale: 0.88,
-      duration: 1.2,
-      ease: 'power3.out',
-    }, '-=0.8');
+    }, '-=0.2');
 
   timeline.timeScale(1.8);
 

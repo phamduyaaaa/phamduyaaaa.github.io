@@ -9,7 +9,6 @@
   .hero-eyebrow { margin-bottom: var(--sp-4); }
   .hero-rule-line { margin: var(--sp-6) auto; }
   .btn-group { justify-content: center; }
-  .hero-media, .rl-container { max-width: 540px; margin: 0 auto; }
   .about-grid, .contact-layout { grid-template-columns: 1fr; gap: var(--sp-12); }
   .contact-intro { text-align: center; }
   .contact-note { text-align: center; }

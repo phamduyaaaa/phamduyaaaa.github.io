@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://phamduyaaaa.github.io/assets/og-image.jpg"> <meta property="og:url" content="https://phamduyaaaa.github.io/">
 <meta property="og:type" content="website">
 
-<link rel="stylesheet" href="styles/main.css?v=vi-type">
+<link rel="stylesheet" href="styles/main.css?v=portfolio-cleanup">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
 </head>
@@ -33,7 +33,6 @@
   <a href="#experience" onclick="toggleMenu(false)">Experience</a>
   <a href="#projects" onclick="toggleMenu(false)">Projects</a>
   <a href="#publications" onclick="toggleMenu(false)">Research</a>
-  <a href="blog/" onclick="toggleMenu(false)">Blog</a>
   <a href="learnvla/" onclick="toggleMenu(false)">Learn VLA</a>
   <a href="#certifications" onclick="toggleMenu(false)">Certifications</a>
   <a href="#contact" onclick="toggleMenu(false)">Contact</a>
@@ -48,7 +47,6 @@
       <li><a href="#experience" data-section="experience">Experience</a></li>
       <li><a href="#projects" data-section="projects">Projects</a></li>
       <li><a href="#publications" data-section="publications">Research</a></li>
-      <li><a href="blog/">Blog</a></li>
       <li><a href="learnvla/">Learn VLA</a></li>
       <li><a href="#certifications" data-section="certifications">Certifications</a></li>
       <li><a href="#contact" data-section="contact">Contact</a></li>
@@ -97,15 +95,6 @@
         </div>
       </div>
 
-      <figure class="hero-media">
-        <video autoplay loop muted playsinline preload="metadata" poster="assets/og-image.jpg" aria-label="ROS 2 service robot navigating a hospital corridor">
-          <source src="assets/robot1.webm" type="video/webm">
-        </video>
-        <figcaption>
-          <span>Production robotics</span>
-          <span>ROS 2 · Nav2 · Healthcare</span>
-        </figcaption>
-      </figure>
     </div>
     <svg class="hero-orbit" viewBox="0 0 900 520" aria-hidden="true">
       <g class="cubist-annotation">
@@ -186,26 +175,6 @@
           <span class="tag">ESP32</span><span class="tag">Raspberry Pi</span>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<section id="planner">
-  <div data-reveal>
-    <div class="section-label">Interactive demo</div>
-    <h2>Explore value iteration.</h2>
-    <p class="planner-intro">Draw obstacles on the grid and see how the planner updates its route.</p>
-  </div>
-  <div class="rl-container">
-    <div class="rl-ui-top">
-      <div class="rl-badge">BELLMAN VALUE ITERATION (MDP)</div>
-      <div class="rl-score">Goals: <span id="rlScore">0</span></div>
-    </div>
-    <div class="rl-hint" id="rlHint">Click or drag to add obstacles</div>
-    <div class="sr-only">Interactive reinforcement learning map. Use pointing device or touch to draw walls.</div>
-    <canvas id="rlCanvas" aria-hidden="true" tabindex="-1"></canvas>
-    <div class="rl-toolbar">
-      <button class="rl-btn" onclick="rlEngine.clearWalls()" aria-label="Clear all obstacles">Clear canvas</button>
     </div>
   </div>
 </section>
@@ -389,9 +358,9 @@
         </div>
       </div>
     </div>
-    <div class="project-card" data-reveal>
+    <div class="project-card research-card" data-reveal>
       <div class="project-thumb">
-        <img src="assets/distributional-rl.svg" alt="Conceptual illustration of robot path planning with uncertain returns around obstacles.">
+        <img src="assets/path-planning-paper-crop.png" alt="Center simulation figure from the published paper, showing a robot navigating around obstacles.">
       </div>
       <div class="project-body">
         <div>

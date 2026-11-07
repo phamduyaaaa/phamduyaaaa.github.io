@@ -5,9 +5,8 @@
 @import url("./components/nav.css");
 @import url("./components/hero.css");
 @import url("./components/buttons.css");
-@import url("./components/rl-canvas.css");
 @import url("./components/sections.css");
-@import url("./components/cards.css");
+@import url("./components/cards.css?v=research-figure");
 
 @import url("./layout/responsive.css");
 @import url("./effects/cursor.css?v=cursor-fix");
