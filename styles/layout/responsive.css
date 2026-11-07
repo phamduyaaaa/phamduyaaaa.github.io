@@ -9,7 +9,7 @@
   .hero-eyebrow { margin-bottom: var(--sp-4); }
   .hero-rule-line { margin: var(--sp-6) auto; }
   .btn-group { justify-content: center; }
-  .rl-container { max-width: 540px; margin: 0 auto; }
+  .hero-media, .rl-container { max-width: 540px; margin: 0 auto; }
   .about-grid, .contact-layout { grid-template-columns: 1fr; gap: var(--sp-12); }
   .contact-intro { text-align: center; }
   .contact-note { text-align: center; }
@@ -26,8 +26,7 @@
   .project-card.featured .project-thumb { width: 100%; min-height: 240px; border-right: none; border-bottom: 2px solid var(--ink); border-radius: 0; }
   .metrics-bar { grid-template-columns: repeat(2, 1fr); border-radius: 0; }
   .metric-cell:nth-child(2n+1) { border-left: none; }
-  .metric-cell:first-child, .metric-cell:nth-child(2), .metric-cell:nth-child(3), .metric-cell:last-child { border-radius: 0; }
-  .metric-cell:nth-child(3), .metric-cell:last-child { border-top: 1.5px solid var(--border); }
+  .metric-cell:first-child, .metric-cell:last-child { border-radius: 0; }
 }
 @media (max-width: 480px) {
   .btn-group { flex-direction: column; }

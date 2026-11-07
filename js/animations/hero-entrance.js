@@ -59,7 +59,7 @@ function initHeroEntrance() {
       scale: 0.95,
       duration: 0.8,
     }, '-=0.2')
-    .from('.rl-container', {
+    .from('.hero-media', {
       opacity: 0,
       x: 100,
       rotationY: -12,
